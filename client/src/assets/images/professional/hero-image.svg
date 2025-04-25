@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800px" height="500px" viewBox="0 0 800 500" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="heroGradient">
+            <stop stop-color="#1e3a8a" offset="0%"></stop>
+            <stop stop-color="#3b82f6" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="accentGradient">
+            <stop stop-color="#8b5cf6" offset="0%"></stop>
+            <stop stop-color="#3b82f6" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="url(#heroGradient)" x="0" y="0" width="800" height="500" rx="12"></rect>
+        
+        <!-- Decorative Elements -->
+        <circle fill="#ffffff" opacity="0.05" cx="650" cy="100" r="200"></circle>
+        <circle fill="#ffffff" opacity="0.05" cx="150" cy="400" r="150"></circle>
+        
+        <!-- Abstract AI Network -->
+        <g transform="translate(400, 250)" opacity="0.8">
+            <circle fill="#ffffff" cx="0" cy="0" r="40"></circle>
+            
+            <!-- Connection Lines -->
+            <line x1="0" y1="0" x2="-120" y2="-80" stroke="#ffffff" stroke-width="2" opacity="0.6"></line>
+            <line x1="0" y1="0" x2="-140" y2="20" stroke="#ffffff" stroke-width="2" opacity="0.6"></line>
+            <line x1="0" y1="0" x2="-100" y2="100" stroke="#ffffff" stroke-width="2" opacity="0.6"></line>
+            <line x1="0" y1="0" x2="120" y2="-90" stroke="#ffffff" stroke-width="2" opacity="0.6"></line>
+            <line x1="0" y1="0" x2="150" y2="10" stroke="#ffffff" stroke-width="2" opacity="0.6"></line>
+            <line x1="0" y1="0" x2="100" y2="110" stroke="#ffffff" stroke-width="2" opacity="0.6"></line>
+            
+            <!-- Nodes -->
+            <circle fill="url(#accentGradient)" cx="-120" cy="-80" r="15"></circle>
+            <circle fill="url(#accentGradient)" cx="-140" cy="20" r="15"></circle>
+            <circle fill="url(#accentGradient)" cx="-100" cy="100" r="15"></circle>
+            <circle fill="url(#accentGradient)" cx="120" cy="-90" r="15"></circle>
+            <circle fill="url(#accentGradient)" cx="150" cy="10" r="15"></circle>
+            <circle fill="url(#accentGradient)" cx="100" cy="110" r="15"></circle>
+            
+            <!-- Secondary Connections -->
+            <line x1="-120" y1="-80" x2="-140" y2="20" stroke="#ffffff" stroke-width="1" opacity="0.4"></line>
+            <line x1="-140" y1="20" x2="-100" y2="100" stroke="#ffffff" stroke-width="1" opacity="0.4"></line>
+            <line x1="120" y1="-90" x2="150" y2="10" stroke="#ffffff" stroke-width="1" opacity="0.4"></line>
+            <line x1="150" y1="10" x2="100" y2="110" stroke="#ffffff" stroke-width="1" opacity="0.4"></line>
+            
+            <!-- Small Decorative Dots -->
+            <g opacity="0.6">
+                <circle fill="#ffffff" cx="-80" cy="-40" r="3"></circle>
+                <circle fill="#ffffff" cx="-60" cy="-90" r="3"></circle>
+                <circle fill="#ffffff" cx="-90" cy="40" r="3"></circle>
+                <circle fill="#ffffff" cx="-40" cy="70" r="3"></circle>
+                <circle fill="#ffffff" cx="80" cy="-40" r="3"></circle>
+                <circle fill="#ffffff" cx="60" cy="-60" r="3"></circle>
+                <circle fill="#ffffff" cx="90" cy="40" r="3"></circle>
+                <circle fill="#ffffff" cx="40" cy="60" r="3"></circle>
+            </g>
+        </g>
+        
+        <!-- Education Icons -->
+        <g transform="translate(100, 150)" opacity="0.9">
+            <!-- Book Icon -->
+            <rect fill="#ffffff" x="0" y="0" width="50" height="60" rx="3"></rect>
+            <rect fill="url(#heroGradient)" x="5" y="5" width="40" height="50" rx="2"></rect>
+            <line x1="25" y1="5" x2="25" y2="55" stroke="#ffffff" stroke-width="1" opacity="0.5"></line>
+        </g>
+        
+        <g transform="translate(650, 350)" opacity="0.9">
+            <!-- Graduation Cap -->
+            <rect fill="#ffffff" x="-25" y="0" width="50" height="10" rx="2"></rect>
+            <polygon fill="#ffffff" points="0,0 -30,-20 0,-40 30,-20"></polygon>
+            <line x1="0" y1="-20" x2="0" y2="-60" stroke="#ffffff" stroke-width="3" opacity="0.8"></line>
+            <circle fill="url(#accentGradient)" cx="0" cy="-60" r="8"></circle>
+        </g>
+        
+        <!-- Text Label -->
+        <text font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff" opacity="0.9">
+            <tspan x="550" y="470">IAULA • Educação com Inteligência Artificial</tspan>
+        </text>
+    </g>
+</svg>

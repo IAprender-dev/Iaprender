@@ -5,10 +5,10 @@ import { LogoWithText, Logo } from "@/components/ui/logo";
 
 import { BookText, Brain, FileText, Image, PenTool, BarChart4, Lightbulb, Scissors, FileImage, BookCopy, Puzzle, School, ScrollText, Target, FolderKanban } from "lucide-react";
 
-// Importando imagens
-import heroImage from "../assets/images/hero-image.png";
-import classroomImage from "../assets/images/classroom.jpeg";
-import teacherAiImage from "../assets/images/teacher-ai.jpeg";
+// Importando imagens profissionais (SVG)
+import heroImage from "../assets/images/professional/hero-image.svg";
+import classroomImage from "../assets/images/professional/classroom.svg";
+import teacherAiImage from "../assets/images/professional/teacher-ai.svg";
 
 export default function Home() {
   return (
@@ -65,14 +65,16 @@ export default function Home() {
                 </div>
               </div>
               <div className="mx-auto lg:ml-auto flex justify-center lg:justify-end">
-                <div className="w-full max-w-[500px] aspect-video rounded-lg overflow-hidden shadow-xl bg-gradient-to-br from-primary/20 to-primary/10">
+                <div className="w-full max-w-[550px] aspect-[4/3] rounded-xl overflow-hidden shadow-xl border border-primary/20">
                   <img 
                     src={heroImage} 
                     alt="Professor e alunos usando inteligência artificial na educação" 
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-contain"
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent p-4 text-center">
-                    <p className="font-medium text-sm text-foreground">Imagine um mundo onde cada aluno recebe atenção personalizada</p>
+                    <p className="font-medium text-sm text-foreground shadow-sm">
+                      Transforme o aprendizado com IA personalizada
+                    </p>
                   </div>
                 </div>
               </div>
@@ -124,15 +126,15 @@ export default function Home() {
                 </div>
               </div>
               <div className="mx-auto flex justify-center">
-                <div className="relative w-full max-w-[500px] aspect-video rounded-lg overflow-hidden shadow-xl">
+                <div className="relative w-full max-w-[500px] aspect-video rounded-xl overflow-hidden shadow-xl border border-primary/20">
                   <img 
                     src={teacherAiImage} 
                     alt="Professor utilizando IA em sala de aula" 
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full object-contain rounded-lg"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <div className="bg-background/80 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <div className="bg-background/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-primary/10">
                       <h4 className="font-medium mb-1 text-sm">iAula One em ação</h4>
                       <p className="text-xs text-muted-foreground">Potencialize seu ensino com ferramentas de IA integradas</p>
                     </div>
@@ -496,12 +498,15 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="rounded-lg overflow-hidden shadow-md mt-4">
+                  <div className="rounded-lg overflow-hidden shadow-md mt-4 border border-primary/10 bg-background p-2">
                     <img 
                       src={classroomImage}
                       alt="Sala de aula moderna com tecnologia"
-                      className="w-full h-48 object-cover"
+                      className="w-full h-56 object-contain rounded-md"
                     />
+                    <p className="text-xs text-center text-muted-foreground mt-2">
+                      Tecnologia IA integrada em salas de aula modernas
+                    </p>
                   </div>
                 </div>
               </div>
