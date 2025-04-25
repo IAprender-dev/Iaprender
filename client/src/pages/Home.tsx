@@ -457,116 +457,127 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Testimonials Section */}
-        <section className="py-16 md:py-20">
+        {/* Depoimentos e Eventos Section */}
+        <section id="events" className="py-16 md:py-20">
+          <div className="container px-4 md:px-6">
+            <div className="grid gap-12 lg:grid-cols-2">
+              {/* Depoimentos */}
+              <div className="flex flex-col space-y-4">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold tracking-tighter">
+                    O que dizem nossos usuários
+                  </h2>
+                  <p className="max-w-[600px] text-muted-foreground">
+                    Experiências reais de professores e alunos transformadas pela iAula.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-background rounded-lg p-6 shadow-sm border border-primary/10">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center flex-shrink-0">
+                        <User className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="italic text-muted-foreground mb-4">
+                          "Consigo preparar minhas aulas em metade do tempo, com planos mais completos e detalhados. O assistente virtual ajuda a responder dúvidas dos alunos mesmo fora do horário escolar."
+                        </p>
+                        <p className="font-medium">Vanessa Santos</p>
+                        <p className="text-sm text-muted-foreground">Professora de História, Colégio Estadual</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-background rounded-lg p-6 shadow-sm border border-primary/10">
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center flex-shrink-0">
+                        <User className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="italic text-muted-foreground mb-4">
+                          "A iAula revolucionou meus estudos. O assistente me ajuda a entender conteúdos complexos de forma simples, e a correção automática de redações me permitiu melhorar rapidamente minha escrita."
+                        </p>
+                        <p className="font-medium">Lucas Oliveira</p>
+                        <p className="text-sm text-muted-foreground">Estudante de Ensino Médio</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Eventos */}
+              <div className="flex flex-col space-y-4">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-bold tracking-tighter">
+                    iAula Summit 2025
+                  </h2>
+                  <p className="max-w-[600px] text-muted-foreground">
+                    O maior evento de IA aplicada à educação no Brasil. Junte-se a educadores e especialistas em tecnologia educacional.
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <CalendarDays className="h-6 w-6 text-primary" />
+                      <span className="font-medium">15-17 de Maio, 2025</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <School className="h-6 w-6 text-primary" />
+                      <span className="font-medium">Centro de Convenções, São Paulo</span>
+                    </div>
+                    <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 mt-4">
+                      <h3 className="font-medium text-lg mb-2">Destaques do evento:</h3>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2 text-sm">
+                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
+                          <span>Keynotes com especialistas internacionais em IA educacional</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm">
+                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
+                          <span>Workshops práticos sobre implementação de IA em sala de aula</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm">
+                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
+                          <span>Networking com educadores inovadores de todo o país</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm">
+                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
+                          <span>Certificado de participação reconhecido pelo MEC</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <Button size="lg" className="w-full">Inscreva-se para o evento</Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA Section */}
+        <section className="py-16 md:py-20 bg-primary/5">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter">
-                  Depoimentos de Professores e Alunos
+                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
+                  Transforme sua escola com iAula!
                 </h2>
-                <p className="max-w-[600px] text-muted-foreground">
-                  Veja o que educadores e estudantes dizem sobre o iAula.
+                <p className="max-w-[800px] text-muted-foreground md:text-xl">
+                  A plataforma inteligente que reúne tudo de que educadores e alunos precisam, potencializada pela IA.
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 w-full max-w-5xl">
-                <div className="bg-muted rounded-xl p-6 flex flex-col">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20"></div>
-                    <div className="text-left">
-                      <p className="font-medium text-sm">Profa. Maria Silva</p>
-                      <p className="text-xs text-muted-foreground">Escola Estadual Monteiro Lobato</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground italic">
-                    "O iAula revolucionou minhas aulas de física. Agora consigo criar exercícios contextualizados para meus alunos em minutos!"
-                  </p>
-                </div>
-                <div className="bg-muted rounded-xl p-6 flex flex-col">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20"></div>
-                    <div className="text-left">
-                      <p className="font-medium text-sm">Carlos Mendes</p>
-                      <p className="text-xs text-muted-foreground">Aluno do 3º ano</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground italic">
-                    "Os resumos gerados pelo iAula me ajudaram a entender matérias complexas. A plataforma se tornou essencial para meus estudos."
-                  </p>
-                </div>
-                <div className="bg-muted rounded-xl p-6 flex flex-col">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/20"></div>
-                    <div className="text-left">
-                      <p className="font-medium text-sm">Prof. Ricardo Santos</p>
-                      <p className="text-xs text-muted-foreground">Coordenador Pedagógico</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground italic">
-                    "Implementamos o iAula em toda nossa rede de escolas. O suporte é excelente e notamos uma melhora significativa no engajamento dos alunos."
-                  </p>
-                </div>
+              <div className="flex flex-col gap-2 min-[400px]:flex-row mt-6">
+                <Link href="/auth?register=true">
+                  <Button size="lg" className="gap-2">
+                    Comece agora gratuitamente <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button size="lg" variant="outline">
+                  Agendar demonstração
+                </Button>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Events Section */}
-        <section id="events" className="py-16 md:py-20 bg-muted/30">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter">
-                    iAula Summit
-                  </h2>
-                  <p className="max-w-[600px] text-muted-foreground">
-                    O maior evento de IA aplicada à educação no Brasil, reunindo professores, diretores e especialistas em tecnologia educacional.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <CalendarDays className="h-5 w-5 text-primary" />
-                    <span className="text-sm font-medium">25 a 27 de outubro de 2025</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Users className="h-5 w-5 text-primary" />
-                    <span className="text-sm font-medium">Mais de 5.000 participantes</span>
-                  </div>
-                </div>
-                <Button className="w-fit">Inscreva-se para o próximo evento</Button>
-              </div>
-              <div className="mx-auto flex justify-center">
-                <div className="w-full max-w-[500px] aspect-video rounded-lg overflow-hidden shadow-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                  <div className="text-center space-y-2">
-                    <CalendarDays className="h-12 w-12 text-primary mx-auto" />
-                    <h3 className="font-medium">iAula Summit 2025</h3>
-                    <p className="text-sm text-muted-foreground">São Paulo • 25-27 Out</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-16 md:py-20">
-          <div className="container px-4 md:px-6">
-            <div className="bg-primary text-primary-foreground rounded-lg p-8 md:p-10 flex flex-col items-center text-center">
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tighter mb-4">
-                Transforme a experiência de ensino e aprendizagem
-              </h2>
-              <p className="max-w-[600px] mb-6">
-                Junte-se a milhares de educadores e estudantes que já estão utilizando a IA para potencializar a educação.
+              <p className="text-sm text-muted-foreground max-w-[600px] mt-4">
+                Junte-se a milhares de educadores e alunos que já estão revolucionando o aprendizado com IA. 
+                Alinhada à LGPD e às diretrizes educacionais brasileiras.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="secondary" size="lg">
-                  Solicitar demonstração
-                </Button>
-                <Button variant="outline" size="lg" className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/20">
-                  Começar gratuitamente
-                </Button>
-              </div>
             </div>
           </div>
         </section>
