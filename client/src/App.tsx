@@ -49,6 +49,7 @@ function Router() {
     <Switch>
       {/* Public routes */}
       <Route path="/" component={Home} />
+      <Route path="/auth" component={Auth} />
       <Route path="/cursos" component={Courses} />
       <Route path="/curso/:id" component={CourseDetails} />
       
