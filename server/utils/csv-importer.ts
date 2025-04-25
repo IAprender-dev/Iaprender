@@ -98,7 +98,7 @@ export async function importUsersFromCSV(
         firstName: userData.firstName,
         lastName: userData.lastName,
         email: userData.email,
-        username: userData.username,
+        username: userData.username || userData.email.split('@')[0], // ensure username is not undefined
         password: hashedPassword,
         role: userData.role,
         status: 'active',

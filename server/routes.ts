@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
 import { 
   insertUserSchema, 
   insertCourseSchema, 
@@ -11,12 +12,17 @@ import {
   insertUserActivitySchema,
   insertLessonPlanSchema,
   insertAIMessageSchema,
-  insertCertificateSchema
+  insertCertificateSchema,
+  insertCompanySchema,
+  insertContractSchema,
+  insertContractUserSchema
 } from "@shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import multer from "multer";
+import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
 
 // Define login schema
 const loginSchema = z.object({
