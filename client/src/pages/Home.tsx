@@ -3,6 +3,8 @@ import { Link } from "wouter";
 import { ArrowRight, Award, BookOpen, CalendarDays, CheckCircle, MessageSquare, User, Users } from "lucide-react";
 import { LogoWithText, Logo } from "@/components/ui/logo";
 
+import { BookText, Brain, FileText, Image, PenTool, BarChart4, Lightbulb, Scissors, FileImage, BookCopy, Puzzle, School, ScrollText, Target, FolderKanban } from "lucide-react";
+
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,9 +62,12 @@ export default function Home() {
               <div className="mx-auto lg:ml-auto flex justify-center lg:justify-end">
                 <div className="w-full max-w-[500px] aspect-video rounded-lg overflow-hidden shadow-xl bg-gradient-to-br from-primary/20 to-primary/10 p-6 flex items-center justify-center">
                   <div className="relative w-full h-full bg-muted/80 rounded backdrop-blur-sm overflow-hidden flex items-center justify-center">
-                    <Logo size={64} className="text-primary/50 animate-pulse" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Logo size={100} className="text-primary/80 animate-pulse" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60"></div>
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4 text-center text-sm">
-                      Professores e alunos potencializados pela IA
+                      <p className="font-medium">Imagine um mundo onde cada aluno recebe atenção personalizada</p>
                     </div>
                   </div>
                 </div>
@@ -196,6 +201,110 @@ export default function Home() {
                     </p>
                   </div>
                   <Button className="ml-auto">Saiba mais</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Ferramentas Pedagógicas - Grid Section */}
+        <section id="tools" className="py-16 md:py-20">
+          <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <h2 className="text-3xl font-bold tracking-tighter">
+                  Ferramentas Inteligentes para a Sala de Aula
+                </h2>
+                <p className="max-w-[800px] text-muted-foreground">
+                  O coração da iAula está em suas ferramentas de IA. Potencialize o ensino com recursos que economizam tempo e ampliam possibilidades pedagógicas.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 w-full max-w-6xl">
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <PenTool className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Correção de Redação</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Avaliação automática de textos com feedback detalhado baseado em critérios pedagógicos.
+                  </p>
+                </div>
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <Scissors className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Revisor de Tarefas</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Correção automática de atividades escritas ou digitalizadas com feedback personalizado.
+                  </p>
+                </div>
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <Lightbulb className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Gerador de Ideias</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Sugestões criativas para aulas, atividades e projetos alinhadas ao seu contexto pedagógico.
+                  </p>
+                </div>
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <FileImage className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Criador de Imagens</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Gere ilustrações educacionais personalizadas para transformar conceitos abstratos em recursos visuais.
+                  </p>
+                </div>
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <BarChart4 className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Análise de Dados</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Interprete informações e visualize o desempenho da turma para intervenções pedagógicas eficazes.
+                  </p>
+                </div>
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <BookCopy className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Plano de Aula</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Gere planos didáticos alinhados à BNCC com um clique, otimizando o tempo do educador.
+                  </p>
+                </div>
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <FileText className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Análise de Documentos</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Transforme PDFs, planilhas e imagens em conteúdos educativos prontos para uso em sala de aula.
+                  </p>
+                </div>
+                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
+                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
+                    <FolderKanban className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-medium text-xl mb-2">Organização em Pastas</h3>
+                  <p className="text-sm text-muted-foreground flex-1">
+                    Interface intuitiva para criação de pastas por disciplina, turma ou projetos específicos.
+                  </p>
+                </div>
+              </div>
+              <div className="bg-primary/5 w-full max-w-6xl rounded-lg p-6 mt-8">
+                <div className="flex flex-col md:flex-row items-center gap-4">
+                  <div className="rounded-full bg-primary/10 w-16 h-16 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="text-center md:text-left">
+                    <h3 className="font-medium text-xl mb-2">Assistente Virtual - 24/7</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Suporte contínuo para dúvidas, sugestões e resolução de tarefas, disponível a qualquer momento para professores e alunos.
+                    </p>
+                  </div>
+                  <Button className="ml-auto mt-4 md:mt-0">Experimentar</Button>
                 </div>
               </div>
             </div>
