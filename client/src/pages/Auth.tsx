@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { BrainCircuit } from "lucide-react";
+import { LogoWithText } from "@/components/ui/logo";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -88,8 +88,7 @@ export default function Auth() {
       <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <a href="/" className="flex items-center gap-2">
-            <BrainCircuit className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl">iAula</span>
+            <LogoWithText textSize="md" />
           </a>
         </div>
       </header>
