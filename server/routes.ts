@@ -15,8 +15,14 @@ import {
   insertCertificateSchema,
   insertCompanySchema,
   insertContractSchema,
-  insertContractUserSchema
+  insertContractUserSchema,
+  users,
+  companies,
+  contracts,
+  tokenUsage,
+  aiTools
 } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import session from "express-session";
@@ -544,6 +550,317 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors });
       }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // COMPANY ROUTES
+  // Create company (admin only)
+  app.post("/api/companies", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const validatedData = insertCompanySchema.parse(req.body);
+      
+      // Check if company already exists
+      const [existingCompany] = await db.select()
+        .from(companies)
+        .where(eq(companies.email, validatedData.email));
+      
+      if (existingCompany) {
+        return res.status(400).json({ message: "Company with this email already exists" });
+      }
+
+      // Create company
+      const [company] = await db.insert(companies).values(validatedData).returning();
+
+      return res.status(201).json(company);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get all companies (admin only)
+  app.get("/api/companies", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const allCompanies = await db.select().from(companies);
+      return res.status(200).json(allCompanies);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get company by id (admin only)
+  app.get("/api/companies/:id", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const companyId = parseInt(req.params.id);
+      const [company] = await db.select()
+        .from(companies)
+        .where(eq(companies.id, companyId));
+      
+      if (!company) {
+        return res.status(404).json({ message: "Company not found" });
+      }
+
+      return res.status(200).json(company);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // CONTRACT ROUTES
+  // Create contract (admin only)
+  app.post("/api/contracts", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const validatedData = insertContractSchema.parse(req.body);
+      
+      // Check if company exists
+      const [company] = await db.select()
+        .from(companies)
+        .where(eq(companies.id, validatedData.companyId));
+      
+      if (!company) {
+        return res.status(400).json({ message: "Company not found" });
+      }
+
+      // Create contract
+      const [contract] = await db.insert(contracts).values(validatedData).returning();
+
+      return res.status(201).json(contract);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get all contracts (admin only)
+  app.get("/api/contracts", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const allContracts = await db.select()
+        .from(contracts)
+        .leftJoin(companies, eq(contracts.companyId, companies.id));
+        
+      return res.status(200).json(allContracts);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get contract by id (admin only)
+  app.get("/api/contracts/:id", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const contractId = parseInt(req.params.id);
+      const [contract] = await db.select()
+        .from(contracts)
+        .where(eq(contracts.id, contractId))
+        .leftJoin(companies, eq(contracts.companyId, companies.id));
+      
+      if (!contract) {
+        return res.status(404).json({ message: "Contract not found" });
+      }
+
+      // Get users associated with this contract
+      const contractUsers = await db.select()
+        .from(users)
+        .where(eq(users.contractId, contractId));
+
+      // Get token usage for this contract
+      const tokenUsageData = await db.select()
+        .from(tokenUsage)
+        .where(eq(tokenUsage.contractId, contractId));
+
+      return res.status(200).json({
+        ...contract,
+        users: contractUsers.map(user => ({ ...user, password: undefined })),
+        tokenUsage: tokenUsageData
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Update contract status (admin only)
+  app.put("/api/contracts/:id/status", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const contractId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status || !['active', 'pending', 'expired', 'cancelled'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+
+      // Update contract
+      const [updatedContract] = await db.update(contracts)
+        .set({ status })
+        .where(eq(contracts.id, contractId))
+        .returning();
+      
+      if (!updatedContract) {
+        return res.status(404).json({ message: "Contract not found" });
+      }
+
+      return res.status(200).json(updatedContract);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // USER IMPORT ROUTES
+  // Configure multer for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
+    fileFilter: (_req, file, cb) => {
+      if (file.mimetype === 'text/csv' || file.mimetype === 'application/vnd.ms-excel') {
+        cb(null, true);
+      } else {
+        cb(new Error('Only CSV files are allowed'));
+      }
+    },
+  });
+
+  // Import users from CSV (admin only)
+  app.post(
+    "/api/contracts/:id/import-users",
+    authenticate,
+    authorize(["admin"]),
+    upload.single('csvFile'),
+    async (req, res) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ message: "No CSV file uploaded" });
+        }
+
+        const contractId = parseInt(req.params.id);
+        
+        // Check if contract exists
+        const [contract] = await db.select()
+          .from(contracts)
+          .where(eq(contracts.id, contractId));
+        
+        if (!contract) {
+          return res.status(404).json({ message: "Contract not found" });
+        }
+
+        // Parse CSV and import users
+        const csvContent = req.file.buffer.toString('utf-8');
+        const importResult = await importUsersFromCSV(csvContent, contractId);
+
+        return res.status(200).json({
+          success: importResult.success.length,
+          errors: importResult.errors,
+          passwords: importResult.passwords,
+        });
+      } catch (error: any) {
+        return res.status(500).json({ message: error.message || "Server error" });
+      }
+    }
+  );
+
+  // Update user status (admin only)
+  app.put("/api/users/:id/status", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (!status || !['active', 'inactive', 'suspended', 'blocked'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+
+      // Update user
+      const [updatedUser] = await db.update(users)
+        .set({ status })
+        .where(eq(users.id, userId))
+        .returning();
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const { password, ...userWithoutPassword } = updatedUser;
+      return res.status(200).json(userWithoutPassword);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // TOKEN USAGE ROUTES
+  // Add token usage record
+  app.post("/api/token-usage", authenticate, async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      const { aiToolId, tokensUsed, requestData, responseData } = req.body;
+      
+      // Fetch user to get contractId
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      
+      if (!user || !user.contractId) {
+        return res.status(400).json({ message: "User does not have an associated contract" });
+      }
+
+      // Create token usage record
+      const [tokenUsageRecord] = await db.insert(tokenUsage)
+        .values({
+          userId,
+          contractId: user.contractId,
+          aiToolId,
+          tokensUsed,
+          requestData,
+          responseData
+        })
+        .returning();
+
+      return res.status(201).json(tokenUsageRecord);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get token usage statistics (admin only)
+  app.get("/api/token-usage/stats", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      // Get total token usage by contract
+      const tokenUsageByContract = await db.select({
+        contractId: tokenUsage.contractId,
+        contractName: contracts.name,
+        totalTokens: sql`SUM(${tokenUsage.tokensUsed})`
+      })
+      .from(tokenUsage)
+      .leftJoin(contracts, eq(tokenUsage.contractId, contracts.id))
+      .groupBy(tokenUsage.contractId, contracts.name);
+
+      // Get total token usage by AI tool
+      const tokenUsageByTool = await db.select({
+        aiToolId: tokenUsage.aiToolId,
+        toolName: aiTools.name,
+        totalTokens: sql`SUM(${tokenUsage.tokensUsed})`
+      })
+      .from(tokenUsage)
+      .leftJoin(aiTools, eq(tokenUsage.aiToolId, aiTools.id))
+      .groupBy(tokenUsage.aiToolId, aiTools.name);
+
+      // Get total token usage by user
+      const tokenUsageByUser = await db.select({
+        userId: tokenUsage.userId,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        totalTokens: sql`SUM(${tokenUsage.tokensUsed})`
+      })
+      .from(tokenUsage)
+      .leftJoin(users, eq(tokenUsage.userId, users.id))
+      .groupBy(tokenUsage.userId, users.firstName, users.lastName);
+
+      return res.status(200).json({
+        byContract: tokenUsageByContract,
+        byTool: tokenUsageByTool,
+        byUser: tokenUsageByUser
+      });
+    } catch (error) {
       return res.status(500).json({ message: "Server error" });
     }
   });
