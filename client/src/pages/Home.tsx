@@ -8,7 +8,7 @@ import { BookText, Brain, FileText, Image, PenTool, BarChart4, Lightbulb, Scisso
 // Importando imagens profissionais
 import heroImage from "../assets/images/professional/hero-banner.png";
 import classroomImage from "../assets/images/professional/classroom.svg";
-import teacherAiImage from "../assets/images/professional/teacher-ai.svg";
+import teacherAiImage from "../assets/images/professional/teacher-ai-new.svg";
 
 export default function Home() {
   return (
@@ -123,20 +123,17 @@ export default function Home() {
                   </ul>
                 </div>
               </div>
-              <div className="mx-auto flex justify-center">
-                <div className="relative w-full max-w-[500px] aspect-video rounded-xl overflow-hidden shadow-xl border border-primary/20">
+              <div className="mx-auto flex flex-col justify-center items-center">
+                <div className="w-full max-w-[500px] rounded-xl overflow-hidden shadow-xl border border-primary/10">
                   <img 
                     src={teacherAiImage} 
                     alt="Professor utilizando IA em sala de aula" 
-                    className="w-full h-full object-contain rounded-lg"
+                    className="w-full h-full object-contain"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <div className="bg-background/80 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-primary/10">
-                      <h4 className="font-medium mb-1 text-sm">iAula One em ação</h4>
-                      <p className="text-xs text-muted-foreground">Potencialize seu ensino com ferramentas de IA integradas</p>
-                    </div>
-                  </div>
+                </div>
+                <div className="mt-3 text-center">
+                  <h4 className="font-medium text-sm">iAula One em ação</h4>
+                  <p className="text-xs text-muted-foreground">Potencialize seu ensino com ferramentas de IA integradas</p>
                 </div>
               </div>
             </div>
