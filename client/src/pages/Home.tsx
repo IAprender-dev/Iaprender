@@ -5,8 +5,8 @@ import { LogoWithText, Logo } from "@/components/ui/logo";
 
 import { BookText, Brain, FileText, Image, PenTool, BarChart4, Lightbulb, Scissors, FileImage, BookCopy, Puzzle, School, ScrollText, Target, FolderKanban } from "lucide-react";
 
-// Importando imagens profissionais (SVG)
-import heroImage from "../assets/images/professional/hero-image.svg";
+// Importando imagens profissionais
+import heroImage from "../assets/images/professional/hero-banner.png";
 import classroomImage from "../assets/images/professional/classroom.svg";
 import teacherAiImage from "../assets/images/professional/teacher-ai.svg";
 
@@ -64,19 +64,17 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-              <div className="mx-auto lg:ml-auto flex justify-center lg:justify-end">
-                <div className="w-full max-w-[550px] aspect-[4/3] rounded-xl overflow-hidden shadow-xl border border-primary/20">
+              <div className="mx-auto lg:ml-auto flex flex-col justify-center items-center lg:items-end">
+                <div className="w-full max-w-[550px] rounded-xl overflow-hidden shadow-xl">
                   <img 
                     src={heroImage} 
                     alt="Professor e alunos usando inteligência artificial na educação" 
                     className="w-full h-full object-contain"
                   />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent p-4 text-center">
-                    <p className="font-medium text-sm text-foreground shadow-sm">
-                      Transforme o aprendizado com IA personalizada
-                    </p>
-                  </div>
                 </div>
+                <p className="font-medium text-sm text-muted-foreground mt-3 text-center max-w-[550px]">
+                  Transforme o aprendizado com IA personalizada para cada aluno
+                </p>
               </div>
             </div>
           </div>
