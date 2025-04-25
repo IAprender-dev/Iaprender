@@ -3,10 +3,17 @@ import { db } from "../../db";
 import { tokenUsage, aiTools } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
-// Inicializar cliente Anthropic
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Inicializar cliente Anthropic com verificação de chave
+let anthropic: Anthropic | null = null;
+try {
+  if (process.env.ANTHROPIC_API_KEY) {
+    anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+  }
+} catch (error) {
+  console.warn("Anthropic client initialization failed:", error);
+}
 
 // Tipos para solicitações
 interface ChatCompletionRequest {
@@ -19,6 +26,29 @@ interface ChatCompletionRequest {
   temperature?: number;
 }
 
+// Função para extrair texto do conteúdo da resposta da API
+function extractContentText(content: any): string {
+  if (!content) return "";
+  
+  // Se for um objeto com propriedade 'text'
+  if (typeof content === 'object' && 'text' in content) {
+    return content.text;
+  }
+  
+  // Se for um objeto, convertemos para string
+  if (typeof content === 'object') {
+    return JSON.stringify(content);
+  }
+  
+  // Se for uma string, retornamos diretamente
+  if (typeof content === 'string') {
+    return content;
+  }
+  
+  // Para qualquer outro tipo
+  return String(content);
+}
+
 // Função para gerar conclusão de chat com Claude
 export async function generateChatCompletion({
   userId,
@@ -29,6 +59,10 @@ export async function generateChatCompletion({
   maxTokens = 1024,
   temperature = 0.7,
 }: ChatCompletionRequest) {
+  if (!anthropic) {
+    throw new Error("Anthropic client is not initialized. API key may be missing.");
+  }
+  
   try {
     // Obter o aiToolId para Anthropic
     const [anthropicTool] = await db
@@ -52,7 +86,7 @@ export async function generateChatCompletion({
     });
 
     // Extrair o conteúdo da resposta
-    const responseContent = response.content[0].text;
+    const responseContent = extractContentText(response.content[0]);
     
     // Registrar uso de tokens
     const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
@@ -82,6 +116,10 @@ export async function analyzeImage(
   imageBase64: string,
   prompt: string = "Analyze this image and describe what you see in detail."
 ) {
+  if (!anthropic) {
+    throw new Error("Anthropic client is not initialized. API key may be missing.");
+  }
+
   try {
     // Obter o aiToolId para Anthropic
     const [anthropicTool] = await db
@@ -116,7 +154,7 @@ export async function analyzeImage(
     });
 
     // Extrair o conteúdo da resposta
-    const responseContent = response.content[0].text;
+    const responseContent = extractContentText(response.content[0]);
     
     // Registrar uso de tokens
     const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;

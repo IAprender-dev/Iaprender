@@ -13,6 +13,8 @@ export interface AIRequestBase {
 
 // Função para verificar disponibilidade das APIs de IA
 export async function checkAIServicesAvailability() {
+  // Verificamos apenas a presença das variáveis de ambiente
+  // A inicialização dos clientes é tratada nos respectivos arquivos de serviço
   const availability = {
     openai: !!process.env.OPENAI_API_KEY,
     anthropic: !!process.env.ANTHROPIC_API_KEY,

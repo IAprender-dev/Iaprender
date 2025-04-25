@@ -20,7 +20,8 @@ import {
   companies,
   contracts,
   tokenUsage,
-  aiTools
+  aiTools,
+  newsletter
 } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -29,6 +30,7 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import multer from "multer";
 import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
+import aiRouter from "./routes/ai-routes";
 
 // Define login schema
 const loginSchema = z.object({
@@ -875,6 +877,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Server error" });
     }
   });
+
+  // NEWSLETTER ROUTES
+  // Subscribe to newsletter
+  app.post("/api/newsletter/subscribe", async (req, res) => {
+    try {
+      const schema = z.object({
+        email: z.string().email(),
+        name: z.string().optional(),
+      });
+      
+      const { email, name } = schema.parse(req.body);
+      
+      // Check if email already exists
+      const [existingSubscription] = await db
+        .select()
+        .from(newsletter)
+        .where(eq(newsletter.email, email));
+      
+      if (existingSubscription) {
+        // If already subscribed but unsubscribed
+        if (existingSubscription.status === 'unsubscribed') {
+          await db
+            .update(newsletter)
+            .set({ 
+              status: 'subscribed',
+              name: name || existingSubscription.name,
+              unsubscriptionDate: null
+            })
+            .where(eq(newsletter.id, existingSubscription.id));
+          
+          return res.status(200).json({ 
+            message: "Successfully resubscribed to newsletter" 
+          });
+        }
+        
+        return res.status(200).json({ 
+          message: "Already subscribed to newsletter" 
+        });
+      }
+      
+      // Create new subscription
+      await db.insert(newsletter).values({
+        email,
+        name,
+        status: 'subscribed'
+      });
+      
+      return res.status(201).json({ 
+        message: "Successfully subscribed to newsletter" 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+  
+  // Unsubscribe from newsletter
+  app.post("/api/newsletter/unsubscribe", async (req, res) => {
+    try {
+      const schema = z.object({
+        email: z.string().email(),
+      });
+      
+      const { email } = schema.parse(req.body);
+      
+      // Check if email exists
+      const [existingSubscription] = await db
+        .select()
+        .from(newsletter)
+        .where(eq(newsletter.email, email));
+      
+      if (!existingSubscription) {
+        return res.status(404).json({ 
+          message: "Email not found in newsletter list" 
+        });
+      }
+      
+      // Update subscription status
+      await db
+        .update(newsletter)
+        .set({ 
+          status: 'unsubscribed',
+          unsubscriptionDate: new Date()
+        })
+        .where(eq(newsletter.id, existingSubscription.id));
+      
+      return res.status(200).json({ 
+        message: "Successfully unsubscribed from newsletter" 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // AI ROUTES
+  // Use the AI router with /api/ai prefix
+  app.use("/api/ai", aiRouter);
 
   const httpServer = createServer(app);
   return httpServer;

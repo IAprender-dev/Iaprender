@@ -1,13 +1,14 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useRoute } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/lib/AuthContext";
+import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import { ThemeProvider } from "next-themes";
 
 // Pages
 import Home from "@/pages/Home";
+import Auth from "@/pages/Auth";
 import Courses from "@/pages/Courses";
 import CourseDetails from "@/pages/CourseDetails";
 import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
@@ -18,6 +19,30 @@ import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
 import NotFound from "@/pages/not-found";
+
+// Protected route component
+const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
+  component: React.ComponentType, 
+  roles?: string[],
+  path: string 
+}) => {
+  const { user, isLoading } = useAuth();
+  const [isMatch] = useRoute(rest.path);
+
+  if (isLoading) {
+    return isMatch ? <div className="flex items-center justify-center min-h-screen">Carregando...</div> : null;
+  }
+
+  if (!user) {
+    return isMatch ? <Auth /> : null;
+  }
+
+  if (roles.length > 0 && !roles.includes(user.role)) {
+    return isMatch ? <NotFound /> : null;
+  }
+
+  return <Component />;
+};
 
 function Router() {
   return (

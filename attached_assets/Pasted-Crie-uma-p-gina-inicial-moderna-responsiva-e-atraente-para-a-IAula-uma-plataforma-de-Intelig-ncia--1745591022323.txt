@@ -1,0 +1,107 @@
+Crie uma página inicial moderna, responsiva e atraente para a IAula, uma plataforma de Inteligência Artificial voltada para professores e alunos das escolas. A página deve seguir o modelo da Adapta.org em estrutura e apresentação, mas com o conteúdo abaixo adaptado:
+
+Estrutura da Frontpage – IAula
+1. Hero Section (Destaque principal)
+Título:
+"A primeira plataforma de Inteligência Artificial Educacional para Professores e Alunos"
+
+Subtítulo:
+Ferramentas de IA, cursos sobre inteligência artificial e as últimas novidades do mundo da educação e tecnologia – tudo em um só lugar.
+
+Botões de ação (CTA):
+
+Comece agora
+
+Solicitar demonstração para sua escola
+
+Imagem/Ilustração de destaque:
+Mostre alunos e professores interagindo com telas digitais, gráficos, e elementos de IA (similar à Adapta, mas voltado ao ambiente escolar).
+
+2. Seção IAula One – Hub Educacional de IAs
+Descrição curta:
+O IAula One é o coração da plataforma, reunindo modelos avançados de IA customizados para o ambiente educacional.
+
+Modelos de IA disponíveis:
+
+GPT-4.1
+
+Gemini 2.5 Pro
+
+Claude 3.7 Sonnet
+
+Sabiá-3 (especialista em português e educação)
+
+Modelos treinados para:
+
+Professores: elaboração de planos de aula, provas, avaliações, atividades.
+
+Alunos: resumos, explicações, resolução de exercícios, estudos dirigidos.
+
+Funcionalidades principais:
+
+Pastas para organizar projetos escolares
+
+Flows educacionais: fluxos para planejamento de aulas, atividades e preparação para provas.
+
+Experts IA: assistentes virtuais treinados para tarefas pedagógicas específicas.
+
+Análise de documentos acadêmicos: resumos de PDFs, artigos, provas antigas.
+
+IAula Vision: análise de imagens para uso em materiais didáticos.
+
+Análise de planilhas e geração automática de gráficos para aulas.
+
+3. Cursos e Certificações
+Ofereça cursos rápidos e práticos sobre Inteligência Artificial:
+
+Como usar IA na educação
+
+Masterizando o uso de IA para professores
+
+IA para auxiliar nos estudos (para alunos)
+
+Certificações para professores que dominam o uso das ferramentas de IA em sala de aula.
+
+4. Newsletter Semanal – IAula Insights
+Resuma os principais avanços em IA e educação, ferramentas novas, dicas práticas e estudos de caso.
+
+Exclusiva para professores e alunos assinantes.
+
+5. Planos de Assinatura
+Plano Escola (Lote de Licenças):
+Ideal para instituições, permitindo acesso em massa para professores e alunos, com gestão centralizada pelo administrador da escola.
+
+Plano Individual (Aluno ou Professor):
+Acesso pessoal às ferramentas, cursos e newsletter.
+
+Funcionalidades inclusas:
+
+Controle de uso de tokens por usuário (monitorado pelo administrador escolar).
+
+Ambiente separado para professores e alunos, com ferramentas específicas.
+
+6. Depoimentos de Professores e Alunos
+Exiba testemunhos de educadores e estudantes que utilizaram o IAula para aprimorar suas rotinas de ensino e estudo.
+
+7. Seção de Eventos – IAula Summit
+Destaque para o IAula Summit, o maior evento de IA aplicada à educação no Brasil, reunindo professores, diretores e especialistas em tecnologia educacional.
+
+Design e Elementos Visuais
+Use uma paleta de cores suave e tecnológica (azul, verde, branco), com imagens relacionadas à educação e tecnologia.
+
+Adote uma tipografia moderna, de fácil leitura, inspirada na simplicidade da Adapta.org, mas com identidade voltada ao universo escolar.
+
+Resumo final para o Replit:
+Crie uma frontpage responsiva e interativa para a plataforma IAula, adaptando o modelo da Adapta.org, com foco em professores e alunos de escolas. A página deve:
+
+Destacar o IAula One como um hub educacional de IAs.
+
+Apresentar cursos rápidos e certificações sobre uso de IA na educação.
+
+Oferecer uma newsletter semanal com novidades do universo da IA e educação.
+
+Exibir planos de assinatura, com destaque para contratos escolares em lote.
+
+Ter seções de depoimentos e promover o IAula Summit, evento de IA para educação.
+
+Usar um design moderno, educativo e tecnológico.

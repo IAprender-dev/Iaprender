@@ -1,10 +1,19 @@
-import OpenAI from "openai";
 import { db } from "../../db";
 import { tokenUsage, aiTools } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import OpenAI from "openai";
 
-// Inicializar cliente OpenAI
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Inicializar cliente OpenAI com verificação de chave
+let openai: OpenAI | null = null;
+try {
+  if (process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+  }
+} catch (error) {
+  console.warn("OpenAI client initialization failed:", error);
+}
 
 // Tipos para solicitações
 interface ChatCompletionRequest {
@@ -25,33 +34,37 @@ interface ImageGenerationRequest {
   n?: number;
 }
 
-// Função para gerar conclusão de chat
+// Função para gerar conclusão de chat com GPT
 export async function generateChatCompletion({
   userId,
   contractId,
   prompt,
-  model = "gpt-4o",
+  model = "gpt-4o", // o modelo mais recente da OpenAI (lançado em maio de 2024)
   temperature = 0.7,
-  maxTokens = 512,
+  maxTokens = 1000,
 }: ChatCompletionRequest) {
+  if (!openai) {
+    throw new Error("OpenAI client is not initialized. API key may be missing.");
+  }
+
   try {
     // Obter o aiToolId para OpenAI
-    const [openAITool] = await db
+    const [openaiTool] = await db
       .select()
       .from(aiTools)
       .where(eq(aiTools.type, "openai"));
 
-    if (!openAITool) {
+    if (!openaiTool) {
       throw new Error("OpenAI tool configuration not found in database");
     }
 
-    // A API responde com o conteúdo e tokens utilizados
+    // Gerar resposta via API da OpenAI
     const response = await openai.chat.completions.create({
       model: model,
       messages: [
         {
           role: "system",
-          content: "Você é um assistente educacional útil e amigável na plataforma iAula."
+          content: "Você é um assistente educacional da plataforma iAula, especializado em ajudar professores e alunos."
         },
         {
           role: "user",
@@ -70,7 +83,7 @@ export async function generateChatCompletion({
     await db.insert(tokenUsage).values({
       userId: userId,
       contractId: contractId,
-      aiToolId: openAITool.id,
+      aiToolId: openaiTool.id,
       tokensUsed: tokensUsed,
       requestData: { prompt, model, temperature, maxTokens },
       responseData: { content: responseContent },
@@ -78,7 +91,7 @@ export async function generateChatCompletion({
 
     return {
       content: responseContent,
-      tokensUsed: tokensUsed
+      tokensUsed: tokensUsed,
     };
   } catch (error: any) {
     console.error("Error generating OpenAI chat completion:", error);
@@ -86,7 +99,7 @@ export async function generateChatCompletion({
   }
 }
 
-// Função para gerar imagem
+// Função para gerar imagens com DALL-E
 export async function generateImage({
   userId,
   contractId,
@@ -95,15 +108,19 @@ export async function generateImage({
   quality = "standard",
   n = 1,
 }: ImageGenerationRequest) {
+  if (!openai) {
+    throw new Error("OpenAI client is not initialized. API key may be missing.");
+  }
+
   try {
-    // Obter o aiToolId para geração de imagem
-    const [imageGenTool] = await db
+    // Obter o aiToolId para OpenAI
+    const [openaiTool] = await db
       .select()
       .from(aiTools)
-      .where(eq(aiTools.type, "image_generation"));
+      .where(eq(aiTools.type, "openai"));
 
-    if (!imageGenTool) {
-      throw new Error("Image generation tool configuration not found in database");
+    if (!openaiTool) {
+      throw new Error("OpenAI tool configuration not found in database");
     }
 
     // Gerar imagem via API da OpenAI
@@ -115,28 +132,31 @@ export async function generateImage({
       quality: quality as any,
     });
 
-    // Extrai URLs das imagens geradas
-    const imageUrls = response.data.map(item => item.url);
+    // Extrair URLs das imagens
+    const images = response.data.map(image => ({
+      url: image.url,
+      revised_prompt: image.revised_prompt
+    }));
     
-    // Estimar uso de tokens (aproximado para DALL-E)
-    const tokensUsed = Math.ceil(prompt.length / 4) * 100; // Cálculo aproximado
+    // Estimar tokens usados (não há contagem direta para geração de imagens)
+    const estimatedTokens = prompt.length * 1.5; // Estimativa aproximada
     
     // Registrar uso de tokens
     await db.insert(tokenUsage).values({
       userId: userId,
       contractId: contractId,
-      aiToolId: imageGenTool.id,
-      tokensUsed: tokensUsed,
+      aiToolId: openaiTool.id,
+      tokensUsed: estimatedTokens,
       requestData: { prompt, size, quality, n },
-      responseData: { imageUrls },
+      responseData: { images },
     });
 
     return {
-      imageUrls,
-      tokensUsed
+      images,
+      tokensUsed: estimatedTokens,
     };
   } catch (error: any) {
-    console.error("Error generating image:", error);
+    console.error("Error generating OpenAI image:", error);
     throw new Error(`Failed to generate image: ${error.message}`);
   }
 }
