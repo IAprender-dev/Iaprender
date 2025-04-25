@@ -43,6 +43,7 @@ export interface AuthContextType {
   loginMutation: UseMutationResult<User, Error, LoginData>;
   registerMutation: UseMutationResult<User, Error, RegisterData>;
   logoutMutation: UseMutationResult<void, Error, void>;
+  logout: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -156,6 +157,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
+  // Função auxiliar para logout
+  const logout = async (): Promise<void> => {
+    await logoutMutation.mutateAsync();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -165,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginMutation,
         registerMutation,
         logoutMutation,
+        logout,
       }}
     >
       {children}
