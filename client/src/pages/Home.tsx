@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { ArrowRight, Award, BookOpen, BrainCircuit, CalendarDays, CheckCircle, MessageSquare, User, Users } from "lucide-react";
+import { ArrowRight, Award, BookOpen, CalendarDays, CheckCircle, MessageSquare, User, Users } from "lucide-react";
+import { LogoWithText, Logo } from "@/components/ui/logo";
 
 export default function Home() {
   return (
@@ -10,8 +11,7 @@ export default function Home() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <a href="/" className="flex items-center gap-2">
-              <BrainCircuit className="h-6 w-6 text-primary" />
-              <span className="font-bold text-xl">iAula</span>
+              <LogoWithText textSize="md" />
             </a>
           </div>
           <div className="hidden md:flex gap-6 items-center">
@@ -60,7 +60,7 @@ export default function Home() {
               <div className="mx-auto lg:ml-auto flex justify-center lg:justify-end">
                 <div className="w-full max-w-[500px] aspect-video rounded-lg overflow-hidden shadow-xl bg-gradient-to-br from-primary/20 to-primary/10 p-6 flex items-center justify-center">
                   <div className="relative w-full h-full bg-muted/80 rounded backdrop-blur-sm overflow-hidden flex items-center justify-center">
-                    <BrainCircuit className="h-16 w-16 text-primary/50 animate-pulse" />
+                    <Logo size={64} className="text-primary/50 animate-pulse" />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-4 text-center text-sm">
                       Professores e alunos potencializados pela IA
                     </div>
@@ -469,8 +469,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="col-span-2 md:col-span-1">
               <a href="/" className="flex items-center gap-2 mb-4">
-                <BrainCircuit className="h-6 w-6 text-primary" />
-                <span className="font-bold text-xl">iAula</span>
+                <LogoWithText textSize="md" />
               </a>
               <p className="text-sm text-muted-foreground mb-4">
                 A primeira plataforma de Inteligência Artificial Educacional para Professores e Alunos.
