@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, pgEnum, date, jsonb, primaryKey, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -8,6 +8,10 @@ export const courseStatusEnum = pgEnum('course_status', ['not_started', 'in_prog
 export const contentTypeEnum = pgEnum('content_type', ['video', 'pdf', 'quiz']);
 export const activityPriorityEnum = pgEnum('activity_priority', ['high', 'medium', 'low']);
 export const activityStatusEnum = pgEnum('activity_status', ['pending', 'completed', 'overdue']);
+export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'suspended', 'blocked']);
+export const contractStatusEnum = pgEnum('contract_status', ['active', 'pending', 'expired', 'cancelled']);
+export const aiToolTypeEnum = pgEnum('ai_tool_type', ['openai', 'gemini', 'anthropic', 'perplexity', 'image_generation', 'other']);
+export const newsletterStatusEnum = pgEnum('newsletter_status', ['subscribed', 'unsubscribed']);
 
 // Users table
 export const users = pgTable("users", {
@@ -18,8 +22,13 @@ export const users = pgTable("users", {
   lastName: text("last_name").notNull(),
   email: text("email").notNull().unique(),
   role: userRoleEnum("role").notNull().default('student'),
+  status: userStatusEnum("status").default('active').notNull(),
+  firstLogin: boolean("first_login").default(true).notNull(),
+  forcePasswordChange: boolean("force_password_change").default(false),
   profileImage: text("profile_image"),
+  contractId: integer("contract_id").references(() => contracts.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastLoginAt: timestamp("last_login_at"),
 });
 
 // Courses table
@@ -129,10 +138,107 @@ export const certificates = pgTable("certificates", {
   issueDate: timestamp("issue_date").defaultNow().notNull(),
 });
 
+// Companies (for contracts)
+export const companies = pgTable("companies", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  contactPerson: text("contact_person"),
+  logo: text("logo"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Contracts
+export const contracts = pgTable("contracts", {
+  id: serial("id").primaryKey(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
+  maxUsers: integer("max_users").notNull(),
+  maxTokens: integer("max_tokens").notNull(),
+  status: contractStatusEnum("status").default('active').notNull(),
+  settings: jsonb("settings"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Contract Users (linking users to contracts)
+export const contractUsers = pgTable("contract_users", {
+  id: serial("id").primaryKey(),
+  contractId: integer("contract_id").references(() => contracts.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  status: userStatusEnum("status").default('active').notNull(),
+  firstLogin: boolean("first_login").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// AI Tools
+export const aiTools = pgTable("ai_tools", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  type: aiToolTypeEnum("type").notNull(),
+  apiId: text("api_id"),
+  model: text("model"),
+  tokensPerRequest: integer("tokens_per_request"),
+  enabled: boolean("enabled").default(true).notNull(),
+  settings: jsonb("settings"),
+});
+
+// Token Usage
+export const tokenUsage = pgTable("token_usage", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  contractId: integer("contract_id").references(() => contracts.id).notNull(),
+  aiToolId: integer("ai_tool_id").references(() => aiTools.id).notNull(),
+  tokensUsed: integer("tokens_used").notNull(),
+  requestData: jsonb("request_data"),
+  responseData: jsonb("response_data"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Materials
+export const materials = pgTable("materials", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  authorId: integer("author_id").references(() => users.id).notNull(),
+  fileUrl: text("file_url").notNull(),
+  fileType: text("file_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  downloadCount: integer("download_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Newsletter
+export const newsletter = pgTable("newsletter", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  status: newsletterStatusEnum("status").default('subscribed').notNull(),
+  subscriptionDate: timestamp("subscription_date").defaultNow().notNull(),
+  unsubscriptionDate: timestamp("unsubscription_date"),
+});
+
+// Newsletter Issues
+export const newsletterIssues = pgTable("newsletter_issues", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  sentAt: timestamp("sent_at"),
+  sentCount: integer("sent_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
+  lastLoginAt: true,
 });
 
 export const insertCourseSchema = createInsertSchema(courses).omit({
@@ -184,6 +290,50 @@ export const insertCertificateSchema = createInsertSchema(certificates).omit({
   issueDate: true,
 });
 
+export const insertCompanySchema = createInsertSchema(companies).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertContractSchema = createInsertSchema(contracts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertContractUserSchema = createInsertSchema(contractUsers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAIToolSchema = createInsertSchema(aiTools).omit({
+  id: true,
+});
+
+export const insertTokenUsageSchema = createInsertSchema(tokenUsage).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMaterialSchema = createInsertSchema(materials).omit({
+  id: true,
+  createdAt: true,
+  downloadCount: true,
+});
+
+export const insertNewsletterSchema = createInsertSchema(newsletter).omit({
+  id: true,
+  subscriptionDate: true,
+  unsubscriptionDate: true,
+});
+
+export const insertNewsletterIssueSchema = createInsertSchema(newsletterIssues).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+  sentCount: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -217,3 +367,27 @@ export type AIMessage = typeof aiMessages.$inferSelect;
 
 export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
 export type Certificate = typeof certificates.$inferSelect;
+
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type Company = typeof companies.$inferSelect;
+
+export type InsertContract = z.infer<typeof insertContractSchema>;
+export type Contract = typeof contracts.$inferSelect;
+
+export type InsertContractUser = z.infer<typeof insertContractUserSchema>;
+export type ContractUser = typeof contractUsers.$inferSelect;
+
+export type InsertAITool = z.infer<typeof insertAIToolSchema>;
+export type AITool = typeof aiTools.$inferSelect;
+
+export type InsertTokenUsage = z.infer<typeof insertTokenUsageSchema>;
+export type TokenUsage = typeof tokenUsage.$inferSelect;
+
+export type InsertMaterial = z.infer<typeof insertMaterialSchema>;
+export type Material = typeof materials.$inferSelect;
+
+export type InsertNewsletter = z.infer<typeof insertNewsletterSchema>;
+export type Newsletter = typeof newsletter.$inferSelect;
+
+export type InsertNewsletterIssue = z.infer<typeof insertNewsletterIssueSchema>;
+export type NewsletterIssue = typeof newsletterIssues.$inferSelect;
