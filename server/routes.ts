@@ -1,0 +1,558 @@
+import type { Express, Request, Response } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { 
+  insertUserSchema, 
+  insertCourseSchema, 
+  insertModuleSchema, 
+  insertContentSchema,
+  insertUserCourseSchema,
+  insertActivitySchema,
+  insertUserActivitySchema,
+  insertLessonPlanSchema,
+  insertAIMessageSchema,
+  insertCertificateSchema
+} from "@shared/schema";
+import { z } from "zod";
+import bcrypt from "bcryptjs";
+import session from "express-session";
+import MemoryStore from "memorystore";
+
+// Define login schema
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string()
+});
+
+const answerSchema = z.object({
+  message: z.string(),
+  role: z.enum(["teacher", "student"])
+});
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Session setup
+  const SessionStore = MemoryStore(session);
+  app.use(
+    session({
+      store: new SessionStore({
+        checkPeriod: 86400000 // 24 hours
+      }),
+      secret: process.env.SESSION_SECRET || "iaula-secret-key",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict"
+      }
+    })
+  );
+
+  // Authentication middleware
+  const authenticate = (req: Request, res: Response, next: Function) => {
+    if (!req.session.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    next();
+  };
+
+  // Role-based authorization middleware
+  const authorize = (roles: string[]) => {
+    return (req: Request, res: Response, next: Function) => {
+      if (!req.session.user || !roles.includes(req.session.user.role)) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      next();
+    };
+  };
+
+  // AUTH ROUTES
+  // Register
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(validatedData.password, salt);
+
+      // Create username from email if not provided
+      const username = validatedData.username || validatedData.email.split('@')[0];
+
+      // Create user
+      const user = await storage.createUser({
+        ...validatedData,
+        username,
+        password: hashedPassword
+      });
+
+      // Remove password from response
+      const { password, ...userWithoutPassword } = user;
+
+      // Set user session
+      req.session.user = userWithoutPassword;
+
+      return res.status(201).json(userWithoutPassword);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Login
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(validatedData.email);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      // Verify password
+      const isMatch = await bcrypt.compare(validatedData.password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      // Remove password from session/response
+      const { password, ...userWithoutPassword } = user;
+
+      // Set user session
+      req.session.user = userWithoutPassword;
+
+      return res.status(200).json(userWithoutPassword);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Logout
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Error logging out" });
+      }
+      res.clearCookie('connect.sid');
+      return res.status(200).json({ message: "Logged out successfully" });
+    });
+  });
+
+  // Get current user
+  app.get("/api/auth/me", authenticate, (req, res) => {
+    return res.status(200).json(req.session.user);
+  });
+
+  // COURSE ROUTES
+  // Get all courses
+  app.get("/api/courses", async (req, res) => {
+    try {
+      const courses = await storage.getAllCourses();
+      return res.status(200).json(courses);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get course by id
+  app.get("/api/courses/:id", async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const course = await storage.getCourse(courseId);
+      
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      // Get course modules
+      const modules = await storage.getModulesByCourse(courseId);
+      
+      // For each module, get its contents
+      const modulesWithContents = await Promise.all(
+        modules.map(async (module) => {
+          const contents = await storage.getContentsByModule(module.id);
+          return {
+            ...module,
+            contents
+          };
+        })
+      );
+
+      return res.status(200).json({
+        ...course,
+        modules: modulesWithContents
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Create course (teacher only)
+  app.post("/api/courses", authenticate, authorize(["teacher", "admin"]), async (req, res) => {
+    try {
+      const validatedData = insertCourseSchema.parse(req.body);
+      
+      // Set author to current user
+      const course = await storage.createCourse({
+        ...validatedData,
+        authorId: req.session.user.id
+      });
+
+      return res.status(201).json(course);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get courses by teacher
+  app.get("/api/teacher/courses", authenticate, authorize(["teacher", "admin"]), async (req, res) => {
+    try {
+      const courses = await storage.getCoursesByAuthor(req.session.user.id);
+      return res.status(200).json(courses);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Create course module (teacher only)
+  app.post("/api/courses/:id/modules", authenticate, authorize(["teacher", "admin"]), async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const course = await storage.getCourse(courseId);
+      
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      // Verify ownership
+      if (course.authorId !== req.session.user.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const validatedData = insertModuleSchema.parse(req.body);
+      
+      const module = await storage.createModule({
+        ...validatedData,
+        courseId
+      });
+
+      return res.status(201).json(module);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Create course content (teacher only)
+  app.post("/api/modules/:id/contents", authenticate, authorize(["teacher", "admin"]), async (req, res) => {
+    try {
+      const moduleId = parseInt(req.params.id);
+      const validatedData = insertContentSchema.parse(req.body);
+      
+      const content = await storage.createContent({
+        ...validatedData,
+        moduleId
+      });
+
+      return res.status(201).json(content);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // ENROLLMENT ROUTES
+  // Enroll in course
+  app.post("/api/courses/:id/enroll", authenticate, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const userId = req.session.user.id;
+      
+      // Check if course exists
+      const course = await storage.getCourse(courseId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      // Get user courses
+      const userCourses = await storage.getUserCourses(userId);
+      
+      // Check if already enrolled
+      const alreadyEnrolled = userCourses.some(uc => uc.courseId === courseId);
+      if (alreadyEnrolled) {
+        return res.status(400).json({ message: "Already enrolled in this course" });
+      }
+
+      // Enroll user
+      const enrollment = await storage.enrollUserInCourse({
+        userId,
+        courseId,
+        progress: 0,
+        status: "not_started"
+      });
+
+      return res.status(201).json(enrollment);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get student courses
+  app.get("/api/student/courses", authenticate, async (req, res) => {
+    try {
+      const userCourses = await storage.getUserCourses(req.session.user.id);
+      return res.status(200).json(userCourses);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Update course progress
+  app.put("/api/courses/:id/progress", authenticate, async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const userId = req.session.user.id;
+      const { progress } = req.body;
+      
+      if (typeof progress !== 'number' || progress < 0 || progress > 100) {
+        return res.status(400).json({ message: "Invalid progress value" });
+      }
+
+      const updatedUserCourse = await storage.updateUserCourseProgress(userId, courseId, progress);
+      
+      if (!updatedUserCourse) {
+        return res.status(404).json({ message: "Enrollment not found" });
+      }
+
+      // If course is completed, issue certificate
+      if (progress === 100) {
+        await storage.createCertificate({
+          userId,
+          courseId
+        });
+      }
+
+      return res.status(200).json(updatedUserCourse);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // ACTIVITY ROUTES
+  // Create activity (teacher only)
+  app.post("/api/courses/:id/activities", authenticate, authorize(["teacher", "admin"]), async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const course = await storage.getCourse(courseId);
+      
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      // Verify ownership
+      if (course.authorId !== req.session.user.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+
+      const validatedData = insertActivitySchema.parse(req.body);
+      
+      const activity = await storage.createActivity({
+        ...validatedData,
+        courseId
+      });
+
+      return res.status(201).json(activity);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get activities by course
+  app.get("/api/courses/:id/activities", async (req, res) => {
+    try {
+      const courseId = parseInt(req.params.id);
+      const activities = await storage.getActivitiesByCourse(courseId);
+      return res.status(200).json(activities);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Submit activity (student only)
+  app.post("/api/activities/:id/submit", authenticate, authorize(["student"]), async (req, res) => {
+    try {
+      const activityId = parseInt(req.params.id);
+      const userId = req.session.user.id;
+      
+      const validatedData = insertUserActivitySchema.parse(req.body);
+      
+      const submission = await storage.submitActivity({
+        ...validatedData,
+        userId,
+        activityId
+      });
+
+      return res.status(201).json(submission);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get student activities
+  app.get("/api/student/activities", authenticate, authorize(["student"]), async (req, res) => {
+    try {
+      const userActivities = await storage.getUserActivities(req.session.user.id);
+      return res.status(200).json(userActivities);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // CATEGORY ROUTES
+  // Get all categories
+  app.get("/api/categories", async (req, res) => {
+    try {
+      const categories = await storage.getAllCategories();
+      return res.status(200).json(categories);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // LESSON PLAN ROUTES
+  // Create lesson plan (teacher only)
+  app.post("/api/lesson-plans", authenticate, authorize(["teacher", "admin"]), async (req, res) => {
+    try {
+      const validatedData = insertLessonPlanSchema.parse(req.body);
+      
+      const lessonPlan = await storage.createLessonPlan({
+        ...validatedData,
+        authorId: req.session.user.id
+      });
+
+      return res.status(201).json(lessonPlan);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get teacher lesson plans
+  app.get("/api/teacher/lesson-plans", authenticate, authorize(["teacher", "admin"]), async (req, res) => {
+    try {
+      const lessonPlans = await storage.getLessonPlansByAuthor(req.session.user.id);
+      return res.status(200).json(lessonPlans);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // AI ASSISTANT ROUTES
+  // Get AI chat history
+  app.get("/api/ai/messages", authenticate, async (req, res) => {
+    try {
+      const messages = await storage.getAIMessagesByUser(req.session.user.id);
+      return res.status(200).json(messages);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Send message to AI assistant
+  app.post("/api/ai/assistant", authenticate, async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      const validatedData = answerSchema.parse(req.body);
+      
+      // Save user message
+      await storage.createAIMessage({
+        userId,
+        sender: "user",
+        content: validatedData.message
+      });
+
+      // Generate AI response based on role and message
+      let aiResponse = "";
+      const role = validatedData.role;
+      const message = validatedData.message.toLowerCase();
+
+      if (role === "teacher") {
+        if (message.includes("plano de aula") || message.includes("planejamento")) {
+          aiResponse = "Posso ajudar a criar um plano de aula personalizado. Para matemática no 8º ano, sugiro começar com uma revisão de operações básicas, seguida por introdução a álgebra com exemplos práticos do cotidiano. Atividades podem incluir resolução de problemas em grupos e um quiz interativo. Avaliação pode ser feita através de observação do engajamento e uma pequena prova ao final.";
+        } else if (message.includes("atividade") || message.includes("exercício")) {
+          aiResponse = "Aqui está uma atividade de álgebra para o 8º ano:\n\n1. Resolva as equações abaixo:\na) 2x + 5 = 15\nb) 3x - 7 = 8\nc) 5x + 10 = 3x + 18\n\n2. Um cinema possui 200 poltronas e cobra R$20 por ingresso. Para cada redução de R$2 no preço, são vendidos 15 ingressos a mais. Qual o preço do ingresso para maximizar a receita?";
+        } else if (message.includes("imagem") || message.includes("ilustração")) {
+          aiResponse = "Criei uma imagem didática ilustrando o conceito de equações de primeiro grau com uma balança em equilíbrio, mostrando visualmente como as operações afetam ambos os lados da equação.";
+        } else {
+          aiResponse = "Como professor(a), posso ajudar você com planejamento de aulas, criação de atividades, organização de conteúdo, estratégias de ensino ou avaliação de alunos. O que você precisa especificamente?";
+        }
+      } else { // student
+        if (message.includes("equações") || message.includes("matemática")) {
+          aiResponse = "Para resolver equações de 2º grau, você pode usar a fórmula de Bhaskara: x = (-b ± √(b² - 4ac)) / 2a, onde ax² + bx + c = 0.\n\nExemplo: Para 2x² + 5x - 3 = 0\na = 2, b = 5, c = -3\nx = (-5 ± √(25 - 4×2×(-3))) / 4\nx = (-5 ± √(25 + 24)) / 4\nx = (-5 ± √49) / 4\nx = (-5 ± 7) / 4\nx₁ = 0.5 e x₂ = -3";
+        } else if (message.includes("brasil império") || message.includes("história")) {
+          aiResponse = "O período do Brasil Império (1822-1889) começou com a Independência e a coroação de D. Pedro I. Principais características:\n\n• Constituição de 1824 (primeira do Brasil)\n• Poder Moderador (exclusivo do imperador)\n• Economia agrária e escravista\n• Café como principal produto de exportação\n• Guerra do Paraguai (1864-1870)\n• Lei Áurea (1888) abolindo a escravidão\n\nO período terminou com a Proclamação da República em 15 de novembro de 1889.";
+        } else if (message.includes("redação") || message.includes("texto")) {
+          aiResponse = "Dicas para sua redação argumentativa:\n\n1. Introdução: apresente o tema e sua tese principal\n2. Desenvolvimento: 2-3 parágrafos, cada um com um argumento apoiado por exemplos\n3. Conclusão: retome a tese e proponha soluções\n\nPara a temática 'Educação digital no Brasil', considere abordar:\n- Desigualdade de acesso à tecnologia\n- Formação de professores para uso de ferramentas digitais\n- Impactos positivos da tecnologia no aprendizado\n- Políticas públicas necessárias";
+        } else {
+          aiResponse = "Como estudante, posso ajudar você com dúvidas sobre matérias específicas, dicas de estudo, organização de tarefas ou preparação para provas. Em qual assunto você está trabalhando agora?";
+        }
+      }
+
+      // Save AI response
+      const aiMessage = await storage.createAIMessage({
+        userId,
+        sender: "ai",
+        content: aiResponse
+      });
+
+      return res.status(200).json(aiMessage);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // CERTIFICATE ROUTES
+  // Get user certificates
+  app.get("/api/certificates", authenticate, async (req, res) => {
+    try {
+      const certificates = await storage.getUserCertificates(req.session.user.id);
+      return res.status(200).json(certificates);
+    } catch (error) {
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
