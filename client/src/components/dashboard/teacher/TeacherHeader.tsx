@@ -93,7 +93,7 @@ export default function TeacherHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative"
+                className="relative text-neutral-700 hover:text-primary hover:bg-neutral-100"
                 aria-label="Ver notificações"
               >
                 <Bell className="h-5 w-5" />
@@ -107,18 +107,10 @@ export default function TeacherHeader() {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="rounded-full w-10 h-10 p-0"
+                    className="rounded-full w-10 h-10 p-0 text-neutral-700 hover:text-primary hover:bg-neutral-100"
                     aria-label="Abrir menu de usuário"
                   >
-                    {user?.profileImage ? (
-                      <img 
-                        src={user.profileImage} 
-                        alt={`${user.firstName} ${user.lastName}`} 
-                        className="rounded-full w-8 h-8 object-cover"
-                      />
-                    ) : (
-                      <User className="h-5 w-5" />
-                    )}
+                    <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -157,6 +149,7 @@ export default function TeacherHeader() {
                 variant="ghost"
                 size="icon"
                 onClick={toggleMenu}
+                className="text-neutral-700 hover:text-primary hover:bg-neutral-100"
                 aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
               >
                 {isOpen ? (
@@ -233,17 +226,9 @@ export default function TeacherHeader() {
             <div className="pt-4 pb-3 border-t border-neutral-200">
               <div className="flex items-center px-3">
                 <div className="flex-shrink-0">
-                  {user?.profileImage ? (
-                    <img 
-                      src={user.profileImage} 
-                      alt={`${user.firstName} ${user.lastName}`} 
-                      className="rounded-full w-10 h-10 object-cover"
-                    />
-                  ) : (
-                    <div className="rounded-full w-10 h-10 bg-primary flex items-center justify-center text-white">
-                      <User className="h-5 w-5" />
-                    </div>
-                  )}
+                  <div className="rounded-full w-10 h-10 bg-primary flex items-center justify-center text-white">
+                    <User className="h-5 w-5" />
+                  </div>
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-neutral-800">
