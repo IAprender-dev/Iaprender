@@ -183,15 +183,25 @@ export default function TeacherDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Schedule & Performance */}
                 <div className="lg:col-span-2 space-y-8">
-                  {/* AI Tools Panel */}
+                  {/* AI Tools Panel com link para Central de IAs */}
                   <div className="mb-4">
                     <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-lg mb-4">
-                      <h3 className="text-lg font-medium mb-2">
-                        Ferramentas de IA para seu dia a dia
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Explore e utilize diferentes tecnologias de IA para otimizar seu trabalho, criar conteúdo educacional e aprimorar sua prática pedagógica.
-                      </p>
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                          <h3 className="text-lg font-medium mb-2">
+                            Ferramentas de IA para seu dia a dia
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            Explore e utilize diferentes tecnologias de IA para otimizar seu trabalho, criar conteúdo educacional e aprimorar sua prática pedagógica.
+                          </p>
+                        </div>
+                        <Link href="/central-ia">
+                          <Button variant="secondary" className="whitespace-nowrap">
+                            <Bot className="mr-2 h-4 w-4" />
+                            Acessar Central de IAs
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                     <AIToolsPanel />
                   </div>
