@@ -245,9 +245,29 @@ export default function TeacherDashboard() {
 
                 {/* Right Column - AI Assistant & Professional Development */}
                 <div className="space-y-8">
-                  {/* AI Assistant */}
-                  <Card className="h-[550px]">
-                    <AIAssistant role="teacher" />
+                  {/* Central de IAs Link */}
+                  <Card className="h-[550px] flex flex-col">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-medium">
+                        Central de IAs
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow flex flex-col items-center justify-center p-6 text-center">
+                      <div className="w-20 h-20 rounded-full bg-primary-50 flex items-center justify-center mb-6">
+                        <Bot className="h-10 w-10 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2">
+                        Explore nossa Central de Inteligência Artificial
+                      </h3>
+                      <p className="text-neutral-600 mb-8 max-w-md">
+                        Experimente diferentes IAs como ChatGPT, Claude, Perplexity e geração de imagens em uma interface unificada.
+                      </p>
+                      <Link href="/central-ia">
+                        <Button size="lg" className="font-medium">
+                          Acessar Central de IAs
+                        </Button>
+                      </Link>
+                    </CardContent>
                   </Card>
                   
                   {/* Professional Development */}
