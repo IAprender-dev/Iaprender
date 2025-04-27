@@ -64,16 +64,6 @@ export async function generateChatCompletion({
   }
   
   try {
-    // Obter o aiToolId para Anthropic
-    const [anthropicTool] = await db
-      .select()
-      .from(aiTools)
-      .where(eq(aiTools.type, "anthropic"));
-
-    if (!anthropicTool) {
-      throw new Error("Anthropic tool configuration not found in database");
-    }
-
     // Gerar resposta via API da Anthropic
     const response = await anthropic.messages.create({
       model: model,
@@ -88,16 +78,20 @@ export async function generateChatCompletion({
     // Extrair o conteúdo da resposta
     const responseContent = extractContentText(response.content[0]);
     
-    // Registrar uso de tokens
+    // Registrar uso de tokens (desativado temporariamente)
     const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
+    
+    // Temporariamente comentado até que a tabela 'ai_tools' esteja configurada
+    /*
     await db.insert(tokenUsage).values({
       userId: userId,
       contractId: contractId,
-      aiToolId: anthropicTool.id,
+      aiToolId: 2, // Temporariamente fixado
       tokensUsed: tokensUsed,
       requestData: { prompt, system, model, maxTokens, temperature },
       responseData: { content: responseContent },
     });
+    */
 
     return {
       content: responseContent,
@@ -121,16 +115,6 @@ export async function analyzeImage(
   }
 
   try {
-    // Obter o aiToolId para Anthropic
-    const [anthropicTool] = await db
-      .select()
-      .from(aiTools)
-      .where(eq(aiTools.type, "anthropic"));
-
-    if (!anthropicTool) {
-      throw new Error("Anthropic tool configuration not found in database");
-    }
-
     const response = await anthropic.messages.create({
       model: "claude-3-7-sonnet-20250219", // Versão mais recente do Claude com suporte a imagens
       max_tokens: 1024,
@@ -156,16 +140,20 @@ export async function analyzeImage(
     // Extrair o conteúdo da resposta
     const responseContent = extractContentText(response.content[0]);
     
-    // Registrar uso de tokens
+    // Registrar uso de tokens (desativado temporariamente)
     const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
+    
+    // Temporariamente comentado até que a tabela 'ai_tools' esteja configurada
+    /*
     await db.insert(tokenUsage).values({
       userId: userId,
       contractId: contractId,
-      aiToolId: anthropicTool.id,
+      aiToolId: 2, // Temporariamente fixado
       tokensUsed: tokensUsed,
       requestData: { prompt, imageIncluded: true },
       responseData: { content: responseContent },
     });
+    */
 
     return {
       content: responseContent,

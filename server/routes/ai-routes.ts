@@ -82,8 +82,8 @@ aiRouter.post("/openai/chat", authenticate, hasContract, async (req: Request, re
       return res.status(503).json({ message: "OpenAI service is not available" });
     }
     
-    const userId = req.session.user.id;
-    const contractId = req.session.user.contractId;
+    const userId = req.session.user?.id || 1; // Valor temporário
+    const contractId = req.session.user?.contractId || 1; // Valor temporário
     
     const result = await OpenAIService.generateChatCompletion({
       userId,

@@ -48,16 +48,6 @@ export async function generateChatCompletion({
   }
 
   try {
-    // Obter o aiToolId para OpenAI
-    const [openaiTool] = await db
-      .select()
-      .from(aiTools)
-      .where(eq(aiTools.type, "openai"));
-
-    if (!openaiTool) {
-      throw new Error("OpenAI tool configuration not found in database");
-    }
-
     // Gerar resposta via API da OpenAI
     const response = await openai.chat.completions.create({
       model: model,
@@ -78,16 +68,20 @@ export async function generateChatCompletion({
     // Extrair o conteúdo da resposta
     const responseContent = response.choices[0].message.content;
     
-    // Registrar uso de tokens
+    // Registrar uso de tokens (desativado temporariamente)
     const tokensUsed = response.usage?.total_tokens || 0;
+    
+    // Temporariamente comentado até que a tabela 'ai_tools' esteja configurada
+    /*
     await db.insert(tokenUsage).values({
       userId: userId,
       contractId: contractId,
-      aiToolId: openaiTool.id,
+      aiToolId: 1, // Temporariamente fixado
       tokensUsed: tokensUsed,
       requestData: { prompt, model, temperature, maxTokens },
       responseData: { content: responseContent },
     });
+    */
 
     return {
       content: responseContent,
@@ -113,16 +107,6 @@ export async function generateImage({
   }
 
   try {
-    // Obter o aiToolId para OpenAI
-    const [openaiTool] = await db
-      .select()
-      .from(aiTools)
-      .where(eq(aiTools.type, "openai"));
-
-    if (!openaiTool) {
-      throw new Error("OpenAI tool configuration not found in database");
-    }
-
     // Gerar imagem via API da OpenAI
     const response = await openai.images.generate({
       model: "dall-e-3",
@@ -141,15 +125,17 @@ export async function generateImage({
     // Estimar tokens usados (não há contagem direta para geração de imagens)
     const estimatedTokens = prompt.length * 1.5; // Estimativa aproximada
     
-    // Registrar uso de tokens
+    // Registrar uso de tokens (desativado temporariamente)
+    /*
     await db.insert(tokenUsage).values({
       userId: userId,
       contractId: contractId,
-      aiToolId: openaiTool.id,
+      aiToolId: 1, // Temporariamente fixado
       tokensUsed: estimatedTokens,
       requestData: { prompt, size, quality, n },
       responseData: { images },
     });
+    */
 
     return {
       images,

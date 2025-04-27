@@ -29,16 +29,6 @@ export async function performSearch({
       throw new Error("PERPLEXITY_API_KEY is not defined");
     }
 
-    // Obter o aiToolId para Perplexity
-    const [perplexityTool] = await db
-      .select()
-      .from(aiTools)
-      .where(eq(aiTools.type, "perplexity"));
-
-    if (!perplexityTool) {
-      throw new Error("Perplexity tool configuration not found in database");
-    }
-
     // Preparar o payload da requisição
     const payload = {
       model: model,
@@ -81,16 +71,20 @@ export async function performSearch({
     // Extrair as citações se houver
     const citations = data.citations || [];
     
-    // Registrar uso de tokens
+    // Registrar uso de tokens (desativado temporariamente)
     const tokensUsed = data.usage.total_tokens;
+    
+    // Temporariamente comentado até que a tabela 'ai_tools' esteja configurada
+    /*
     await db.insert(tokenUsage).values({
       userId: userId,
       contractId: contractId,
-      aiToolId: perplexityTool.id,
+      aiToolId: 3, // Temporariamente fixado
       tokensUsed: tokensUsed,
       requestData: { query, model, temperature, maxTokens },
       responseData: { content: responseContent, citations },
     });
+    */
 
     return {
       content: responseContent,
