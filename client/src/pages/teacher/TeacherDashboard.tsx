@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TeacherHeader from "@/components/dashboard/teacher/TeacherHeader";
 import TeacherSidebar from "@/components/dashboard/teacher/TeacherSidebar";
 import AIAssistant from "@/components/ai/AIAssistant";
+import AIToolsPanel from "@/components/ai/AIToolsPanel";
 import { ScheduleEvent, StudentPerformance } from "@/lib/types";
 
 export default function TeacherDashboard() {
@@ -182,38 +183,18 @@ export default function TeacherDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column - Schedule & Performance */}
                 <div className="lg:col-span-2 space-y-8">
-                  {/* Weekly Schedule */}
-                  <Card>
-                    <CardHeader className="px-6 py-5 border-b border-neutral-200 flex justify-between">
-                      <CardTitle className="text-lg font-medium">Agenda Semanal</CardTitle>
-                      <Link href="/professor/planejamento/calendario">
-                        <Button variant="link" className="text-primary hover:text-primary/90 text-sm font-medium p-0">
-                          Ver tudo
-                        </Button>
-                      </Link>
-                    </CardHeader>
-                    <CardContent className="px-6 py-5">
-                      <div className="space-y-4">
-                        {(scheduleLoading ? mockScheduleEvents : scheduleEvents || mockScheduleEvents).map((event) => (
-                          <div key={event.id} className="flex items-start py-2 border-b border-neutral-100 last:border-0">
-                            <div className={`
-                              ${event.status === 'active' ? 'bg-primary-100 text-primary' : 
-                                event.status === 'completed' ? 'bg-neutral-100 text-neutral-600' : 
-                                'bg-[#FF9500]/10 text-[#FF9500]'} 
-                              px-3 py-1 rounded text-sm font-medium mr-4 text-center min-w-[80px]
-                            `}>
-                              <div className="font-bold">{event.time}</div>
-                              <div className="text-xs">{event.date}</div>
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-neutral-900">{event.title}</h4>
-                              <p className="text-sm text-neutral-600">{event.description}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                  {/* AI Tools Panel */}
+                  <div className="mb-4">
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-lg mb-4">
+                      <h3 className="text-lg font-medium mb-2">
+                        Ferramentas de IA para seu dia a dia
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Explore e utilize diferentes tecnologias de IA para otimizar seu trabalho, criar conteúdo educacional e aprimorar sua prática pedagógica.
+                      </p>
+                    </div>
+                    <AIToolsPanel />
+                  </div>
                   
                   {/* Student Performance */}
                   <Card>
