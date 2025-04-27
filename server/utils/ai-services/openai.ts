@@ -117,10 +117,10 @@ export async function generateImage({
     });
 
     // Extrair URLs das imagens
-    const images = response.data.map(image => ({
+    const images = response.data ? response.data.map(image => ({
       url: image.url,
       revised_prompt: image.revised_prompt
-    }));
+    })) : [];
     
     // Estimar tokens usados (não há contagem direta para geração de imagens)
     const estimatedTokens = prompt.length * 1.5; // Estimativa aproximada
