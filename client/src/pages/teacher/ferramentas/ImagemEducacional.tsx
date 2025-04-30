@@ -4,11 +4,8 @@ import FerramentaLayout from "./FerramentaLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,11 +14,8 @@ export default function ImagemEducacional() {
   const [prompt, setPrompt] = useState("");
   const [estilo, setEstilo] = useState("fotorealista");
   const [formato, setFormato] = useState("quadrado");
-  const [detalhamento, setDetalhamento] = useState([50]);
   const [isLoading, setIsLoading] = useState(false);
   const [imagensGeradas, setImagensGeradas] = useState<string[]>([]);
-  const [incluirTexto, setIncluirTexto] = useState(false);
-  const [textoImagem, setTextoImagem] = useState("");
 
   // Lista de temas para inspiração
   const exemplosTemas = [
@@ -86,7 +80,7 @@ export default function ImagemEducacional() {
       title="Criar Imagem Educacional"
       description="Gere imagens personalizadas para enriquecer suas aulas e materiais didáticos"
       icon={<ImageIcon className="h-6 w-6 text-blue-600" />}
-      helpText="Descreva detalhadamente a imagem educacional que você deseja criar. Quanto mais específico for, melhores serão os resultados. Você pode ajustar o estilo, formato e nível de detalhamento."
+      helpText="Descreva detalhadamente a imagem educacional que você deseja criar. Quanto mais específico for, melhores serão os resultados. Você pode ajustar o estilo e formato da imagem."
     >
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
         {/* Painel de controle - 2 colunas */}
@@ -150,40 +144,7 @@ export default function ImagemEducacional() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <Label htmlFor="detalhamento" className="text-sm">Nível de detalhamento</Label>
-              <span className="text-sm text-neutral-500">{detalhamento}%</span>
-            </div>
-            <Slider 
-              id="detalhamento"
-              value={detalhamento} 
-              onValueChange={setDetalhamento} 
-              max={100} 
-              step={1}
-            />
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Switch 
-              id="incluirTexto" 
-              checked={incluirTexto} 
-              onCheckedChange={setIncluirTexto}
-            />
-            <Label htmlFor="incluirTexto" className="text-sm">Incluir texto na imagem</Label>
-          </div>
-          
-          {incluirTexto && (
-            <div className="space-y-2">
-              <Label htmlFor="textoImagem" className="text-sm">Texto para incluir</Label>
-              <Input 
-                id="textoImagem"
-                placeholder="Ex: Sistema Solar" 
-                value={textoImagem}
-                onChange={(e) => setTextoImagem(e.target.value)}
-              />
-            </div>
-          )}
+
 
           <Button 
             className="w-full" 
