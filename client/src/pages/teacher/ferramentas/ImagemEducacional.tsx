@@ -10,6 +10,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
+// Interfaces para tipagem
+interface ImageResponse {
+  url: string;
+  revised_prompt?: string;
+}
+
+interface ApiResponse {
+  images?: ImageResponse[];
+  tokensUsed?: number;
+}
+
 export default function ImagemEducacional() {
   const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
@@ -73,7 +84,7 @@ export default function ImagemEducacional() {
         throw new Error('Falha ao gerar imagens');
       }
       
-      const data = await response.json();
+      const data = await response.json() as ApiResponse;
       
       // Extrair URLs das imagens
       const imageUrls = data.images ? data.images.map(img => img.url) : [];
