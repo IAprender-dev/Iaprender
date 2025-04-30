@@ -16,7 +16,11 @@ import {
   BarChart,
   Users,
   FileText,
-  ArrowRight
+  ArrowRight,
+  FileEdit,
+  ClipboardList,
+  ListChecks,
+  BookOpenCheck
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -239,18 +243,18 @@ export default function TeacherDashboard() {
                 </div>
               </div>
 
-              {/* Quick Actions */}
+              {/* Ferramentas IA para Educação */}
               <div className="mb-10">
-                <h2 className="text-xl font-semibold mb-6 text-neutral-900">Ferramentas rápidas</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <Link href="/professor/planejamento" className="block">
+                <h2 className="text-xl font-semibold mb-6 text-neutral-900">Ferramentas IA para Educação</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <Link href="/professor/ferramentas/imagem-educacional" className="block">
                     <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
                       <div className="p-6 flex-1 flex flex-col">
                         <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <CalendarCheck2 className="text-blue-500 h-6 w-6" />
+                          <ImageIcon className="text-blue-500 h-6 w-6" />
                         </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Plano de Aula</h3>
-                        <p className="text-sm text-gray-500 mb-4">Criar ou gerenciar planos de aula</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Criar Imagem Educacional</h3>
+                        <p className="text-sm text-gray-500 mb-4">Gere imagens personalizadas para suas aulas</p>
                         <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
                           Acessar 
                           <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
@@ -259,14 +263,46 @@ export default function TeacherDashboard() {
                     </div>
                   </Link>
                   
-                  <Link href="/professor/atividades" className="block">
+                  <Link href="/professor/ferramentas/gerador-atividades" className="block">
+                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
+                          <FileEdit className="text-blue-500 h-6 w-6" />
+                        </div>
+                        <h3 className="font-medium text-gray-900 mb-1">Gerador de Atividades</h3>
+                        <p className="text-sm text-gray-500 mb-4">Crie atividades, exercícios e avaliações</p>
+                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
+                          Acessar 
+                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                  
+                  <Link href="/professor/ferramentas/materiais-didaticos" className="block">
+                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
+                          <BookOpenCheck className="text-blue-500 h-6 w-6" />
+                        </div>
+                        <h3 className="font-medium text-gray-900 mb-1">Materiais Didáticos IA</h3>
+                        <p className="text-sm text-gray-500 mb-4">Crie apostilas, slides e materiais de apoio</p>
+                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
+                          Acessar 
+                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                  
+                  <Link href="/professor/ferramentas/correcao-provas" className="block">
                     <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
                       <div className="p-6 flex-1 flex flex-col">
                         <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
                           <CheckSquare className="text-blue-500 h-6 w-6" />
                         </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Atividades</h3>
-                        <p className="text-sm text-gray-500 mb-4">Corrigir e avaliar atividades</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Correção de Provas</h3>
+                        <p className="text-sm text-gray-500 mb-4">Automatize a correção de avaliações</p>
                         <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
                           Acessar 
                           <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
@@ -275,14 +311,14 @@ export default function TeacherDashboard() {
                     </div>
                   </Link>
                   
-                  <Link href="/professor/cursos/criar" className="block">
+                  <Link href="/professor/ferramentas/planejamento-aula" className="block">
                     <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
                       <div className="p-6 flex-1 flex flex-col">
                         <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <FilePlus className="text-blue-500 h-6 w-6" />
+                          <ClipboardList className="text-blue-500 h-6 w-6" />
                         </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Conteúdo</h3>
-                        <p className="text-sm text-gray-500 mb-4">Criar materiais didáticos</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Planejamento de Aula</h3>
+                        <p className="text-sm text-gray-500 mb-4">Crie planos de aula personalizados</p>
                         <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
                           Acessar 
                           <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
@@ -291,14 +327,14 @@ export default function TeacherDashboard() {
                     </div>
                   </Link>
                   
-                  <Link href="/professor/alunos" className="block">
+                  <Link href="/professor/ferramentas/modelos-planejamento" className="block">
                     <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
                       <div className="p-6 flex-1 flex flex-col">
                         <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <Users className="text-blue-500 h-6 w-6" />
+                          <ListChecks className="text-blue-500 h-6 w-6" />
                         </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Alunos</h3>
-                        <p className="text-sm text-gray-500 mb-4">Gerenciar turmas e alunos</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Modelos de Planejamento</h3>
+                        <p className="text-sm text-gray-500 mb-4">Utilize templates prontos para seus planos</p>
                         <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
                           Acessar 
                           <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />

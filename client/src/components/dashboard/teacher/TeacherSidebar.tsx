@@ -14,7 +14,14 @@ import {
   LogOut,
   BellRing,
   Mail,
-  GraduationCap
+  GraduationCap,
+  CheckSquare,
+  ClipboardList,
+  Lightbulb,
+  FileEdit,
+  PenTool,
+  ListChecks,
+  BookOpenCheck
 } from "lucide-react";
 
 export default function TeacherSidebar() {
@@ -60,6 +67,45 @@ export default function TeacherSidebar() {
     }
   ];
 
+  const teacherTools = [
+    {
+      name: "Criar Imagem Educacional",
+      icon: <ImageIcon className="h-5 w-5" />,
+      href: "/professor/ferramentas/imagem-educacional",
+      active: location === "/professor/ferramentas/imagem-educacional"
+    },
+    {
+      name: "Gerador de Atividades",
+      icon: <FileEdit className="h-5 w-5" />,
+      href: "/professor/ferramentas/gerador-atividades",
+      active: location === "/professor/ferramentas/gerador-atividades"
+    },
+    {
+      name: "Materiais Didáticos IA",
+      icon: <BookOpenCheck className="h-5 w-5" />,
+      href: "/professor/ferramentas/materiais-didaticos",
+      active: location === "/professor/ferramentas/materiais-didaticos"
+    },
+    {
+      name: "Correção de Provas",
+      icon: <CheckSquare className="h-5 w-5" />,
+      href: "/professor/ferramentas/correcao-provas",
+      active: location === "/professor/ferramentas/correcao-provas"
+    },
+    {
+      name: "Planejamento de Aula",
+      icon: <ClipboardList className="h-5 w-5" />,
+      href: "/professor/ferramentas/planejamento-aula",
+      active: location === "/professor/ferramentas/planejamento-aula"
+    },
+    {
+      name: "Modelos de Planejamento",
+      icon: <ListChecks className="h-5 w-5" />,
+      href: "/professor/ferramentas/modelos-planejamento",
+      active: location === "/professor/ferramentas/modelos-planejamento"
+    }
+  ];
+
   const aiTools = [
     {
       name: "ChatGPT",
@@ -74,16 +120,17 @@ export default function TeacherSidebar() {
       active: location === "/professor/ferramentas/claude"
     },
     {
-      name: "Gerador de Imagens",
-      icon: <ImageIcon className="h-5 w-5" />,
-      href: "/professor/ferramentas/imagens",
-      active: location === "/professor/ferramentas/imagens"
-    },
-    {
       name: "Perplexity",
       icon: <Search className="h-5 w-5" />,
       href: "/professor/ferramentas/perplexity",
       active: location === "/professor/ferramentas/perplexity"
+    },
+    {
+      name: "Todas as Ferramentas",
+      icon: <Lightbulb className="h-5 w-5" />,
+      href: "/professor/ferramentas",
+      active: location === "/professor/ferramentas" && 
+              !location.includes("/professor/ferramentas/")
     }
   ];
 
