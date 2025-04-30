@@ -112,6 +112,43 @@ export default function ImagemEducacional() {
       description: "URL da imagem copiada para a área de transferência.",
     });
   };
+  
+  // Função para fazer download de imagens
+  const baixarImagem = async (url: string, nomeArquivo: string) => {
+    try {
+      // Buscar a imagem como um blob
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      // Criar URL do objeto blob
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Criar um elemento link temporário
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = nomeArquivo;
+      
+      // Adicionar ao documento, clicar e remover
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Liberar URL do objeto quando não for mais necessária
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      
+      toast({
+        title: "Download iniciado",
+        description: "Sua imagem está sendo salva no seu dispositivo.",
+      });
+    } catch (error) {
+      console.error("Erro ao baixar imagem:", error);
+      toast({
+        title: "Erro ao baixar",
+        description: "Não foi possível baixar a imagem. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <FerramentaLayout
@@ -221,14 +258,7 @@ export default function ImagemEducacional() {
                           variant="default" 
                           size="sm" 
                           className="bg-blue-600 text-white hover:bg-blue-700"
-                          onClick={() => {
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = `imagem-educacional-${index + 1}.png`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                          }}
+                          onClick={() => baixarImagem(url, `imagem-educacional-${index + 1}.png`)}
                         >
                           <Download className="mr-1 h-4 w-4" />
                           Baixar Imagem
