@@ -21,6 +21,14 @@ import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
 import NotFound from "@/pages/not-found";
 
+// Ferramentas IA
+import ImagemEducacional from "@/pages/teacher/ferramentas/ImagemEducacional";
+import GeradorAtividades from "@/pages/teacher/ferramentas/GeradorAtividades";
+import MateriaisDidaticos from "@/pages/teacher/ferramentas/MateriaisDidaticos";
+import CorrecaoProvas from "@/pages/teacher/ferramentas/CorrecaoProvas";
+import PlanejamentoAula from "@/pages/teacher/ferramentas/PlanejamentoAula";
+import ModelosPlanejamento from "@/pages/teacher/ferramentas/ModelosPlanejamento";
+
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
   component: React.ComponentType, 
@@ -62,6 +70,14 @@ function Router() {
       <Route path="/professor/cursos" component={TeacherCourses} />
       <Route path="/professor/planejamento" component={TeacherPlanning} />
       <Route path="/professor/ferramentas" component={TeacherTools} />
+      
+      {/* Teacher AI Tools routes */}
+      <Route path="/professor/ferramentas/imagem-educacional" component={ImagemEducacional} />
+      <Route path="/professor/ferramentas/gerador-atividades" component={GeradorAtividades} />
+      <Route path="/professor/ferramentas/materiais-didaticos" component={MateriaisDidaticos} />
+      <Route path="/professor/ferramentas/correcao-provas" component={CorrecaoProvas} />
+      <Route path="/professor/ferramentas/planejamento-aula" component={PlanejamentoAula} />
+      <Route path="/professor/ferramentas/modelos-planejamento" component={ModelosPlanejamento} />
       
       {/* Student routes */}
       <Route path="/aluno/dashboard" component={StudentDashboard} />
