@@ -1,5 +1,23 @@
 import { useState } from "react";
-import { FileEdit, Download, Copy, Printer, Loader2, BookOpen, Lightbulb, Target, Settings, RefreshCw, Filter } from "lucide-react";
+import { 
+  FileEdit, 
+  Download, 
+  Copy, 
+  Printer, 
+  Loader2, 
+  BookOpen, 
+  Lightbulb, 
+  Target, 
+  Settings, 
+  RefreshCw, 
+  Filter, 
+  Dices,
+  ListTodo,
+  FileQuestion, 
+  Users, 
+  FileText,
+  GraduationCap
+} from "lucide-react";
 import FerramentaLayout from "./FerramentaLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +33,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
+/**
+ * Modelo de dados para uma atividade gerada
+ */
 interface AtividadeGerada {
   id: string;
   titulo: string;
@@ -24,6 +47,9 @@ interface AtividadeGerada {
   conteudo: string;
   tipoAtividade: string;
   dataGeracao: Date;
+  quantidadeQuestoes: number;
+  nivelDificuldade: string;
+  incluiGabarito: boolean;
 }
 
 export default function GeradorAtividades() {
@@ -84,7 +110,10 @@ export default function GeradorAtividades() {
         serie: serieParaTexto(serie),
         conteudo: mockConteudo(),
         tipoAtividade: tipoAtividadeParaTexto(tipoAtividade),
-        dataGeracao: new Date()
+        dataGeracao: new Date(),
+        quantidadeQuestoes: quantidadeQuestoes[0],
+        nivelDificuldade: nivelDificuldade,
+        incluiGabarito: incluirGabarito
       };
       
       setAtividadesGeradas(prev => [novaAtividade, ...prev]);
@@ -192,251 +221,415 @@ export default function GeradorAtividades() {
     }
   };
 
+  // Funções auxiliares para a interface
+  const nivelDificuldadeParaTexto = (nivel: string) => {
+    const mapeamento: {[key: string]: string} = {
+      facil: "Fácil",
+      medio: "Médio",
+      dificil: "Difícil",
+      misto: "Misto (variado)"
+    };
+    return mapeamento[nivel] || nivel;
+  };
+  
+  // Função para fazer o download da atividade como PDF (mock)
+  const downloadAtividade = () => {
+    if (atividadeSelecionada) {
+      toast({
+        title: "Download iniciado",
+        description: "Sua atividade está sendo salva como PDF.",
+      });
+    }
+  };
+  
+  // Função para imprimir atividade
+  const imprimirAtividade = () => {
+    if (atividadeSelecionada) {
+      window.print();
+      toast({
+        title: "Impressão iniciada",
+        description: "Enviando atividade para impressora.",
+      });
+    }
+  };
+  
+  // Ícones para tipos de atividade
+  const iconeTipoAtividade = (tipo: string) => {
+    switch (tipo) {
+      case 'exercicios': return <ListTodo className="h-5 w-5" />;
+      case 'avaliacao': return <FileText className="h-5 w-5" />;
+      case 'trabalho': return <Users className="h-5 w-5" />;
+      case 'questionario': return <FileQuestion className="h-5 w-5" />;
+      default: return <FileEdit className="h-5 w-5" />;
+    }
+  };
+
   return (
     <FerramentaLayout
       title="Gerador de Atividades"
       description="Crie atividades, exercícios e avaliações personalizadas para suas aulas"
       icon={<FileEdit className="h-6 w-6 text-blue-600" />}
-      helpText="Especifique o tema, matéria, série e tipo de atividade desejada. O sistema irá gerar automaticamente questões, exercícios ou atividades baseadas em seus critérios."
+      helpText="Configure os parâmetros da atividade e nosso sistema utilizará Inteligência Artificial para gerar conteúdo educacional personalizado de acordo com suas necessidades."
     >
       <Tabs defaultValue="criar" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="criar" className="text-sm">
+          <TabsTrigger value="criar" className="text-sm font-medium">
             <FileEdit className="h-4 w-4 mr-2" />
-            Criar Nova Atividade
+            Criar Atividade
           </TabsTrigger>
-          <TabsTrigger value="historico" className="text-sm">
+          <TabsTrigger value="historico" className="text-sm font-medium">
             <BookOpen className="h-4 w-4 mr-2" />
-            Atividades Geradas ({atividadesGeradas.length})
+            Biblioteca ({atividadesGeradas.length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="criar" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Painel principal de parâmetros */}
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <Label htmlFor="tema" className="text-base font-medium">Tema da atividade</Label>
-                  <div className="text-xs text-neutral-500 hover:underline cursor-pointer" onClick={() => setTema(getTemasSugeridos()[0])}>
-                    Sugerir tema
-                  </div>
-                </div>
-                <Textarea 
-                  id="tema"
-                  placeholder="Ex: Frações e operações com números decimais"
-                  className="min-h-[80px]"
-                  value={tema}
-                  onChange={(e) => setTema(e.target.value)}
-                />
-                
-                {getTemasSugeridos().length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {getTemasSugeridos().map((tema, index) => (
-                      <Badge 
-                        key={index}
-                        variant="outline" 
-                        className="cursor-pointer hover:bg-blue-50"
-                        onClick={() => setTema(tema)}
+        <TabsContent value="criar" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Painel de configuração - 5 colunas */}
+            <div className="lg:col-span-5 space-y-5">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center">
+                    <Settings className="h-5 w-5 mr-2 text-blue-600" />
+                    Configurações da Atividade
+                  </CardTitle>
+                  <CardDescription>
+                    Configure os parâmetros para gerar sua atividade personalizada
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-5">
+                  {/* Campo de tema com sugestões */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label htmlFor="tema" className="text-sm font-medium">
+                        Tema da atividade <span className="text-red-500">*</span>
+                      </Label>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
+                        onClick={() => setTema(getTemasSugeridos()[Math.floor(Math.random() * getTemasSugeridos().length)])}
                       >
-                        {tema}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="materia" className="text-sm">Matéria</Label>
-                  <Select value={materia} onValueChange={setMateria}>
-                    <SelectTrigger id="materia">
-                      <SelectValue placeholder="Selecione a matéria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="matematica">Matemática</SelectItem>
-                      <SelectItem value="portugues">Português</SelectItem>
-                      <SelectItem value="ciencias">Ciências</SelectItem>
-                      <SelectItem value="historia">História</SelectItem>
-                      <SelectItem value="geografia">Geografia</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="serie" className="text-sm">Série/Ano</Label>
-                  <Select value={serie} onValueChange={setSerie}>
-                    <SelectTrigger id="serie">
-                      <SelectValue placeholder="Selecione a série" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="6ano">6º Ano</SelectItem>
-                      <SelectItem value="7ano">7º Ano</SelectItem>
-                      <SelectItem value="8ano">8º Ano</SelectItem>
-                      <SelectItem value="9ano">9º Ano</SelectItem>
-                      <SelectItem value="1em">1º Ensino Médio</SelectItem>
-                      <SelectItem value="2em">2º Ensino Médio</SelectItem>
-                      <SelectItem value="3em">3º Ensino Médio</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-sm">Tipo de atividade</Label>
-                <RadioGroup value={tipoAtividade} onValueChange={setTipoAtividade} className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="exercicios" id="exercicios" />
-                    <Label htmlFor="exercicios" className="text-sm font-normal">Lista de Exercícios</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="avaliacao" id="avaliacao" />
-                    <Label htmlFor="avaliacao" className="text-sm font-normal">Avaliação/Prova</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="trabalho" id="trabalho" />
-                    <Label htmlFor="trabalho" className="text-sm font-normal">Trabalho em Grupo</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="questionario" id="questionario" />
-                    <Label htmlFor="questionario" className="text-sm font-normal">Questionário</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <Accordion type="single" collapsible className="border rounded-md">
-                <AccordionItem value="opcoes-avancadas">
-                  <AccordionTrigger className="px-4 py-3 text-sm">
-                    <div className="flex items-center">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Opções avançadas
+                        <Dices className="h-3 w-3 mr-1" />
+                        Sugerir tema
+                      </Button>
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4 pt-1 space-y-4">
+                    <Textarea 
+                      id="tema"
+                      placeholder="Ex: Frações e números decimais; Sistema solar; Concordância verbal"
+                      className="min-h-[80px] text-base"
+                      value={tema}
+                      onChange={(e) => setTema(e.target.value)}
+                    />
+                    
+                    {/* Sugestões de temas para a matéria selecionada */}
+                    {getTemasSugeridos().length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-xs text-muted-foreground mb-2">Temas sugeridos para {materiaParaTexto(materia)}:</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {getTemasSugeridos().map((tema, index) => (
+                            <Badge 
+                              key={index}
+                              variant="outline" 
+                              className="cursor-pointer hover:bg-blue-50 text-xs"
+                              onClick={() => setTema(tema)}
+                            >
+                              {tema}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Matéria e Série/Ano */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <div className="flex justify-between">
+                      <Label htmlFor="materia" className="text-sm font-medium">Matéria</Label>
+                      <Select value={materia} onValueChange={setMateria}>
+                        <SelectTrigger id="materia" className="text-sm">
+                          <SelectValue placeholder="Selecione a matéria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="matematica">Matemática</SelectItem>
+                          <SelectItem value="portugues">Português</SelectItem>
+                          <SelectItem value="ciencias">Ciências</SelectItem>
+                          <SelectItem value="historia">História</SelectItem>
+                          <SelectItem value="geografia">Geografia</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="serie" className="text-sm font-medium">Série/Ano</Label>
+                      <Select value={serie} onValueChange={setSerie}>
+                        <SelectTrigger id="serie" className="text-sm">
+                          <SelectValue placeholder="Selecione a série" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="6ano">6º Ano</SelectItem>
+                          <SelectItem value="7ano">7º Ano</SelectItem>
+                          <SelectItem value="8ano">8º Ano</SelectItem>
+                          <SelectItem value="9ano">9º Ano</SelectItem>
+                          <SelectItem value="1em">1º Ensino Médio</SelectItem>
+                          <SelectItem value="2em">2º Ensino Médio</SelectItem>
+                          <SelectItem value="3em">3º Ensino Médio</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Tipo de atividade */}
+                  <div className="space-y-3">
+                    <Label htmlFor="tipoAtividade" className="text-sm font-medium">Tipo de atividade</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Card 
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'exercicios' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        onClick={() => setTipoAtividade('exercicios')}
+                      >
+                        <div className="flex items-center gap-2">
+                          <ListTodo className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium">Lista de Exercícios</span>
+                        </div>
+                      </Card>
+                      
+                      <Card 
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'avaliacao' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        onClick={() => setTipoAtividade('avaliacao')}
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium">Avaliação/Prova</span>
+                        </div>
+                      </Card>
+                      
+                      <Card 
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'trabalho' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        onClick={() => setTipoAtividade('trabalho')}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium">Trabalho em Grupo</span>
+                        </div>
+                      </Card>
+                      
+                      <Card 
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'questionario' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        onClick={() => setTipoAtividade('questionario')}
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileQuestion className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium">Questionário</span>
+                        </div>
+                      </Card>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Opções adicionais */}
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium flex items-center">
+                      <Settings className="h-4 w-4 mr-2 text-neutral-500" />
+                      Opções adicionais
+                    </h3>
+                    
+                    {/* Quantidade de questões */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
                         <Label htmlFor="quantidadeQuestoes" className="text-sm">Quantidade de questões</Label>
-                        <span className="text-sm text-neutral-500">{quantidadeQuestoes}</span>
+                        <Badge variant="outline" className="font-mono text-xs py-0 h-5">
+                          {quantidadeQuestoes[0]}
+                        </Badge>
                       </div>
                       <Slider 
                         id="quantidadeQuestoes"
                         value={quantidadeQuestoes} 
                         onValueChange={setQuantidadeQuestoes} 
-                        max={30} 
+                        max={20} 
                         min={1}
                         step={1}
+                        className="py-1"
                       />
                     </div>
                     
-                    <div className="space-y-2">
-                      <Label htmlFor="nivelDificuldade" className="text-sm">Nível de dificuldade</Label>
-                      <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
-                        <SelectTrigger id="nivelDificuldade">
-                          <SelectValue placeholder="Selecione a dificuldade" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="facil">Fácil</SelectItem>
-                          <SelectItem value="medio">Médio</SelectItem>
-                          <SelectItem value="dificil">Difícil</SelectItem>
-                          <SelectItem value="misto">Misto (variado)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                      {/* Nível de dificuldade */}
+                      <div className="space-y-2">
+                        <Label htmlFor="nivelDificuldade" className="text-sm">Nível de dificuldade</Label>
+                        <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
+                          <SelectTrigger id="nivelDificuldade" className="text-sm">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="facil">Fácil</SelectItem>
+                            <SelectItem value="medio">Médio</SelectItem>
+                            <SelectItem value="dificil">Difícil</SelectItem>
+                            <SelectItem value="misto">Misto (variado)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Opção de gabarito */}
+                      <div className="flex items-center space-x-2">
+                        <div className="flex-1 flex flex-col justify-center">
+                          <Label htmlFor="incluirGabarito" className="text-sm">Incluir gabarito</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Adicionar respostas
+                          </p>
+                        </div>
+                        <Switch 
+                          id="incluirGabarito" 
+                          checked={incluirGabarito} 
+                          onCheckedChange={setIncluirGabarito}
+                        />
+                      </div>
                     </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <Switch 
-                        id="incluirGabarito" 
-                        checked={incluirGabarito} 
-                        onCheckedChange={setIncluirGabarito}
-                      />
-                      <Label htmlFor="incluirGabarito" className="text-sm">Incluir gabarito</Label>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-
-              <Button 
-                className="w-full" 
-                size="lg"
-                onClick={gerarAtividade}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando atividade...
-                  </>
-                ) : (
-                  <>
-                    <FileEdit className="mr-2 h-4 w-4" />
-                    Gerar atividade
-                  </>
-                )}
-              </Button>
+                  </div>
+                </CardContent>
+                <CardFooter className="pt-2 pb-4">
+                  <Button 
+                    className="w-full" 
+                    size="lg"
+                    onClick={gerarAtividade}
+                    disabled={isLoading || !tema.trim()}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Gerando atividade...
+                      </>
+                    ) : (
+                      <>
+                        <FileEdit className="mr-2 h-5 w-5" />
+                        Gerar atividade
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              {/* Dicas para melhores resultados */}
+              <Card className="bg-blue-50 border-blue-100">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center text-blue-800">
+                    <Lightbulb className="h-4 w-4 mr-2 text-blue-600" />
+                    Dicas para melhores resultados
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <ul className="space-y-2 text-sm text-blue-900">
+                    <li className="flex items-start">
+                      <Target className="h-4 w-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                      <span>Especifique o tema com detalhes para criar atividades mais relevantes</span>
+                    </li>
+                    <li className="flex items-start">
+                      <GraduationCap className="h-4 w-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                      <span>Adapte a dificuldade ao nível de conhecimento da turma</span>
+                    </li>
+                    <li className="flex items-start">
+                      <RefreshCw className="h-4 w-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                      <span>Varie os tipos de atividade para manter o engajamento dos alunos</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
             
-            {/* Painel de visualização e dicas */}
-            <div className="space-y-6">
-              {atividadeSelecionada ? (
-                <Card className="border border-neutral-200 shadow-sm">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">{atividadeSelecionada.titulo}</CardTitle>
-                    <CardDescription>
-                      {atividadeSelecionada.materia} • {atividadeSelecionada.serie} • {atividadeSelecionada.tipoAtividade}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="border-t border-neutral-100 pt-4">
-                    <div
-                      className="prose prose-sm max-h-[400px] overflow-y-auto p-2"
-                      dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
-                    />
-                  </CardContent>
-                  <CardFooter className="flex justify-between border-t border-neutral-100 pt-3">
-                    <Button variant="ghost" size="sm" onClick={copiarParaClipboard}>
-                      <Copy className="mr-1 h-4 w-4" />
-                      Copiar
-                    </Button>
+            {/* Painel de visualização - 7 colunas */}
+            <div className="lg:col-span-7">
+              <Card className="h-full">
+                <CardHeader className="pb-3 flex-row items-start justify-between space-y-0">
+                  <div>
+                    <CardTitle className="text-lg">
+                      {atividadeSelecionada ? atividadeSelecionada.titulo : 'Visualização da Atividade'}
+                    </CardTitle>
+                    {atividadeSelecionada && (
+                      <CardDescription className="flex gap-2 flex-wrap mt-1">
+                        <Badge variant="outline" className="text-xs font-normal">
+                          {atividadeSelecionada.materia}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs font-normal">
+                          {atividadeSelecionada.serie}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs font-normal">
+                          {atividadeSelecionada.tipoAtividade}
+                        </Badge>
+                        {atividadeSelecionada.nivelDificuldade && (
+                          <Badge variant="outline" className="text-xs font-normal">
+                            {nivelDificuldadeParaTexto(atividadeSelecionada.nivelDificuldade)}
+                          </Badge>
+                        )}
+                        {atividadeSelecionada.quantidadeQuestoes && (
+                          <Badge variant="outline" className="text-xs font-normal">
+                            {atividadeSelecionada.quantidadeQuestoes} questões
+                          </Badge>
+                        )}
+                      </CardDescription>
+                    )}
+                  </div>
+                  
+                  {atividadeSelecionada && (
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Printer className="mr-1 h-4 w-4" />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8"
+                        onClick={copiarParaClipboard}
+                      >
+                        <Copy className="h-3.5 w-3.5 mr-1" />
+                        Copiar
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="h-8"
+                        onClick={imprimirAtividade}
+                      >
+                        <Printer className="h-3.5 w-3.5 mr-1" />
                         Imprimir
                       </Button>
-                      <Button variant="outline" size="sm">
-                        <Download className="mr-1 h-4 w-4" />
-                        Exportar PDF
+                      <Button 
+                        variant="default"
+                        size="sm"
+                        className="h-8 bg-blue-600 hover:bg-blue-700"
+                        onClick={downloadAtividade}
+                      >
+                        <Download className="h-3.5 w-3.5 mr-1" />
+                        Baixar PDF
                       </Button>
                     </div>
-                  </CardFooter>
-                </Card>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full bg-neutral-50 rounded-lg border border-dashed border-neutral-200 p-8 text-center">
-                  <Lightbulb className="h-10 w-10 text-amber-500 mb-4" />
-                  <h3 className="text-base font-medium text-neutral-900 mb-1">Dicas para melhores resultados</h3>
-                  <div className="text-sm text-neutral-600 space-y-3 text-left max-w-md">
-                    <p>
-                      Ao criar suas atividades, considere:
-                    </p>
-                    <ul className="space-y-2">
-                      <li className="flex items-start">
-                        <Target className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span>Defina com clareza o objetivo de aprendizagem da atividade</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Filter className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span>Especifique o tema com detalhes para questões mais relevantes</span>
-                      </li>
-                      <li className="flex items-start">
-                        <Settings className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span>Ajuste a dificuldade conforme as necessidades da turma</span>
-                      </li>
-                      <li className="flex items-start">
-                        <RefreshCw className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-                        <span>Varie os tipos de atividade para manter o engajamento</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              )}
+                  )}
+                </CardHeader>
+                
+                <Separator />
+                
+                <CardContent className="p-0 h-[calc(100%-4rem)]">
+                  {atividadeSelecionada ? (
+                    <ScrollArea className="h-full max-h-[60vh] p-4">
+                      <div
+                        className="prose prose-sm max-w-none bg-white rounded p-2"
+                        dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
+                      />
+                    </ScrollArea>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center p-8">
+                      <FileEdit className="h-16 w-16 text-neutral-300 mb-4" />
+                      <h3 className="text-lg font-medium text-neutral-600 mb-2">
+                        Nenhuma atividade gerada
+                      </h3>
+                      <p className="text-neutral-500 max-w-md mb-2">
+                        Configure os parâmetros no painel lateral e clique em "Gerar atividade" para criar um novo conteúdo educacional.
+                      </p>
+                      <p className="text-sm text-neutral-400">
+                        Todos os conteúdos gerados serão salvos automaticamente em sua biblioteca.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </TabsContent>
@@ -444,36 +637,73 @@ export default function GeradorAtividades() {
         <TabsContent value="historico">
           {atividadesGeradas.length > 0 ? (
             <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Sua Biblioteca de Atividades</h2>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="h-9">
+                    <Filter className="h-4 w-4 mr-1" />
+                    Filtrar
+                  </Button>
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {atividadesGeradas.map((atividade) => (
                   <Card 
                     key={atividade.id} 
-                    className={`border cursor-pointer transition-all ${atividadeSelecionada?.id === atividade.id ? 'border-blue-400 ring-1 ring-blue-200' : 'border-neutral-200 hover:border-blue-200'}`}
+                    className={`border overflow-hidden hover:shadow-md transition-all cursor-pointer ${
+                      atividadeSelecionada?.id === atividade.id 
+                        ? 'ring-2 ring-blue-500 border-blue-200' 
+                        : 'hover:border-blue-200'
+                    }`}
                     onClick={() => setAtividadeSelecionada(atividade)}
                   >
+                    <div className={`h-2 ${
+                      atividade.tipoAtividade.includes('Exercícios') ? 'bg-green-500' :
+                      atividade.tipoAtividade.includes('Avaliação') ? 'bg-orange-500' :
+                      atividade.tipoAtividade.includes('Trabalho') ? 'bg-purple-500' :
+                      'bg-blue-500'
+                    }`} />
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-base leading-tight">{atividade.titulo}</CardTitle>
-                      <CardDescription className="text-xs">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-base leading-tight line-clamp-2">
+                          {atividade.titulo}
+                        </CardTitle>
+                        <div className="flex-shrink-0 p-1 rounded-full bg-neutral-100">
+                          {iconeTipoAtividade(
+                            Object.keys(tipoAtividadeParaTexto).find(
+                              key => tipoAtividadeParaTexto[key] === atividade.tipoAtividade
+                            ) || ''
+                          )}
+                        </div>
+                      </div>
+                      <CardDescription className="text-xs mt-1">
                         Criado em {atividade.dataGeracao.toLocaleDateString()}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="py-2">
-                      <div className="flex gap-2">
-                        <Badge variant="secondary" className="text-xs">
+                    <CardContent className="py-3 pb-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        <Badge className="text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 border-none">
                           {atividade.materia}
                         </Badge>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge className="text-xs bg-green-100 text-green-800 hover:bg-green-200 border-none">
                           {atividade.serie}
                         </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {atividade.tipoAtividade}
-                        </Badge>
+                        {atividade.quantidadeQuestoes && (
+                          <Badge className="text-xs bg-neutral-100 text-neutral-800 hover:bg-neutral-200 border-none">
+                            {atividade.quantidadeQuestoes} questões
+                          </Badge>
+                        )}
                       </div>
                     </CardContent>
-                    <CardFooter className="pt-0">
-                      <Button variant="ghost" size="sm" className="text-xs px-2 h-8">
-                        <BookOpen className="h-3 w-3 mr-1" />
-                        Visualizar
+                    <Separator />
+                    <CardFooter className="py-2 flex justify-between items-center">
+                      <span className="text-xs text-muted-foreground">
+                        {atividade.tipoAtividade}
+                      </span>
+                      <Button variant="ghost" size="sm" className="h-7 px-2">
+                        <FileEdit className="h-3.5 w-3.5 mr-1" />
+                        <span className="text-xs">Editar</span>
                       </Button>
                     </CardFooter>
                   </Card>
@@ -483,14 +713,15 @@ export default function GeradorAtividades() {
           ) : (
             <div className="flex flex-col items-center justify-center bg-neutral-50 rounded-lg border border-dashed border-neutral-200 p-12 text-center">
               <BookOpen className="h-12 w-12 text-neutral-400 mb-4" />
-              <h3 className="text-lg font-medium text-neutral-900 mb-2">Nenhuma atividade gerada</h3>
-              <p className="text-neutral-500 max-w-md mb-4">
-                Você ainda não gerou nenhuma atividade. Crie sua primeira atividade na aba "Criar Nova Atividade".
+              <h3 className="text-lg font-medium text-neutral-900 mb-2">Sua biblioteca está vazia</h3>
+              <p className="text-neutral-500 max-w-md mb-6">
+                Você ainda não gerou nenhuma atividade. Crie sua primeira atividade na aba "Criar Atividade".
               </p>
               <Button onClick={() => {
                 const element = document.querySelector('[data-value="criar"]') as HTMLElement;
                 if (element) element.click();
               }}>
+                <FileEdit className="h-4 w-4 mr-2" />
                 Criar primeira atividade
               </Button>
             </div>
