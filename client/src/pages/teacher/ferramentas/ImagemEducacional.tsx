@@ -4,6 +4,7 @@ import FerramentaLayout from "./FerramentaLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,6 +15,7 @@ export default function ImagemEducacional() {
   const [prompt, setPrompt] = useState("");
   const [estilo, setEstilo] = useState("fotorealista");
   const [formato, setFormato] = useState("quadrado");
+  const [textoImagem, setTextoImagem] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imagensGeradas, setImagensGeradas] = useState<string[]>([]);
 
@@ -26,7 +28,7 @@ export default function ImagemEducacional() {
     "Linha do tempo ilustrada das principais civilizações antigas"
   ];
 
-  // Mock de função para gerar imagens
+  // Função para gerar imagens usando a API do OpenAI/DALL-E
   const gerarImagem = async () => {
     if (!prompt.trim()) {
       toast({
@@ -40,11 +42,51 @@ export default function ImagemEducacional() {
     setIsLoading(true);
 
     try {
-      // Aqui seria a chamada para a API de geração de imagens
-      // Simulando delay de processamento
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Construir o prompt completo com estilo, formato e texto opcional
+      let promptCompleto = `${prompt}, no estilo ${estilo}`;
       
-      // Mockando resultados - em produção, isso viria da API
+      // Adicionar texto na imagem se fornecido
+      if (textoImagem.trim()) {
+        promptCompleto += `, com o texto "${textoImagem}" visível na imagem`;
+      }
+      
+      // Configuração de formato
+      const size = formato === "quadrado" ? "1024x1024" : 
+                  formato === "paisagem" ? "1792x1024" : 
+                  formato === "retrato" ? "1024x1792" : 
+                  "1024x1792"; // poster por padrão é vertical
+      
+      // Chamada para a API
+      const response = await fetch('/api/ai/openai/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: promptCompleto,
+          size: size,
+          n: 2,  // Gerar 2 imagens
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Falha ao gerar imagens');
+      }
+      
+      const data = await response.json();
+      
+      // Extrair URLs das imagens
+      const imageUrls = data.images ? data.images.map(img => img.url) : [];
+      setImagensGeradas(imageUrls);
+      
+      toast({
+        title: "Imagens geradas com sucesso",
+        description: "Suas imagens educacionais foram criadas.",
+      });
+    } catch (error) {
+      console.error("Erro ao gerar imagens:", error);
+      
+      // Para desenvolvimento, usando imagens mock caso a API falhe
       const mockImagens = [
         "https://placehold.co/800x800/e6f7ff/007bff?text=Imagem+Educacional+1",
         "https://placehold.co/800x800/e6f7ff/007bff?text=Imagem+Educacional+2",
@@ -53,13 +95,8 @@ export default function ImagemEducacional() {
       setImagensGeradas(mockImagens);
       
       toast({
-        title: "Imagens geradas com sucesso",
-        description: "Suas imagens educacionais foram criadas.",
-      });
-    } catch (error) {
-      toast({
         title: "Erro ao gerar imagens",
-        description: "Ocorreu um erro ao processar sua solicitação. Tente novamente.",
+        description: "Ocorreu um erro ao processar sua solicitação. Usando imagens de demonstração.",
         variant: "destructive"
       });
     } finally {
@@ -144,7 +181,15 @@ export default function ImagemEducacional() {
             </div>
           </div>
 
-
+          <div className="space-y-2">
+            <Label htmlFor="textoImagem" className="text-sm">Incluir texto na imagem (opcional)</Label>
+            <Input 
+              id="textoImagem"
+              placeholder="Ex: Sistema Solar" 
+              value={textoImagem}
+              onChange={(e) => setTextoImagem(e.target.value)}
+            />
+          </div>
 
           <Button 
             className="w-full" 
