@@ -25,8 +25,6 @@ export default function ImagemEducacional() {
   const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
   const [estilo, setEstilo] = useState("fotorealista");
-  const [formato, setFormato] = useState("quadrado");
-  const [textoImagem, setTextoImagem] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imagensGeradas, setImagensGeradas] = useState<string[]>([]);
 
@@ -53,19 +51,11 @@ export default function ImagemEducacional() {
     setIsLoading(true);
 
     try {
-      // Construir o prompt completo com estilo, formato e texto opcional
+      // Construir o prompt completo com estilo
       let promptCompleto = `${prompt}, no estilo ${estilo}`;
       
-      // Adicionar texto na imagem se fornecido
-      if (textoImagem.trim()) {
-        promptCompleto += `, com o texto "${textoImagem}" visível na imagem`;
-      }
-      
-      // Configuração de formato
-      const size = formato === "quadrado" ? "1024x1024" : 
-                  formato === "paisagem" ? "1792x1024" : 
-                  formato === "retrato" ? "1024x1792" : 
-                  "1024x1792"; // poster por padrão é vertical
+      // Usar formato quadrado por padrão
+      const size = "1024x1024";
       
       // Chamada para a API
       const response = await fetch('/api/ai/openai/image', {
@@ -128,7 +118,7 @@ export default function ImagemEducacional() {
       title="Criar Imagem Educacional"
       description="Gere imagens personalizadas para enriquecer suas aulas e materiais didáticos"
       icon={<ImageIcon className="h-6 w-6 text-blue-600" />}
-      helpText="Descreva detalhadamente a imagem educacional que você deseja criar. Quanto mais específico for, melhores serão os resultados. Você pode ajustar o estilo e formato da imagem."
+      helpText="Descreva detalhadamente a imagem educacional que você deseja criar. Quanto mais específico for, melhores serão os resultados. A imagem será gerada em formato quadrado e você pode baixá-la após a geração."
     >
       <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
         {/* Painel de controle - 2 colunas */}
@@ -138,53 +128,26 @@ export default function ImagemEducacional() {
             <Textarea 
               id="prompt"
               placeholder="Ex: Uma representação detalhada do sistema solar mostrando todos os planetas em órbita ao redor do sol, com legenda de cada planeta e suas principais características."
-              className="min-h-[120px]"
+              className="min-h-[150px]"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
             />
-            
-            <div className="space-y-2">
-              <Label htmlFor="textoImagem" className="text-sm">Inclua um texto em sua imagem (opcional)</Label>
-              <Input 
-                id="textoImagem"
-                placeholder="Ex: Sistema Solar" 
-                value={textoImagem}
-                onChange={(e) => setTextoImagem(e.target.value)}
-              />
-            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="estilo" className="text-sm">Estilo visual</Label>
-              <Select value={estilo} onValueChange={setEstilo}>
-                <SelectTrigger id="estilo">
-                  <SelectValue placeholder="Selecione o estilo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fotorealista">Fotorealista</SelectItem>
-                  <SelectItem value="ilustracao">Ilustração</SelectItem>
-                  <SelectItem value="infografico">Infográfico</SelectItem>
-                  <SelectItem value="cartoon">Cartoon educativo</SelectItem>
-                  <SelectItem value="desenho">Desenho a mão</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="formato" className="text-sm">Formato</Label>
-              <Select value={formato} onValueChange={setFormato}>
-                <SelectTrigger id="formato">
-                  <SelectValue placeholder="Selecione o formato" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="quadrado">Quadrado (1:1)</SelectItem>
-                  <SelectItem value="paisagem">Paisagem (16:9)</SelectItem>
-                  <SelectItem value="retrato">Retrato (9:16)</SelectItem>
-                  <SelectItem value="poster">Poster (2:3)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="estilo" className="text-sm">Estilo visual</Label>
+            <Select value={estilo} onValueChange={setEstilo}>
+              <SelectTrigger id="estilo">
+                <SelectValue placeholder="Selecione o estilo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="fotorealista">Fotorealista</SelectItem>
+                <SelectItem value="ilustracao">Ilustração</SelectItem>
+                <SelectItem value="infografico">Infográfico</SelectItem>
+                <SelectItem value="cartoon">Cartoon educativo</SelectItem>
+                <SelectItem value="desenho">Desenho a mão</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="text-sm text-neutral-500 bg-neutral-50 p-4 rounded-lg border border-neutral-200">
@@ -238,25 +201,37 @@ export default function ImagemEducacional() {
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 {imagensGeradas.map((url, index) => (
                   <Card key={index} className="overflow-hidden bg-neutral-50 border border-neutral-200">
-                    <div className="aspect-square relative bg-neutral-100">
+                    <div className="relative bg-neutral-100">
                       <img 
                         src={url} 
                         alt={`Imagem educacional ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full object-contain max-h-[500px]"
                       />
                     </div>
-                    <CardContent className="p-3">
-                      <div className="flex justify-between">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between gap-2">
                         <Button variant="ghost" size="sm" onClick={() => copiarParaClipboard(url)}>
                           <Copy className="mr-1 h-4 w-4" />
-                          Copiar
+                          Copiar URL
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => window.open(url, "_blank")}>
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          onClick={() => {
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `imagem-educacional-${index + 1}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                        >
                           <Download className="mr-1 h-4 w-4" />
-                          Baixar
+                          Baixar Imagem
                         </Button>
                       </div>
                     </CardContent>
