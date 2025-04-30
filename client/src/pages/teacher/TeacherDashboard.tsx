@@ -241,91 +241,71 @@ export default function TeacherDashboard() {
 
               {/* Quick Actions */}
               <div className="mb-10">
-                <h2 className="text-xl font-semibold mb-4 text-neutral-900">Ferramentas rápidas</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card className="border border-neutral-200 hover:shadow-md transition-all hover:border-blue-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-blue-50 rounded-full w-12 h-12 flex items-center justify-center">
-                          <CalendarCheck2 className="text-blue-600 h-6 w-6" />
+                <h2 className="text-xl font-semibold mb-6 text-neutral-900">Ferramentas rápidas</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Link href="/professor/planejamento" className="block">
+                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
+                          <CalendarCheck2 className="text-blue-500 h-6 w-6" />
                         </div>
-                        <div>
-                          <h3 className="font-medium text-neutral-900">Plano de Aula</h3>
-                          <p className="text-sm text-neutral-500">Criar ou gerenciar</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Plano de Aula</h3>
+                        <p className="text-sm text-gray-500 mb-4">Criar ou gerenciar planos de aula</p>
+                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
+                          Acessar 
+                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-neutral-100">
-                        <Link href="/professor/planejamento">
-                          <Button variant="ghost" className="w-full justify-between text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                            Acessar <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </Link>
                   
-                  <Card className="border border-neutral-200 hover:shadow-md transition-all hover:border-blue-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-blue-50 rounded-full w-12 h-12 flex items-center justify-center">
-                          <CheckSquare className="text-blue-600 h-6 w-6" />
+                  <Link href="/professor/atividades" className="block">
+                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
+                          <CheckSquare className="text-blue-500 h-6 w-6" />
                         </div>
-                        <div>
-                          <h3 className="font-medium text-neutral-900">Atividades</h3>
-                          <p className="text-sm text-neutral-500">Corrigir e avaliar</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Atividades</h3>
+                        <p className="text-sm text-gray-500 mb-4">Corrigir e avaliar atividades</p>
+                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
+                          Acessar 
+                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-neutral-100">
-                        <Link href="/professor/atividades">
-                          <Button variant="ghost" className="w-full justify-between text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                            Acessar <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </Link>
                   
-                  <Card className="border border-neutral-200 hover:shadow-md transition-all hover:border-blue-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-blue-50 rounded-full w-12 h-12 flex items-center justify-center">
-                          <FilePlus className="text-blue-600 h-6 w-6" />
+                  <Link href="/professor/cursos/criar" className="block">
+                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
+                          <FilePlus className="text-blue-500 h-6 w-6" />
                         </div>
-                        <div>
-                          <h3 className="font-medium text-neutral-900">Conteúdo</h3>
-                          <p className="text-sm text-neutral-500">Criar materiais</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Conteúdo</h3>
+                        <p className="text-sm text-gray-500 mb-4">Criar materiais didáticos</p>
+                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
+                          Acessar 
+                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-neutral-100">
-                        <Link href="/professor/cursos/criar">
-                          <Button variant="ghost" className="w-full justify-between text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                            Acessar <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </Link>
                   
-                  <Card className="border border-neutral-200 hover:shadow-md transition-all hover:border-blue-200">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="bg-blue-50 rounded-full w-12 h-12 flex items-center justify-center">
-                          <Users className="text-blue-600 h-6 w-6" />
+                  <Link href="/professor/alunos" className="block">
+                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
+                          <Users className="text-blue-500 h-6 w-6" />
                         </div>
-                        <div>
-                          <h3 className="font-medium text-neutral-900">Alunos</h3>
-                          <p className="text-sm text-neutral-500">Gerenciar turmas</p>
+                        <h3 className="font-medium text-gray-900 mb-1">Alunos</h3>
+                        <p className="text-sm text-gray-500 mb-4">Gerenciar turmas e alunos</p>
+                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
+                          Acessar 
+                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
                         </div>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-neutral-100">
-                        <Link href="/professor/alunos">
-                          <Button variant="ghost" className="w-full justify-between text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                            Acessar <ArrowRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </Link>
                 </div>
               </div>
 
