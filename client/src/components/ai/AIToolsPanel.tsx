@@ -230,7 +230,7 @@ function ClaudePanel() {
     try {
       const response = await apiRequest("POST", "/api/ai/anthropic/chat", {
         prompt: prompt,
-        model: "claude-3.7-sonnet-20250219", // Modelo mais recente Claude
+        model: "claude-3-7-sonnet-20250219", // Modelo mais recente Claude
         temperature: 0.7,
         maxTokens: 1000
       });

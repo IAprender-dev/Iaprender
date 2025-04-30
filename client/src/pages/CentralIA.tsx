@@ -213,7 +213,7 @@ export default function CentralIA() {
         case "claude":
           response = await apiRequest("POST", "/api/ai/anthropic/chat", {
             prompt: promptCopy,
-            model: "claude-3.7-sonnet-20250219",
+            model: "claude-3-7-sonnet-20250219",
             temperature: 0.7,
             maxTokens: 1000
           });
