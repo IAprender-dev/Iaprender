@@ -77,27 +77,27 @@ export default function TeacherDashboard() {
   const quickActionLinks = [
     {
       title: "Criar Plano de Aula",
-      icon: <CalendarCheck2 className="text-primary h-5 w-5" />,
+      icon: <CalendarCheck2 className="text-blue-600 h-5 w-5" />,
       href: "/professor/planejamento",
-      color: "bg-primary-100"
+      color: "bg-blue-50"
     },
     {
       title: "Corrigir Atividades",
-      icon: <CheckSquare className="text-primary h-5 w-5" />,
+      icon: <CheckSquare className="text-blue-600 h-5 w-5" />,
       href: "/professor/atividades",
-      color: "bg-primary-100"
+      color: "bg-blue-50"
     },
     {
       title: "Criar Conteúdo",
-      icon: <FilePlus className="text-primary h-5 w-5" />,
+      icon: <FilePlus className="text-blue-600 h-5 w-5" />,
       href: "/professor/cursos/criar",
-      color: "bg-primary-100"
+      color: "bg-blue-50"
     },
     {
       title: "Assistente Virtual",
-      icon: <Bot className="text-primary h-5 w-5" />,
+      icon: <Bot className="text-blue-600 h-5 w-5" />,
       href: "/professor/ferramentas",
-      color: "bg-primary-100"
+      color: "bg-blue-50"
     }
   ];
 
