@@ -329,216 +329,24 @@ export default function TeacherDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column - AI Tools */}
-                <div className="lg:col-span-2 space-y-8">
-                  <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-                    <div className="bg-blue-50 px-6 py-5 border-b border-neutral-200">
-                      <h2 className="text-xl font-semibold text-neutral-900">
-                        Modelos de IA disponíveis
-                      </h2>
-                    </div>
-                    <div className="p-6">
-                      <Tabs defaultValue="chatgpt">
-                        <TabsList className="mb-4 bg-neutral-100 p-1 grid grid-cols-4">
-                          <TabsTrigger 
-                            value="chatgpt" 
-                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span className="text-sm font-medium">ChatGPT</span>
-                            </div>
-                          </TabsTrigger>
-                          <TabsTrigger 
-                            value="claude" 
-                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span className="text-sm font-medium">Claude</span>
-                            </div>
-                          </TabsTrigger>
-                          <TabsTrigger 
-                            value="perplexity" 
-                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span className="text-sm font-medium">Perplexity</span>
-                            </div>
-                          </TabsTrigger>
-                          <TabsTrigger 
-                            value="image-gen" 
-                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                          >
-                            <div className="flex flex-col items-center">
-                              <span className="text-sm font-medium">Imagens</span>
-                            </div>
-                          </TabsTrigger>
-                        </TabsList>
-                        
-                        <TabsContent value="chatgpt" className="m-0">
-                          <AIToolsPanel />
-                        </TabsContent>
-                        <TabsContent value="claude" className="m-0">
-                          <AIToolsPanel />
-                        </TabsContent>
-                        <TabsContent value="perplexity" className="m-0">
-                          <AIToolsPanel />
-                        </TabsContent>
-                        <TabsContent value="image-gen" className="m-0">
-                          <AIToolsPanel />
-                        </TabsContent>
-                      </Tabs>
-                      
-                      <div className="mt-6 text-center pt-4 border-t border-neutral-100">
-                        <Link href="/central-ia">
-                          <Button className="bg-blue-600 hover:bg-blue-700">
-                            Acesse a Central de IAs para conversas completas
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Student Performance */}
-                  <Card className="border border-neutral-200 overflow-hidden">
-                    <CardHeader className="px-6 py-5 bg-blue-50 border-b border-neutral-200">
-                      <CardTitle className="text-xl font-semibold text-neutral-900">Desempenho dos Alunos</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-6 py-5">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-medium text-neutral-900">Média por Turma</h3>
-                          <p className="text-sm text-neutral-600">Últimas avaliações</p>
-                        </div>
-                        <select className="bg-white border border-neutral-300 rounded-md text-sm px-3 py-1.5">
-                          <option>Todos os tópicos</option>
-                          <option>Álgebra</option>
-                          <option>Geometria</option>
-                          <option>Estatística</option>
-                        </select>
-                      </div>
-                      <div className="space-y-4">
-                        {(performanceLoading ? mockPerformanceData : (performanceData as StudentPerformance[] || mockPerformanceData)).map((classData: StudentPerformance, index: number) => (
-                          <div key={index}>
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="text-sm font-medium text-neutral-700">{classData.className}</span>
-                              <span className="text-sm font-medium text-neutral-700">{classData.averageGrade}/10</span>
-                            </div>
-                            <Progress 
-                              value={classData.percentage} 
-                              className={`h-2.5 rounded-full ${
-                                classData.percentage >= 80 ? 'bg-green-100' : 
-                                classData.percentage >= 70 ? 'bg-blue-100' : 
-                                'bg-amber-100'
-                              }`}
-                              indicatorClassName={`${
-                                classData.percentage >= 80 ? 'bg-green-500' : 
-                                classData.percentage >= 70 ? 'bg-blue-500' : 
-                                'bg-amber-500'
-                              }`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-6 text-center pt-4 border-t border-neutral-100">
-                        <Link href="/professor/alunos/analytics">
-                          <Button variant="outline" className="text-blue-600 border-blue-200 hover:bg-blue-50">
-                            Ver análise detalhada
-                            <BarChart className="ml-2 h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+              {/* Principais recursos em destaque */}
+              <div className="mt-12 flex flex-col items-center justify-center text-center">
+                <div className="max-w-2xl mx-auto pb-8">
+                  <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">
+                    Tudo o que você precisa em um só lugar
+                  </h2>
+                  <p className="text-neutral-600 text-lg leading-relaxed">
+                    Acesse nossa Central de IAs, gerencie seus cursos e conteúdos, e explore recursos exclusivos para professores.
+                  </p>
                 </div>
-
-                {/* Right Column */}
-                <div className="space-y-8">
-                  {/* Central de IAs Promo */}
-                  <Card className="border border-neutral-200 overflow-hidden">
-                    <div className="bg-gradient-to-b from-blue-500 to-blue-600 text-white p-6 flex flex-col items-center text-center">
-                      <div className="w-16 h-16 mb-4 bg-white/20 rounded-full flex items-center justify-center">
-                        <Bot className="h-8 w-8 text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">Central de IAs</h3>
-                      <p className="text-blue-100 mb-4">
-                        Acesse várias ferramentas de IA em um único lugar
-                      </p>
-                    </div>
-                    <CardContent className="p-6">
-                      <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
-                            <Search className="h-5 w-5 text-blue-500" />
-                          </div>
-                          <h4 className="text-sm font-medium">Pesquisa</h4>
-                        </div>
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
-                            <FileText className="h-5 w-5 text-blue-500" />
-                          </div>
-                          <h4 className="text-sm font-medium">Textos</h4>
-                        </div>
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
-                            <ImageIcon className="h-5 w-5 text-blue-500" />
-                          </div>
-                          <h4 className="text-sm font-medium">Imagens</h4>
-                        </div>
-                        <div className="text-center">
-                          <div className="w-10 h-10 mx-auto bg-blue-50 rounded-full flex items-center justify-center mb-2">
-                            <BookOpen className="h-5 w-5 text-blue-500" />
-                          </div>
-                          <h4 className="text-sm font-medium">Educação</h4>
-                        </div>
-                      </div>
-                      <Link href="/central-ia">
-                        <Button className="w-full">
-                          Acessar Central de IAs
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Professional Development */}
-                  <Card className="border border-neutral-200 overflow-hidden">
-                    <CardHeader className="px-6 py-5 bg-blue-50 border-b border-neutral-200">
-                      <CardTitle className="text-xl font-semibold text-neutral-900">Desenvolvimento Profissional</CardTitle>
-                    </CardHeader>
-                    <CardContent className="px-6 py-5">
-                      <div className="space-y-4">
-                        {(devCoursesLoading ? mockDevCourses : (devCourses as DevCourse[] || mockDevCourses)).map((course: DevCourse) => (
-                          <div key={course.id} className="flex items-center gap-4 pb-4 border-b border-neutral-100">
-                            <div className="flex-shrink-0">
-                              <div className="w-14 h-14 bg-blue-100 rounded-lg overflow-hidden">
-                                <img 
-                                  src={course.imageUrl} 
-                                  alt={course.title} 
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium text-neutral-900">{course.title}</h4>
-                              <p className="text-sm text-neutral-600 mb-1">{course.description}</p>
-                              <div className="flex items-center text-sm">
-                                <Progress value={course.progress} className="h-1.5 flex-1 mr-2 bg-blue-100" indicatorClassName="bg-blue-500" />
-                                <span className="text-xs text-neutral-500">{course.progress}%</span>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 pt-2">
-                        <Link href="/professor/desenvolvimento/recomendados">
-                          <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
-                            Cursos recomendados
-                          </Button>
-                        </Link>
-                      </div>
-                    </CardContent>
-                  </Card>
+                
+                <div className="w-full mt-8 flex justify-center">
+                  <Link href="/central-ia">
+                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg">
+                      Acessar a Central de IAs
+                      <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
