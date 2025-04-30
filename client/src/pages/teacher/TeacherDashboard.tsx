@@ -173,7 +173,7 @@ export default function TeacherDashboard() {
       <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
         <TeacherSidebar />
         
-        <div className="flex-1 flex flex-col overflow-auto">
+        <div className="flex-1 flex flex-col overflow-auto pl-0">
           <TeacherHeader />
           
           <main className="flex-1 overflow-y-auto p-6">

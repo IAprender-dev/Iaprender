@@ -9,7 +9,12 @@ import {
   Settings,
   Bot,
   Wand2,
-  Search
+  Search,
+  ImageIcon,
+  LogOut,
+  BellRing,
+  Mail,
+  GraduationCap
 } from "lucide-react";
 
 export default function TeacherSidebar() {
@@ -18,38 +23,38 @@ export default function TeacherSidebar() {
   const menuItems = [
     {
       name: "Dashboard",
-      icon: <LayoutDashboard className="h-4 w-4" />,
+      icon: <LayoutDashboard className="h-5 w-5" />,
       href: "/professor/dashboard",
       active: location === "/professor/dashboard"
     },
     {
       name: "Cursos",
-      icon: <BookOpen className="h-4 w-4" />,
+      icon: <BookOpen className="h-5 w-5" />,
       href: "/professor/cursos",
       active: location === "/professor/cursos"
     },
     {
       name: "Planejamento",
-      icon: <CalendarDays className="h-4 w-4" />,
+      icon: <CalendarDays className="h-5 w-5" />,
       href: "/professor/planejamento",
       active: location === "/professor/planejamento"
     },
     {
       name: "Alunos",
-      icon: <Users className="h-4 w-4" />,
+      icon: <Users className="h-5 w-5" />,
       href: "/professor/alunos",
       active: location === "/professor/alunos"
     },
     {
-      name: "Ferramentas IA",
-      icon: <Bot className="h-4 w-4" />,
-      href: "/professor/ferramentas",
-      active: location === "/professor/ferramentas",
+      name: "IA Assistente",
+      icon: <Bot className="h-5 w-5" />,
+      href: "/central-ia",
+      active: location === "/central-ia",
       badge: "Novo"
     },
     {
       name: "Materiais",
-      icon: <FileText className="h-4 w-4" />,
+      icon: <FileText className="h-5 w-5" />,
       href: "/professor/materiais",
       active: location === "/professor/materiais"
     }
@@ -58,123 +63,142 @@ export default function TeacherSidebar() {
   const aiTools = [
     {
       name: "ChatGPT",
-      icon: <Wand2 className="h-4 w-4" />,
+      icon: <Wand2 className="h-5 w-5" />,
       href: "/professor/ferramentas/chatgpt",
       active: location === "/professor/ferramentas/chatgpt"
     },
     {
-      name: "Gemini",
-      icon: <Bot className="h-4 w-4" />,
-      href: "/professor/ferramentas/gemini",
-      active: location === "/professor/ferramentas/gemini"
+      name: "Claude",
+      icon: <Bot className="h-5 w-5" />,
+      href: "/professor/ferramentas/claude",
+      active: location === "/professor/ferramentas/claude"
     },
     {
       name: "Gerador de Imagens",
-      icon: <FileText className="h-4 w-4" />,
+      icon: <ImageIcon className="h-5 w-5" />,
       href: "/professor/ferramentas/imagens",
       active: location === "/professor/ferramentas/imagens"
     },
     {
       name: "Perplexity",
-      icon: <Search className="h-4 w-4" />,
+      icon: <Search className="h-5 w-5" />,
       href: "/professor/ferramentas/perplexity",
       active: location === "/professor/ferramentas/perplexity"
     }
   ];
 
   return (
-    <aside className="hidden md:block w-64 bg-white border-r border-neutral-200 h-screen overflow-y-auto">
-      <div className="sticky top-0 z-10 bg-white p-4 border-b border-neutral-200">
+    <aside className="hidden md:flex flex-col h-screen bg-blue-900 w-64">
+      {/* Logo e cabeçalho */}
+      <div className="px-6 py-6 bg-blue-950">
         <Link href="/" className="flex items-center">
-          <span className="text-primary text-2xl font-bold font-heading">
-            i<span className="text-[#34C759]">Aula</span>
+          <GraduationCap className="h-7 w-7 text-white mr-2" />
+          <span className="text-white text-2xl font-bold">
+            i<span className="text-blue-300">Aula</span>
           </span>
         </Link>
       </div>
-      <nav className="p-4">
-        <ul className="space-y-1">
-          {menuItems.map((item) => (
-            <li key={item.name}>
-              <Link 
-                href={item.href}
-                className={cn(
-                  "flex items-center px-3 py-2 rounded-md text-sm font-medium",
-                  item.active 
-                    ? "bg-primary-50 text-primary" 
-                    : "text-neutral-600 hover:bg-neutral-50 hover:text-primary"
-                )}
-              >
-                {item.icon}
-                <span className="ml-3">{item.name}</span>
-                {item.badge && (
-                  <span className="ml-auto bg-primary text-white text-xs font-medium px-2 py-0.5 rounded-full">
-                    {item.badge}
+      
+      {/* Container dos menus com scroll */}
+      <nav className="flex-1 overflow-y-auto py-6 px-4">
+        {/* Menu principal */}
+        <div className="mb-6">
+          <h3 className="text-xs font-semibold text-blue-300 uppercase tracking-wider mb-4 px-3">
+            Principal
+          </h3>
+          <ul className="space-y-1.5">
+            {menuItems.map((item) => (
+              <li key={item.name}>
+                <Link 
+                  href={item.href}
+                  className={cn(
+                    "flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    item.active 
+                      ? "bg-blue-800 text-white" 
+                      : "text-blue-100 hover:bg-blue-800/60 hover:text-white"
+                  )}
+                >
+                  <span className={cn(
+                    "flex items-center justify-center h-9 w-9 rounded-lg mr-3",
+                    item.active ? "bg-blue-700" : "bg-blue-800/40"
+                  )}>
+                    {item.icon}
                   </span>
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
+                  {item.name}
+                  {item.badge && (
+                    <span className="ml-auto bg-blue-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
         
+        {/* Menu de IA tools visível apenas na página de ferramentas */}
         {location.startsWith("/professor/ferramentas") && (
-          <div className="mt-6 pt-6 border-t border-neutral-200">
-            <h3 className="px-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2">
+          <div className="mb-6">
+            <h3 className="text-xs font-semibold text-blue-300 uppercase tracking-wider mb-4 px-3">
               Ferramentas de IA
             </h3>
-            <ul className="space-y-1">
+            <ul className="space-y-1.5">
               {aiTools.map((tool) => (
                 <li key={tool.name}>
                   <Link 
                     href={tool.href}
                     className={cn(
-                      "flex items-center px-3 py-2 rounded-md text-sm font-medium",
+                      "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                       tool.active 
-                        ? "bg-primary-50 text-primary" 
-                        : "text-neutral-600 hover:bg-neutral-50 hover:text-primary"
+                        ? "bg-blue-800 text-white" 
+                        : "text-blue-100 hover:bg-blue-800/60 hover:text-white"
                     )}
                   >
-                    {tool.icon}
-                    <span className="ml-3">{tool.name}</span>
+                    <span className={cn(
+                      "flex items-center justify-center h-8 w-8 rounded-lg mr-3",
+                      tool.active ? "bg-blue-700" : "bg-blue-800/40"
+                    )}>
+                      {tool.icon}
+                    </span>
+                    {tool.name}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
         )}
-        
-        <div className="mt-6 pt-6 border-t border-neutral-200">
-          <ul className="space-y-1">
-            <li>
-              <Link 
-                href="/professor/configuracoes"
-                className={cn(
-                  "flex items-center px-3 py-2 rounded-md text-sm font-medium",
-                  location === "/professor/configuracoes" 
-                    ? "bg-primary-50 text-primary" 
-                    : "text-neutral-600 hover:bg-neutral-50 hover:text-primary"
-                )}
-              >
-                <Settings className="h-4 w-4" />
-                <span className="ml-3">Configurações</span>
-              </Link>
-            </li>
-          </ul>
-        </div>
-        
-        <div className="mt-6 pt-6 border-t border-neutral-200">
-          <div className="rounded-md bg-primary-50 p-4">
-            <h3 className="text-sm font-medium text-primary mb-2">Espaço do Professor</h3>
-            <p className="text-xs text-neutral-600 mb-3">
-              Explore nossas ferramentas de IA para criar materiais, planejar aulas e gerar conteúdos educacionais.
-            </p>
-            <Link href="/professor/ferramentas">
-              <button className="w-full bg-primary text-white text-xs font-medium px-3 py-2 rounded-md hover:bg-primary-600">
-                Explorar Ferramentas
-              </button>
-            </Link>
-          </div>
-        </div>
       </nav>
+      
+      {/* Footer do sidebar */}
+      <div className="border-t border-blue-800 p-4">
+        <Link 
+          href="/professor/configuracoes"
+          className={cn(
+            "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+            location === "/professor/configuracoes" 
+              ? "bg-blue-800 text-white" 
+              : "text-blue-100 hover:bg-blue-800/60 hover:text-white"
+          )}
+        >
+          <span className={cn(
+            "flex items-center justify-center h-8 w-8 rounded-lg mr-3",
+            location === "/professor/configuracoes" ? "bg-blue-700" : "bg-blue-800/40"
+          )}>
+            <Settings className="h-5 w-5" />
+          </span>
+          Configurações
+        </Link>
+        
+        <Link 
+          href="/logout"
+          className="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors text-blue-100 hover:bg-blue-800/60 hover:text-white mt-2"
+        >
+          <span className="flex items-center justify-center h-8 w-8 rounded-lg mr-3 bg-blue-800/40">
+            <LogOut className="h-5 w-5" />
+          </span>
+          Sair
+        </Link>
+      </div>
     </aside>
   );
 }
