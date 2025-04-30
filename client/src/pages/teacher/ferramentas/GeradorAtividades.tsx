@@ -172,42 +172,69 @@ export default function GeradorAtividades() {
 
   // Mock de dados para simulação
   const mockConteudo = () => {
-    return `<div class="activity-content">
-      <h1>${tema}</h1>
-      <p>Disciplina: ${materiaParaTexto(materia)}</p>
-      <p>Série: ${serieParaTexto(serie)}</p>
-      <p>Tipo: ${tipoAtividadeParaTexto(tipoAtividade)}</p>
+    return `<div class="activity-content" style="max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif;">
+      <header style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #3b82f6; padding-bottom: 1rem;">
+        <h1 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem;">${tema}</h1>
+        <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: 0.875rem; color: #4b5563;">
+          <p><strong>Disciplina:</strong> ${materiaParaTexto(materia)}</p>
+          <p><strong>Série:</strong> ${serieParaTexto(serie)}</p>
+          <p><strong>Tipo:</strong> ${tipoAtividadeParaTexto(tipoAtividade)}</p>
+        </div>
+      </header>
       
-      <div class="instructions">
-        <p>Instruções: Responda as questões abaixo com base no conteúdo estudado em sala de aula.</p>
+      <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 2rem;">
+        <p style="margin: 0; font-style: italic;">Instruções: Responda as questões abaixo com base no conteúdo estudado em sala de aula.</p>
       </div>
       
       <div class="questions">
-        <ol>
+        <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question;">
           ${Array(quantidadeQuestoes[0]).fill(0).map((_, i) => `
-            <li>
-              <p>Questão ${i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua?</p>
-              <ul style="list-style-type: lower-alpha;">
-                <li>Alternativa 1</li>
-                <li>Alternativa 2</li>
-                <li>Alternativa 3</li>
-                <li>Alternativa 4</li>
-              </ul>
+            <li style="margin-bottom: 1.5rem; counter-increment: question; position: relative;">
+              <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
+                Questão ${i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua?
+              </div>
+              <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
+                    <span>Alternativa 1</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
+                    <span>Alternativa 2</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
+                    <span>Alternativa 3</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
+                    <span>Alternativa 4</span>
+                  </div>
+                </div>
+              </div>
             </li>
           `).join('')}
         </ol>
       </div>
       
       ${incluirGabarito ? `
-        <div class="answer-key">
-          <h3>Gabarito</h3>
-          <ul>
+        <div class="answer-key" style="margin-top: 3rem; border-top: 2px solid #3b82f6; padding-top: 1rem;">
+          <h3 style="font-size: 1.25rem; font-weight: bold; color: #1e3a8a; margin-bottom: 1rem;">Gabarito</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
             ${Array(quantidadeQuestoes[0]).fill(0).map((_, i) => `
-              <li>Questão ${i + 1}: ${['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)]}</li>
+              <div style="display: flex; gap: 0.5rem; background-color: #f0f9ff; padding: 0.5rem; border-radius: 0.25rem;">
+                <span style="font-weight: 500;">Questão ${i + 1}:</span>
+                <span style="font-weight: bold; color: #1e3a8a;">${['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)]}</span>
+              </div>
             `).join('')}
-          </ul>
+          </div>
         </div>
       ` : ''}
+      
+      <footer style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+        <p>Atividade gerada por iAula - ${new Date().toLocaleDateString()}</p>
+      </footer>
     </div>`;
   };
 
@@ -608,15 +635,21 @@ export default function GeradorAtividades() {
                 
                 <CardContent className="p-0 h-[calc(100%-4rem)]">
                   {atividadeSelecionada ? (
-                    <ScrollArea className="h-full max-h-[60vh] p-4">
+                    <ScrollArea className="h-full min-h-[calc(100vh-18rem)]">
                       <div
-                        className="prose prose-sm max-w-none bg-white rounded p-2"
+                        className="prose prose-sm max-w-none bg-white p-8 mx-auto"
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          width: "100%",
+                          minHeight: "calc(100vh - 18rem)",
+                        }}
                         dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
                       />
                     </ScrollArea>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[60vh] text-center p-8">
-                      <FileEdit className="h-16 w-16 text-neutral-300 mb-4" />
+                    <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-18rem)] text-center p-8">
+                      <FileEdit className="h-20 w-20 text-neutral-300 mb-4" />
                       <h3 className="text-lg font-medium text-neutral-600 mb-2">
                         Nenhuma atividade gerada
                       </h3>
@@ -671,9 +704,9 @@ export default function GeradorAtividades() {
                         </CardTitle>
                         <div className="flex-shrink-0 p-1 rounded-full bg-neutral-100">
                           {iconeTipoAtividade(
-                            Object.keys(tipoAtividadeParaTexto).find(
-                              key => tipoAtividadeParaTexto[key] === atividade.tipoAtividade
-                            ) || ''
+                            (Object.keys(tipoAtividadeParaTexto) as Array<string>).find(
+                              (key) => tipoAtividadeParaTexto[key as keyof typeof tipoAtividadeParaTexto] === atividade.tipoAtividade
+                            ) || 'exercicios'
                           )}
                         </div>
                       </div>
