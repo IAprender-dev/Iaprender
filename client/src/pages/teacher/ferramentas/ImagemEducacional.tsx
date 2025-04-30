@@ -76,7 +76,7 @@ export default function ImagemEducacional() {
         body: JSON.stringify({
           prompt: promptCompleto,
           size: size,
-          n: 2,  // Gerar 2 imagens
+          n: 1,  // DALL-E 3 só permite gerar 1 imagem por vez
         }),
       });
       
@@ -91,8 +91,8 @@ export default function ImagemEducacional() {
       setImagensGeradas(imageUrls);
       
       toast({
-        title: "Imagens geradas com sucesso",
-        description: "Suas imagens educacionais foram criadas.",
+        title: "Imagem gerada com sucesso",
+        description: "Sua imagem educacional foi criada.",
       });
     } catch (error) {
       console.error("Erro ao gerar imagens:", error);
@@ -106,8 +106,8 @@ export default function ImagemEducacional() {
       setImagensGeradas(mockImagens);
       
       toast({
-        title: "Erro ao gerar imagens",
-        description: "Ocorreu um erro ao processar sua solicitação. Usando imagens de demonstração.",
+        title: "Erro ao gerar imagem",
+        description: "Ocorreu um erro ao processar sua solicitação. Usando imagem de demonstração.",
         variant: "destructive"
       });
     } finally {
@@ -134,7 +134,7 @@ export default function ImagemEducacional() {
         {/* Painel de controle - 2 colunas */}
         <div className="md:col-span-2 space-y-6">
           <div className="space-y-4">
-            <Label htmlFor="prompt" className="text-base font-medium">Descreva sua imagem educacional</Label>
+            <Label htmlFor="prompt" className="text-base font-medium">Que imagem você quer gerar?</Label>
             <Textarea 
               id="prompt"
               placeholder="Ex: Uma representação detalhada do sistema solar mostrando todos os planetas em órbita ao redor do sol, com legenda de cada planeta e suas principais características."
@@ -143,19 +143,14 @@ export default function ImagemEducacional() {
               onChange={(e) => setPrompt(e.target.value)}
             />
             
-            <div className="text-sm text-neutral-500">
-              <p className="mb-2 font-medium">Exemplos de descrições eficazes:</p>
-              <ul className="space-y-1">
-                {exemplosTemas.map((exemplo, index) => (
-                  <li 
-                    key={index}
-                    className="cursor-pointer hover:text-blue-600 hover:underline"
-                    onClick={() => setPrompt(exemplo)}
-                  >
-                    • {exemplo}
-                  </li>
-                ))}
-              </ul>
+            <div className="space-y-2">
+              <Label htmlFor="textoImagem" className="text-sm">Inclua um texto em sua imagem (opcional)</Label>
+              <Input 
+                id="textoImagem"
+                placeholder="Ex: Sistema Solar" 
+                value={textoImagem}
+                onChange={(e) => setTextoImagem(e.target.value)}
+              />
             </div>
           </div>
 
@@ -192,14 +187,19 @@ export default function ImagemEducacional() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="textoImagem" className="text-sm">Incluir texto na imagem (opcional)</Label>
-            <Input 
-              id="textoImagem"
-              placeholder="Ex: Sistema Solar" 
-              value={textoImagem}
-              onChange={(e) => setTextoImagem(e.target.value)}
-            />
+          <div className="text-sm text-neutral-500 bg-neutral-50 p-4 rounded-lg border border-neutral-200">
+            <p className="font-medium mb-2">Exemplos de descrições eficazes:</p>
+            <ul className="space-y-1">
+              {exemplosTemas.map((exemplo, index) => (
+                <li 
+                  key={index}
+                  className="cursor-pointer hover:text-blue-600 hover:underline"
+                  onClick={() => setPrompt(exemplo)}
+                >
+                  • {exemplo}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <Button 
@@ -211,12 +211,12 @@ export default function ImagemEducacional() {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Gerando imagens...
+                Gerando imagem...
               </>
             ) : (
               <>
                 <ImageIcon className="mr-2 h-4 w-4" />
-                Gerar imagens
+                Gerar imagem
               </>
             )}
           </Button>
@@ -227,7 +227,7 @@ export default function ImagemEducacional() {
           {imagensGeradas.length > 0 ? (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-neutral-900">Imagens geradas</h3>
+                <h3 className="text-lg font-medium text-neutral-900">Imagem gerada</h3>
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -269,7 +269,7 @@ export default function ImagemEducacional() {
               <ImageIcon className="h-12 w-12 text-neutral-400 mb-4" />
               <h3 className="text-lg font-medium text-neutral-900 mb-2">Nenhuma imagem gerada</h3>
               <p className="text-neutral-500 max-w-md mb-6">
-                Descreva detalhadamente a imagem educacional que você deseja criar e clique em "Gerar imagens".
+                Descreva detalhadamente a imagem educacional que você deseja criar e clique em "Gerar imagem".
               </p>
               <div className="text-sm text-neutral-500">
                 <p className="font-medium mb-2">Dicas para melhores resultados:</p>
