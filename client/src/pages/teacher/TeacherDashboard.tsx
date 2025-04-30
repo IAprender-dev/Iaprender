@@ -308,27 +308,6 @@ export default function TeacherDashboard() {
                   </Link>
                 </div>
               </div>
-
-              {/* Principais recursos em destaque */}
-              <div className="mt-12 flex flex-col items-center justify-center text-center">
-                <div className="max-w-2xl mx-auto pb-8">
-                  <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-4">
-                    Tudo o que você precisa em um só lugar
-                  </h2>
-                  <p className="text-neutral-600 text-lg leading-relaxed">
-                    Acesse nossa Central de IAs, gerencie seus cursos e conteúdos, e explore recursos exclusivos para professores.
-                  </p>
-                </div>
-                
-                <div className="w-full mt-8 flex justify-center">
-                  <Link href="/central-ia">
-                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg">
-                      Acessar a Central de IAs
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
             </div>
           </main>
         </div>
