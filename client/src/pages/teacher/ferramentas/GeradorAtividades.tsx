@@ -413,42 +413,42 @@ export default function GeradorAtividades() {
                     <Label htmlFor="tipoAtividade" className="text-sm font-medium">Tipo de atividade</Label>
                     <div className="grid grid-cols-2 gap-3">
                       <Card 
-                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'exercicios' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'exercicios' ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-300' : 'border-gray-200'}`}
                         onClick={() => setTipoAtividade('exercicios')}
                       >
                         <div className="flex items-center gap-2">
-                          <ListTodo className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm font-medium">Lista de Exercícios</span>
+                          <ListTodo className={`h-4 w-4 ${tipoAtividade === 'exercicios' ? 'text-blue-700' : 'text-blue-600'}`} />
+                          <span className="text-sm font-medium text-gray-900">Lista de Exercícios</span>
                         </div>
                       </Card>
                       
                       <Card 
-                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'avaliacao' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'avaliacao' ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-300' : 'border-gray-200'}`}
                         onClick={() => setTipoAtividade('avaliacao')}
                       >
                         <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm font-medium">Avaliação/Prova</span>
+                          <FileText className={`h-4 w-4 ${tipoAtividade === 'avaliacao' ? 'text-blue-700' : 'text-blue-600'}`} />
+                          <span className="text-sm font-medium text-gray-900">Avaliação/Prova</span>
                         </div>
                       </Card>
                       
                       <Card 
-                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'trabalho' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'trabalho' ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-300' : 'border-gray-200'}`}
                         onClick={() => setTipoAtividade('trabalho')}
                       >
                         <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm font-medium">Trabalho em Grupo</span>
+                          <Users className={`h-4 w-4 ${tipoAtividade === 'trabalho' ? 'text-blue-700' : 'text-blue-600'}`} />
+                          <span className="text-sm font-medium text-gray-900">Trabalho em Grupo</span>
                         </div>
                       </Card>
                       
                       <Card 
-                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'questionario' ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-gray-200'}`}
+                        className={`p-3 border cursor-pointer transition-all hover:bg-blue-50 ${tipoAtividade === 'questionario' ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-300' : 'border-gray-200'}`}
                         onClick={() => setTipoAtividade('questionario')}
                       >
                         <div className="flex items-center gap-2">
-                          <FileQuestion className="h-4 w-4 text-blue-600" />
-                          <span className="text-sm font-medium">Questionário</span>
+                          <FileQuestion className={`h-4 w-4 ${tipoAtividade === 'questionario' ? 'text-blue-700' : 'text-blue-600'}`} />
+                          <span className="text-sm font-medium text-gray-900">Questionário</span>
                         </div>
                       </Card>
                     </div>
