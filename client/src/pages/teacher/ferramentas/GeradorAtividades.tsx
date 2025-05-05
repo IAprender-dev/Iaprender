@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { 
   FileEdit, 
   Download, 
@@ -16,7 +16,21 @@ import {
   FileQuestion, 
   Users, 
   FileText,
-  GraduationCap
+  GraduationCap,
+  Upload,
+  FileUp,
+  Trash2,
+  HelpCircle,
+  AlertCircle,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle,
+  PanelLeft,
+  PanelRight,
+  Maximize,
+  Minimize,
+  Clipboard
 } from "lucide-react";
 import FerramentaLayout from "./FerramentaLayout";
 import { Button } from "@/components/ui/button";
@@ -35,6 +49,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Progress } from "@/components/ui/progress";
+// @ts-ignore
+import jsPDF from 'jspdf';
 
 /**
  * Modelo de dados para uma atividade gerada
@@ -64,10 +84,18 @@ export default function GeradorAtividades() {
   const [nivelDificuldade, setNivelDificuldade] = useState("medio");
   const [incluirGabarito, setIncluirGabarito] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [pdfSelecionado, setPdfSelecionado] = useState<File | null>(null);
+  const [pdfNome, setPdfNome] = useState<string>("");
+  const [usarPdf, setUsarPdf] = useState<boolean>(false);
+  const [mostrarPainelLateral, setMostrarPainelLateral] = useState<boolean>(true);
+  const [maximizado, setMaximizado] = useState<boolean>(false);
   
   // Estado para as atividades geradas
   const [atividadesGeradas, setAtividadesGeradas] = useState<AtividadeGerada[]>([]);
   const [atividadeSelecionada, setAtividadeSelecionada] = useState<AtividadeGerada | null>(null);
+  
+  // Referências para elementos do DOM
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Lista de temas sugeridos por matéria
   const temasSugeridos = {
@@ -91,7 +119,51 @@ export default function GeradorAtividades() {
     return temas;
   };
 
-  // Mock de função para gerar atividade
+  // Funções para manipular o upload de PDF
+  const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      if (file.type === 'application/pdf') {
+        setPdfSelecionado(file);
+        setPdfNome(file.name);
+        setUsarPdf(true);
+        toast({
+          title: "PDF adicionado",
+          description: `O arquivo ${file.name} será usado para gerar a atividade.`,
+        });
+      } else {
+        toast({
+          title: "Formato inválido",
+          description: "Por favor, selecione um arquivo PDF.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const handleRemoverPdf = () => {
+    setPdfSelecionado(null);
+    setPdfNome("");
+    setUsarPdf(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    toast({
+      title: "PDF removido",
+      description: "O arquivo foi removido da seleção.",
+    });
+  };
+
+  const togglePainelLateral = () => {
+    setMostrarPainelLateral(!mostrarPainelLateral);
+  };
+
+  const toggleMaximizado = () => {
+    setMaximizado(!maximizado);
+  };
+
+  // Função para gerar atividade
   const gerarAtividade = async () => {
     if (!tema.trim()) {
       toast({
@@ -105,22 +177,51 @@ export default function GeradorAtividades() {
     setIsLoading(true);
 
     try {
+      // Preparar dados do formulário
+      const formData = new FormData();
+      
+      // Adicionar dados do formulário
+      formData.append('tema', tema);
+      formData.append('materia', materiaParaTexto(materia));
+      formData.append('serie', serieParaTexto(serie));
+      formData.append('tipoAtividade', tipoAtividadeParaTexto(tipoAtividade));
+      formData.append('quantidadeQuestoes', quantidadeQuestoes[0].toString());
+      formData.append('nivelDificuldade', nivelDificuldadeParaTexto(nivelDificuldade));
+      formData.append('incluirGabarito', incluirGabarito.toString());
+      formData.append('usarPdf', usarPdf.toString());
+      
+      // Adicionar PDF se existir
+      if (usarPdf && pdfSelecionado) {
+        formData.append('pdfFile', pdfSelecionado);
+      }
+      
       // Chamada para a API de geração de atividades
-      const response = await fetch('/api/ai/openai/activity', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          tema,
-          materia: materiaParaTexto(materia),
-          serie: serieParaTexto(serie),
-          tipoAtividade: tipoAtividadeParaTexto(tipoAtividade),
-          quantidadeQuestoes: quantidadeQuestoes[0],
-          nivelDificuldade: nivelDificuldadeParaTexto(nivelDificuldade),
-          incluirGabarito: incluirGabarito
-        }),
-      });
+      let response;
+      
+      if (usarPdf && pdfSelecionado) {
+        // Usando FormData para enviar o arquivo PDF
+        response = await fetch('/api/ai/openai/activity-with-pdf', {
+          method: 'POST',
+          body: formData
+        });
+      } else {
+        // Sem PDF, usando JSON normal
+        response = await fetch('/api/ai/openai/activity', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tema,
+            materia: materiaParaTexto(materia),
+            serie: serieParaTexto(serie),
+            tipoAtividade: tipoAtividadeParaTexto(tipoAtividade),
+            quantidadeQuestoes: quantidadeQuestoes[0],
+            nivelDificuldade: nivelDificuldadeParaTexto(nivelDificuldade),
+            incluirGabarito: incluirGabarito
+          }),
+        });
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -219,250 +320,131 @@ export default function GeradorAtividades() {
     return mapeamento[nivel] || nivel;
   };
 
-  // Mock de dados para simulação
-  const mockConteudo = () => {
-    // Questões específicas por matéria para mock
-    const questoesPorMateria: Record<string, string[]> = {
-      portugues: [
-        "Analise o texto a seguir e identifique o tipo de narração predominante:",
-        "Qual das alternativas abaixo apresenta o uso correto da concordância verbal?",
-        "Identifique a figura de linguagem presente no trecho: 'A cidade dormia tranquila'.",
-        "Qual o sentido da expressão destacada no contexto: 'Ele PEGOU O BOI PELO CHIFRE e resolveu o problema'?",
-        "Identifique a função sintática do termo sublinhado na oração: 'Os alunos entregaram O TRABALHO ontem'."
-      ],
-      matematica: [
-        "Resolva a equação: 3x + 7 = 22",
-        "Um triângulo retângulo tem catetos medindo 6 cm e 8 cm. Qual é a medida da hipotenusa?",
-        "Se um produto custa R$ 200,00 e recebe um desconto de 15%, qual será o novo preço?",
-        "Calcule a área de um círculo com raio de 5 cm. Use π = 3,14.",
-        "Qual é a fórmula para calcular o volume de um prisma triangular?"
-      ],
-      historia: [
-        "Quais foram as principais causas da Revolução Francesa?",
-        "Explique a política do 'Pão e Circo' durante o Império Romano.",
-        "Qual foi a importância da Revolução Industrial para a sociedade contemporânea?",
-        "Cite as principais características do período conhecido como Idade Média.",
-        "O que foi o Iluminismo e quais seus principais representantes?"
-      ],
-      geografia: [
-        "Quais são os principais fatores que influenciam o clima de uma região?",
-        "Explique o fenômeno da urbanização e seus impactos socioambientais.",
-        "O que é desenvolvimento sustentável e qual sua importância para o futuro do planeta?",
-        "Caracterize os diferentes biomas brasileiros.",
-        "Como o processo de globalização afeta as relações econômicas entre os países?"
-      ],
-      ciencias_fund: [
-        "Explique o processo de fotossíntese e sua importância para os seres vivos.",
-        "Como funciona o sistema respiratório humano?",
-        "Descreva as camadas da atmosfera terrestre.",
-        "O que é uma cadeia alimentar? Dê um exemplo.",
-        "Explique a diferença entre elementos, compostos e misturas."
-      ],
-      biologia: [
-        "Descreva o processo de divisão celular por mitose.",
-        "Como ocorre a transmissão das características genéticas de acordo com as Leis de Mendel?",
-        "Explique a teoria da evolução proposta por Darwin.",
-        "Como funciona o sistema imunológico humano?",
-        "Qual a diferença entre células procariontes e eucariontes?"
-      ],
-      fisica: [
-        "Enuncie a Lei da Inerça de Newton e dê um exemplo prático.",
-        "Calcule a força resultante sobre um corpo de massa 5 kg que está sendo acelerado a 4 m/s².",
-        "Explique o fenômeno da refração da luz.",
-        "O que é energia potencial gravitacional?",
-        "Qual a relação entre voltagem, corrente e resistência em um circuito elétrico?"
-      ],
-      quimica: [
-        "Explique a teoria atômica de Dalton.",
-        "Como funciona a tabela periódica dos elementos?",
-        "O que são ligações iônicas e covalentes?",
-        "Balanceie a equação química: H₂ + O₂ → H₂O",
-        "Defina ácidos e bases segundo a teoria de Arrhenius."
-      ],
-      ingles: [
-        "Complete the sentence with the correct verb tense: 'If I _____ (have) more time, I would study more.'.",
-        "Choose the correct question tag: 'You are coming to the party, _____?'",
-        "What's the difference between 'a few' and 'few'?",
-        "Translate the following sentence to English: 'Eu estudo inglês há três anos.'",
-        "Put the adverbs in the correct order: 'She (quietly, always, very) enters the room.'"
-      ],
-      arte: [
-        "Quais são as características principais do Renascimento?",
-        "Cite três obras famosas de Vincent van Gogh.",
-        "Explique a diferença entre arte abstrata e arte figurativa.",
-        "O que é a perspectiva na pintura e quando ela foi desenvolvida?",
-        "Quais são os elementos básicos da linguagem visual?"
-      ],
-      filosofia: [
-        "Explique o conceito de 'Caverna' na filosofia de Platão.",
-        "O que é o imperativo categórico de Kant?",
-        "Compare as visões de Hobbes e Rousseau sobre o 'estado de natureza'.",
-        "Explique o conceito de existêncialismo segundo Sartre.",
-        "O que é dialética para Hegel?"
-      ],
-      sociologia: [
-        "Como Marx define o conceito de 'alienação'?",
-        "Explique o conceito de 'fato social' segundo Durkheim.",
-        "O que é mobilidade social e quais são seus tipos?",
-        "Defina o conceito de 'ação social' de acordo com Max Weber.",
-        "Como as desigualdades sociais se manifestam na sociedade brasileira?"
-      ]
-    };
-
-    // Alternativas específicas por matéria para mock
-    const alternativasPorMateria: Record<string, string[][]> = {
-      portugues: [
-        ["Narração em primeira pessoa", "Narração em terceira pessoa", "Narração objetiva", "Narração subjetiva"],
-        ["Os alunos chegou cedo", "A turma de alunos chegaram", "Os alunos chegaram cedo", "A turma de alunos chegou cedo"],
-        ["Metonimia", "Metafora", "Personificação", "Hiperbole"],
-        ["Enfrentar um problema diretamente", "Agredir um animal", "Hesitar diante de um desafio", "Fugir de uma situação difícil"],
-        ["Sujeito", "Objeto direto", "Objeto indireto", "Adjunto adverbial"]
-      ],
-      matematica: [
-        ["x = 5", "x = 7", "x = 15", "x = -5"],
-        ["10 cm", "12 cm", "14 cm", "16 cm"],
-        ["R$ 170,00", "R$ 185,00", "R$ 30,00", "R$ 215,00"],
-        ["15,7 cm²", "31,4 cm²", "78,5 cm²", "3,14 cm²"],
-        ["V = base x altura", "V = base x altura ÷ 2", "V = área da base x altura", "V = área da base x altura ÷ 3"]
-      ]
-    };
-
-    // Seleciona 5 questões aleatórias para a matéria, ou questões padrão se a matéria não tiver questões específicas
-    const questoesDaMateria = questoesPorMateria[materia] || [
-      "Questão 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit?",
-      "Questão 2: Ut enim ad minim veniam, quis nostrud exercitation?",
-      "Questão 3: Duis aute irure dolor in reprehenderit in voluptate?",
-      "Questão 4: Excepteur sint occaecat cupidatat non proident?",
-      "Questão 5: Sed ut perspiciatis unde omnis iste natus error?"
-    ];
-
-    // Cria HTML para cada questão
-    const questoesHTML = Array.from({ length: quantidadeQuestoes[0] }, (_, i) => {
-      // Seleciona uma questão aleatória ou cíclica baseada no índice
-      const questao = questoesDaMateria[i % questoesDaMateria.length];
-      
-      // Gera alternativas genéricas ou específicas, se disponíveis
-      let alternativas;
-      if (alternativasPorMateria[materia] && i < alternativasPorMateria[materia].length) {
-        alternativas = alternativasPorMateria[materia][i];
-      } else {
-        alternativas = [
-          `Alternativa 1 para a questão ${i+1}`,
-          `Alternativa 2 para a questão ${i+1}`,
-          `Alternativa 3 para a questão ${i+1}`,
-          `Alternativa 4 para a questão ${i+1}`
-        ];
-      }
-      
-      return `
-        <li style="margin-bottom: 1.5rem; counter-increment: question; position: relative;">
-          <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
-            Questão ${i + 1}: ${questao}
-          </div>
-          <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
-                <span>${alternativas[0]}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
-                <span>${alternativas[1]}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
-                <span>${alternativas[2]}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
-                <span>${alternativas[3]}</span>
-              </div>
-            </div>
-          </div>
-        </li>
-      `;
-    }).join('');
-
-    let gabaritoHTML = '';
-    if (incluirGabarito) {
-      const respostasHTML = Array.from({ length: quantidadeQuestoes[0] }, (_, i) => {
-        const opcoes = ['A', 'B', 'C', 'D'];
-        const resposta = opcoes[Math.floor(Math.random() * opcoes.length)];
-        return `
-          <div style="display: flex; gap: 0.5rem; background-color: #f0f9ff; padding: 0.5rem; border-radius: 0.25rem;">
-            <span style="font-weight: 500;">Questão ${i + 1}:</span>
-            <span style="font-weight: bold; color: #1e3a8a;">${resposta}</span>
-          </div>
-        `;
-      }).join('');
-
-      gabaritoHTML = `
-        <div class="answer-key" style="margin-top: 3rem; border-top: 2px solid #3b82f6; padding-top: 1rem;">
-          <h3 style="font-size: 1.25rem; font-weight: bold; color: #1e3a8a; margin-bottom: 1rem;">Gabarito</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
-            ${respostasHTML}
-          </div>
-        </div>
-      `;
-    }
-
-    return `<div class="activity-content" style="max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif;">
-      <header style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #3b82f6; padding-bottom: 1rem;">
-        <h1 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem;">${tema}</h1>
-        <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: 0.875rem; color: #4b5563;">
-          <p><strong>Disciplina:</strong> ${materiaParaTexto(materia)}</p>
-          <p><strong>Série:</strong> ${serieParaTexto(serie)}</p>
-          <p><strong>Tipo:</strong> ${tipoAtividadeParaTexto(tipoAtividade)}</p>
-        </div>
-      </header>
-      
-      <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 2rem;">
-        <p style="margin: 0; font-style: italic;">Instruções: Responda as questões abaixo com base no conteúdo estudado em sala de aula.</p>
-      </div>
-      
-      <div class="questions">
-        <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question;">
-          ${questoesHTML}
-        </ol>
-      </div>
-      
-      ${gabaritoHTML}
-      
-      <footer style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
-        <p>Atividade gerada por iAula - ${new Date().toLocaleDateString()}</p>
-      </footer>
-    </div>`;
-  };
-
+  // Funções para copiar, imprimir e baixar PDF
   const copiarParaClipboard = () => {
-    if (atividadeSelecionada) {
-      navigator.clipboard.writeText(atividadeSelecionada.conteudo);
+    if (!atividadeSelecionada) return;
+    
+    // Criar um elemento temporário para extrair o texto do HTML
+    const temp = document.createElement('div');
+    temp.innerHTML = atividadeSelecionada.conteudo;
+    const textContent = temp.textContent || temp.innerText;
+    
+    navigator.clipboard.writeText(textContent).then(() => {
       toast({
         title: "Conteúdo copiado",
-        description: "O conteúdo da atividade foi copiado para a área de transferência.",
+        description: "O texto da atividade foi copiado para a área de transferência.",
       });
-    }
-  };
-
-  // Funções auxiliares para a interface
-  
-  // Função para fazer o download da atividade como PDF (mock)
-  const downloadAtividade = () => {
-    if (atividadeSelecionada) {
+    }).catch(err => {
+      console.error('Erro ao copiar conteúdo: ', err);
       toast({
-        title: "Download iniciado",
-        description: "Sua atividade está sendo salva como PDF.",
+        title: "Erro ao copiar",
+        description: "Não foi possível copiar o conteúdo para a área de transferência.",
+        variant: "destructive"
       });
-    }
+    });
   };
   
-  // Função para imprimir atividade
   const imprimirAtividade = () => {
-    if (atividadeSelecionada) {
-      window.print();
+    if (!atividadeSelecionada) return;
+    
+    // Criar uma janela temporária para impressão
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
       toast({
-        title: "Impressão iniciada",
-        description: "Enviando atividade para impressora.",
+        title: "Erro ao imprimir",
+        description: "Não foi possível abrir a janela de impressão. Verifique se o bloqueador de pop-ups está ativado.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Definir o conteúdo da página de impressão
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${atividadeSelecionada.titulo}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            h1 { font-size: 18px; margin-bottom: 10px; }
+            .meta { font-size: 12px; color: #666; margin-bottom: 20px; }
+            @media print {
+              body { margin: 1cm; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${atividadeSelecionada.titulo}</h1>
+          <div class="meta">
+            ${atividadeSelecionada.tipoAtividade} | 
+            ${atividadeSelecionada.materia} | 
+            ${atividadeSelecionada.serie} | 
+            ${nivelDificuldadeParaTexto(atividadeSelecionada.nivelDificuldade)}
+          </div>
+          ${atividadeSelecionada.conteudo}
+        </body>
+      </html>
+    `);
+    
+    // Imprimir e fechar a janela
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Atraso para garantir que o conteúdo foi carregado
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+  
+  const downloadAtividade = () => {
+    if (!atividadeSelecionada) return;
+    
+    try {
+      // Criar um elemento temporário para extrair o texto do HTML
+      const temp = document.createElement('div');
+      temp.innerHTML = atividadeSelecionada.conteudo;
+      
+      // Inicializar o PDF
+      const pdf = new jsPDF();
+      
+      // Adicionar o título
+      pdf.setFontSize(16);
+      pdf.text(atividadeSelecionada.titulo, 20, 20);
+      
+      // Adicionar metadados
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text(
+        `${atividadeSelecionada.tipoAtividade} | ${atividadeSelecionada.materia} | ${atividadeSelecionada.serie}`, 
+        20, 
+        30
+      );
+      
+      // Adicionar conteúdo
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      
+      // Obter texto do conteúdo HTML (simplificação)
+      const textContent = temp.textContent || temp.innerText;
+      
+      // Dividir o texto em linhas para caber na página
+      const splitText = pdf.splitTextToSize(textContent, 170);
+      pdf.text(splitText, 20, 40);
+      
+      // Baixar o PDF
+      pdf.save(`${atividadeSelecionada.titulo.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+      
+      toast({
+        title: "PDF baixado",
+        description: "Sua atividade foi baixada como arquivo PDF.",
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao baixar PDF",
+        description: "Não foi possível gerar o arquivo PDF.",
+        variant: "destructive"
       });
     }
   };
@@ -470,388 +452,501 @@ export default function GeradorAtividades() {
   // Ícones para tipos de atividade
   const iconeTipoAtividade = (tipo: string) => {
     switch (tipo) {
-      case 'exercicios': return <ListTodo className="h-5 w-5" />;
-      case 'avaliacao': return <FileText className="h-5 w-5" />;
-      case 'trabalho': return <Users className="h-5 w-5" />;
-      case 'questionario': return <FileQuestion className="h-5 w-5" />;
-      default: return <FileEdit className="h-5 w-5" />;
+      case 'exercicios': return <ListTodo className="h-4 w-4" />;
+      case 'avaliacao': return <FileQuestion className="h-4 w-4" />;
+      case 'trabalho': return <Users className="h-4 w-4" />;
+      case 'projeto': return <Lightbulb className="h-4 w-4" />;
+      case 'questionario': return <FileText className="h-4 w-4" />;
+      default: return <FileEdit className="h-4 w-4" />;
     }
   };
 
   return (
-    <FerramentaLayout
-      title="Gerador de Atividades"
-      description="Crie atividades, exercícios e avaliações personalizadas para suas aulas"
-      icon={<FileEdit className="h-6 w-6 text-blue-600" />}
-      helpText="Configure os parâmetros da atividade e nosso sistema utilizará Inteligência Artificial para gerar conteúdo educacional personalizado de acordo com suas necessidades."
+    <FerramentaLayout 
+      titulo="Gerador de Atividades" 
+      descricao="Crie atividades educacionais personalizadas com a ajuda da Inteligência Artificial"
+      icone={<FileEdit className="h-5 w-5" />}
     >
-      <Tabs defaultValue="criar" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="criar" className="text-sm font-medium">
-            <FileEdit className="h-4 w-4 mr-2" />
-            Criar Atividade
-          </TabsTrigger>
-          <TabsTrigger value="historico" className="text-sm font-medium">
-            <BookOpen className="h-4 w-4 mr-2" />
-            Biblioteca ({atividadesGeradas.length})
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="criar">
+        <div className="flex justify-between items-center mb-6">
+          <TabsList>
+            <TabsTrigger value="criar" data-value="criar">Criar Atividade</TabsTrigger>
+            <TabsTrigger value="historico">Biblioteca</TabsTrigger>
+          </TabsList>
+          
+          <div className="flex gap-2">
+            {maximizado ? (
+              <Button variant="outline" size="sm" onClick={toggleMaximizado}>
+                <Minimize className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Minimizar</span>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={toggleMaximizado}>
+                <Maximize className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Maximizar</span>
+              </Button>
+            )}
+            
+            {mostrarPainelLateral ? (
+              <Button variant="outline" size="sm" onClick={togglePainelLateral}>
+                <PanelLeft className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Ocultar painel</span>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" onClick={togglePainelLateral}>
+                <PanelRight className="h-4 w-4" />
+                <span className="ml-2 hidden sm:inline">Mostrar painel</span>
+              </Button>
+            )}
+          </div>
+        </div>
 
-        <TabsContent value="criar" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Painel de configuração - 5 colunas */}
-            <div className="lg:col-span-5 space-y-5">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg flex items-center">
-                    <Settings className="h-5 w-5 mr-2 text-blue-600" />
-                    Configurações da Atividade
-                  </CardTitle>
-                  <CardDescription>
-                    Configure os parâmetros para gerar sua atividade personalizada
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  {/* Campo de tema com sugestões */}
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="tema" className="text-sm font-medium">
-                        Tema da atividade <span className="text-red-500">*</span>
-                      </Label>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
-                        onClick={() => setTema(getTemasSugeridos()[Math.floor(Math.random() * getTemasSugeridos().length)])}
-                      >
-                        <Dices className="h-3 w-3 mr-1" />
-                        Sugerir tema
-                      </Button>
-                    </div>
-                    <Textarea 
-                      id="tema"
-                      placeholder="Ex: Frações e números decimais; Sistema solar; Concordância verbal"
-                      className="min-h-[80px] text-base"
-                      value={tema}
-                      onChange={(e) => setTema(e.target.value)}
-                    />
-                    
-                    {/* Sugestões de temas para a matéria selecionada */}
-                    {getTemasSugeridos().length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-muted-foreground mb-2">Temas sugeridos para {materiaParaTexto(materia)}:</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {getTemasSugeridos().map((tema, index) => (
-                            <Badge 
-                              key={index}
-                              variant="outline" 
-                              className="cursor-pointer hover:bg-blue-50 text-xs"
-                              onClick={() => setTema(tema)}
-                            >
-                              {tema}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+        <TabsContent value="criar">
+          <div className="grid grid-cols-1 gap-6" style={{ gridTemplateColumns: mostrarPainelLateral ? (maximizado ? '350px 1fr' : '1fr 2fr') : '1fr' }}>
+            {/* Painel de configuração */}
+            {mostrarPainelLateral && (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Settings className="h-5 w-5 text-blue-600" />
+                      Configurações da Atividade
+                    </CardTitle>
+                    <CardDescription>
+                      Configure os detalhes da atividade que deseja gerar
+                    </CardDescription>
+                  </CardHeader>
                   
-                  <Separator />
-                  
-                  {/* Matéria e Série/Ano */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="materia" className="text-sm font-medium">Matéria</Label>
-                      <Select value={materia} onValueChange={setMateria}>
-                        <SelectTrigger id="materia" className="text-sm">
-                          <SelectValue placeholder="Selecione a matéria" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="portugues">Língua Portuguesa</SelectItem>
-                          <SelectItem value="ingles">Língua Inglesa</SelectItem>
-                          <SelectItem value="arte">Arte</SelectItem>
-                          <SelectItem value="ciencias_fund">Ciências - Fundamental</SelectItem>
-                          <SelectItem value="matematica">Matemática</SelectItem>
-                          <SelectItem value="fisica">Física</SelectItem>
-                          <SelectItem value="quimica">Química</SelectItem>
-                          <SelectItem value="biologia">Biologia</SelectItem>
-                          <SelectItem value="historia">História</SelectItem>
-                          <SelectItem value="geografia">Geografia</SelectItem>
-                          <SelectItem value="filosofia">Filosofia</SelectItem>
-                          <SelectItem value="sociologia">Sociologia</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="serie" className="text-sm font-medium">Série/Ano</Label>
-                      <Select value={serie} onValueChange={setSerie}>
-                        <SelectTrigger id="serie" className="text-sm">
-                          <SelectValue placeholder="Selecione a série" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="6ano">6º Ano</SelectItem>
-                          <SelectItem value="7ano">7º Ano</SelectItem>
-                          <SelectItem value="8ano">8º Ano</SelectItem>
-                          <SelectItem value="9ano">9º Ano</SelectItem>
-                          <SelectItem value="1em">1º Ensino Médio</SelectItem>
-                          <SelectItem value="2em">2º Ensino Médio</SelectItem>
-                          <SelectItem value="3em">3º Ensino Médio</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  {/* Tipo de atividade */}
-                  <div className="space-y-3">
-                    <Label htmlFor="tipoAtividade" className="text-sm font-medium">Tipo de atividade</Label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Card 
-                        className={`p-3 border cursor-pointer transition-all ${tipoAtividade === 'exercicios' ? 'border-blue-600 bg-blue-600 text-white ring-1 ring-blue-300' : 'border-gray-200 bg-white hover:bg-blue-50'}`}
-                        onClick={() => setTipoAtividade('exercicios')}
-                      >
-                        <div className="flex items-center gap-2">
-                          <ListTodo className={`h-4 w-4 ${tipoAtividade === 'exercicios' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className={`text-sm font-medium ${tipoAtividade === 'exercicios' ? 'text-white' : 'text-blue-600'}`}>Lista de Exercícios</span>
-                        </div>
-                      </Card>
-                      
-                      <Card 
-                        className={`p-3 border cursor-pointer transition-all ${tipoAtividade === 'avaliacao' ? 'border-blue-600 bg-blue-600 text-white ring-1 ring-blue-300' : 'border-gray-200 bg-white hover:bg-blue-50'}`}
-                        onClick={() => setTipoAtividade('avaliacao')}
-                      >
-                        <div className="flex items-center gap-2">
-                          <FileText className={`h-4 w-4 ${tipoAtividade === 'avaliacao' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className={`text-sm font-medium ${tipoAtividade === 'avaliacao' ? 'text-white' : 'text-blue-600'}`}>Avaliação/Prova</span>
-                        </div>
-                      </Card>
-                      
-                      <Card 
-                        className={`p-3 border cursor-pointer transition-all ${tipoAtividade === 'trabalho' ? 'border-blue-600 bg-blue-600 text-white ring-1 ring-blue-300' : 'border-gray-200 bg-white hover:bg-blue-50'}`}
-                        onClick={() => setTipoAtividade('trabalho')}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Users className={`h-4 w-4 ${tipoAtividade === 'trabalho' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className={`text-sm font-medium ${tipoAtividade === 'trabalho' ? 'text-white' : 'text-blue-600'}`}>Trabalho em Grupo</span>
-                        </div>
-                      </Card>
-                      
-                      <Card 
-                        className={`p-3 border cursor-pointer transition-all ${tipoAtividade === 'questionario' ? 'border-blue-600 bg-blue-600 text-white ring-1 ring-blue-300' : 'border-gray-200 bg-white hover:bg-blue-50'}`}
-                        onClick={() => setTipoAtividade('questionario')}
-                      >
-                        <div className="flex items-center gap-2">
-                          <FileQuestion className={`h-4 w-4 ${tipoAtividade === 'questionario' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className={`text-sm font-medium ${tipoAtividade === 'questionario' ? 'text-white' : 'text-blue-600'}`}>Questionário</span>
-                        </div>
-                      </Card>
-                    </div>
-                  </div>
-                  
-                  <Separator />
-                  
-                  {/* Opções adicionais */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-medium flex items-center">
-                      <Settings className="h-4 w-4 mr-2 text-neutral-500" />
-                      Opções adicionais
-                    </h3>
-                    
-                    {/* Quantidade de questões */}
+                  <CardContent className="space-y-5">
+                    {/* Tema da atividade */}
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <Label htmlFor="quantidadeQuestoes" className="text-sm">Quantidade de questões</Label>
-                        <Badge variant="outline" className="font-mono text-xs py-0 h-5">
-                          {quantidadeQuestoes[0]}
-                        </Badge>
+                        <Label htmlFor="tema" className="text-sm font-medium">
+                          Tema da atividade <span className="text-red-500">*</span>
+                        </Label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-blue-600 hover:text-blue-700"
+                          onClick={() => setTema(getTemasSugeridos()[Math.floor(Math.random() * getTemasSugeridos().length)])}
+                        >
+                          <Dices className="h-3 w-3 mr-1" />
+                          Sugerir tema
+                        </Button>
                       </div>
-                      <Slider 
-                        id="quantidadeQuestoes"
-                        value={quantidadeQuestoes} 
-                        onValueChange={setQuantidadeQuestoes} 
-                        max={20} 
-                        min={1}
-                        step={1}
-                        className="py-1"
+                      <Textarea
+                        id="tema"
+                        placeholder="Ex: Frações e números decimais; Sistema solar; Concordância verbal"
+                        className="min-h-[80px] text-base"
+                        value={tema}
+                        onChange={(e) => setTema(e.target.value)}
                       />
+                      
+                      {/* Sugestões de temas para a matéria selecionada */}
+                      {getTemasSugeridos().length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground mb-2">Temas sugeridos para {materiaParaTexto(materia)}:</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {getTemasSugeridos().map((tema, index) => (
+                              <Badge 
+                                key={index}
+                                variant="outline" 
+                                className="cursor-pointer hover:bg-blue-50 text-xs"
+                                onClick={() => setTema(tema)}
+                              >
+                                {tema}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                      {/* Nível de dificuldade */}
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Matéria */}
                       <div className="space-y-2">
-                        <Label htmlFor="nivelDificuldade" className="text-sm">Nível de dificuldade</Label>
-                        <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
-                          <SelectTrigger id="nivelDificuldade" className="text-sm">
+                        <Label htmlFor="materia">Matéria</Label>
+                        <Select value={materia} onValueChange={setMateria}>
+                          <SelectTrigger id="materia">
                             <SelectValue placeholder="Selecione" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="facil">Fácil</SelectItem>
-                            <SelectItem value="medio">Médio</SelectItem>
-                            <SelectItem value="dificil">Difícil</SelectItem>
-                            <SelectItem value="misto">Misto (variado)</SelectItem>
+                            <SelectItem value="portugues">Língua Portuguesa</SelectItem>
+                            <SelectItem value="ingles">Língua Inglesa</SelectItem>
+                            <SelectItem value="arte">Arte</SelectItem>
+                            <SelectItem value="ciencias_fund">Ciências - Fundamental</SelectItem>
+                            <SelectItem value="matematica">Matemática</SelectItem>
+                            <SelectItem value="fisica">Física</SelectItem>
+                            <SelectItem value="quimica">Química</SelectItem>
+                            <SelectItem value="biologia">Biologia</SelectItem>
+                            <SelectItem value="historia">História</SelectItem>
+                            <SelectItem value="geografia">Geografia</SelectItem>
+                            <SelectItem value="filosofia">Filosofia</SelectItem>
+                            <SelectItem value="sociologia">Sociologia</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       
-                      {/* Opção de gabarito */}
-                      <div className="flex items-center space-x-2">
-                        <div className="flex-1 flex flex-col justify-center">
-                          <Label htmlFor="incluirGabarito" className="text-sm">Incluir gabarito</Label>
-                          <p className="text-xs text-muted-foreground">
-                            Adicionar respostas
-                          </p>
-                        </div>
-                        <Switch 
-                          id="incluirGabarito" 
-                          checked={incluirGabarito} 
-                          onCheckedChange={setIncluirGabarito}
-                        />
+                      {/* Série/Ano */}
+                      <div className="space-y-2">
+                        <Label htmlFor="serie">Série/Ano</Label>
+                        <Select value={serie} onValueChange={setSerie}>
+                          <SelectTrigger id="serie">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="6ano">6º Ano</SelectItem>
+                            <SelectItem value="7ano">7º Ano</SelectItem>
+                            <SelectItem value="8ano">8º Ano</SelectItem>
+                            <SelectItem value="9ano">9º Ano</SelectItem>
+                            <SelectItem value="1em">1º Ensino Médio</SelectItem>
+                            <SelectItem value="2em">2º Ensino Médio</SelectItem>
+                            <SelectItem value="3em">3º Ensino Médio</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-2 pb-4">
-                  <Button 
-                    className="w-full" 
-                    size="lg"
-                    onClick={gerarAtividade}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Gerando atividade...
-                      </>
-                    ) : (
-                      <>
-                        <FileEdit className="mr-2 h-5 w-5" />
-                        Gerar atividade
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              {/* Dicas para melhores resultados */}
-              <Card className="bg-blue-50 border-blue-100">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center text-blue-800">
-                    <Lightbulb className="h-4 w-4 mr-2 text-blue-600" />
-                    Dicas para melhores resultados
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <ul className="space-y-2 text-sm text-blue-900">
-                    <li className="flex items-start">
-                      <Target className="h-4 w-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Especifique o tema com detalhes para criar atividades mais relevantes</span>
-                    </li>
-                    <li className="flex items-start">
-                      <GraduationCap className="h-4 w-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Adapte a dificuldade ao nível de conhecimento da turma</span>
-                    </li>
-                    <li className="flex items-start">
-                      <RefreshCw className="h-4 w-4 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                      <span>Varie os tipos de atividade para manter o engajamento dos alunos</span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-            
-            {/* Painel de visualização - 7 colunas */}
-            <div className="lg:col-span-7">
-              <Card className="h-[calc(100vh-10rem)] overflow-hidden">
-                <CardHeader className="pb-3 flex-row items-start justify-between space-y-0">
-                  <div>
-                    <CardTitle className="text-lg">
-                      {atividadeSelecionada ? atividadeSelecionada.titulo : 'Visualização da Atividade'}
-                    </CardTitle>
-                    {atividadeSelecionada && (
-                      <CardDescription className="flex gap-2 flex-wrap mt-1">
-                        <Badge variant="outline" className="text-xs font-normal">
-                          {atividadeSelecionada.materia}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs font-normal">
-                          {atividadeSelecionada.serie}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs font-normal">
-                          {atividadeSelecionada.tipoAtividade}
-                        </Badge>
-                        {atividadeSelecionada.nivelDificuldade && (
-                          <Badge variant="outline" className="text-xs font-normal">
-                            {nivelDificuldadeParaTexto(atividadeSelecionada.nivelDificuldade)}
+                    
+                    {/* Material de referência (PDF) */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <Label htmlFor="pdfRef" className="text-sm flex items-center gap-2">
+                          Material de referência (PDF)
+                          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                            Novo
                           </Badge>
+                        </Label>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-6 w-6">
+                                <HelpCircle className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-sm text-xs">
+                                Faça upload de um material em PDF para que a IA gere atividades baseadas no conteúdo do documento.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Switch 
+                            id="usarPdf"
+                            checked={usarPdf}
+                            onCheckedChange={setUsarPdf}
+                            disabled={!pdfSelecionado}
+                          />
+                          <div>
+                            <Label htmlFor="usarPdf" className="text-sm">Usar PDF como base para geração</Label>
+                            <p className="text-xs text-muted-foreground">
+                              As questões serão baseadas no conteúdo do PDF
+                            </p>
+                          </div>
+                        </div>
+                        
+                        {pdfSelecionado ? (
+                          <div className="p-3 border rounded-md bg-blue-50 border-blue-200 flex justify-between items-center">
+                            <div className="flex gap-2 items-center overflow-hidden">
+                              <FileText className="h-5 w-5 text-blue-500 shrink-0" />
+                              <span className="text-sm truncate text-blue-700" title={pdfNome}>
+                                {pdfNome}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="icon" onClick={handleRemoverPdf} className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <input 
+                              ref={fileInputRef}
+                              type="file" 
+                              id="pdfInput" 
+                              className="hidden" 
+                              accept=".pdf" 
+                              onChange={handlePdfUpload}
+                            />
+                            <div 
+                              className="border border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                              onClick={() => fileInputRef.current?.click()}
+                            >
+                              <FileUp className="h-8 w-8 text-gray-400 mb-3" />
+                              <p className="text-sm font-medium">Clique para upload</p>
+                              <p className="text-xs text-gray-500">ou arraste um PDF aqui</p>
+                            </div>
+                          </div>
                         )}
-                        {atividadeSelecionada.quantidadeQuestoes && (
-                          <Badge variant="outline" className="text-xs font-normal">
-                            {atividadeSelecionada.quantidadeQuestoes} questões
-                          </Badge>
-                        )}
-                      </CardDescription>
-                    )}
-                  </div>
+                      </div>
+                    </div>
+                    
+                    {/* Tipo de atividade */}
+                    <div className="space-y-2">
+                      <Label htmlFor="tipoAtividade" className="text-sm">Tipo de atividade</Label>
+                      <RadioGroup
+                        value={tipoAtividade}
+                        onValueChange={setTipoAtividade}
+                        className="grid grid-cols-3 sm:grid-cols-5 gap-2"
+                      >
+                        <div className={`flex items-center justify-center p-3 rounded-md border cursor-pointer transition-colors ${tipoAtividade === 'exercicios' ? 'bg-blue-600 text-white border-blue-700' : 'bg-card hover:bg-blue-50 hover:border-blue-200'}`} onClick={() => setTipoAtividade('exercicios')}>
+                          <div className="text-center">
+                            <ListTodo className={`h-5 w-5 mx-auto mb-1 ${tipoAtividade === 'exercicios' ? 'text-white' : 'text-blue-600'}`} />
+                            <span className="text-xs font-medium">Exercícios</span>
+                          </div>
+                        </div>
+                        
+                        <div className={`flex items-center justify-center p-3 rounded-md border cursor-pointer transition-colors ${tipoAtividade === 'avaliacao' ? 'bg-blue-600 text-white border-blue-700' : 'bg-card hover:bg-blue-50 hover:border-blue-200'}`} onClick={() => setTipoAtividade('avaliacao')}>
+                          <div className="text-center">
+                            <FileQuestion className={`h-5 w-5 mx-auto mb-1 ${tipoAtividade === 'avaliacao' ? 'text-white' : 'text-blue-600'}`} />
+                            <span className="text-xs font-medium">Avaliação</span>
+                          </div>
+                        </div>
+                        
+                        <div className={`flex items-center justify-center p-3 rounded-md border cursor-pointer transition-colors ${tipoAtividade === 'trabalho' ? 'bg-blue-600 text-white border-blue-700' : 'bg-card hover:bg-blue-50 hover:border-blue-200'}`} onClick={() => setTipoAtividade('trabalho')}>
+                          <div className="text-center">
+                            <Users className={`h-5 w-5 mx-auto mb-1 ${tipoAtividade === 'trabalho' ? 'text-white' : 'text-blue-600'}`} />
+                            <span className="text-xs font-medium">Trabalho</span>
+                          </div>
+                        </div>
+                        
+                        <div className={`flex items-center justify-center p-3 rounded-md border cursor-pointer transition-colors ${tipoAtividade === 'projeto' ? 'bg-blue-600 text-white border-blue-700' : 'bg-card hover:bg-blue-50 hover:border-blue-200'}`} onClick={() => setTipoAtividade('projeto')}>
+                          <div className="text-center">
+                            <Lightbulb className={`h-5 w-5 mx-auto mb-1 ${tipoAtividade === 'projeto' ? 'text-white' : 'text-blue-600'}`} />
+                            <span className="text-xs font-medium">Projeto</span>
+                          </div>
+                        </div>
+                        
+                        <div className={`flex items-center justify-center p-3 rounded-md border cursor-pointer transition-colors ${tipoAtividade === 'questionario' ? 'bg-blue-600 text-white border-blue-700' : 'bg-card hover:bg-blue-50 hover:border-blue-200'}`} onClick={() => setTipoAtividade('questionario')}>
+                          <div className="text-center">
+                            <FileText className={`h-5 w-5 mx-auto mb-1 ${tipoAtividade === 'questionario' ? 'text-white' : 'text-blue-600'}`} />
+                            <span className="text-xs font-medium">Questionário</span>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    
+                    <Separator />
+                    
+                    {/* Opções adicionais */}
+                    <div className="space-y-4">
+                      <Accordion type="single" collapsible defaultValue="options" className="w-full">
+                        <AccordionItem value="options" className="border-none">
+                          <AccordionTrigger className="py-2">
+                            <h3 className="text-sm font-medium flex items-center">
+                              <Settings className="h-4 w-4 mr-2 text-neutral-500" />
+                              Opções adicionais
+                            </h3>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            {/* Quantidade de questões */}
+                            <div className="space-y-2 pt-1">
+                              <div className="flex justify-between items-center">
+                                <Label htmlFor="quantidadeQuestoes" className="text-sm">Quantidade de questões</Label>
+                                <Badge variant="outline" className="font-mono text-xs py-0 h-5">
+                                  {quantidadeQuestoes[0]}
+                                </Badge>
+                              </div>
+                              <Slider 
+                                id="quantidadeQuestoes"
+                                value={quantidadeQuestoes} 
+                                onValueChange={setQuantidadeQuestoes} 
+                                max={20} 
+                                min={1}
+                                step={1}
+                                className="py-1"
+                              />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-3 mt-4">
+                              {/* Nível de dificuldade */}
+                              <div className="space-y-2">
+                                <Label htmlFor="nivelDificuldade" className="text-sm">Nível de dificuldade</Label>
+                                <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
+                                  <SelectTrigger id="nivelDificuldade" className="text-sm">
+                                    <SelectValue placeholder="Selecione" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="facil">Fácil</SelectItem>
+                                    <SelectItem value="medio">Médio</SelectItem>
+                                    <SelectItem value="dificil">Difícil</SelectItem>
+                                    <SelectItem value="misto">Misto (variado)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              
+                              {/* Opção de gabarito */}
+                              <div className="flex items-center space-x-2">
+                                <div className="flex-1 flex flex-col justify-center">
+                                  <Label htmlFor="incluirGabarito" className="text-sm">Incluir gabarito</Label>
+                                  <p className="text-xs text-muted-foreground">
+                                    Adicionar respostas ao final
+                                  </p>
+                                </div>
+                                <Switch 
+                                  id="incluirGabarito" 
+                                  checked={incluirGabarito} 
+                                  onCheckedChange={setIncluirGabarito}
+                                />
+                              </div>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </div>
+                  </CardContent>
                   
+                  <CardFooter className="justify-between pt-2">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" type="button" disabled={isLoading} className="text-xs">
+                          <HelpCircle className="h-3.5 w-3.5 mr-1" />
+                          Ver exemplo
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Exemplo de atividade</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Aqui está um exemplo de atividade gerada pela IA:
+                            <div className="mt-4 p-4 bg-muted rounded-md text-sm overflow-auto max-h-[400px]">
+                              <h2 className="font-bold mb-2">Exercícios - Equações do 1º grau</h2>
+                              <p className="mb-4">Resolva as seguintes equações:</p>
+                              <ol className="space-y-4 list-decimal list-inside">
+                                <li>3x + 7 = 10</li>
+                                <li>2x - 5 = 3</li>
+                                <li>4x = 16</li>
+                                <li>5x - 8 = 2x + 4</li>
+                                <li>7x + 3 = 4x - 6</li>
+                              </ol>
+                            </div>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Fechar</AlertDialogCancel>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    
+                    <Button 
+                      variant="default" 
+                      size="lg"
+                      onClick={gerarAtividade}
+                      disabled={isLoading || !tema.trim()}
+                      className="w-auto bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Gerando atividade...
+                        </>
+                      ) : (
+                        <>
+                          <Dices className="mr-2 h-5 w-5" />
+                          Gerar atividade
+                        </>
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </div>
+            )}
+            
+            {/* Painel de visualização */}
+            <Card className="h-[calc(100vh-12rem)]">
+              <CardHeader className="pb-0 flex-col md:flex-row md:items-start md:justify-between md:space-y-0">
+                <div>
+                  <CardTitle className="text-lg">
+                    {atividadeSelecionada ? atividadeSelecionada.titulo : 'Visualização da Atividade'}
+                  </CardTitle>
                   {atividadeSelecionada && (
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-8"
-                        onClick={copiarParaClipboard}
-                      >
-                        <Copy className="h-3.5 w-3.5 mr-1" />
-                        Copiar
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="h-8"
-                        onClick={imprimirAtividade}
-                      >
-                        <Printer className="h-3.5 w-3.5 mr-1" />
-                        Imprimir
-                      </Button>
-                      <Button 
-                        variant="default"
-                        size="sm"
-                        className="h-8 bg-blue-600 hover:bg-blue-700"
-                        onClick={downloadAtividade}
-                      >
-                        <Download className="h-3.5 w-3.5 mr-1" />
-                        Baixar PDF
-                      </Button>
-                    </div>
+                    <CardDescription className="flex gap-2 flex-wrap mt-1">
+                      <Badge variant="outline" className="text-xs font-normal">
+                        {atividadeSelecionada.materia}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs font-normal">
+                        {atividadeSelecionada.serie}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs font-normal">
+                        {atividadeSelecionada.tipoAtividade}
+                      </Badge>
+                      {atividadeSelecionada.nivelDificuldade && (
+                        <Badge variant="outline" className="text-xs font-normal">
+                          {nivelDificuldadeParaTexto(atividadeSelecionada.nivelDificuldade)}
+                        </Badge>
+                      )}
+                      {atividadeSelecionada.quantidadeQuestoes && (
+                        <Badge variant="outline" className="text-xs font-normal">
+                          {atividadeSelecionada.quantidadeQuestoes} questões
+                        </Badge>
+                      )}
+                    </CardDescription>
                   )}
-                </CardHeader>
+                </div>
                 
-                <Separator />
-                
-                <CardContent className="p-0 h-[calc(100%-4rem)] flex flex-col overflow-hidden">
-                  {atividadeSelecionada ? (
-                    <div className="w-full h-full overflow-auto" style={{ maxHeight: "calc(100vh - 14rem)" }}>
-                        <div
-                          className="prose prose-sm max-w-none bg-white p-8 mx-auto"
-                          dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
-                        />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-18rem)] text-center p-8">
-                      <FileEdit className="h-20 w-20 text-neutral-300 mb-4" />
-                      <h3 className="text-lg font-medium text-neutral-600 mb-2">
-                        Nenhuma atividade gerada
-                      </h3>
-                      <p className="text-neutral-500 max-w-md mb-2">
-                        Configure os parâmetros no painel lateral e clique em "Gerar atividade" para criar um novo conteúdo educacional.
-                      </p>
-                      <p className="text-sm text-neutral-400">
-                        Todos os conteúdos gerados serão salvos automaticamente em sua biblioteca.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                {atividadeSelecionada && (
+                  <div className="flex gap-2 mt-4 md:mt-0">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-8"
+                      onClick={copiarParaClipboard}
+                    >
+                      <Copy className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden sm:inline">Copiar</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="h-8"
+                      onClick={imprimirAtividade}
+                    >
+                      <Printer className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden sm:inline">Imprimir</span>
+                    </Button>
+                    <Button 
+                      variant="default"
+                      size="sm"
+                      className="h-8 bg-blue-600 hover:bg-blue-700"
+                      onClick={downloadAtividade}
+                    >
+                      <Download className="h-3.5 w-3.5 mr-1" />
+                      <span className="hidden sm:inline">Baixar PDF</span>
+                    </Button>
+                  </div>
+                )}
+              </CardHeader>
+              
+              <Separator className="my-2" />
+              
+              <CardContent className="p-0 h-[calc(100%-5rem)] overflow-auto">
+                {atividadeSelecionada ? (
+                  <div className="h-full overflow-auto">
+                    <div
+                      className="prose prose-sm max-w-none bg-white p-8"
+                      dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                    <FileEdit className="h-20 w-20 text-neutral-300 mb-4" />
+                    <h3 className="text-lg font-medium text-neutral-600 mb-2">
+                      Nenhuma atividade gerada
+                    </h3>
+                    <p className="text-neutral-500 max-w-md mb-2">
+                      Configure os parâmetros no painel lateral e clique em "Gerar atividade" para criar um novo conteúdo educacional.
+                    </p>
+                    <p className="text-sm text-neutral-400">
+                      Todos os conteúdos gerados serão salvos automaticamente em sua biblioteca.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
@@ -863,12 +958,12 @@ export default function GeradorAtividades() {
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" className="h-9">
                     <Filter className="h-4 w-4 mr-1" />
-                    Filtrar
+                    <span className="hidden sm:inline">Filtrar</span>
                   </Button>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {atividadesGeradas.map((atividade) => (
                   <Card 
                     key={atividade.id} 
@@ -923,8 +1018,8 @@ export default function GeradorAtividades() {
                         {atividade.tipoAtividade}
                       </span>
                       <Button variant="ghost" size="sm" className="h-7 px-2">
-                        <FileEdit className="h-3.5 w-3.5 mr-1" />
-                        <span className="text-xs">Editar</span>
+                        <Eye className="h-3.5 w-3.5 mr-1" />
+                        <span className="text-xs">Visualizar</span>
                       </Button>
                     </CardFooter>
                   </Card>
