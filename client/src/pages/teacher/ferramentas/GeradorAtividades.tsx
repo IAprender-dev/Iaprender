@@ -53,7 +53,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
-// @ts-ignore
 import jsPDF from 'jspdf';
 
 /**
@@ -463,9 +462,10 @@ export default function GeradorAtividades() {
 
   return (
     <FerramentaLayout 
-      titulo="Gerador de Atividades" 
-      descricao="Crie atividades educacionais personalizadas com a ajuda da Inteligência Artificial"
-      icone={<FileEdit className="h-5 w-5" />}
+      title="Gerador de Atividades" 
+      description="Crie atividades educacionais personalizadas com a ajuda da Inteligência Artificial"
+      icon={<FileEdit className="h-5 w-5" />}
+      helpText="Configure os parâmetros da atividade e nosso sistema utilizará Inteligência Artificial para gerar conteúdo educacional personalizado."
     >
       <Tabs defaultValue="criar">
         <div className="flex justify-between items-center mb-6">
