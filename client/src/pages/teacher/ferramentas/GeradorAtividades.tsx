@@ -105,17 +105,37 @@ export default function GeradorAtividades() {
     setIsLoading(true);
 
     try {
-      // Aqui seria a chamada para a API que gera atividades
-      // Simulando delay de processamento
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Chamada para a API de geração de atividades
+      const response = await fetch('/api/ai/education/generate-activity', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tema,
+          materia: materiaParaTexto(materia),
+          serie: serieParaTexto(serie),
+          tipoAtividade: tipoAtividadeParaTexto(tipoAtividade),
+          quantidadeQuestoes: quantidadeQuestoes[0],
+          nivelDificuldade: nivelDificuldadeParaTexto(nivelDificuldade),
+          incluirGabarito: incluirGabarito
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao gerar atividade');
+      }
       
-      // Mock de resposta
+      const data = await response.json();
+      
+      // Criando objeto da atividade com o conteúdo gerado pela IA
       const novaAtividade: AtividadeGerada = {
         id: `ativ-${Date.now()}`,
         titulo: `Atividade de ${materiaParaTexto(materia)} - ${tema}`,
         materia: materiaParaTexto(materia),
         serie: serieParaTexto(serie),
-        conteudo: mockConteudo(),
+        conteudo: data.conteudo,
         tipoAtividade: tipoAtividadeParaTexto(tipoAtividade),
         dataGeracao: new Date(),
         quantidadeQuestoes: quantidadeQuestoes[0],
@@ -131,9 +151,10 @@ export default function GeradorAtividades() {
         description: "Sua atividade educacional foi criada.",
       });
     } catch (error) {
+      console.error('Erro ao gerar atividade:', error);
       toast({
         title: "Erro ao gerar atividade",
-        description: "Ocorreu um erro ao processar sua solicitação. Tente novamente.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar sua solicitação. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -186,29 +207,161 @@ export default function GeradorAtividades() {
 
   // Mock de dados para simulação
   const mockConteudo = () => {
+    // Questões específicas por matéria para mock
+    const questoesPorMateria: Record<string, string[]> = {
+      portugues: [
+        "Analise o texto a seguir e identifique o tipo de narração predominante:",
+        "Qual das alternativas abaixo apresenta o uso correto da concordância verbal?",
+        "Identifique a figura de linguagem presente no trecho: 'A cidade dormia tranquila'.",
+        "Qual o sentido da expressão destacada no contexto: 'Ele PEGOU O BOI PELO CHIFRE e resolveu o problema'?",
+        "Identifique a função sintática do termo sublinhado na oração: 'Os alunos entregaram O TRABALHO ontem'."
+      ],
+      matematica: [
+        "Resolva a equação: 3x + 7 = 22",
+        "Um triângulo retângulo tem catetos medindo 6 cm e 8 cm. Qual é a medida da hipotenusa?",
+        "Se um produto custa R$ 200,00 e recebe um desconto de 15%, qual será o novo preço?",
+        "Calcule a área de um círculo com raio de 5 cm. Use π = 3,14.",
+        "Qual é a fórmula para calcular o volume de um prisma triangular?"
+      ],
+      historia: [
+        "Quais foram as principais causas da Revolução Francesa?",
+        "Explique a política do 'Pão e Circo' durante o Império Romano.",
+        "Qual foi a importância da Revolução Industrial para a sociedade contemporânea?",
+        "Cite as principais características do período conhecido como Idade Média.",
+        "O que foi o Iluminismo e quais seus principais representantes?"
+      ],
+      geografia: [
+        "Quais são os principais fatores que influenciam o clima de uma região?",
+        "Explique o fenômeno da urbanização e seus impactos socioambientais.",
+        "O que é desenvolvimento sustentável e qual sua importância para o futuro do planeta?",
+        "Caracterize os diferentes biomas brasileiros.",
+        "Como o processo de globalização afeta as relações econômicas entre os países?"
+      ],
+      ciencias_fund: [
+        "Explique o processo de fotossíntese e sua importância para os seres vivos.",
+        "Como funciona o sistema respiratório humano?",
+        "Descreva as camadas da atmosfera terrestre.",
+        "O que é uma cadeia alimentar? Dê um exemplo.",
+        "Explique a diferença entre elementos, compostos e misturas."
+      ],
+      biologia: [
+        "Descreva o processo de divisão celular por mitose.",
+        "Como ocorre a transmissão das características genéticas de acordo com as Leis de Mendel?",
+        "Explique a teoria da evolução proposta por Darwin.",
+        "Como funciona o sistema imunológico humano?",
+        "Qual a diferença entre células procariontes e eucariontes?"
+      ],
+      fisica: [
+        "Enuncie a Lei da Inerça de Newton e dê um exemplo prático.",
+        "Calcule a força resultante sobre um corpo de massa 5 kg que está sendo acelerado a 4 m/s².",
+        "Explique o fenômeno da refração da luz.",
+        "O que é energia potencial gravitacional?",
+        "Qual a relação entre voltagem, corrente e resistência em um circuito elétrico?"
+      ],
+      quimica: [
+        "Explique a teoria atômica de Dalton.",
+        "Como funciona a tabela periódica dos elementos?",
+        "O que são ligações iônicas e covalentes?",
+        "Balanceie a equação química: H₂ + O₂ → H₂O",
+        "Defina ácidos e bases segundo a teoria de Arrhenius."
+      ],
+      ingles: [
+        "Complete the sentence with the correct verb tense: 'If I _____ (have) more time, I would study more.'.",
+        "Choose the correct question tag: 'You are coming to the party, _____?'",
+        "What's the difference between 'a few' and 'few'?",
+        "Translate the following sentence to English: 'Eu estudo inglês há três anos.'",
+        "Put the adverbs in the correct order: 'She (quietly, always, very) enters the room.'"
+      ],
+      arte: [
+        "Quais são as características principais do Renascimento?",
+        "Cite três obras famosas de Vincent van Gogh.",
+        "Explique a diferença entre arte abstrata e arte figurativa.",
+        "O que é a perspectiva na pintura e quando ela foi desenvolvida?",
+        "Quais são os elementos básicos da linguagem visual?"
+      ],
+      filosofia: [
+        "Explique o conceito de 'Caverna' na filosofia de Platão.",
+        "O que é o imperativo categórico de Kant?",
+        "Compare as visões de Hobbes e Rousseau sobre o 'estado de natureza'.",
+        "Explique o conceito de existêncialismo segundo Sartre.",
+        "O que é dialética para Hegel?"
+      ],
+      sociologia: [
+        "Como Marx define o conceito de 'alienação'?",
+        "Explique o conceito de 'fato social' segundo Durkheim.",
+        "O que é mobilidade social e quais são seus tipos?",
+        "Defina o conceito de 'ação social' de acordo com Max Weber.",
+        "Como as desigualdades sociais se manifestam na sociedade brasileira?"
+      ]
+    };
+
+    // Alternativas específicas por matéria para mock
+    const alternativasPorMateria: Record<string, string[][]> = {
+      portugues: [
+        ["Narração em primeira pessoa", "Narração em terceira pessoa", "Narração objetiva", "Narração subjetiva"],
+        ["Os alunos chegou cedo", "A turma de alunos chegaram", "Os alunos chegaram cedo", "A turma de alunos chegou cedo"],
+        ["Metonimia", "Metafora", "Personificação", "Hiperbole"],
+        ["Enfrentar um problema diretamente", "Agredir um animal", "Hesitar diante de um desafio", "Fugir de uma situação difícil"],
+        ["Sujeito", "Objeto direto", "Objeto indireto", "Adjunto adverbial"]
+      ],
+      matematica: [
+        ["x = 5", "x = 7", "x = 15", "x = -5"],
+        ["10 cm", "12 cm", "14 cm", "16 cm"],
+        ["R$ 170,00", "R$ 185,00", "R$ 30,00", "R$ 215,00"],
+        ["15,7 cm²", "31,4 cm²", "78,5 cm²", "3,14 cm²"],
+        ["V = base x altura", "V = base x altura ÷ 2", "V = área da base x altura", "V = área da base x altura ÷ 3"]
+      ]
+    };
+
+    // Seleciona 5 questões aleatórias para a matéria, ou questões padrão se a matéria não tiver questões específicas
+    const questoesDaMateria = questoesPorMateria[materia] || [
+      "Questão 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit?",
+      "Questão 2: Ut enim ad minim veniam, quis nostrud exercitation?",
+      "Questão 3: Duis aute irure dolor in reprehenderit in voluptate?",
+      "Questão 4: Excepteur sint occaecat cupidatat non proident?",
+      "Questão 5: Sed ut perspiciatis unde omnis iste natus error?"
+    ];
+
+    // Cria HTML para cada questão
     const questoesHTML = Array.from({ length: quantidadeQuestoes[0] }, (_, i) => {
+      // Seleciona uma questão aleatória ou cíclica baseada no índice
+      const questao = questoesDaMateria[i % questoesDaMateria.length];
+      
+      // Gera alternativas genéricas ou específicas, se disponíveis
+      let alternativas;
+      if (alternativasPorMateria[materia] && i < alternativasPorMateria[materia].length) {
+        alternativas = alternativasPorMateria[materia][i];
+      } else {
+        alternativas = [
+          `Alternativa 1 para a questão ${i+1}`,
+          `Alternativa 2 para a questão ${i+1}`,
+          `Alternativa 3 para a questão ${i+1}`,
+          `Alternativa 4 para a questão ${i+1}`
+        ];
+      }
+      
       return `
         <li style="margin-bottom: 1.5rem; counter-increment: question; position: relative;">
           <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
-            Questão ${i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua?
+            Questão ${i + 1}: ${questao}
           </div>
           <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
-                <span>Alternativa 1</span>
+                <span>${alternativas[0]}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
-                <span>Alternativa 2</span>
+                <span>${alternativas[1]}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
-                <span>Alternativa 3</span>
+                <span>${alternativas[2]}</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.5rem;">
                 <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
-                <span>Alternativa 4</span>
+                <span>${alternativas[3]}</span>
               </div>
             </div>
           </div>
