@@ -106,7 +106,7 @@ export default function GeradorAtividades() {
 
     try {
       // Chamada para a API de geração de atividades
-      const response = await fetch('/api/ai/education/generate-activity', {
+      const response = await fetch('/api/ai/openai/activity', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -204,6 +204,8 @@ export default function GeradorAtividades() {
     };
     return mapeamento[tipo] || tipo;
   };
+  
+  // Converter nível de dificuldade para texto legível
 
   // Mock de dados para simulação
   const mockConteudo = () => {
@@ -431,15 +433,6 @@ export default function GeradorAtividades() {
   };
 
   // Funções auxiliares para a interface
-  const nivelDificuldadeParaTexto = (nivel: string) => {
-    const mapeamento: {[key: string]: string} = {
-      facil: "Fácil",
-      medio: "Médio",
-      dificil: "Difícil",
-      misto: "Misto (variado)"
-    };
-    return mapeamento[nivel] || nivel;
-  };
   
   // Função para fazer o download da atividade como PDF (mock)
   const downloadAtividade = () => {
