@@ -827,20 +827,20 @@ export default function GeradorAtividades() {
                 
                 <Separator />
                 
-                <CardContent className="p-0 h-[calc(100%-4rem)]">
+                <CardContent className="p-0 h-[calc(100%-4rem)] flex flex-col">
                   {atividadeSelecionada ? (
-                    <ScrollArea className="h-full min-h-[calc(100vh-18rem)]">
-                      <div
-                        className="prose prose-sm max-w-none bg-white p-8 mx-auto"
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          width: "100%",
-                          minHeight: "calc(100vh - 18rem)",
-                        }}
-                        dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
-                      />
-                    </ScrollArea>
+                    <div className="relative flex-grow flex flex-col h-full">
+                      <ScrollArea className="absolute inset-0 overflow-auto">
+                        <div
+                          className="prose prose-sm max-w-none bg-white p-8 mx-auto"
+                          style={{
+                            width: "100%",
+                            minHeight: "100%"
+                          }}
+                          dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
+                        />
+                      </ScrollArea>
+                    </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full min-h-[calc(100vh-18rem)] text-center p-8">
                       <FileEdit className="h-20 w-20 text-neutral-300 mb-4" />

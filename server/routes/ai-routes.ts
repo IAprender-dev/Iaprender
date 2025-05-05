@@ -417,7 +417,7 @@ aiRouter.post("/education/generate-activity", authenticate, hasContract, async (
       - Matéria: ${params.materia}
       - Série/Ano: ${params.serie}
       - Tipo de atividade: ${params.tipoAtividade}
-      - Quantidade de questões: ${params.quantidadeQuestoes}
+      - Quantidade de questões: ${params.quantidadeQuestoes} (IMPORTANTE: gere exatamente esse número de questões, não menos)
       - Nível de dificuldade: ${params.nivelDificuldade}
       - Incluir gabarito: ${params.incluirGabarito ? 'Sim' : 'Não'}
       
@@ -427,12 +427,14 @@ aiRouter.post("/education/generate-activity", authenticate, hasContract, async (
       Estruture a atividade da seguinte forma:
       1. Um cabeçalho com título da atividade, matéria, série e tipo
       2. Uma breve instrução para os alunos
-      3. As questões numeradas (a quantidade solicitada)
+      3. EXATAMENTE ${params.quantidadeQuestoes} questões numeradas de 1 a ${params.quantidadeQuestoes}
       4. Se solicitado, inclua um gabarito ao final
       5. Um rodapé simples
       
       As questões devem ser específicas para a matéria selecionada, adequadas ao nível escolar indicado, 
       e pertinentes ao tema. Para cada questão, inclua 4 alternativas (A, B, C, D).
+      
+      IMPORTANTE: Você DEVE gerar EXATAMENTE ${params.quantidadeQuestoes} questões, não mais e não menos.
       
       Retorne APENAS o HTML puro, sem explicações adicionais ou texto fora do HTML.
     `;
@@ -443,11 +445,11 @@ aiRouter.post("/education/generate-activity", authenticate, hasContract, async (
       prompt,
       model: "gpt-4o",
       temperature: 0.7,
-      maxTokens: 4000 // Aumentamos para acomodar atividades maiores
+      maxTokens: 8000 // Aumentado para garantir que todas as questões solicitadas sejam geradas
     });
     
     return res.status(200).json({
-      conteudo: result.content,
+      content: result.content,
       tokensUsed: result.tokensUsed
     });
   } catch (error: any) {
