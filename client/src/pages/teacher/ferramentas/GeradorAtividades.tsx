@@ -761,7 +761,7 @@ export default function GeradorAtividades() {
             
             {/* Painel de visualização - 7 colunas */}
             <div className="lg:col-span-7">
-              <Card className="h-full">
+              <Card className="h-[calc(100vh-10rem)] overflow-hidden">
                 <CardHeader className="pb-3 flex-row items-start justify-between space-y-0">
                   <div>
                     <CardTitle className="text-lg">
@@ -829,13 +829,12 @@ export default function GeradorAtividades() {
                 
                 <CardContent className="p-0 h-[calc(100%-4rem)] flex flex-col">
                   {atividadeSelecionada ? (
-                    <div className="relative flex-grow flex flex-col h-full">
-                      <ScrollArea className="absolute inset-0 overflow-auto">
+                    <div className="relative flex-grow flex flex-col h-full overflow-hidden">
+                      <ScrollArea className="absolute inset-0">
                         <div
                           className="prose prose-sm max-w-none bg-white p-8 mx-auto"
                           style={{
-                            width: "100%",
-                            minHeight: "100%"
+                            width: "100%"
                           }}
                           dangerouslySetInnerHTML={{ __html: atividadeSelecionada.conteudo }}
                         />
