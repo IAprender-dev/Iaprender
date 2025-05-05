@@ -129,13 +129,16 @@ export default function GeradorAtividades() {
       
       const data = await response.json();
       
+      // Debugging para ver a estrutura da resposta
+      console.log('Resposta da API:', data);
+      
       // Criando objeto da atividade com o conteúdo gerado pela IA
       const novaAtividade: AtividadeGerada = {
         id: `ativ-${Date.now()}`,
         titulo: `Atividade de ${materiaParaTexto(materia)} - ${tema}`,
         materia: materiaParaTexto(materia),
         serie: serieParaTexto(serie),
-        conteudo: data.conteudo,
+        conteudo: data.content,
         tipoAtividade: tipoAtividadeParaTexto(tipoAtividade),
         dataGeracao: new Date(),
         quantidadeQuestoes: quantidadeQuestoes[0],
