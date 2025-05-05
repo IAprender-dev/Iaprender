@@ -56,7 +56,7 @@ export default function GeradorAtividades() {
   const { toast } = useToast();
 
   // Estados para os parâmetros da geração
-  const [tema, setTema] = useState("");
+  const [tema, setTema] = useState("Interpretação de texto");
   const [materia, setMateria] = useState("portugues");
   const [serie, setSerie] = useState("6ano");
   const [tipoAtividade, setTipoAtividade] = useState("exercicios");
@@ -186,6 +186,59 @@ export default function GeradorAtividades() {
 
   // Mock de dados para simulação
   const mockConteudo = () => {
+    const questoesHTML = Array.from({ length: quantidadeQuestoes[0] }, (_, i) => {
+      return `
+        <li style="margin-bottom: 1.5rem; counter-increment: question; position: relative;">
+          <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
+            Questão ${i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua?
+          </div>
+          <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
+                <span>Alternativa 1</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
+                <span>Alternativa 2</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
+                <span>Alternativa 3</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
+                <span>Alternativa 4</span>
+              </div>
+            </div>
+          </div>
+        </li>
+      `;
+    }).join('');
+
+    let gabaritoHTML = '';
+    if (incluirGabarito) {
+      const respostasHTML = Array.from({ length: quantidadeQuestoes[0] }, (_, i) => {
+        const opcoes = ['A', 'B', 'C', 'D'];
+        const resposta = opcoes[Math.floor(Math.random() * opcoes.length)];
+        return `
+          <div style="display: flex; gap: 0.5rem; background-color: #f0f9ff; padding: 0.5rem; border-radius: 0.25rem;">
+            <span style="font-weight: 500;">Questão ${i + 1}:</span>
+            <span style="font-weight: bold; color: #1e3a8a;">${resposta}</span>
+          </div>
+        `;
+      }).join('');
+
+      gabaritoHTML = `
+        <div class="answer-key" style="margin-top: 3rem; border-top: 2px solid #3b82f6; padding-top: 1rem;">
+          <h3 style="font-size: 1.25rem; font-weight: bold; color: #1e3a8a; margin-bottom: 1rem;">Gabarito</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
+            ${respostasHTML}
+          </div>
+        </div>
+      `;
+    }
+
     return `<div class="activity-content" style="max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif;">
       <header style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #3b82f6; padding-bottom: 1rem;">
         <h1 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem;">${tema}</h1>
@@ -202,49 +255,11 @@ export default function GeradorAtividades() {
       
       <div class="questions">
         <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question;">
-          ${Array(quantidadeQuestoes[0]).fill(0).map((_, i) => `
-            <li style="margin-bottom: 1.5rem; counter-increment: question; position: relative;">
-              <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
-                Questão ${i + 1}: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua?
-              </div>
-              <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
-                    <span>Alternativa 1</span>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
-                    <span>Alternativa 2</span>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
-                    <span>Alternativa 3</span>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
-                    <span>Alternativa 4</span>
-                  </div>
-                </div>
-              </div>
-            </li>
-          `).join('')}
+          ${questoesHTML}
         </ol>
       </div>
       
-      ${incluirGabarito ? `
-        <div class="answer-key" style="margin-top: 3rem; border-top: 2px solid #3b82f6; padding-top: 1rem;">
-          <h3 style="font-size: 1.25rem; font-weight: bold; color: #1e3a8a; margin-bottom: 1rem;">Gabarito</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.5rem;">
-            ${Array(quantidadeQuestoes[0]).fill(0).map((_, i) => `
-              <div style="display: flex; gap: 0.5rem; background-color: #f0f9ff; padding: 0.5rem; border-radius: 0.25rem;">
-                <span style="font-weight: 500;">Questão ${i + 1}:</span>
-                <span style="font-weight: bold; color: #1e3a8a;">${['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)]}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      ` : ''}
+      ${gabaritoHTML}
       
       <footer style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
         <p>Atividade gerada por iAula - ${new Date().toLocaleDateString()}</p>
@@ -542,7 +557,7 @@ export default function GeradorAtividades() {
                     className="w-full" 
                     size="lg"
                     onClick={gerarAtividade}
-                    disabled={isLoading || !tema.trim()}
+                    disabled={isLoading}
                   >
                     {isLoading ? (
                       <>
