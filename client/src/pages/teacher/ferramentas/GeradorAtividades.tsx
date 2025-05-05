@@ -57,7 +57,7 @@ export default function GeradorAtividades() {
 
   // Estados para os parâmetros da geração
   const [tema, setTema] = useState("");
-  const [materia, setMateria] = useState("matematica");
+  const [materia, setMateria] = useState("portugues");
   const [serie, setSerie] = useState("6ano");
   const [tipoAtividade, setTipoAtividade] = useState("exercicios");
   const [quantidadeQuestoes, setQuantidadeQuestoes] = useState([10]);
@@ -71,11 +71,18 @@ export default function GeradorAtividades() {
 
   // Lista de temas sugeridos por matéria
   const temasSugeridos = {
-    matematica: ["Frações e números decimais", "Geometria - áreas e perímetros", "Equações do 1º grau", "Estatística básica"],
-    portugues: ["Interpretação de texto", "Figuras de linguagem", "Gêneros textuais", "Concordância verbal e nominal"],
-    ciencias: ["Sistema solar", "Corpo humano - sistemas", "Cadeia alimentar", "Estados físicos da matéria"],
-    historia: ["Civilizações antigas", "Brasil Colônia", "Revolução Industrial", "Segunda Guerra Mundial"],
-    geografia: ["Clima e vegetação", "Relevo e hidrografia", "Países e capitais", "Globalização"]
+    portugues: ["Interpretação de texto", "Figuras de linguagem", "Gêneros textuais", "Concordância verbal e nominal", "Análise sintática"],
+    ingles: ["Present Simple vs Present Continuous", "Modal Verbs", "Conditional Sentences", "Phrasal Verbs", "Reading Comprehension"],
+    arte: ["Renascimento", "Arte moderna brasileira", "Expressionismo", "Fotografia como arte", "Movimentos artísticos contemporâneos"],
+    ciencias_fund: ["Sistema solar", "Corpo humano - sistemas", "Cadeia alimentar", "Estados físicos da matéria", "Ecossistemas"],
+    matematica: ["Frações e números decimais", "Geometria - áreas e perímetros", "Equações do 1º grau", "Estatística básica", "Funções"],
+    fisica: ["Leis de Newton", "Termodinâmica", "Eletromagnetismo", "Cinemática", "Física Quântica"],
+    quimica: ["Tabela periódica", "Reações químicas", "Estequiometria", "Química orgânica", "Soluções e concentrações"],
+    biologia: ["Célula e organelas", "Genética mendeliana", "Biodiversidade", "Ecologia", "Fisiologia humana"],
+    historia: ["Civilizações antigas", "Brasil Colônia", "Revolução Industrial", "Segunda Guerra Mundial", "Era Vargas"],
+    geografia: ["Clima e vegetação", "Relevo e hidrografia", "Países e capitais", "Globalização", "Geopolítica mundial"],
+    filosofia: ["Filosofia clássica", "Filosofia moderna", "Ética e moral", "Existencialismo", "Teoria do conhecimento"],
+    sociologia: ["Cultura e sociedade", "Movimentos sociais", "Trabalho na sociedade contemporânea", "Desigualdade social", "Sociologia urbana"]
   };
 
   // Função auxiliar para pegar temas sugeridos da matéria selecionada
@@ -137,11 +144,18 @@ export default function GeradorAtividades() {
   // Funções de conversão de valores para texto legível
   const materiaParaTexto = (mat: string) => {
     const mapeamento: {[key: string]: string} = {
+      portugues: "Língua Portuguesa",
+      ingles: "Língua Inglesa",
+      arte: "Arte",
+      ciencias_fund: "Ciências - Fundamental",
       matematica: "Matemática",
-      portugues: "Português",
-      ciencias: "Ciências",
+      fisica: "Física",
+      quimica: "Química",
+      biologia: "Biologia",
       historia: "História",
-      geografia: "Geografia"
+      geografia: "Geografia",
+      filosofia: "Filosofia",
+      sociologia: "Sociologia"
     };
     return mapeamento[mat] || mat;
   };
@@ -380,11 +394,18 @@ export default function GeradorAtividades() {
                           <SelectValue placeholder="Selecione a matéria" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="portugues">Língua Portuguesa</SelectItem>
+                          <SelectItem value="ingles">Língua Inglesa</SelectItem>
+                          <SelectItem value="arte">Arte</SelectItem>
+                          <SelectItem value="ciencias_fund">Ciências - Fundamental</SelectItem>
                           <SelectItem value="matematica">Matemática</SelectItem>
-                          <SelectItem value="portugues">Português</SelectItem>
-                          <SelectItem value="ciencias">Ciências</SelectItem>
+                          <SelectItem value="fisica">Física</SelectItem>
+                          <SelectItem value="quimica">Química</SelectItem>
+                          <SelectItem value="biologia">Biologia</SelectItem>
                           <SelectItem value="historia">História</SelectItem>
                           <SelectItem value="geografia">Geografia</SelectItem>
+                          <SelectItem value="filosofia">Filosofia</SelectItem>
+                          <SelectItem value="sociologia">Sociologia</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
