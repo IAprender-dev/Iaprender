@@ -206,6 +206,15 @@ export default function GeradorAtividades() {
   };
   
   // Converter nível de dificuldade para texto legível
+  const nivelDificuldadeParaTexto = (nivel: string) => {
+    const mapeamento: {[key: string]: string} = {
+      facil: "Fácil",
+      medio: "Médio",
+      dificil: "Difícil",
+      misto: "Misto (variado)"
+    };
+    return mapeamento[nivel] || nivel;
+  };
 
   // Mock de dados para simulação
   const mockConteudo = () => {
