@@ -9,7 +9,7 @@ import {
 } from "../utils/ai-services";
 
 // Configure multer para upload de imagens
-const upload = multer({
+const imageUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
@@ -23,6 +23,21 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error('Only JPG, PNG and WEBP images are allowed'));
+    }
+  },
+});
+
+// Configure multer para upload de PDFs
+const pdfUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 15 * 1024 * 1024, // 15MB limit para PDFs
+  },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
     }
   },
 });
@@ -191,7 +206,7 @@ aiRouter.post(
   "/anthropic/image",
   authenticate,
   hasContract,
-  upload.single('image'),
+  imageUpload.single('image'),
   async (req: Request, res: Response) => {
     try {
       const schema = z.object({
@@ -256,15 +271,27 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
     const contractId = req.session.user?.contractId || 1; // Valor temporário
 
     // Constrói o prompt para geração da atividade
-    const prompt = `
+    // Aqui está o novo prompt personalizado que pode ser modificado
+    const promptAtividade = `
+      Você é um educador especialista que cria atividades educacionais de alta qualidade.
+      
       Crie uma atividade educacional completa com as seguintes características:
       - Tema: ${tema}
       - Matéria: ${materia}
       - Série/Ano: ${serie}
       - Tipo de atividade: ${tipoAtividade}
-      - Quantidade de questões: ${quantidadeQuestoes}
+      - Quantidade de questões: ${quantidadeQuestoes} (IMPORTANTE: gere EXATAMENTE este número de questões)
       - Nível de dificuldade: ${nivelDificuldade}
       - Incluir gabarito: ${incluirGabarito ? 'Sim' : 'Não'}
+      
+      DIRETRIZES IMPORTANTES:
+      - Crie questões desafiadoras e criativas, não apenas memorização de fatos
+      - Use linguagem apropriada para a idade dos estudantes
+      - Inclua questões que desenvolvam pensamento crítico
+      - Evite estereótipos ou exemplos ultrapassados
+      - Use exemplos do cotidiano para ajudar na compreensão
+      - As alternativas de múltipla escolha devem ser plausíveis, não óbvias
+      - Inclua questões que testem diferentes níveis de conhecimento (básico, intermediário, avançado)
       
       A atividade deve ser formatada em HTML seguindo o formato abaixo:
       
@@ -321,12 +348,15 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       </div>
       
       Fornece uma atividade educacional completa em HTML, seguindo as diretrizes acima. A atividade deve incluir:
-      1. Um título relevante para o tema
+      1. Um título relevante e criativo para o tema
       2. Instruções claras e específicas para os alunos
-      3. ${quantidadeQuestoes} questões de múltipla escolha sobre o tema, com 4 alternativas cada
-      4. Se solicitado, um gabarito com as respostas corretas no final do documento
+      3. EXATAMENTE ${quantidadeQuestoes} questões de múltipla escolha sobre o tema, com 4 alternativas cada
+      4. Se solicitado, um gabarito completo com as respostas corretas e explicações breves sobre cada resposta
       
       Use formatação HTML bem estruturada com estilos CSS inline conforme o exemplo.`;
+      
+    // Define o prompt que será usado
+    const prompt = promptAtividade;
     
     const result = await OpenAIService.generateChatCompletion({
       userId,
@@ -334,7 +364,7 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       prompt,
       model: "gpt-4o",
       temperature: 0.7,
-      maxTokens: 3500  // Aumentamos o limite para atividades completas
+      maxTokens: 8000  // Aumentamos o limite para atividades completas e mais elaboradas
     });
     
     return res.status(200).json(result);
@@ -346,6 +376,150 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
     return res.status(500).json({ message: error.message });
   }
 });
+
+// Rota para geração de atividades educacionais com base em PDF
+aiRouter.post(
+  "/openai/activity-with-pdf",
+  authenticate,
+  hasContract,
+  pdfUpload.single('pdfFile'),
+  async (req: Request, res: Response) => {
+    try {
+      const schema = z.object({
+        tema: z.string().min(1).max(1000),
+        materia: z.string(),
+        serie: z.string(),
+        tipoAtividade: z.string(),
+        quantidadeQuestoes: z.string().transform(val => parseInt(val, 10)),
+        nivelDificuldade: z.string(),
+        incluirGabarito: z.string().transform(val => val === 'true'),
+        usarPdf: z.string().transform(val => val === 'true')
+      });
+      
+      // Garantir que foi enviado um PDF
+      if (!req.file) {
+        return res.status(400).json({ message: "PDF file is required" });
+      }
+      
+      const parsedBody = schema.parse(req.body);
+      const { tema, materia, serie, tipoAtividade, quantidadeQuestoes, nivelDificuldade, incluirGabarito } = parsedBody;
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ message: "OpenAI service is not available" });
+      }
+      
+      const userId = req.session.user?.id || 1; // Valor temporário
+      const contractId = req.session.user?.contractId || 1; // Valor temporário
+      
+      // Converter PDF para base64
+      const pdfBase64 = req.file.buffer.toString('base64');
+      
+      // Construir prompt para análise do PDF com instruções claras
+      const promptAnalisePDF = `
+        Você é um educador especialista que cria atividades educacionais de alta qualidade.
+        
+        Analisei o PDF fornecido e agora preciso criar uma atividade educacional com base no seu conteúdo,
+        com as seguintes características:
+        
+        - Tema: ${tema}
+        - Matéria: ${materia}
+        - Série/Ano: ${serie}
+        - Tipo de atividade: ${tipoAtividade}
+        - Quantidade de questões: ${quantidadeQuestoes} (IMPORTANTE: gere EXATAMENTE este número de questões)
+        - Nível de dificuldade: ${nivelDificuldade}
+        - Incluir gabarito: ${incluirGabarito ? 'Sim' : 'Não'}
+        
+        DIRETRIZES IMPORTANTES:
+        - Crie questões diretamente relacionadas ao conteúdo do PDF fornecido
+        - Use terminologia e exemplos do próprio material
+        - Mantenha o nível de dificuldade e linguagem adequados para a série indicada
+        - As questões devem testar a compreensão do conteúdo do PDF
+        - Inclua questões que desenvolvam pensamento crítico
+        - As alternativas de múltipla escolha devem ser plausíveis, não óbvias
+        - Distribua as questões para cobrir diferentes partes do conteúdo
+        
+        A atividade deve ser formatada em HTML seguindo o formato abaixo:
+        
+        <div class="activity-content" style="max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif;">
+          <header style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #3b82f6; padding-bottom: 1rem;">
+            <h1 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem;">[TÍTULO DA ATIVIDADE]</h1>
+            <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: 0.875rem; color: #4b5563;">
+              <p><strong>Disciplina:</strong> [MATÉRIA]</p>
+              <p><strong>Série:</strong> [SÉRIE]</p>
+              <p><strong>Tipo:</strong> [TIPO DE ATIVIDADE]</p>
+            </div>
+          </header>
+          
+          <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 2rem;">
+            <p style="margin: 0; font-style: italic;">[INSTRUÇÕES DA ATIVIDADE]</p>
+          </div>
+          
+          <div class="questions">
+            <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question;">
+              [LISTA DE QUESTÕES AQUI]
+            </ol>
+          </div>
+          
+          [INCLUIR GABARITO AQUI SE SOLICITADO]
+          
+          <footer style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+            <p>Atividade gerada por iAula - Baseada no material fornecido</p>
+          </footer>
+        </div>
+        
+        Forneça uma atividade educacional completa em HTML, seguindo as diretrizes acima. A atividade deve incluir:
+        1. Um título relevante que mencione o tema e o material de referência
+        2. Instruções claras e específicas para os alunos
+        3. EXATAMENTE ${quantidadeQuestoes} questões de múltipla escolha sobre o conteúdo do PDF, com 4 alternativas cada
+        4. Se solicitado, um gabarito completo com as respostas corretas e explicações breves sobre cada resposta
+        
+        Use formatação HTML bem estruturada com estilos CSS inline conforme o exemplo.
+      `;
+      
+      // Use o nome do arquivo como parte da informação contextual
+      const pdfContext = `O PDF fornecido é: ${req.file.originalname}. Utilize seu conteúdo para criar a atividade.`;
+      
+      // Primeiro, analisar o PDF usando o modelo de visão
+      const response = await OpenAIService.analyzeDocument({
+        userId,
+        contractId,
+        file: pdfBase64,
+        prompt: `Analise este PDF educacional sobre ${tema} para a matéria de ${materia} para ${serie}. Extraia os principais conceitos, definições, exemplos e pontos importantes que podem ser usados para criar uma atividade educacional.`,
+        model: "gpt-4o",  // Usando o modelo mais atual
+        maxTokens: 8000
+      });
+      
+      // Agora, usar a análise para gerar a atividade
+      const promptFinal = `
+        ${promptAnalisePDF}
+        
+        Análise do conteúdo do PDF:
+        ${response.content}
+        
+        ${pdfContext}
+        
+        Com base na análise acima, crie uma atividade educacional completa que utilize especificamente o conteúdo do PDF fornecido.
+      `;
+      
+      const result = await OpenAIService.generateChatCompletion({
+        userId,
+        contractId,
+        prompt: promptFinal,
+        model: "gpt-4o",
+        temperature: 0.7,
+        maxTokens: 8000  // Limite ampliado para comportar atividades complexas
+      });
+      
+      return res.status(200).json(result);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      console.error("Error in PDF-based activity generation endpoint:", error);
+      return res.status(500).json({ message: error.message });
+    }
+  }
+);
 
 // Rota para Perplexity (Pesquisa)
 aiRouter.post("/perplexity/search", authenticate, hasContract, async (req: Request, res: Response) => {

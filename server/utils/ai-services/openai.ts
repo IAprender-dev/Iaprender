@@ -94,6 +94,88 @@ export async function generateChatCompletion({
 }
 
 // Função para gerar imagens com DALL-E
+interface DocumentAnalysisRequest {
+  userId: number;
+  contractId: number;
+  file: string; // Base64 do arquivo
+  prompt: string;
+  model?: string;
+  maxTokens?: number;
+}
+
+// Função para analisar documentos (PDF, imagens) usando modelos de visão
+export async function analyzeDocument({
+  userId,
+  contractId,
+  file,
+  prompt,
+  model = "gpt-4o",
+  maxTokens = 4000,
+}: DocumentAnalysisRequest) {
+  if (!openai) {
+    throw new Error("OpenAI client is not initialized. API key may be missing.");
+  }
+
+  try {
+    // Determinar o tipo MIME baseado no conteúdo do base64
+    const mimeType = file.startsWith('/9j/') ? 'image/jpeg' : 'application/pdf';
+    const dataUrl = `data:${mimeType};base64,${file}`;
+    
+    // Enviar o documento e o prompt para análise
+    const response = await openai.chat.completions.create({
+      model: model,
+      messages: [
+        {
+          role: "system",
+          content: "Você é um assistente educacional especializado em analisar documentos e extrair informações relevantes para fins educacionais."
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: prompt
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: dataUrl
+              }
+            }
+          ]
+        }
+      ],
+      max_tokens: maxTokens,
+    });
+
+    // Extrair o conteúdo da resposta
+    const responseContent = response.choices[0].message.content;
+    
+    // Registrar uso de tokens (desativado temporariamente)
+    const tokensUsed = response.usage?.total_tokens || 0;
+    
+    // Temporariamente comentado até que a tabela 'ai_tools' esteja configurada
+    /*
+    await db.insert(tokenUsage).values({
+      userId: userId,
+      contractId: contractId,
+      aiToolId: 1, // Temporariamente fixado
+      tokensUsed: tokensUsed,
+      requestData: { prompt, model, maxTokens },
+      responseData: { content: responseContent },
+    });
+    */
+
+    return {
+      content: responseContent,
+      tokensUsed: tokensUsed,
+    };
+  } catch (error: any) {
+    console.error("Error analyzing document with OpenAI:", error);
+    throw new Error(`Failed to analyze document: ${error.message}`);
+  }
+}
+
 export async function generateImage({
   userId,
   contractId,
