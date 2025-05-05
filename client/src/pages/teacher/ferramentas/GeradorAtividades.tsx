@@ -418,7 +418,7 @@ export default function GeradorAtividades() {
                       >
                         <div className="flex items-center gap-2">
                           <ListTodo className={`h-4 w-4 ${tipoAtividade === 'exercicios' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className="text-sm font-medium">Lista de Exercícios</span>
+                          <span className={`text-sm font-medium ${tipoAtividade === 'exercicios' ? 'text-white' : 'text-blue-600'}`}>Lista de Exercícios</span>
                         </div>
                       </Card>
                       
@@ -428,7 +428,7 @@ export default function GeradorAtividades() {
                       >
                         <div className="flex items-center gap-2">
                           <FileText className={`h-4 w-4 ${tipoAtividade === 'avaliacao' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className="text-sm font-medium">Avaliação/Prova</span>
+                          <span className={`text-sm font-medium ${tipoAtividade === 'avaliacao' ? 'text-white' : 'text-blue-600'}`}>Avaliação/Prova</span>
                         </div>
                       </Card>
                       
@@ -438,7 +438,7 @@ export default function GeradorAtividades() {
                       >
                         <div className="flex items-center gap-2">
                           <Users className={`h-4 w-4 ${tipoAtividade === 'trabalho' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className="text-sm font-medium">Trabalho em Grupo</span>
+                          <span className={`text-sm font-medium ${tipoAtividade === 'trabalho' ? 'text-white' : 'text-blue-600'}`}>Trabalho em Grupo</span>
                         </div>
                       </Card>
                       
@@ -448,7 +448,7 @@ export default function GeradorAtividades() {
                       >
                         <div className="flex items-center gap-2">
                           <FileQuestion className={`h-4 w-4 ${tipoAtividade === 'questionario' ? 'text-white' : 'text-blue-600'}`} />
-                          <span className="text-sm font-medium">Questionário</span>
+                          <span className={`text-sm font-medium ${tipoAtividade === 'questionario' ? 'text-white' : 'text-blue-600'}`}>Questionário</span>
                         </div>
                       </Card>
                     </div>
