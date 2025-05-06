@@ -293,57 +293,60 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       - As alternativas de múltipla escolha devem ser plausíveis, não óbvias
       - Inclua questões que testem diferentes níveis de conhecimento (básico, intermediário, avançado)
       
-      A atividade deve ser formatada em HTML seguindo o formato abaixo:
+      A atividade deve ser formatada em HTML seguindo o formato abaixo RIGOROSAMENTE:
       
       <div class="activity-content" style="max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif;">
-        <header style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #3b82f6; padding-bottom: 1rem;">
+        <header style="text-align: center; margin-bottom: 1.5rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.75rem;">
           <h1 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem;">[TÍTULO DA ATIVIDADE]</h1>
           <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: 0.875rem; color: #4b5563;">
-            <p><strong>Disciplina:</strong> [MATÉRIA]</p>
-            <p><strong>Série:</strong> [SÉRIE]</p>
-            <p><strong>Tipo:</strong> [TIPO DE ATIVIDADE]</p>
+            <p style="margin: 0"><strong>Disciplina:</strong> [MATÉRIA]</p>
+            <p style="margin: 0"><strong>Série:</strong> [SÉRIE]</p>
+            <p style="margin: 0"><strong>Tipo:</strong> [TIPO DE ATIVIDADE]</p>
           </div>
         </header>
         
-        <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 2rem;">
+        <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 1.5rem;">
           <p style="margin: 0; font-style: italic;">[INSTRUÇÕES DA ATIVIDADE]</p>
         </div>
         
         <div class="questions">
-          <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question;">
-            [LISTA DE QUESTÕES AQUI, CADA UMA COM HTML SEMELHANTE AO EXEMPLO ABAIXO]
-            <li style="margin-bottom: 1.5rem; counter-increment: question; position: relative;">
+          <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question; margin-top: 0;">
+            <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${quantidadeQuestoes} vezes, sem espaços extras entre as questões -->
+            <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
+            <li style="margin-bottom: 1.25rem; counter-increment: question; position: relative;">
               <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
-                Questão 1: [TEXTO DA QUESTÃO AQUI]
+                Questão 1: [TEXTO DA QUESTÃO AQUI]  <!-- Use o número real da questão -->
               </div>
               <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.5rem; margin: 0">
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
                     <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
                     <span>[ALTERNATIVA A]</span>
                   </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
                     <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
                     <span>[ALTERNATIVA B]</span>
                   </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
                     <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
                     <span>[ALTERNATIVA C]</span>
                   </div>
-                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
                     <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
                     <span>[ALTERNATIVA D]</span>
                   </div>
                 </div>
               </div>
             </li>
+            <!-- FIM DO EXEMPLO DE QUESTÃO -->
           </ol>
         </div>
         
+        <!-- GABARITO (INCLUIR APENAS SE SOLICITADO) -->
         [INCLUIR GABARITO AQUI SE SOLICITADO]
         
-        <footer style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
-          <p>Atividade gerada por iAula - [DATA]</p>
+        <footer style="margin-top: 1.5rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+          <p style="margin: 0">Atividade gerada por iAula - [DATA]</p>
         </footer>
       </div>
       
@@ -438,32 +441,60 @@ aiRouter.post(
         - As alternativas de múltipla escolha devem ser plausíveis, não óbvias
         - Distribua as questões para cobrir diferentes partes do conteúdo
         
-        A atividade deve ser formatada em HTML seguindo o formato abaixo:
+        A atividade deve ser formatada em HTML seguindo o formato abaixo RIGOROSAMENTE:
         
         <div class="activity-content" style="max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif;">
-          <header style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #3b82f6; padding-bottom: 1rem;">
+          <header style="text-align: center; margin-bottom: 1.5rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.75rem;">
             <h1 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem;">[TÍTULO DA ATIVIDADE]</h1>
             <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: 0.875rem; color: #4b5563;">
-              <p><strong>Disciplina:</strong> [MATÉRIA]</p>
-              <p><strong>Série:</strong> [SÉRIE]</p>
-              <p><strong>Tipo:</strong> [TIPO DE ATIVIDADE]</p>
+              <p style="margin: 0"><strong>Disciplina:</strong> [MATÉRIA]</p>
+              <p style="margin: 0"><strong>Série:</strong> [SÉRIE]</p>
+              <p style="margin: 0"><strong>Tipo:</strong> [TIPO DE ATIVIDADE]</p>
             </div>
           </header>
           
-          <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 2rem;">
+          <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 1.5rem;">
             <p style="margin: 0; font-style: italic;">[INSTRUÇÕES DA ATIVIDADE]</p>
           </div>
           
           <div class="questions">
-            <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question;">
-              [LISTA DE QUESTÕES AQUI]
+            <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question; margin-top: 0;">
+              <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${quantidadeQuestoes} vezes, sem espaços extras entre as questões -->
+              <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
+              <li style="margin-bottom: 1.25rem; counter-increment: question; position: relative;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
+                  Questão 1: [TEXTO DA QUESTÃO AQUI]  <!-- Use o número real da questão -->
+                </div>
+                <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
+                  <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.5rem; margin: 0">
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                      <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
+                      <span>[ALTERNATIVA A]</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                      <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
+                      <span>[ALTERNATIVA B]</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                      <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
+                      <span>[ALTERNATIVA C]</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                      <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
+                      <span>[ALTERNATIVA D]</span>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              <!-- FIM DO EXEMPLO DE QUESTÃO -->
             </ol>
           </div>
           
+          <!-- GABARITO (INCLUIR APENAS SE SOLICITADO) -->
           [INCLUIR GABARITO AQUI SE SOLICITADO]
           
-          <footer style="margin-top: 2rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
-            <p>Atividade gerada por iAula - Baseada no material fornecido</p>
+          <footer style="margin-top: 1.5rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+            <p style="margin: 0">Atividade gerada por iAula - Baseada no material fornecido</p>
           </footer>
         </div>
         
@@ -585,30 +616,90 @@ aiRouter.post("/education/generate-activity", authenticate, hasContract, async (
     
     // Construir um prompt detalhado para o OpenAI
     const prompt = `
+      Você é um educador especialista que cria atividades educacionais de alta qualidade.
+      
       Crie uma atividade educacional completa com as seguintes características:
       
       - Tema: ${params.tema}
       - Matéria: ${params.materia}
       - Série/Ano: ${params.serie}
       - Tipo de atividade: ${params.tipoAtividade}
-      - Quantidade de questões: ${params.quantidadeQuestoes} (IMPORTANTE: gere exatamente esse número de questões, não menos)
+      - Quantidade de questões: ${params.quantidadeQuestoes} (IMPORTANTE: gere EXATAMENTE este número de questões)
       - Nível de dificuldade: ${params.nivelDificuldade}
       - Incluir gabarito: ${params.incluirGabarito ? 'Sim' : 'Não'}
       
-      A atividade deve seguir um formato HTML que possa ser exibido diretamente em uma página web.
-      Use tags div, h1, h2, ol, li, etc. e inclua estilização inline (style="...") para uma boa formatação visual.
+      DIRETRIZES IMPORTANTES:
+      - Crie questões desafiadoras e criativas, não apenas memorização de fatos
+      - Use linguagem apropriada para a idade dos estudantes
+      - Inclua questões que desenvolvam pensamento crítico
+      - Evite estereótipos ou exemplos ultrapassados
+      - Use exemplos do cotidiano para ajudar na compreensão
+      - As alternativas de múltipla escolha devem ser plausíveis, não óbvias
+      - Inclua questões que testem diferentes níveis de conhecimento (básico, intermediário, avançado)
       
-      Estruture a atividade da seguinte forma:
-      1. Um cabeçalho com título da atividade, matéria, série e tipo
-      2. Uma breve instrução para os alunos
-      3. EXATAMENTE ${params.quantidadeQuestoes} questões numeradas de 1 a ${params.quantidadeQuestoes}
-      4. Se solicitado, inclua um gabarito ao final
-      5. Um rodapé simples
+      A atividade deve ser formatada em HTML seguindo o formato abaixo RIGOROSAMENTE:
       
-      As questões devem ser específicas para a matéria selecionada, adequadas ao nível escolar indicado, 
-      e pertinentes ao tema. Para cada questão, inclua 4 alternativas (A, B, C, D).
+      <div class="activity-content" style="max-width: 800px; margin: 0 auto; font-family: system-ui, sans-serif;">
+        <header style="text-align: center; margin-bottom: 1.5rem; border-bottom: 2px solid #3b82f6; padding-bottom: 0.75rem;">
+          <h1 style="font-size: 1.5rem; font-weight: bold; color: #1e3a8a; margin-bottom: 0.5rem;">[TÍTULO DA ATIVIDADE]</h1>
+          <div style="display: flex; justify-content: center; gap: 1.5rem; font-size: 0.875rem; color: #4b5563;">
+            <p style="margin: 0"><strong>Disciplina:</strong> [MATÉRIA]</p>
+            <p style="margin: 0"><strong>Série:</strong> [SÉRIE]</p>
+            <p style="margin: 0"><strong>Tipo:</strong> [TIPO DE ATIVIDADE]</p>
+          </div>
+        </header>
+        
+        <div class="instructions" style="background-color: #f0f9ff; border-left: 4px solid #3b82f6; padding: 1rem; margin-bottom: 1.5rem;">
+          <p style="margin: 0; font-style: italic;">[INSTRUÇÕES DA ATIVIDADE]</p>
+        </div>
+        
+        <div class="questions">
+          <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question; margin-top: 0;">
+            <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${params.quantidadeQuestoes} vezes, sem espaços extras entre as questões -->
+            <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
+            <li style="margin-bottom: 1.25rem; counter-increment: question; position: relative;">
+              <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
+                Questão 1: [TEXTO DA QUESTÃO AQUI]  <!-- Use o número real da questão -->
+              </div>
+              <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.5rem; margin: 0">
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                    <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
+                    <span>[ALTERNATIVA A]</span>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                    <span style="font-weight: 500; min-width: 1.5rem;">B)</span>
+                    <span>[ALTERNATIVA B]</span>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                    <span style="font-weight: 500; min-width: 1.5rem;">C)</span>
+                    <span>[ALTERNATIVA C]</span>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
+                    <span style="font-weight: 500; min-width: 1.5rem;">D)</span>
+                    <span>[ALTERNATIVA D]</span>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <!-- FIM DO EXEMPLO DE QUESTÃO -->
+          </ol>
+        </div>
+        
+        <!-- GABARITO (INCLUIR APENAS SE SOLICITADO) -->
+        [INCLUIR GABARITO AQUI SE SOLICITADO]
+        
+        <footer style="margin-top: 1.5rem; text-align: center; font-size: 0.75rem; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 1rem;">
+          <p style="margin: 0">Atividade gerada por iAula - [DATA]</p>
+        </footer>
+      </div>
       
-      IMPORTANTE: Você DEVE gerar EXATAMENTE ${params.quantidadeQuestoes} questões, não mais e não menos.
+      REGRAS IMPORTANTES DE FORMATAÇÃO:
+      1. Siga EXATAMENTE o modelo de HTML fornecido acima
+      2. Gere EXATAMENTE ${params.quantidadeQuestoes} questões, não mais e não menos
+      3. NÃO deixe espaçamentos excessivos entre as questões
+      4. Cada questão deve ter 4 alternativas (A, B, C, D)
+      5. Não adicione código ou explicações fora do HTML solicitado
       
       Retorne APENAS o HTML puro, sem explicações adicionais ou texto fora do HTML.
     `;
