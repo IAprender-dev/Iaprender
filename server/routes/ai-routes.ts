@@ -313,12 +313,12 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
           <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question; margin-top: 0;">
             <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${quantidadeQuestoes} vezes, sem espaços extras entre as questões -->
             <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
-            <li style="margin-bottom: 1.25rem; counter-increment: question; position: relative;">
-              <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
+            <li style="margin-bottom: 0.6rem; counter-increment: question; position: relative;">
+              <div style="font-weight: 600; margin-bottom: 0.25rem; color: #1e3a8a;">
                 Questão 1: [TEXTO DA QUESTÃO AQUI]  <!-- Use o número real da questão -->
               </div>
-              <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
-                <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.5rem; margin: 0">
+              <div style="background-color: #f9fafb; padding: 0.5rem; border-radius: 0.375rem; margin-top: 0.25rem;">
+                <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; margin: 0">
                   <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
                     <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
                     <span>[ALTERNATIVA A]</span>
@@ -461,12 +461,12 @@ aiRouter.post(
             <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question; margin-top: 0;">
               <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${quantidadeQuestoes} vezes, sem espaços extras entre as questões -->
               <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
-              <li style="margin-bottom: 1.25rem; counter-increment: question; position: relative;">
-                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
+              <li style="margin-bottom: 0.6rem; counter-increment: question; position: relative;">
+                <div style="font-weight: 600; margin-bottom: 0.25rem; color: #1e3a8a;">
                   Questão 1: [TEXTO DA QUESTÃO AQUI]  <!-- Use o número real da questão -->
                 </div>
-                <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
-                  <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.5rem; margin: 0">
+                <div style="background-color: #f9fafb; padding: 0.5rem; border-radius: 0.375rem; margin-top: 0.25rem;">
+                  <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; margin: 0">
                     <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
                       <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
                       <span>[ALTERNATIVA A]</span>
@@ -657,12 +657,12 @@ aiRouter.post("/education/generate-activity", authenticate, hasContract, async (
           <ol style="list-style-position: outside; padding-left: 1.5rem; counter-reset: question; margin-top: 0;">
             <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${params.quantidadeQuestoes} vezes, sem espaços extras entre as questões -->
             <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
-            <li style="margin-bottom: 1.25rem; counter-increment: question; position: relative;">
-              <div style="font-weight: 600; margin-bottom: 0.5rem; color: #1e3a8a;">
+            <li style="margin-bottom: 0.6rem; counter-increment: question; position: relative;">
+              <div style="font-weight: 600; margin-bottom: 0.25rem; color: #1e3a8a;">
                 Questão 1: [TEXTO DA QUESTÃO AQUI]  <!-- Use o número real da questão -->
               </div>
-              <div style="background-color: #f9fafb; padding: 0.75rem; border-radius: 0.375rem; margin-top: 0.5rem;">
-                <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.5rem; margin: 0">
+              <div style="background-color: #f9fafb; padding: 0.5rem; border-radius: 0.375rem; margin-top: 0.25rem;">
+                <div style="display: grid; grid-template-columns: repeat(1, 1fr); gap: 0.25rem; margin: 0">
                   <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin: 0">
                     <span style="font-weight: 500; min-width: 1.5rem;">A)</span>
                     <span>[ALTERNATIVA A]</span>
