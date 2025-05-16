@@ -232,13 +232,29 @@ export default function GeradorAtividades() {
       // Debugging para ver a estrutura da resposta
       console.log('Resposta da API:', data);
       
-      // Criando objeto da atividade com o conteúdo gerado pela IA
+      // Processando o conteúdo para remover marcadores de código e garantir conteúdo completo
+      let conteudoLimpo = data.content;
+      
+      // Removendo marcadores de código Markdown como ```html e ``` se existirem
+      if (conteudoLimpo.startsWith('```html')) {
+        conteudoLimpo = conteudoLimpo.replace('```html', '');
+        
+        // Se terminar com ```, remova também
+        if (conteudoLimpo.endsWith('```')) {
+          conteudoLimpo = conteudoLimpo.substring(0, conteudoLimpo.length - 3);
+        }
+      }
+      
+      // Removendo espaços em branco extras no início e fim
+      conteudoLimpo = conteudoLimpo.trim();
+      
+      // Criando objeto da atividade com o conteúdo processado
       const novaAtividade: AtividadeGerada = {
         id: `ativ-${Date.now()}`,
         titulo: `Atividade de ${materiaParaTexto(materia)} - ${tema}`,
         materia: materiaParaTexto(materia),
         serie: serieParaTexto(serie),
-        conteudo: data.content,
+        conteudo: conteudoLimpo,
         tipoAtividade: tipoAtividadeParaTexto(tipoAtividade),
         dataGeracao: new Date(),
         quantidadeQuestoes: quantidadeQuestoes[0],
