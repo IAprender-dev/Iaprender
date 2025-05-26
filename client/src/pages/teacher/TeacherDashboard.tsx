@@ -171,7 +171,7 @@ export default function TeacherDashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard do Professor | iAula</title>
+        <title>Dashboard do Professor | IAverse</title>
       </Helmet>
 
       <div className="flex h-screen overflow-hidden bg-[#f8fafc]">

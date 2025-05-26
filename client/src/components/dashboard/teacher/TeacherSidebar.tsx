@@ -23,6 +23,7 @@ import {
   ListChecks,
   BookOpenCheck
 } from "lucide-react";
+import iaverseLogo from "@/assets/IAverse.png";
 
 export default function TeacherSidebar() {
   const [location] = useLocation();
