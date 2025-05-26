@@ -15,9 +15,10 @@ import { User, Bot,
   Loader2,
   DownloadCloud,
   Bookmark,
-  Settings,
-  History
+  Home,
+  ArrowLeft
 } from "lucide-react";
+import iaverseLogo from "@/assets/IAverse.png";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -576,67 +577,86 @@ export default function CentralIA() {
         <title>Central de IA | IAverse</title>
       </Helmet>
       
-      <div className="flex h-screen overflow-hidden bg-white">
+      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50/30">
         {/* Sidebar (dispositivos grandes) */}
-        <div className={`hidden md:block w-64 border-r border-neutral-200 h-full flex-shrink-0 ${isMenuOpen ? 'block' : ''}`}>
+        <div className={`hidden md:block w-72 bg-white border-r border-slate-200 shadow-sm h-full flex-shrink-0 ${isMenuOpen ? 'block' : ''}`}>
           <div className="flex flex-col h-full">
-            {/* Header */}
-            <div className="h-16 flex items-center px-4 border-b border-neutral-200">
-              <h1 className="text-lg font-semibold">Central de IA</h1>
+            {/* Header com Logo IAverse */}
+            <div className="h-20 flex items-center justify-between px-6 border-b border-slate-200 bg-gradient-to-r from-primary/5 to-blue-50">
+              <Link href="/" className="flex items-center space-x-3">
+                <img src={iaverseLogo} alt="IAverse" className="w-8 h-8" />
+                <span className="text-xl font-bold text-gray-900">IAverse</span>
+              </Link>
+              <div className="text-sm font-medium text-slate-600 bg-blue-100 px-3 py-1 rounded-full">
+                Central de IA
+              </div>
+            </div>
+            
+            {/* Voltar à Página Principal */}
+            <div className="px-6 py-4 border-b border-slate-100">
+              <Link href="/professor/dashboard">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start gap-3 h-11 border-slate-200 hover:bg-slate-50 hover:border-primary/20 transition-all"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span className="font-medium">Página Principal</span>
+                </Button>
+              </Link>
             </div>
             
             {/* New Chat Button */}
-            <div className="p-4">
+            <div className="px-6 py-4">
               <Button 
                 onClick={createNewConversation}
-                className="w-full"
+                className="w-full justify-start gap-3 h-12 bg-primary hover:bg-primary/90 shadow-sm"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Conversa
+                <Plus className="h-5 w-5" />
+                <span className="font-medium">Nova Conversa</span>
               </Button>
             </div>
             
             {/* Conversation List */}
-            <ScrollArea className="flex-1 px-4 py-2">
-              <div className="space-y-2">
+            <ScrollArea className="flex-1 px-4">
+              <div className="space-y-1 pb-4">
+                <h3 className="px-2 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Conversas Recentes
+                </h3>
                 {conversations.map(conv => (
                   <Button
                     key={conv.id}
                     variant={currentConversation?.id === conv.id ? "secondary" : "ghost"}
-                    className="w-full justify-start overflow-hidden text-ellipsis whitespace-nowrap"
+                    className={`w-full justify-start h-10 px-3 ${
+                      currentConversation?.id === conv.id 
+                        ? "bg-primary/10 text-primary border-primary/20 shadow-sm" 
+                        : "hover:bg-slate-50 text-slate-700"
+                    }`}
                     onClick={() => setCurrentConversation(conv)}
                   >
-                    <MessagesSquare className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{conv.title}</span>
+                    <MessagesSquare className="h-4 w-4 mr-3 flex-shrink-0" />
+                    <span className="truncate text-sm">{conv.title}</span>
                   </Button>
                 ))}
               </div>
             </ScrollArea>
             
-            {/* Settings/Actions */}
-            <div className="p-4 border-t border-neutral-200">
-              <div className="space-y-2">
-                <Button variant="ghost" className="w-full justify-start">
-                  <History className="h-4 w-4 mr-2" />
-                  Histórico
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Bookmark className="h-4 w-4 mr-2" />
-                  Itens Salvos
-                </Button>
-                <Button variant="ghost" className="w-full justify-start">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Configurações
-                </Button>
-              </div>
+            {/* Itens Salvos */}
+            <div className="px-6 py-4 border-t border-slate-100">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start gap-3 h-11 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 hover:text-amber-800 transition-all"
+              >
+                <Bookmark className="h-4 w-4" />
+                <span className="font-medium">Itens Salvos</span>
+              </Button>
             </div>
           </div>
         </div>
         
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="h-16 border-b border-neutral-200 flex items-center justify-between px-4">
+          {/* Header Moderno */}
+          <div className="h-20 border-b border-slate-200 bg-white/80 backdrop-blur-sm flex items-center justify-between px-6 shadow-sm">
             {/* Mobile Menu Button */}
             <div className="md:hidden">
               <Sheet>
