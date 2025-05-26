@@ -757,6 +757,103 @@ export default function CentralIA() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Itens Salvos */}
+      {showSavedItems && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] m-4">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h2 className="text-2xl font-bold text-slate-800">Itens Salvos</h2>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowSavedItems(false)}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div className="p-6 h-full overflow-y-auto">
+              {savedItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <Bookmark className="h-16 w-16 text-slate-300 mb-4" />
+                  <h3 className="text-xl font-semibold text-slate-600 mb-2">Nenhum item salvo</h3>
+                  <p className="text-slate-500">
+                    Comece a salvar prompts, imagens e arquivos durante suas conversas com as IAs.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {savedItems.map((item) => (
+                    <Card key={item.id} className="hover:shadow-lg transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            {item.type === "image" && <ImageIcon className="h-4 w-4 text-orange-500" />}
+                            {item.type === "prompt" && <FileText className="h-4 w-4 text-blue-500" />}
+                            {item.type === "file" && <DownloadCloud className="h-4 w-4 text-green-500" />}
+                            <span className="text-xs font-medium text-slate-500 uppercase">
+                              {item.type === "image" ? "Imagem" : item.type === "prompt" ? "Prompt" : "Arquivo"}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeItem(item.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        <h4 className="font-semibold text-slate-800 mb-2 line-clamp-2">
+                          {item.title}
+                        </h4>
+                        
+                        {item.type === "image" && item.url ? (
+                          <div className="mb-3">
+                            <img 
+                              src={item.url} 
+                              alt={item.title}
+                              className="w-full h-32 object-cover rounded-md border"
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-600 mb-3 line-clamp-3">
+                            {item.content}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center justify-between text-xs text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {item.createdAt.toLocaleDateString("pt-BR")}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(item.content);
+                              toast({
+                                title: "Copiado!",
+                                description: "Conteúdo copiado para a área de transferência.",
+                              });
+                            }}
+                            className="text-slate-500 hover:text-slate-700"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
