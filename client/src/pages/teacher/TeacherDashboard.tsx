@@ -284,17 +284,7 @@ export default function TeacherDashboard() {
               </div>
               
               <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Bell className="h-4 w-4" />
-                  <span className="hidden md:inline">Notificações</span>
-                  <Badge variant="destructive" className="h-5 w-5 p-0 text-xs">3</Badge>
-                </Button>
-                <Link href="/central-ia">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                    <Bot className="h-4 w-4 mr-2" />
-                    Central de IAs
-                  </Button>
-                </Link>
+                {/* Header actions removed as requested */}
               </div>
             </div>
           </header>
@@ -327,10 +317,6 @@ export default function TeacherDashboard() {
                           Acessar Central de IAs
                         </Button>
                       </Link>
-                      <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-2">
-                        <PlayCircle className="h-5 w-5" />
-                        Ver Tutorial
-                      </Button>
                     </div>
                   </div>
                   <div className="hidden lg:block">
