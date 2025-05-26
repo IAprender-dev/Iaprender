@@ -152,53 +152,31 @@ export default function TeacherDashboard() {
     }
   ];
 
-  // Recent courses
-  const recentCourses = [
+  // Recent AI activities
+  const recentAIUsage = [
     {
       id: 1,
-      title: "Matemática 9º Ano",
-      students: 32,
-      progress: 78,
-      nextClass: "Hoje, 14:00",
-      subject: "Equações do 2º grau"
+      tool: "Central de IAs",
+      action: "Chat com ChatGPT",
+      time: "Há 5 min",
+      tokens: 150,
+      type: "chat"
     },
     {
       id: 2,
-      title: "Física 2º Ano",
-      students: 28,
-      progress: 65,
-      nextClass: "Amanhã, 10:00",
-      subject: "Cinemática"
+      tool: "Gerador de Atividades",
+      action: "Lista de Matemática",
+      time: "Há 20 min",
+      tokens: 340,
+      type: "generation"
     },
     {
       id: 3,
-      title: "Química 1º Ano",
-      students: 35,
-      progress: 45,
-      nextClass: "Qua, 08:00",
-      subject: "Tabela Periódica"
-    }
-  ];
-
-  // Recent activities
-  const recentActivities = [
-    {
-      id: 1,
-      title: "Prova - Equações Quadráticas",
-      course: "Matemática 9º Ano",
-      submissions: 28,
-      total: 32,
-      dueDate: "Hoje",
-      status: "pending"
-    },
-    {
-      id: 2,
-      title: "Lista de Exercícios - Cinemática",
-      course: "Física 2º Ano",
-      submissions: 25,
-      total: 28,
-      dueDate: "Ontem",
-      status: "late"
+      tool: "Imagens Educacionais",
+      action: "Diagrama de Física",
+      time: "Há 1h",
+      tokens: 0,
+      type: "image"
     }
   ];
 
@@ -323,21 +301,58 @@ export default function TeacherDashboard() {
 
           {/* Dashboard Content */}
           <main className="p-6 space-y-8">
-            {/* Quick Actions */}
+            {/* Hero Section - Central de IAs */}
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white shadow-2xl rounded-3xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+              <CardContent className="relative p-8">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                        <Bot className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl font-bold mb-1">Central de IAs</h2>
+                        <p className="text-white/80 text-lg">Sua porta de entrada para todas as inteligências artificiais</p>
+                      </div>
+                    </div>
+                    <p className="text-white/90 mb-6 max-w-2xl">
+                      Acesse ChatGPT, Claude, Gemini e mais ferramentas de IA em uma interface unificada. 
+                      Otimize seu tempo e crie conteúdos educacionais incríveis.
+                    </p>
+                    <div className="flex gap-4">
+                      <Link href="/central-ia">
+                        <Button size="lg" className="bg-white text-blue-600 hover:bg-white/90 shadow-xl gap-3 font-semibold">
+                          <Sparkles className="h-5 w-5" />
+                          Acessar Central de IAs
+                        </Button>
+                      </Link>
+                      <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10 gap-2">
+                        <PlayCircle className="h-5 w-5" />
+                        Ver Tutorial
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="hidden lg:block">
+                    <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center">
+                      <Bot className="h-16 w-16 text-white/80" />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-1">Resumo de Hoje</h2>
-                <p className="text-sm text-slate-600">Gerencie suas aulas e atividades</p>
+                <h2 className="text-xl font-bold text-slate-900 mb-1">Suas Métricas de IA</h2>
+                <p className="text-sm text-slate-600">Acompanhe seu uso das ferramentas de inteligência artificial</p>
               </div>
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 gap-2">
-                <Plus className="h-4 w-4" />
-                Criar Curso
-              </Button>
             </div>
 
-            {/* Stats Cards */}
+            {/* AI Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {dashboardStats.map((stat, index) => (
+              {aiStats.map((stat, index) => (
                 <Card key={index} className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl hover:scale-105">
                   <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
                   <CardContent className="relative p-6">
@@ -381,22 +396,35 @@ export default function TeacherDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {aiTools.map((tool, index) => (
                     <Link key={index} href={tool.href}>
-                      <div className="group p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all cursor-pointer">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className={`p-2 rounded-lg bg-gradient-to-br ${tool.color} opacity-10 group-hover:opacity-20 transition-opacity`}>
+                      <div className={`group relative p-6 rounded-2xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all cursor-pointer ${
+                        tool.featured ? 'bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200/50 shadow-lg' : ''
+                      }`}>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className={`p-3 rounded-xl bg-gradient-to-br ${tool.color} opacity-15 group-hover:opacity-25 transition-opacity`}>
                             {tool.icon}
                           </div>
                           {tool.badge && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge 
+                              variant={tool.featured ? "default" : "secondary"} 
+                              className={`text-xs ${tool.featured ? 'bg-purple-600 text-white' : ''}`}
+                            >
                               {tool.badge}
                             </Badge>
                           )}
                         </div>
-                        <h4 className="font-semibold text-slate-900 mb-1">{tool.title}</h4>
-                        <p className="text-xs text-slate-600">{tool.description}</p>
+                        <h4 className={`font-bold mb-2 ${tool.featured ? 'text-lg text-purple-700' : 'text-slate-900'}`}>
+                          {tool.title}
+                        </h4>
+                        <p className="text-sm text-slate-600">{tool.description}</p>
+                        {tool.featured && (
+                          <div className="mt-4 flex items-center gap-2 text-purple-600 font-medium text-sm">
+                            <Sparkles className="h-4 w-4" />
+                            <span>Ferramenta Principal</span>
+                          </div>
+                        )}
                       </div>
                     </Link>
                   ))}
@@ -405,87 +433,100 @@ export default function TeacherDashboard() {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Recent Courses */}
+              {/* Recent AI Usage */}
               <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
                 <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-bold text-slate-900">Próximas Aulas</CardTitle>
-                    <Link href="/teacher/courses">
+                    <CardTitle className="text-xl font-bold text-slate-900">Atividade Recente de IA</CardTitle>
+                    <Link href="/central-ia">
                       <Button variant="outline" size="sm" className="gap-2">
-                        Ver todas
+                        Ver histórico
                         <ArrowRight className="h-4 w-4" />
                       </Button>
                     </Link>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {recentCourses.map((course) => (
-                    <div key={course.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-slate-900">{course.title}</h4>
-                          <p className="text-sm text-slate-600">{course.students} alunos</p>
+                  {recentAIUsage.map((usage) => (
+                    <div key={usage.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            usage.type === 'chat' ? 'bg-blue-100' :
+                            usage.type === 'generation' ? 'bg-purple-100' : 'bg-green-100'
+                          }`}>
+                            {usage.type === 'chat' ? <Bot className="h-4 w-4 text-blue-600" /> :
+                             usage.type === 'generation' ? <FilePlus className="h-4 w-4 text-purple-600" /> :
+                             <ImageIcon className="h-4 w-4 text-green-600" />}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-slate-900">{usage.tool}</h4>
+                            <p className="text-sm text-slate-600">{usage.action}</p>
+                          </div>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium text-slate-900">{course.nextClass}</p>
-                          <p className="text-xs text-slate-500">{course.subject}</p>
+                          <p className="text-xs text-slate-500">{usage.time}</p>
+                          {usage.tokens > 0 && (
+                            <p className="text-xs text-slate-400">{usage.tokens} tokens</p>
+                          )}
                         </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-slate-600">Progresso do curso</span>
-                          <span className="font-medium text-slate-900">{course.progress}%</span>
-                        </div>
-                        <Progress value={course.progress} className="h-2" />
                       </div>
                     </div>
                   ))}
                 </CardContent>
               </Card>
 
-              {/* Recent Activities */}
+              {/* AI Tips & Quick Actions */}
               <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
                 <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-bold text-slate-900">Atividades Pendentes</CardTitle>
-                    <Link href="/teacher/activities">
-                      <Button variant="outline" size="sm" className="gap-2">
-                        Ver todas
-                        <ArrowRight className="h-4 w-4" />
+                  <CardTitle className="text-xl font-bold text-slate-900">Dicas e Ações Rápidas</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Lightbulb className="h-5 w-5 text-blue-600" />
+                      <h4 className="font-semibold text-slate-900">Dica do Dia</h4>
+                    </div>
+                    <p className="text-sm text-slate-700 mb-3">
+                      Use a Central de IAs para comparar respostas de diferentes modelos (ChatGPT, Claude, Gemini) 
+                      e obter perspectivas variadas para seus materiais educacionais.
+                    </p>
+                    <Link href="/central-ia">
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                        Experimentar Agora
                       </Button>
                     </Link>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {recentActivities.map((activity) => (
-                    <div key={activity.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-slate-900">{activity.title}</h4>
-                        <Badge 
-                          variant={activity.status === 'pending' ? 'default' : 'destructive'}
-                          className="text-xs"
-                        >
-                          {activity.status === 'pending' ? 'Pendente' : 'Atrasado'}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-600 mb-3">{activity.course}</p>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-600">
-                          {activity.submissions}/{activity.total} entregas
-                        </span>
-                        <div className="flex items-center gap-1 text-slate-500">
-                          <Calendar className="h-3 w-3" />
-                          <span>{activity.dueDate}</span>
-                        </div>
-                      </div>
-                      <div className="mt-2">
-                        <Progress 
-                          value={(activity.submissions / activity.total) * 100} 
-                          className="h-2" 
-                        />
-                      </div>
+
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-slate-900">Ações Rápidas</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Link href="/teacher/tools/generator">
+                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
+                          <FilePlus className="h-4 w-4" />
+                          <span className="text-xs">Gerar Atividade</span>
+                        </Button>
+                      </Link>
+                      <Link href="/teacher/tools/images">
+                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
+                          <ImageIcon className="h-4 w-4" />
+                          <span className="text-xs">Criar Imagem</span>
+                        </Button>
+                      </Link>
+                      <Link href="/teacher/tools/planning">
+                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
+                          <Calendar className="h-4 w-4" />
+                          <span className="text-xs">Planejar Aula</span>
+                        </Button>
+                      </Link>
+                      <Link href="/teacher/tools/correction">
+                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
+                          <CheckSquare className="h-4 w-4" />
+                          <span className="text-xs">Corrigir Prova</span>
+                        </Button>
+                      </Link>
                     </div>
-                  ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>
