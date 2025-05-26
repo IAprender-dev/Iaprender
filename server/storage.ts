@@ -62,6 +62,11 @@ export interface IStorage {
   // Certificate operations
   getUserCertificates(userId: number): Promise<(Certificate & { course: Course, user: User })[]>;
   createCertificate(certificate: InsertCertificate): Promise<Certificate>;
+  
+  // Saved items operations
+  getSavedItemsByUser(userId: number): Promise<SavedItem[]>;
+  createSavedItem(savedItem: InsertSavedItem): Promise<SavedItem>;
+  deleteSavedItem(id: number, userId: number): Promise<boolean>;
 }
 
 // In-memory storage implementation
@@ -77,6 +82,7 @@ export class MemStorage implements IStorage {
   private lessonPlans: Map<number, LessonPlan>;
   private aiMessages: Map<number, AIMessage>;
   private certificates: Map<number, Certificate>;
+  private savedItems: Map<number, SavedItem>;
   
   private currentIds: {
     users: number;

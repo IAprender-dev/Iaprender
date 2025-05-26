@@ -234,6 +234,18 @@ export const newsletterIssues = pgTable("newsletter_issues", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Saved Items - Itens salvos pelos usuários
+export const savedItems = pgTable("saved_items", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  type: text("type").notNull(), // 'chat', 'image', 'document', 'activity'
+  aiModel: text("ai_model"), // 'chatgpt', 'claude', 'perplexity', etc.
+  metadata: jsonb("metadata"), // dados adicionais como URLs de imagem, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -334,6 +346,11 @@ export const insertNewsletterIssueSchema = createInsertSchema(newsletterIssues).
   sentCount: true,
 });
 
+export const insertSavedItemSchema = createInsertSchema(savedItems).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -391,3 +408,6 @@ export type Newsletter = typeof newsletter.$inferSelect;
 
 export type InsertNewsletterIssue = z.infer<typeof insertNewsletterIssueSchema>;
 export type NewsletterIssue = typeof newsletterIssues.$inferSelect;
+
+export type InsertSavedItem = z.infer<typeof insertSavedItemSchema>;
+export type SavedItem = typeof savedItems.$inferSelect;
