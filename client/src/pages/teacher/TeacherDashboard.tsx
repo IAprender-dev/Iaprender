@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
 import { 
@@ -20,29 +19,38 @@ import {
   FileEdit,
   ClipboardList,
   ListChecks,
-  BookOpenCheck
+  BookOpenCheck,
+  LayoutGrid,
+  Calendar,
+  Award,
+  TrendingUp,
+  Clock,
+  Target,
+  PlayCircle,
+  Menu,
+  X,
+  Home,
+  User,
+  LogOut,
+  Settings,
+  Bell,
+  Plus,
+  Wand2,
+  Lightbulb
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import TeacherHeader from "@/components/dashboard/teacher/TeacherHeader";
-import TeacherSidebar from "@/components/dashboard/teacher/TeacherSidebar";
-import AIToolsPanel from "@/components/ai/AIToolsPanel";
-import { ScheduleEvent, StudentPerformance } from "@/lib/types";
-
-// Definir tipos para os cursos de desenvolvimento
-interface DevCourse {
-  id: number;
-  title: string;
-  description: string;
-  imageUrl: string;
-  progress: number;
-}
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import iaverseLogo from "@/assets/IAverse.png";
 
 export default function TeacherDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [location, setLocation] = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
   const currentDate = new Date();
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
     weekday: 'long', 
@@ -51,302 +59,427 @@ export default function TeacherDashboard() {
     year: 'numeric'
   }).format(currentDate);
 
-  // Fetch teacher's schedule
-  const { 
-    data: scheduleEvents, 
-    isLoading: scheduleLoading 
-  } = useQuery({
-    queryKey: ['/api/teacher/schedule'],
-    enabled: !!user,
-  });
+  // Navigation items
+  const navigationItems = [
+    { name: "Dashboard", href: "/teacher/dashboard", icon: LayoutGrid, active: true },
+    { name: "Meus Cursos", href: "/teacher/courses", icon: BookOpen },
+    { name: "Planejamento", href: "/teacher/planning", icon: Calendar },
+    { name: "Ferramentas IA", href: "/teacher/tools", icon: Wand2 },
+    { name: "Central de IAs", href: "/central-ia", icon: Bot },
+  ];
 
-  // Fetch student performance data
-  const { 
-    data: performanceData, 
-    isLoading: performanceLoading 
-  } = useQuery({
-    queryKey: ['/api/teacher/performance'],
-    enabled: !!user,
-  });
-
-  // Fetch professional development courses
-  const { 
-    data: devCourses, 
-    isLoading: devCoursesLoading 
-  } = useQuery({
-    queryKey: ['/api/teacher/development-courses'],
-    enabled: !!user,
-  });
-
-  const quickActionLinks = [
+  // Quick stats
+  const dashboardStats = [
     {
-      title: "Criar Plano de Aula",
-      icon: <CalendarCheck2 className="text-blue-600 h-5 w-5" />,
-      href: "/professor/planejamento",
-      color: "bg-blue-50"
+      title: "Alunos Ativos",
+      value: "247",
+      description: "Em suas turmas",
+      icon: <Users className="text-blue-600 h-6 w-6" />,
+      color: "from-blue-500 to-blue-600",
+      trend: "+12%"
     },
     {
-      title: "Corrigir Atividades",
-      icon: <CheckSquare className="text-blue-600 h-5 w-5" />,
-      href: "/professor/atividades",
-      color: "bg-blue-50"
+      title: "Cursos Criados",
+      value: "8",
+      description: "Este semestre",
+      icon: <BookOpen className="text-purple-600 h-6 w-6" />,
+      color: "from-purple-500 to-purple-600",
+      trend: "+3"
     },
     {
-      title: "Criar Conteúdo",
-      icon: <FilePlus className="text-blue-600 h-5 w-5" />,
-      href: "/professor/cursos/criar",
-      color: "bg-blue-50"
+      title: "Atividades",
+      value: "24",
+      description: "Pendentes de correção",
+      icon: <CheckSquare className="text-amber-600 h-6 w-6" />,
+      color: "from-amber-500 to-amber-600",
+      trend: "5 hoje"
     },
     {
-      title: "Assistente Virtual",
-      icon: <Bot className="text-blue-600 h-5 w-5" />,
-      href: "/professor/ferramentas",
-      color: "bg-blue-50"
+      title: "Engajamento",
+      value: "89%",
+      description: "Média das turmas",
+      icon: <TrendingUp className="text-green-600 h-6 w-6" />,
+      color: "from-green-500 to-green-600",
+      trend: "+7%"
     }
   ];
 
-  // Mock data for demonstration purposes
-  const mockScheduleEvents: ScheduleEvent[] = [
+  // AI Tools
+  const aiTools = [
+    {
+      title: "Gerador de Atividades",
+      description: "Crie exercícios personalizados com IA",
+      icon: <FilePlus className="h-6 w-6" />,
+      color: "from-blue-500 to-blue-600",
+      href: "/teacher/tools/generator",
+      badge: "Popular"
+    },
+    {
+      title: "Correção Inteligente",
+      description: "Correção automatizada de provas",
+      icon: <CheckSquare className="h-6 w-6" />,
+      color: "from-purple-500 to-purple-600",
+      href: "/teacher/tools/correction",
+      badge: "Novo"
+    },
+    {
+      title: "Imagens Educacionais",
+      description: "Gere ilustrações para suas aulas",
+      icon: <ImageIcon className="h-6 w-6" />,
+      color: "from-green-500 to-green-600",
+      href: "/teacher/tools/images"
+    },
+    {
+      title: "Planejamento de Aula",
+      description: "Planos de aula inteligentes",
+      icon: <Calendar className="h-6 w-6" />,
+      color: "from-amber-500 to-amber-600",
+      href: "/teacher/tools/planning"
+    }
+  ];
+
+  // Recent courses
+  const recentCourses = [
     {
       id: 1,
-      title: "Aula de Matemática - 8º ano A",
-      description: "Introdução a Álgebra - Sala 15",
-      time: "08:00",
-      date: "Hoje",
-      location: "Sala 15",
-      status: "active"
+      title: "Matemática 9º Ano",
+      students: 32,
+      progress: 78,
+      nextClass: "Hoje, 14:00",
+      subject: "Equações do 2º grau"
     },
     {
       id: 2,
-      title: "Reunião Pedagógica",
-      description: "Avaliação bimestral - Sala dos professores",
-      time: "10:30",
-      date: "Hoje",
-      location: "Sala dos professores",
-      status: "upcoming"
+      title: "Física 2º Ano",
+      students: 28,
+      progress: 65,
+      nextClass: "Amanhã, 10:00",
+      subject: "Cinemática"
     },
     {
       id: 3,
-      title: "Aula de Matemática - 7º ano C",
-      description: "Geometria Espacial - Sala 12",
-      time: "14:15",
-      date: "Hoje",
-      location: "Sala 12",
-      status: "upcoming"
-    },
-    {
-      id: 4,
-      title: "Aula de Matemática - 9º ano B",
-      description: "Funções do 2º grau - Sala 18",
-      time: "09:00",
-      date: "Amanhã",
-      location: "Sala 18",
-      status: "upcoming"
+      title: "Química 1º Ano",
+      students: 35,
+      progress: 45,
+      nextClass: "Qua, 08:00",
+      subject: "Tabela Periódica"
     }
   ];
 
-  const mockPerformanceData: StudentPerformance[] = [
-    { className: "8º ano A", averageGrade: 7.8, percentage: 78 },
-    { className: "7º ano C", averageGrade: 6.5, percentage: 65 },
-    { className: "9º ano B", averageGrade: 8.3, percentage: 83 }
-  ];
-
-  const mockDevCourses: DevCourse[] = [
+  // Recent activities
+  const recentActivities = [
     {
       id: 1,
-      title: "IA para Educadores",
-      description: "Integração de IA em sala de aula",
-      imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80",
-      progress: 35
+      title: "Prova - Equações Quadráticas",
+      course: "Matemática 9º Ano",
+      submissions: 28,
+      total: 32,
+      dueDate: "Hoje",
+      status: "pending"
     },
     {
       id: 2,
-      title: "Metodologias Ativas",
-      description: "Engajamento e participação dos alunos",
-      imageUrl: "https://images.unsplash.com/photo-1581093458791-9f5a1d2c2394?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80",
-      progress: 65
+      title: "Lista de Exercícios - Cinemática",
+      course: "Física 2º Ano",
+      submissions: 25,
+      total: 28,
+      dueDate: "Ontem",
+      status: "late"
     }
   ];
 
   return (
     <>
       <Helmet>
-        <title>Dashboard do Professor | IAverse</title>
+        <title>Dashboard do Professor - IAverse</title>
       </Helmet>
 
-      <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
-        <TeacherSidebar />
-        
-        <div className="flex-1 flex flex-col overflow-auto pl-0">
-          <TeacherHeader />
-          
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="container mx-auto">
-              {/* Welcome Section */}
-              <div className="mb-8">
-                <h1 className="text-3xl font-bold text-neutral-900 font-heading">
-                  Olá, {user?.firstName || 'Professor(a)'}!
-                </h1>
-                <p className="text-neutral-600">{formattedDate}</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+        {/* Sidebar */}
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/50 shadow-xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+          <div className="flex flex-col h-full">
+            {/* Logo */}
+            <div className="flex items-center gap-4 p-6 border-b border-slate-200/50">
+              <div className="relative">
+                <img src={iaverseLogo} alt="IAverse" className="w-10 h-10 rounded-xl shadow-lg" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
               </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  IAverse
+                </h1>
+                <p className="text-xs text-slate-500 font-medium">Portal do Professor</p>
+              </div>
+            </div>
 
-              {/* Hero AI Section */}
-              <div className="mb-8">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl overflow-hidden shadow-lg">
-                  <div className="p-8 md:p-10 flex flex-col md:flex-row items-center">
-                    <div className="md:w-3/5 mb-6 md:mb-0 md:pr-8">
-                      <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                        Transforme o aprendizado com IA personalizada
-                      </h2>
-                      <p className="text-blue-100 mb-6 text-lg leading-relaxed">
-                        Acesse nossa Central de IAs e descubra como as ferramentas de inteligência artificial podem revolucionar sua prática pedagógica e otimizar seu tempo.
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        <Link href="/central-ia">
-                          <Button className="bg-white text-blue-600 hover:bg-blue-50 font-medium text-base">
-                            Acessar Central de IAs
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Link href="/professor/cursos/ai-na-educacao">
-                          <Button variant="outline" className="bg-transparent text-white hover:bg-blue-700 border-white">
-                            Ver cursos sobre IA
-                          </Button>
-                        </Link>
+            {/* Navigation */}
+            <ScrollArea className="flex-1 px-4 py-6">
+              <div className="space-y-2">
+                {navigationItems.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link key={index} href={item.href}>
+                      <Button
+                        variant={item.active ? "secondary" : "ghost"}
+                        className={`w-full justify-start gap-3 h-12 font-medium transition-all duration-200 ${
+                          item.active 
+                            ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200/50 shadow-sm hover:shadow-md" 
+                            : "text-slate-600 hover:text-blue-600 hover:bg-blue-50/50"
+                        }`}
+                      >
+                        <Icon className="h-5 w-5" />
+                        <span>{item.name}</span>
+                      </Button>
+                    </Link>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+
+            {/* User Profile */}
+            <div className="p-6 border-t border-slate-200/50">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-semibold">
+                  {user?.firstName?.charAt(0) || "U"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-800 truncate">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">Professor</p>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={logout}
+                className="w-full gap-2 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="lg:pl-72">
+          {/* Header */}
+          <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
+            <div className="flex items-center justify-between px-6 py-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="lg:hidden text-slate-600 hover:text-blue-600"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold text-slate-900">
+                    Olá, Prof. {user?.firstName}!
+                  </h1>
+                  <p className="text-sm text-slate-600 capitalize">
+                    {formattedDate}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Bell className="h-4 w-4" />
+                  <span className="hidden md:inline">Notificações</span>
+                  <Badge variant="destructive" className="h-5 w-5 p-0 text-xs">3</Badge>
+                </Button>
+                <Link href="/central-ia">
+                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+                    <Bot className="h-4 w-4 mr-2" />
+                    Central de IAs
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </header>
+
+          {/* Dashboard Content */}
+          <main className="p-6 space-y-8">
+            {/* Quick Actions */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 mb-1">Resumo de Hoje</h2>
+                <p className="text-sm text-slate-600">Gerencie suas aulas e atividades</p>
+              </div>
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 gap-2">
+                <Plus className="h-4 w-4" />
+                Criar Curso
+              </Button>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {dashboardStats.map((stat, index) => (
+                <Card key={index} className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl hover:scale-105">
+                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
+                  <CardContent className="relative p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} opacity-10 group-hover:opacity-20 transition-opacity`}>
+                        {stat.icon}
                       </div>
+                      <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                        {stat.trend}
+                      </span>
                     </div>
-                    <div className="md:w-2/5 flex justify-center">
-                      <div className="w-48 h-48 relative">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-32 h-32 rounded-full bg-blue-700/30 flex items-center justify-center">
-                            <div className="w-24 h-24 rounded-full bg-blue-600/50 flex items-center justify-center">
-                              <Sparkles className="w-12 h-12 text-white" />
-                            </div>
-                          </div>
-                        </div>
-                        {/* Círculos orbitando */}
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-300/80 flex items-center justify-center">
-                          <Search className="w-4 h-4 text-blue-900" />
-                        </div>
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-blue-300/80 flex items-center justify-center">
-                          <ImageIcon className="w-4 h-4 text-blue-900" />
-                        </div>
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-blue-300/80 flex items-center justify-center">
-                          <Bot className="w-4 h-4 text-blue-900" />
-                        </div>
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-blue-300/80 flex items-center justify-center">
-                          <PenTool className="w-4 h-4 text-blue-900" />
-                        </div>
-                      </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-600 mb-1">{stat.title}</p>
+                      <p className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</p>
+                      <p className="text-xs text-slate-500">{stat.description}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* AI Tools Section */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg">
+                      <Sparkles className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-slate-900">Ferramentas de IA</CardTitle>
+                      <p className="text-sm text-slate-600">Potencialize suas aulas com inteligência artificial</p>
                     </div>
                   </div>
+                  <Link href="/teacher/tools">
+                    <Button variant="outline" size="sm" className="gap-2">
+                      Ver todas
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
-              </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {aiTools.map((tool, index) => (
+                    <Link key={index} href={tool.href}>
+                      <div className="group p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all cursor-pointer">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className={`p-2 rounded-lg bg-gradient-to-br ${tool.color} opacity-10 group-hover:opacity-20 transition-opacity`}>
+                            {tool.icon}
+                          </div>
+                          {tool.badge && (
+                            <Badge variant="secondary" className="text-xs">
+                              {tool.badge}
+                            </Badge>
+                          )}
+                        </div>
+                        <h4 className="font-semibold text-slate-900 mb-1">{tool.title}</h4>
+                        <p className="text-xs text-slate-600">{tool.description}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Ferramentas IA para Educação */}
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold mb-6 text-neutral-900">Ferramentas IA para Educação</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Link href="/professor/ferramentas/imagem-educacional" className="block">
-                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
-                      <div className="p-6 flex-1 flex flex-col">
-                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <ImageIcon className="text-blue-500 h-6 w-6" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Recent Courses */}
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl font-bold text-slate-900">Próximas Aulas</CardTitle>
+                    <Link href="/teacher/courses">
+                      <Button variant="outline" size="sm" className="gap-2">
+                        Ver todas
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {recentCourses.map((course) => (
+                    <div key={course.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h4 className="font-semibold text-slate-900">{course.title}</h4>
+                          <p className="text-sm text-slate-600">{course.students} alunos</p>
                         </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Criar Imagem Educacional</h3>
-                        <p className="text-sm text-gray-500 mb-4">Gere imagens personalizadas para suas aulas</p>
-                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
-                          Acessar 
-                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                  
-                  <Link href="/professor/ferramentas/gerador-atividades" className="block">
-                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
-                      <div className="p-6 flex-1 flex flex-col">
-                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <FileEdit className="text-blue-500 h-6 w-6" />
-                        </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Gerador de Atividades</h3>
-                        <p className="text-sm text-gray-500 mb-4">Crie atividades, exercícios e avaliações</p>
-                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
-                          Acessar 
-                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-slate-900">{course.nextClass}</p>
+                          <p className="text-xs text-slate-500">{course.subject}</p>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                  
-                  <Link href="/professor/ferramentas/materiais-didaticos" className="block">
-                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
-                      <div className="p-6 flex-1 flex flex-col">
-                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <BookOpenCheck className="text-blue-500 h-6 w-6" />
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-slate-600">Progresso do curso</span>
+                          <span className="font-medium text-slate-900">{course.progress}%</span>
                         </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Materiais Didáticos IA</h3>
-                        <p className="text-sm text-gray-500 mb-4">Crie apostilas, slides e materiais de apoio</p>
-                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
-                          Acessar 
-                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
-                        </div>
+                        <Progress value={course.progress} className="h-2" />
                       </div>
                     </div>
-                  </Link>
-                  
-                  <Link href="/professor/ferramentas/correcao-provas" className="block">
-                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
-                      <div className="p-6 flex-1 flex flex-col">
-                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <CheckSquare className="text-blue-500 h-6 w-6" />
-                        </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Correção de Provas</h3>
-                        <p className="text-sm text-gray-500 mb-4">Automatize a correção de avaliações</p>
-                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
-                          Acessar 
-                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* Recent Activities */}
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl font-bold text-slate-900">Atividades Pendentes</CardTitle>
+                    <Link href="/teacher/activities">
+                      <Button variant="outline" size="sm" className="gap-2">
+                        Ver todas
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {recentActivities.map((activity) => (
+                    <div key={activity.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-slate-900">{activity.title}</h4>
+                        <Badge 
+                          variant={activity.status === 'pending' ? 'default' : 'destructive'}
+                          className="text-xs"
+                        >
+                          {activity.status === 'pending' ? 'Pendente' : 'Atrasado'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-slate-600 mb-3">{activity.course}</p>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-slate-600">
+                          {activity.submissions}/{activity.total} entregas
+                        </span>
+                        <div className="flex items-center gap-1 text-slate-500">
+                          <Calendar className="h-3 w-3" />
+                          <span>{activity.dueDate}</span>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                  
-                  <Link href="/professor/ferramentas/planejamento-aula" className="block">
-                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
-                      <div className="p-6 flex-1 flex flex-col">
-                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <ClipboardList className="text-blue-500 h-6 w-6" />
-                        </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Planejamento de Aula</h3>
-                        <p className="text-sm text-gray-500 mb-4">Crie planos de aula personalizados</p>
-                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
-                          Acessar 
-                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
-                        </div>
+                      <div className="mt-2">
+                        <Progress 
+                          value={(activity.submissions / activity.total) * 100} 
+                          className="h-2" 
+                        />
                       </div>
                     </div>
-                  </Link>
-                  
-                  <Link href="/professor/ferramentas/modelos-planejamento" className="block">
-                    <div className="group h-full bg-white rounded-lg overflow-hidden border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all duration-200 flex flex-col">
-                      <div className="p-6 flex-1 flex flex-col">
-                        <div className="mb-5 bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center">
-                          <ListChecks className="text-blue-500 h-6 w-6" />
-                        </div>
-                        <h3 className="font-medium text-gray-900 mb-1">Modelos de Planejamento</h3>
-                        <p className="text-sm text-gray-500 mb-4">Utilize templates prontos para seus planos</p>
-                        <div className="mt-auto pt-4 flex items-center text-blue-500 text-sm font-medium group-hover:text-blue-600 transition-colors">
-                          Acessar 
-                          <ArrowRight className="ml-1 h-4 w-4 transform group-hover:translate-x-0.5 transition-transform" />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-              </div>
+                  ))}
+                </CardContent>
+              </Card>
             </div>
           </main>
         </div>
+
+        {/* Mobile Sidebar Overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
       </div>
     </>
   );
