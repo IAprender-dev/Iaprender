@@ -61,9 +61,9 @@ export default function TeacherDashboard() {
 
   // Navigation items
   const navigationItems = [
-    { name: "Dashboard", href: "/teacher/dashboard", icon: LayoutGrid, active: true },
+    { name: "Dashboard", href: "/professor/dashboard", icon: LayoutGrid, active: true },
     { name: "Central de IAs", href: "/central-ia", icon: Bot, featured: true },
-    { name: "Ferramentas IA", href: "/teacher/tools", icon: Wand2 },
+    { name: "Ferramentas IA", href: "/professor/ferramentas", icon: Wand2 },
   ];
 
   // AI Stats
@@ -118,7 +118,7 @@ export default function TeacherDashboard() {
       description: "Crie exercícios personalizados com IA",
       icon: <FilePlus className="h-6 w-6" />,
       color: "from-blue-500 to-blue-600",
-      href: "/teacher/tools/generator",
+      href: "/professor/ferramentas/gerador-atividades",
       badge: "Popular"
     },
     {
@@ -126,7 +126,7 @@ export default function TeacherDashboard() {
       description: "Correção automatizada de provas",
       icon: <CheckSquare className="h-6 w-6" />,
       color: "from-purple-500 to-purple-600",
-      href: "/teacher/tools/correction",
+      href: "/professor/ferramentas/correcao-provas",
       badge: "Novo"
     },
     {
@@ -134,21 +134,21 @@ export default function TeacherDashboard() {
       description: "Gere ilustrações para suas aulas",
       icon: <ImageIcon className="h-6 w-6" />,
       color: "from-green-500 to-green-600",
-      href: "/teacher/tools/images"
+      href: "/professor/ferramentas/imagem-educacional"
     },
     {
       title: "Planejamento de Aula",
       description: "Planos de aula inteligentes",
       icon: <Calendar className="h-6 w-6" />,
       color: "from-amber-500 to-amber-600",
-      href: "/teacher/tools/planning"
+      href: "/professor/ferramentas/planejamento-aula"
     },
     {
       title: "Materiais Didáticos",
       description: "Crie materiais educativos com IA",
       icon: <BookOpen className="h-6 w-6" />,
       color: "from-indigo-500 to-indigo-600",
-      href: "/teacher/tools/materials"
+      href: "/professor/ferramentas/materiais-didaticos"
     }
   ];
 
@@ -487,25 +487,25 @@ export default function TeacherDashboard() {
                   <div className="space-y-3">
                     <h4 className="font-semibold text-slate-900">Ações Rápidas</h4>
                     <div className="grid grid-cols-2 gap-3">
-                      <Link href="/teacher/tools/generator">
+                      <Link href="/professor/ferramentas/gerador-atividades">
                         <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
                           <FilePlus className="h-4 w-4" />
                           <span className="text-xs">Gerar Atividade</span>
                         </Button>
                       </Link>
-                      <Link href="/teacher/tools/images">
+                      <Link href="/professor/ferramentas/imagem-educacional">
                         <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
                           <ImageIcon className="h-4 w-4" />
                           <span className="text-xs">Criar Imagem</span>
                         </Button>
                       </Link>
-                      <Link href="/teacher/tools/planning">
+                      <Link href="/professor/ferramentas/planejamento-aula">
                         <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
                           <Calendar className="h-4 w-4" />
                           <span className="text-xs">Planejar Aula</span>
                         </Button>
                       </Link>
-                      <Link href="/teacher/tools/correction">
+                      <Link href="/professor/ferramentas/correcao-provas">
                         <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
                           <CheckSquare className="h-4 w-4" />
                           <span className="text-xs">Corrigir Prova</span>
