@@ -85,20 +85,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register
   app.post("/api/auth/register", async (req, res) => {
     try {
-      // Log the received data for debugging
-      console.log("Registration request body:", req.body);
+      const { firstName, lastName, email, password, role } = req.body;
       
-      // Create a custom schema for registration that matches frontend data
-      const registerSchema = z.object({
-        firstName: z.string().min(1),
-        lastName: z.string().min(1),
-        email: z.string().email(),
-        password: z.string().min(6),
-        role: z.enum(['teacher', 'student', 'admin'])
-      });
+      // Basic validation
+      if (!firstName || !lastName || !email || !password || !role) {
+        return res.status(400).json({ message: "All fields are required" });
+      }
       
-      const validatedData = registerSchema.parse(req.body);
-      console.log("Validated data:", validatedData);
+      if (password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+      
+      if (!['teacher', 'student', 'admin'].includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      const validatedData = { firstName, lastName, email, password, role };
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(validatedData.email);
