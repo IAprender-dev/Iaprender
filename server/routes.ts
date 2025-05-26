@@ -85,7 +85,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register
   app.post("/api/auth/register", async (req, res) => {
     try {
-      const validatedData = insertUserSchema.parse(req.body);
+      // Create a custom schema for registration that matches frontend data
+      const registerSchema = z.object({
+        firstName: z.string().min(1),
+        lastName: z.string().min(1),
+        email: z.string().email(),
+        password: z.string().min(6),
+        role: z.enum(['teacher', 'student', 'admin'])
+      });
+      
+      const validatedData = registerSchema.parse(req.body);
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(validatedData.email);
@@ -97,8 +106,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(validatedData.password, salt);
 
-      // Create username from email if not provided
-      const username = validatedData.username || validatedData.email.split('@')[0];
+      // Create username from email
+      const username = validatedData.email.split('@')[0];
 
       // Create user
       const user = await storage.createUser({
