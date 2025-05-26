@@ -62,50 +62,57 @@ export default function TeacherDashboard() {
   // Navigation items
   const navigationItems = [
     { name: "Dashboard", href: "/teacher/dashboard", icon: LayoutGrid, active: true },
-    { name: "Meus Cursos", href: "/teacher/courses", icon: BookOpen },
-    { name: "Planejamento", href: "/teacher/planning", icon: Calendar },
+    { name: "Central de IAs", href: "/central-ia", icon: Bot, featured: true },
     { name: "Ferramentas IA", href: "/teacher/tools", icon: Wand2 },
-    { name: "Central de IAs", href: "/central-ia", icon: Bot },
   ];
 
-  // Quick stats
-  const dashboardStats = [
+  // AI Stats
+  const aiStats = [
     {
-      title: "Alunos Ativos",
-      value: "247",
-      description: "Em suas turmas",
-      icon: <Users className="text-blue-600 h-6 w-6" />,
+      title: "Tokens Usados",
+      value: "12.5K",
+      description: "Este mês",
+      icon: <Bot className="text-blue-600 h-6 w-6" />,
       color: "from-blue-500 to-blue-600",
-      trend: "+12%"
+      trend: "+15%"
     },
     {
-      title: "Cursos Criados",
-      value: "8",
-      description: "Este semestre",
-      icon: <BookOpen className="text-purple-600 h-6 w-6" />,
+      title: "Atividades Geradas",
+      value: "47",
+      description: "Com IA este mês",
+      icon: <FilePlus className="text-purple-600 h-6 w-6" />,
       color: "from-purple-500 to-purple-600",
-      trend: "+3"
+      trend: "+23"
     },
     {
-      title: "Atividades",
-      value: "24",
-      description: "Pendentes de correção",
-      icon: <CheckSquare className="text-amber-600 h-6 w-6" />,
-      color: "from-amber-500 to-amber-600",
-      trend: "5 hoje"
-    },
-    {
-      title: "Engajamento",
-      value: "89%",
-      description: "Média das turmas",
-      icon: <TrendingUp className="text-green-600 h-6 w-6" />,
+      title: "Imagens Criadas",
+      value: "32",
+      description: "Para materiais",
+      icon: <ImageIcon className="text-green-600 h-6 w-6" />,
       color: "from-green-500 to-green-600",
-      trend: "+7%"
+      trend: "+8"
+    },
+    {
+      title: "Tempo Economizado",
+      value: "18h",
+      description: "Na semana",
+      icon: <Clock className="text-amber-600 h-6 w-6" />,
+      color: "from-amber-500 to-amber-600",
+      trend: "+5h"
     }
   ];
 
   // AI Tools
   const aiTools = [
+    {
+      title: "Central de IAs",
+      description: "ChatGPT, Claude, Gemini em um só lugar",
+      icon: <Bot className="h-8 w-8" />,
+      color: "from-purple-600 to-blue-600",
+      href: "/central-ia",
+      badge: "Principal",
+      featured: true
+    },
     {
       title: "Gerador de Atividades",
       description: "Crie exercícios personalizados com IA",
@@ -135,6 +142,13 @@ export default function TeacherDashboard() {
       icon: <Calendar className="h-6 w-6" />,
       color: "from-amber-500 to-amber-600",
       href: "/teacher/tools/planning"
+    },
+    {
+      title: "Materiais Didáticos",
+      description: "Crie materiais educativos com IA",
+      icon: <BookOpen className="h-6 w-6" />,
+      color: "from-indigo-500 to-indigo-600",
+      href: "/teacher/tools/materials"
     }
   ];
 
@@ -224,11 +238,16 @@ export default function TeacherDashboard() {
                         className={`w-full justify-start gap-3 h-12 font-medium transition-all duration-200 ${
                           item.active 
                             ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200/50 shadow-sm hover:shadow-md" 
+                            : item.featured
+                            ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl"
                             : "text-slate-600 hover:text-blue-600 hover:bg-blue-50/50"
                         }`}
                       >
                         <Icon className="h-5 w-5" />
                         <span>{item.name}</span>
+                        {item.featured && (
+                          <Sparkles className="h-4 w-4 ml-auto" />
+                        )}
                       </Button>
                     </Link>
                   );
