@@ -77,6 +77,7 @@ export default function CentralIA() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [showSavedItems, setShowSavedItems] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // AI Models info
@@ -110,6 +111,33 @@ export default function CentralIA() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Salvar item (prompt, resposta ou imagem)
+  const saveItemToCollection = (type: "image" | "prompt" | "file", title: string, content: string, url?: string) => {
+    const newItem: SavedItem = {
+      id: Date.now().toString(),
+      type,
+      title,
+      content,
+      url,
+      createdAt: new Date()
+    };
+    
+    setSavedItems(prev => [newItem, ...prev]);
+    toast({
+      title: "Item salvo!",
+      description: "O item foi adicionado aos seus salvos.",
+    });
+  };
+
+  // Remover item salvo
+  const removeItem = (id: string) => {
+    setSavedItems(prev => prev.filter(item => item.id !== id));
+    toast({
+      title: "Item removido",
+      description: "O item foi removido dos seus salvos.",
+    });
   };
 
   // Criar nova conversa
@@ -325,22 +353,7 @@ export default function CentralIA() {
       conv => conv.id === updatedConversation.id ? updatedConversation : conv
     ));
   };
-  
-  // Salvar item (imagem, prompt ou arquivo)
-  const saveItem = (item: Omit<SavedItem, "id" | "createdAt">) => {
-    const newItem: SavedItem = {
-      ...item,
-      id: Date.now().toString(),
-      createdAt: new Date()
-    };
-    
-    setSavedItems(prev => [newItem, ...prev]);
-    
-    toast({
-      title: "Item salvo",
-      description: `${item.title} foi salvo com sucesso.`,
-    });
-  };
+
   
   // Salvar prompt atual
   const saveCurrentPrompt = () => {
@@ -353,31 +366,22 @@ export default function CentralIA() {
       return;
     }
     
-    saveItem({
-      type: "prompt",
-      title: `Prompt ${new Date().toLocaleString("pt-BR", { 
-        month: "short", 
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      })}`,
-      content: prompt
-    });
+    saveItemToCollection("prompt", `Prompt ${new Date().toLocaleString("pt-BR", { 
+      month: "short", 
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    })}`, prompt);
   };
   
   // Salvar imagem da conversa
   const saveImage = (url: string) => {
-    saveItem({
-      type: "image",
-      title: `Imagem ${new Date().toLocaleString("pt-BR", { 
-        month: "short", 
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-      })}`,
-      content: "Imagem gerada por IA",
-      url
-    });
+    saveItemToCollection("image", `Imagem ${new Date().toLocaleString("pt-BR", { 
+      month: "short", 
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    })}`, "Imagem gerada por IA", url);
   };
   
   // Renderizar mensagem individual
@@ -643,11 +647,12 @@ export default function CentralIA() {
             {/* Itens Salvos */}
             <div className="px-6 py-4 border-t border-slate-100">
               <Button 
+                onClick={() => setShowSavedItems(true)}
                 variant="outline" 
                 className="w-full justify-start gap-3 h-11 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 hover:text-amber-800 transition-all"
               >
                 <Bookmark className="h-4 w-4" />
-                <span className="font-medium">Itens Salvos</span>
+                <span className="font-medium">Itens Salvos ({savedItems.length})</span>
               </Button>
             </div>
           </div>
