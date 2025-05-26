@@ -100,39 +100,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid role" });
       }
       
-      const validatedData = { firstName, lastName, email, password, role };
-      
       // Check if user already exists
-      const existingUser = await storage.getUserByEmail(validatedData.email);
+      const existingUser = await storage.getUserByEmail(email);
       if (existingUser) {
         return res.status(400).json({ message: "Email already in use" });
       }
 
       // Hash password
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(validatedData.password, salt);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
       // Create username from email
-      const username = validatedData.email.split('@')[0];
+      const username = email.split('@')[0];
 
       // Create user
       const user = await storage.createUser({
-        ...validatedData,
-        username,
-        password: hashedPassword
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+        role,
+        username
       });
 
       // Remove password from response
-      const { password, ...userWithoutPassword } = user;
+      const { password: userPassword, ...userWithoutPassword } = user;
 
       // Set user session
       req.session.user = userWithoutPassword;
 
       return res.status(201).json(userWithoutPassword);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors });
-      }
+      console.error("Registration error:", error);
       return res.status(500).json({ message: "Server error" });
     }
   });
