@@ -139,11 +139,9 @@ export default function TeacherSidebar() {
     <aside className="hidden md:flex flex-col h-screen bg-blue-900 w-64">
       {/* Logo e cabeçalho */}
       <div className="px-6 py-6 bg-blue-950">
-        <Link href="/" className="flex items-center">
-          <GraduationCap className="h-7 w-7 text-white mr-2" />
-          <span className="text-white text-2xl font-bold">
-            i<span className="text-blue-300">Aula</span>
-          </span>
+        <Link href="/" className="flex items-center space-x-3">
+          <img src={iaverseLogo} alt="IAverse" className="w-8 h-8" />
+          <span className="text-white text-2xl font-bold">IAverse</span>
         </Link>
       </div>
       

@@ -196,7 +196,7 @@ export default function StudentDashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard do Aluno | iAula</title>
+        <title>Dashboard do Aluno | IAverse</title>
       </Helmet>
 
       <div className="flex h-screen overflow-hidden bg-neutral-50">

@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Menu, X, Bell } from "lucide-react";
+import iaverseLogo from "@/assets/IAverse.png";
 
 export default function StudentHeader() {
   const [location] = useLocation();
@@ -29,10 +30,9 @@ export default function StudentHeader() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-primary text-2xl font-bold font-heading">
-                i<span className="text-[#34C759]">Aula</span>
-              </span>
+            <Link href="/" className="flex-shrink-0 flex items-center space-x-3">
+              <img src={iaverseLogo} alt="IAverse" className="w-8 h-8" />
+              <span className="text-2xl font-bold text-gray-900">IAverse</span>
             </Link>
             <div className="hidden lg:ml-10 lg:flex lg:space-x-8">
               <Link
