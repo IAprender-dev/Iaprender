@@ -1,18 +1,39 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
-import { Book, CheckSquare, Medal, Bot, Bookmark, Activity, LayoutGrid } from "lucide-react";
+import { 
+  Book, 
+  CheckSquare, 
+  Medal, 
+  Bot, 
+  Bookmark, 
+  Activity, 
+  LayoutGrid, 
+  GraduationCap,
+  BookOpen,
+  Calendar,
+  Award,
+  TrendingUp,
+  Clock,
+  ArrowRight,
+  Sparkles,
+  Target,
+  PlayCircle,
+  Menu,
+  X,
+  Home,
+  User
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import StudentHeader from "@/components/dashboard/student/StudentHeader";
-import StudentSidebar from "@/components/dashboard/student/StudentSidebar";
-import AIAssistant from "@/components/ai/AIAssistant";
-import { Course, Activity as ActivityType } from "@/lib/types";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import iaverseLogo from "@/assets/IAverse.png";
 
 export default function StudentDashboard() {
   const { user } = useAuth();

@@ -1,40 +1,53 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Users, TrendingUp, Star, ArrowRight, Sparkles, Brain, Target, Zap, Lightbulb, Rocket, Shield, ChevronRight } from "lucide-react";
+import { BookOpen, Users, TrendingUp, Star, ArrowRight, Sparkles, Brain, Target, Zap, Lightbulb, Rocket, Shield, ChevronRight, Bot, ImageIcon, MessageSquare, GraduationCap, BookIcon, Award } from "lucide-react";
 import { Link } from "wouter";
 import iaverseLogo from "@/assets/IAverse.png";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
       {/* Navigation */}
-      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="flex items-center justify-between h-16">
+      <nav className="border-b border-slate-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto max-w-7xl px-6">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <img src={iaverseLogo} alt="IAverse" className="w-10 h-10" />
-              <span className="text-2xl font-bold text-gray-900">IAverse</span>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <img src={iaverseLogo} alt="IAverse" className="w-12 h-12 rounded-xl shadow-lg" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
+              </div>
+              <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                IAverse
+              </span>
             </div>
             
             {/* Navigation Links */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-gray-600 hover:text-primary font-medium transition-colors">Recursos</a>
-              <a href="#about" className="text-gray-600 hover:text-primary font-medium transition-colors">Sobre</a>
-              <a href="#pricing" className="text-gray-600 hover:text-primary font-medium transition-colors">Planos</a>
-              <a href="#contact" className="text-gray-600 hover:text-primary font-medium transition-colors">Contato</a>
+            <div className="hidden md:flex items-center space-x-10">
+              <a href="#features" className="text-slate-600 hover:text-blue-600 font-medium transition-all duration-200 hover:scale-105">
+                Recursos
+              </a>
+              <a href="#about" className="text-slate-600 hover:text-blue-600 font-medium transition-all duration-200 hover:scale-105">
+                Sobre
+              </a>
+              <a href="#pricing" className="text-slate-600 hover:text-blue-600 font-medium transition-all duration-200 hover:scale-105">
+                Planos
+              </a>
+              <a href="#contact" className="text-slate-600 hover:text-blue-600 font-medium transition-all duration-200 hover:scale-105">
+                Contato
+              </a>
             </div>
             
             {/* Auth Buttons */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               <Link href="/auth">
-                <Button variant="ghost" className="text-gray-600 hover:text-primary">
+                <Button variant="ghost" className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 px-6 h-11 font-medium">
                   Entrar
                 </Button>
               </Link>
               <Link href="/auth">
-                <Button className="bg-primary hover:bg-primary/90 text-white px-6 rounded-xl">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 h-11 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
                   Começar Agora
                 </Button>
               </Link>
@@ -44,55 +57,68 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-32 px-4">
+      <section className="relative pt-24 pb-40 px-6 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-gradient-to-br from-blue-400/30 to-purple-600/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-to-br from-purple-400/20 to-blue-600/20 rounded-full blur-3xl"></div>
+        </div>
+        
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center space-y-8">
+          <div className="text-center space-y-12">
             {/* Badge */}
-            <Badge variant="secondary" className="text-primary bg-primary/10 border-primary/20 px-6 py-3 text-sm font-medium rounded-full">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Revolucione a Educação com IA
-            </Badge>
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 rounded-full shadow-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></div>
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Revolucione a Educação com IA
+                </span>
+              </div>
+            </div>
             
             {/* Main Heading */}
-            <div className="space-y-6">
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-gray-900 leading-tight">
-                O Futuro da
-                <span className="text-primary block">Educação</span>
-                é Hoje
+            <div className="space-y-8">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-slate-900 leading-tight">
+                O Futuro da{" "}
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent">
+                  Educação
+                </span>
+                <br />é Hoje
               </h1>
-              <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
                 IAverse conecta educadores e estudantes através de ferramentas de Inteligência Artificial 
                 de última geração, criando experiências de aprendizado personalizadas e transformadoras.
               </p>
             </div>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
               <Link href="/auth">
-                <Button size="lg" className="px-12 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl bg-primary hover:bg-primary/90">
+                <Button className="group px-10 py-4 h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
                   Iniciar Jornada Gratuita
-                  <Rocket className="ml-2 h-5 w-5" />
+                  <Rocket className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="px-12 py-4 text-lg border-2 hover:bg-gray-50 rounded-xl">
-                <BookOpen className="mr-2 h-5 w-5" />
+              <Button variant="outline" className="px-10 py-4 h-14 text-lg font-semibold border-2 border-slate-300 hover:border-blue-500 hover:bg-blue-50 text-slate-700 hover:text-blue-700 rounded-xl transition-all duration-300">
+                <BookOpen className="mr-3 h-5 w-5" />
                 Explorar Recursos
               </Button>
             </div>
             
             {/* Trust Indicators */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-20 max-w-4xl mx-auto">
-              <div className="text-center space-y-3">
-                <div className="text-5xl font-bold text-primary">50K+</div>
-                <div className="text-gray-600 font-medium">Educadores Ativos</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 pt-24 max-w-5xl mx-auto">
+              <div className="text-center space-y-4">
+                <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">50K+</div>
+                <div className="text-slate-600 font-medium">Educadores Ativos</div>
               </div>
-              <div className="text-center space-y-3">
-                <div className="text-5xl font-bold text-primary">1M+</div>
-                <div className="text-gray-600 font-medium">Atividades Criadas</div>
+              <div className="text-center space-y-4">
+                <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">1M+</div>
+                <div className="text-slate-600 font-medium">Atividades Criadas</div>
               </div>
-              <div className="text-center space-y-3">
-                <div className="text-5xl font-bold text-primary">99%</div>
-                <div className="text-gray-600 font-medium">Satisfação</div>
+              <div className="text-center space-y-4">
+                <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">99%</div>
+                <div className="text-slate-600 font-medium">Satisfação</div>
               </div>
             </div>
           </div>
@@ -100,17 +126,22 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-32 px-4 bg-gray-50/50">
+      <section id="features" className="relative py-32 px-6 bg-slate-50/50">
         <div className="container mx-auto max-w-7xl">
-          <div className="text-center space-y-6 mb-20">
-            <Badge variant="outline" className="text-primary border-primary/30 px-4 py-2 rounded-full">
-              Ferramentas Poderosas
-            </Badge>
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900">
-              Tecnologia que
-              <span className="text-primary"> Transforma</span>
+          <div className="text-center space-y-8 mb-24">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50 rounded-full shadow-sm">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Ferramentas Poderosas
+              </span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900">
+              Tecnologia que{" "}
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Transforma
+              </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg text-slate-600 max-w-3xl mx-auto">
               Descubra como nossas ferramentas de IA revolucionam a forma de ensinar 
               e aprender, criando experiências únicas e personalizadas.
             </p>
@@ -118,10 +149,11 @@ export default function Home() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature Cards */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white rounded-2xl">
-              <CardHeader className="pb-6 space-y-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <Brain className="h-8 w-8 text-primary" />
+            <Card className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-500 rounded-2xl hover:scale-105">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <CardHeader className="relative pb-6 space-y-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center group-hover:from-blue-200 group-hover:to-purple-200 transition-all duration-300">
+                  <Bot className="h-8 w-8 bg-gradient-to-br from-blue-600 to-purple-600 bg-clip-text text-transparent" />
                 </div>
                 <CardTitle className="text-2xl font-bold">Geração Inteligente</CardTitle>
               </CardHeader>
