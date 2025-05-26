@@ -85,6 +85,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register
   app.post("/api/auth/register", async (req, res) => {
     try {
+      // Log the received data for debugging
+      console.log("Registration request body:", req.body);
+      
       // Create a custom schema for registration that matches frontend data
       const registerSchema = z.object({
         firstName: z.string().min(1),
@@ -95,6 +98,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const validatedData = registerSchema.parse(req.body);
+      console.log("Validated data:", validatedData);
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(validatedData.email);
