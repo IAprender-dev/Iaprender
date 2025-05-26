@@ -695,21 +695,14 @@ export default function CentralIA() {
                       ))}
                     </div>
                   </ScrollArea>
-                  <div className="p-4 border-t border-neutral-200">
-                    <div className="space-y-2">
-                      <Button variant="ghost" className="w-full justify-start">
-                        <History className="h-4 w-4 mr-2" />
-                        Histórico
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Bookmark className="h-4 w-4 mr-2" />
-                        Itens Salvos
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Settings className="h-4 w-4 mr-2" />
-                        Configurações
-                      </Button>
-                    </div>
+                  <div className="px-6 py-4 border-t border-slate-100">
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start gap-3 h-11 border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 hover:text-amber-800 transition-all"
+                    >
+                      <Bookmark className="h-4 w-4" />
+                      <span className="font-medium">Itens Salvos</span>
+                    </Button>
                   </div>
                 </SheetContent>
               </Sheet>
