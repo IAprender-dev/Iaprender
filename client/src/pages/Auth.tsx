@@ -9,7 +9,9 @@ import { useAuth } from "@/lib/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LogoWithText } from "@/components/ui/logo";
+import { ArrowLeft, Sparkles, BookOpen, Users, Brain } from "lucide-react";
+import { Link } from "wouter";
+import iaverseLogo from "@/assets/IAverse.png";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -68,199 +70,254 @@ export default function Auth() {
       lastName: "",
       email: "",
       password: "",
-      role: "student",
+      role: "teacher",
     },
   });
 
-  const onLoginSubmit = (values: LoginFormValues) => {
-    loginMutation.mutate(values);
+  const onLogin = (data: LoginFormValues) => {
+    loginMutation.mutate(data);
   };
 
-  const onRegisterSubmit = (values: RegisterFormValues) => {
-    registerMutation.mutate({
-      ...values,
-      username: values.email.split("@")[0], // Usar primeira parte do email como nome de usuário
-    });
+  const onRegister = (data: RegisterFormValues) => {
+    registerMutation.mutate(data);
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 flex flex-col">
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <a href="/" className="flex items-center gap-2">
-            <LogoWithText textSize="md" />
-          </a>
-        </div>
-      </header>
-
-      <div className="flex-1 flex">
-        {/* Coluna com formulário de autenticação */}
-        <div className="flex-1 flex justify-center items-center p-4">
-          <div className="w-full max-w-md">
-            <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="flex flex-col space-y-4">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="register">Cadastro</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="login">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Login</CardTitle>
-                      <CardDescription>
-                        Acesse sua conta usando seu email e senha.
-                      </CardDescription>
-                    </CardHeader>
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email</Label>
-                          <Input 
-                            id="email"
-                            type="email"
-                            placeholder="seu@email.com"
-                            {...loginForm.register("email")} 
-                          />
-                          {loginForm.formState.errors.email && (
-                            <p className="text-sm text-destructive">{loginForm.formState.errors.email.message}</p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label htmlFor="password">Senha</Label>
-                            <a href="#" className="text-sm text-primary hover:underline">
-                              Esqueceu a senha?
-                            </a>
-                          </div>
-                          <Input 
-                            id="password" 
-                            type="password"
-                            {...loginForm.register("password")} 
-                          />
-                          {loginForm.formState.errors.password && (
-                            <p className="text-sm text-destructive">{loginForm.formState.errors.password.message}</p>
-                          )}
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-                          {loginMutation.isPending ? "Entrando..." : "Entrar"}
-                        </Button>
-                      </CardFooter>
-                    </form>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="register">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Crie sua conta</CardTitle>
-                      <CardDescription>
-                        Preencha os campos abaixo para se cadastrar.
-                      </CardDescription>
-                    </CardHeader>
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName">Nome</Label>
-                            <Input 
-                              id="firstName"
-                              {...registerForm.register("firstName")} 
-                            />
-                            {registerForm.formState.errors.firstName && (
-                              <p className="text-sm text-destructive">{registerForm.formState.errors.firstName.message}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName">Sobrenome</Label>
-                            <Input 
-                              id="lastName"
-                              {...registerForm.register("lastName")} 
-                            />
-                            {registerForm.formState.errors.lastName && (
-                              <p className="text-sm text-destructive">{registerForm.formState.errors.lastName.message}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email</Label>
-                          <Input 
-                            id="email"
-                            type="email"
-                            {...registerForm.register("email")} 
-                          />
-                          {registerForm.formState.errors.email && (
-                            <p className="text-sm text-destructive">{registerForm.formState.errors.email.message}</p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="password">Senha</Label>
-                          <Input 
-                            id="password" 
-                            type="password"
-                            {...registerForm.register("password")} 
-                          />
-                          {registerForm.formState.errors.password && (
-                            <p className="text-sm text-destructive">{registerForm.formState.errors.password.message}</p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Eu sou</Label>
-                          <div className="flex gap-4">
-                            <label className="flex items-center space-x-2">
-                              <input 
-                                type="radio" 
-                                value="student"
-                                {...registerForm.register("role")}
-                                className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                              />
-                              <span>Aluno</span>
-                            </label>
-                            <label className="flex items-center space-x-2">
-                              <input 
-                                type="radio" 
-                                value="teacher"
-                                {...registerForm.register("role")}
-                                className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                              />
-                              <span>Professor</span>
-                            </label>
-                          </div>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-                          {registerMutation.isPending ? "Cadastrando..." : "Cadastrar"}
-                        </Button>
-                      </CardFooter>
-                    </form>
-                  </Card>
-                </TabsContent>
-              </div>
-            </Tabs>
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50/30 to-white flex">
+      {/* Left Side - Form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-md space-y-8">
+          {/* Header */}
+          <div className="text-center space-y-6">
+            <Link href="/">
+              <Button variant="ghost" className="mb-4 text-gray-600 hover:text-primary">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar ao site
+              </Button>
+            </Link>
+            
+            <div className="flex items-center justify-center space-x-3">
+              <img src={iaverseLogo} alt="IAverse" className="w-12 h-12" />
+              <span className="text-2xl font-bold text-gray-900">IAverse</span>
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold text-gray-900">
+                {activeTab === "login" ? "Bem-vindo de volta!" : "Comece sua jornada"}
+              </h1>
+              <p className="text-gray-600">
+                {activeTab === "login" 
+                  ? "Entre na sua conta para acessar suas ferramentas de IA" 
+                  : "Crie sua conta e transforme sua forma de ensinar"}
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Coluna com texto inspirador e imagem */}
-        <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary-foreground to-primary/5 p-12">
-          <div className="max-w-lg mx-auto flex flex-col justify-center">
-            <h1 className="text-4xl font-bold mb-6">
-              Revolucione seu aprendizado com IA
-            </h1>
-            <p className="text-lg mb-8 text-muted-foreground">
-              O iAula é uma plataforma educacional que combina o melhor da tecnologia de inteligência artificial com métodos pedagógicos comprovados, projetada para transformar a maneira como professores ensinam e alunos aprendem.
+          {/* Form */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 rounded-xl">
+              <TabsTrigger value="login" className="rounded-lg">Entrar</TabsTrigger>
+              <TabsTrigger value="register" className="rounded-lg">Criar Conta</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login" className="space-y-6">
+              <Card className="border-0 shadow-lg rounded-2xl">
+                <CardHeader className="space-y-1 pb-4">
+                  <CardTitle className="text-xl">Acesse sua conta</CardTitle>
+                  <CardDescription>
+                    Entre com seu email e senha para continuar
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        className="rounded-xl"
+                        {...loginForm.register("email")}
+                      />
+                      {loginForm.formState.errors.email && (
+                        <p className="text-sm text-red-600">{loginForm.formState.errors.email.message}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Senha</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Sua senha"
+                        className="rounded-xl"
+                        {...loginForm.register("password")}
+                      />
+                      {loginForm.formState.errors.password && (
+                        <p className="text-sm text-red-600">{loginForm.formState.errors.password.message}</p>
+                      )}
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary/90 rounded-xl py-3"
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? "Entrando..." : "Entrar"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="register" className="space-y-6">
+              <Card className="border-0 shadow-lg rounded-2xl">
+                <CardHeader className="space-y-1 pb-4">
+                  <CardTitle className="text-xl">Criar nova conta</CardTitle>
+                  <CardDescription>
+                    Preencha os dados abaixo para começar
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">Nome</Label>
+                        <Input
+                          id="firstName"
+                          placeholder="Seu nome"
+                          className="rounded-xl"
+                          {...registerForm.register("firstName")}
+                        />
+                        {registerForm.formState.errors.firstName && (
+                          <p className="text-sm text-red-600">{registerForm.formState.errors.firstName.message}</p>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Sobrenome</Label>
+                        <Input
+                          id="lastName"
+                          placeholder="Seu sobrenome"
+                          className="rounded-xl"
+                          {...registerForm.register("lastName")}
+                        />
+                        {registerForm.formState.errors.lastName && (
+                          <p className="text-sm text-red-600">{registerForm.formState.errors.lastName.message}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        className="rounded-xl"
+                        {...registerForm.register("email")}
+                      />
+                      {registerForm.formState.errors.email && (
+                        <p className="text-sm text-red-600">{registerForm.formState.errors.email.message}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Senha</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Mínimo 6 caracteres"
+                        className="rounded-xl"
+                        {...registerForm.register("password")}
+                      />
+                      {registerForm.formState.errors.password && (
+                        <p className="text-sm text-red-600">{registerForm.formState.errors.password.message}</p>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="role">Eu sou</Label>
+                      <select
+                        id="role"
+                        className="w-full px-3 py-2 border border-input bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
+                        {...registerForm.register("role")}
+                      >
+                        <option value="teacher">Professor(a)</option>
+                        <option value="student">Estudante</option>
+                      </select>
+                      {registerForm.formState.errors.role && (
+                        <p className="text-sm text-red-600">{registerForm.formState.errors.role.message}</p>
+                      )}
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary/90 rounded-xl py-3"
+                      disabled={registerMutation.isPending}
+                    >
+                      {registerMutation.isPending ? "Criando conta..." : "Criar Conta"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+
+      {/* Right Side - Hero Content */}
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary to-primary/80 text-white p-12 items-center">
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Sparkles className="w-6 h-6" />
+              <span className="text-lg font-medium">IAverse</span>
+            </div>
+            <h2 className="text-4xl font-bold leading-tight">
+              Transforme a Educação com Inteligência Artificial
+            </h2>
+            <p className="text-xl text-white/90">
+              Conecte-se com milhares de educadores que já estão revolucionando 
+              o ensino com ferramentas de IA de última geração.
             </p>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 shadow-sm">
-                <h3 className="font-medium mb-2">Para Professores</h3>
-                <p className="text-sm text-muted-foreground">Crie planos de aula, atividades e avaliações em minutos com a ajuda de IA avançada.</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Brain className="w-6 h-6" />
               </div>
-              <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 shadow-sm">
-                <h3 className="font-medium mb-2">Para Alunos</h3>
-                <p className="text-sm text-muted-foreground">Receba explicações personalizadas, resumos de conteúdo e prática adaptativa.</p>
+              <div>
+                <h3 className="font-semibold text-lg">Ferramentas Inteligentes</h3>
+                <p className="text-white/80">Crie atividades e materiais personalizados</p>
               </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Recursos Educacionais</h3>
+                <p className="text-white/80">Biblioteca rica em conteúdo didático</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Comunidade Ativa</h3>
+                <p className="text-white/80">Conecte-se com outros educadores</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="pt-8">
+            <div className="text-sm text-white/70">
+              Mais de 50.000 educadores confiam na IAverse
             </div>
           </div>
         </div>

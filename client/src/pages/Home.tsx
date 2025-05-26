@@ -1,655 +1,361 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { BookOpen, Users, TrendingUp, Star, ArrowRight, Sparkles, Brain, Target, Zap, Lightbulb, Rocket, Shield, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
-import { ArrowRight, Award, BookOpen, CalendarDays, CheckCircle, MessageSquare, User, Users } from "lucide-react";
-import { LogoWithText, Logo } from "@/components/ui/logo";
-
-import { BookText, Brain, FileText, Image, PenTool, BarChart4, Lightbulb, Scissors, FileImage, BookCopy, Puzzle, School, ScrollText, Target, FolderKanban } from "lucide-react";
-
-// Importando imagens profissionais
-import heroImage from "../assets/images/professional/hero-banner.png";
-import classroomImage from "../assets/images/professional/classroom.svg";
-import teacherAiImage from "../assets/images/professional/teacher-ai-new.svg";
+import iaverseLogo from "@/assets/IAverse.png";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header/Navbar */}
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-4">
-            <a href="/" className="flex items-center gap-2">
-              <LogoWithText textSize="md" />
-            </a>
-          </div>
-          <div className="hidden md:flex gap-6 items-center">
-            <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground">Recursos</a>
-            <a href="#courses" className="text-sm font-medium text-muted-foreground hover:text-foreground">Cursos</a>
-            <a href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground">Planos</a>
-            <a href="#events" className="text-sm font-medium text-muted-foreground hover:text-foreground">Eventos</a>
-            <a href="#newsletter" className="text-sm font-medium text-muted-foreground hover:text-foreground">Newsletter</a>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link href="/auth">
-              <Button variant="outline">Entrar</Button>
-            </Link>
-            <Link href="/auth?register=true">
-              <Button>Começar agora</Button>
-            </Link>
+    <div className="min-h-screen bg-white">
+      {/* Navigation */}
+      <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center space-x-3">
+              <img src={iaverseLogo} alt="IAverse" className="w-10 h-10" />
+              <span className="text-2xl font-bold text-gray-900">IAverse</span>
+            </div>
+            
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-gray-600 hover:text-primary font-medium transition-colors">Recursos</a>
+              <a href="#about" className="text-gray-600 hover:text-primary font-medium transition-colors">Sobre</a>
+              <a href="#pricing" className="text-gray-600 hover:text-primary font-medium transition-colors">Planos</a>
+              <a href="#contact" className="text-gray-600 hover:text-primary font-medium transition-colors">Contato</a>
+            </div>
+            
+            {/* Auth Buttons */}
+            <div className="flex items-center space-x-3">
+              <Link href="/auth">
+                <Button variant="ghost" className="text-gray-600 hover:text-primary">
+                  Entrar
+                </Button>
+              </Link>
+              <Link href="/auth">
+                <Button className="bg-primary hover:bg-primary/90 text-white px-6 rounded-xl">
+                  Começar Agora
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-      </header>
+      </nav>
 
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="py-20 md:py-28 bg-gradient-to-b from-background to-muted/30">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-                    A primeira plataforma de Inteligência Artificial Educacional para Professores e Alunos
-                  </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                    Ferramentas de IA, cursos sobre inteligência artificial e as últimas novidades do mundo da educação e tecnologia – tudo em um só lugar.
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Link href="/auth?register=true">
-                    <Button size="lg" className="gap-2">
-                      Comece agora <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <Button size="lg" variant="outline">
-                    Solicitar demonstração para sua escola
-                  </Button>
-                </div>
+      {/* Hero Section */}
+      <section className="pt-20 pb-32 px-4">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center space-y-8">
+            {/* Badge */}
+            <Badge variant="secondary" className="text-primary bg-primary/10 border-primary/20 px-6 py-3 text-sm font-medium rounded-full">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Revolucione a Educação com IA
+            </Badge>
+            
+            {/* Main Heading */}
+            <div className="space-y-6">
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-gray-900 leading-tight">
+                O Futuro da
+                <span className="text-primary block">Educação</span>
+                é Hoje
+              </h1>
+              <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+                IAverse conecta educadores e estudantes através de ferramentas de Inteligência Artificial 
+                de última geração, criando experiências de aprendizado personalizadas e transformadoras.
+              </p>
+            </div>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+              <Link href="/auth">
+                <Button size="lg" className="px-12 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl bg-primary hover:bg-primary/90">
+                  Iniciar Jornada Gratuita
+                  <Rocket className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Button variant="outline" size="lg" className="px-12 py-4 text-lg border-2 hover:bg-gray-50 rounded-xl">
+                <BookOpen className="mr-2 h-5 w-5" />
+                Explorar Recursos
+              </Button>
+            </div>
+            
+            {/* Trust Indicators */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-20 max-w-4xl mx-auto">
+              <div className="text-center space-y-3">
+                <div className="text-5xl font-bold text-primary">50K+</div>
+                <div className="text-gray-600 font-medium">Educadores Ativos</div>
               </div>
-              <div className="mx-auto lg:ml-auto flex flex-col justify-center items-center lg:items-end">
-                <div className="w-full max-w-[550px] rounded-xl overflow-hidden shadow-xl">
-                  <img 
-                    src={heroImage} 
-                    alt="Professor e alunos usando inteligência artificial na educação" 
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <p className="font-medium text-sm text-muted-foreground mt-3 text-center max-w-[550px]">
-                  Transforme o aprendizado com IA personalizada para cada aluno
-                </p>
+              <div className="text-center space-y-3">
+                <div className="text-5xl font-bold text-primary">1M+</div>
+                <div className="text-gray-600 font-medium">Atividades Criadas</div>
+              </div>
+              <div className="text-center space-y-3">
+                <div className="text-5xl font-bold text-primary">99%</div>
+                <div className="text-gray-600 font-medium">Satisfação</div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* iAula One Section */}
-        <section id="features" className="py-16 md:py-20">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1fr_500px] lg:gap-12 items-center">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter">
-                    iAula One – Hub Educacional de IAs
-                  </h2>
-                  <p className="max-w-[600px] text-muted-foreground">
-                    O iAula One é o coração da plataforma, reunindo modelos avançados de IA customizados para o ambiente educacional.
-                  </p>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="bg-muted rounded-lg p-4 space-y-2">
-                    <h3 className="font-medium">Modelos de IA</h3>
-                    <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> GPT-4.1</li>
-                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Gemini 2.5 Pro</li>
-                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Claude 3.7 Sonnet</li>
-                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Sabiá-3</li>
-                    </ul>
-                  </div>
-                  <div className="bg-muted rounded-lg p-4 space-y-2">
-                    <h3 className="font-medium">Treinados para</h3>
-                    <ul className="space-y-1 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Professores: planos de aula, provas, avaliações</li>
-                      <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Alunos: resumos, explicações, exercícios</li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-medium">Funcionalidades principais</h3>
-                  <ul className="grid gap-2 md:grid-cols-2 text-sm text-muted-foreground">
-                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Pastas para projetos escolares</li>
-                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Flows educacionais</li>
-                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Experts IA personalizados</li>
-                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Análise de documentos</li>
-                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> iAula Vision</li>
-                    <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Análise de planilhas e gráficos</li>
-                  </ul>
-                </div>
-              </div>
-              <div className="mx-auto flex flex-col justify-center items-center">
-                <div className="w-full max-w-[500px] rounded-xl overflow-hidden shadow-xl border border-primary/10">
-                  <img 
-                    src={teacherAiImage} 
-                    alt="Professor utilizando IA em sala de aula" 
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <div className="mt-3 text-center">
-                  <h4 className="font-medium text-sm">iAula One em ação</h4>
-                  <p className="text-xs text-muted-foreground">Potencialize seu ensino com ferramentas de IA integradas</p>
-                </div>
-              </div>
-            </div>
+      {/* Features Section */}
+      <section id="features" className="py-32 px-4 bg-gray-50/50">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center space-y-6 mb-20">
+            <Badge variant="outline" className="text-primary border-primary/30 px-4 py-2 rounded-full">
+              Ferramentas Poderosas
+            </Badge>
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900">
+              Tecnologia que
+              <span className="text-primary"> Transforma</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Descubra como nossas ferramentas de IA revolucionam a forma de ensinar 
+              e aprender, criando experiências únicas e personalizadas.
+            </p>
           </div>
-        </section>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature Cards */}
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white rounded-2xl">
+              <CardHeader className="pb-6 space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Brain className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl font-bold">Geração Inteligente</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base leading-relaxed text-gray-600">
+                  Crie atividades educacionais personalizadas instantaneamente com IA de última geração, 
+                  adaptadas ao seu currículo e objetivos específicos.
+                </CardDescription>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white rounded-2xl">
+              <CardHeader className="pb-6 space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Target className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl font-bold">Análise Avançada</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base leading-relaxed text-gray-600">
+                  Analise documentos, PDFs e materiais educacionais automaticamente para extrair 
+                  insights valiosos e gerar conteúdo relevante.
+                </CardDescription>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white rounded-2xl">
+              <CardHeader className="pb-6 space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Zap className="h-8 w-8 text-primary" />
+                </div>
+                <CardTitle className="text-2xl font-bold">Criação Visual</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base leading-relaxed text-gray-600">
+                  Gere imagens educacionais únicas e ilustrações personalizadas para tornar 
+                  seus materiais mais envolventes e eficazes.
+                </CardDescription>
+              </CardContent>
+            </Card>
 
-        {/* Courses Section */}
-        <section id="courses" className="py-16 md:py-20 bg-muted/30">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter">
-                  Cursos e Certificações
-                </h2>
-                <p className="max-w-[600px] text-muted-foreground">
-                  Ofereça cursos rápidos e práticos sobre Inteligência Artificial voltados para o ambiente educacional.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 w-full max-w-4xl">
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <BookOpen className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Como usar IA na educação</h3>
-                  <p className="text-sm text-muted-foreground flex-1 mb-4">
-                    Conceitos básicos e aplicações práticas para transformar sua abordagem pedagógica.
-                  </p>
-                  <Button variant="outline" className="w-full mt-auto">Ver curso</Button>
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white rounded-2xl">
+              <CardHeader className="pb-6 space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Lightbulb className="h-8 w-8 text-primary" />
                 </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <User className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Masterizando o uso de IA para professores</h3>
-                  <p className="text-sm text-muted-foreground flex-1 mb-4">
-                    Aprofunde seus conhecimentos em IA para criar experiências de aprendizado únicas.
-                  </p>
-                  <Button variant="outline" className="w-full mt-auto">Ver curso</Button>
+                <CardTitle className="text-2xl font-bold">IA Conversacional</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base leading-relaxed text-gray-600">
+                  Interaja com diferentes modelos de IA como ChatGPT, Claude e Gemini em uma 
+                  interface unificada e intuitiva.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white rounded-2xl">
+              <CardHeader className="pb-6 space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Shield className="h-8 w-8 text-primary" />
                 </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <Users className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">IA para auxiliar nos estudos</h3>
-                  <p className="text-sm text-muted-foreground flex-1 mb-4">
-                    Técnicas e ferramentas para alunos maximizarem seu potencial de aprendizado com IA.
-                  </p>
-                  <Button variant="outline" className="w-full mt-auto">Ver curso</Button>
+                <CardTitle className="text-2xl font-bold">Segurança Total</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base leading-relaxed text-gray-600">
+                  Plataforma segura e confiável com controle de acesso avançado e proteção 
+                  completa dos dados educacionais.
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group bg-white rounded-2xl">
+              <CardHeader className="pb-6 space-y-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Users className="h-8 w-8 text-primary" />
                 </div>
-              </div>
-              <div className="bg-primary/5 rounded-lg p-6 mt-8 max-w-4xl w-full">
-                <div className="flex items-center gap-4">
-                  <Award className="h-8 w-8 text-primary" />
-                  <div className="text-left">
-                    <h3 className="font-medium">Certificações para Professores</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Obtenha certificados reconhecidos ao dominar o uso das ferramentas de IA em sala de aula.
-                    </p>
-                  </div>
-                  <Button className="ml-auto">Saiba mais</Button>
-                </div>
-              </div>
-            </div>
+                <CardTitle className="text-2xl font-bold">Colaboração</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base leading-relaxed text-gray-600">
+                  Conecte professores e estudantes em um ambiente colaborativo que potencializa 
+                  o aprendizado e o ensino.
+                </CardDescription>
+              </CardContent>
+            </Card>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Ferramentas Pedagógicas - Grid Section */}
-        <section id="tools" className="py-16 md:py-20">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter">
-                  Ferramentas Inteligentes para a Sala de Aula
-                </h2>
-                <p className="max-w-[800px] text-muted-foreground">
-                  O coração da iAula está em suas ferramentas de IA. Potencialize o ensino com recursos que economizam tempo e ampliam possibilidades pedagógicas.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 w-full max-w-6xl">
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <PenTool className="h-6 w-6 text-primary" />
+      {/* About Section */}
+      <section id="about" className="py-32 px-4 bg-white">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <Badge variant="outline" className="text-primary border-primary/30 px-4 py-2 rounded-full">
+                Nossa Missão
+              </Badge>
+              <h2 className="text-5xl md:text-6xl font-bold text-gray-900">
+                Democratizar o
+                <span className="text-primary"> Acesso à IA</span>
+                na Educação
+              </h2>
+              <p className="text-xl text-gray-600 leading-relaxed">
+                Acreditamos que toda instituição educacional deve ter acesso às melhores 
+                ferramentas de Inteligência Artificial. Nossa plataforma foi desenvolvida 
+                para ser simples, poderosa e acessível a todos.
+              </p>
+              
+              <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <Star className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="font-medium text-xl mb-2">Correção de Redação</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Avaliação automática de textos com feedback detalhado baseado em critérios pedagógicos.
-                  </p>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-xl">Interface Intuitiva</h3>
+                    <p className="text-gray-600 text-lg">Design clean e minimalista que facilita o uso para todos os níveis de experiência.</p>
+                  </div>
                 </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <Scissors className="h-6 w-6 text-primary" />
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <Star className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="font-medium text-xl mb-2">Revisor de Tarefas</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Correção automática de atividades escritas ou digitalizadas com feedback personalizado.
-                  </p>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-xl">IA de Vanguarda</h3>
+                    <p className="text-gray-600 text-lg">Integração com os melhores modelos de IA do mercado para resultados excepcionais.</p>
+                  </div>
                 </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <Lightbulb className="h-6 w-6 text-primary" />
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center flex-shrink-0 mt-1">
+                    <Star className="w-4 h-4 text-white" />
                   </div>
-                  <h3 className="font-medium text-xl mb-2">Gerador de Ideias</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Sugestões criativas para aulas, atividades e projetos alinhadas ao seu contexto pedagógico.
-                  </p>
-                </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <FileImage className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Criador de Imagens</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Gere ilustrações educacionais personalizadas para transformar conceitos abstratos em recursos visuais.
-                  </p>
-                </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <BarChart4 className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Análise de Dados</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Interprete informações e visualize o desempenho da turma para intervenções pedagógicas eficazes.
-                  </p>
-                </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <BookCopy className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Plano de Aula</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Gere planos didáticos alinhados à BNCC com um clique, otimizando o tempo do educador.
-                  </p>
-                </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <FileText className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Análise de Documentos</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Transforme PDFs, planilhas e imagens em conteúdos educativos prontos para uso em sala de aula.
-                  </p>
-                </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col">
-                  <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center mb-4">
-                    <FolderKanban className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Organização em Pastas</h3>
-                  <p className="text-sm text-muted-foreground flex-1">
-                    Interface intuitiva para criação de pastas por disciplina, turma ou projetos específicos.
-                  </p>
-                </div>
-              </div>
-              <div className="bg-primary/5 w-full max-w-6xl rounded-lg p-6 mt-8">
-                <div className="flex flex-col md:flex-row items-center gap-4">
-                  <div className="rounded-full bg-primary/10 w-16 h-16 flex items-center justify-center flex-shrink-0">
-                    <MessageSquare className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="text-center md:text-left">
-                    <h3 className="font-medium text-xl mb-2">Assistente Virtual - 24/7</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Suporte contínuo para dúvidas, sugestões e resolução de tarefas, disponível a qualquer momento para professores e alunos.
-                    </p>
-                  </div>
-                  <Button className="ml-auto mt-4 md:mt-0">Experimentar</Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Newsletter Section */}
-        <section id="newsletter" className="py-16 md:py-20">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter">
-                    Newsletter Semanal – iAula Insights
-                  </h2>
-                  <p className="max-w-[600px] text-muted-foreground">
-                    Receba os principais avanços em IA e educação, ferramentas novas, dicas práticas e estudos de caso.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <input 
-                      type="email" 
-                      placeholder="Seu email" 
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
-                    />
-                    <Button>Inscrever-se</Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Exclusiva para professores e alunos assinantes. Cancelamento a qualquer momento.
-                  </p>
-                </div>
-              </div>
-              <div className="mx-auto lg:ml-auto flex justify-center lg:justify-end">
-                <div className="grid grid-cols-1 gap-2 max-w-[400px]">
-                  <div className="bg-background rounded-lg shadow-sm p-4 flex items-start gap-3">
-                    <div className="h-16 w-16 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                      <MessageSquare className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Novos modelos de IA para resolução de problemas matemáticos
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Edição #42 • 10/04/2025
-                      </p>
-                    </div>
-                  </div>
-                  <div className="bg-background rounded-lg shadow-sm p-4 flex items-start gap-3">
-                    <div className="h-16 w-16 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                      <BookOpen className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">
-                        Como a IA está transformando a avaliação de redações
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Edição #41 • 03/04/2025
-                      </p>
-                    </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 text-xl">Suporte Especializado</h3>
+                    <p className="text-gray-600 text-lg">Equipe dedicada de especialistas em educação e tecnologia para te apoiar.</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* Pricing Section */}
-        <section id="pricing" className="py-16 md:py-20 bg-muted/30">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter">
-                  Planos de Assinatura
-                </h2>
-                <p className="max-w-[600px] text-muted-foreground">
-                  Escolha o plano ideal para você ou sua instituição.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 w-full max-w-4xl">
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col border border-primary/20">
-                  <h3 className="font-medium text-xl mb-2">Plano Individual</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Para alunos ou professores individuais
-                  </p>
-                  <div className="text-3xl font-bold mb-4">
-                    R$ 49,90<span className="text-sm font-normal text-muted-foreground">/mês</span>
-                  </div>
-                  <ul className="space-y-2 mb-6 flex-1">
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Acesso a todos os modelos de IA</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>20.000 tokens por mês</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Acesso a cursos básicos</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Newsletter semanal</span>
-                    </li>
-                  </ul>
-                  <Button className="w-full">Assinar agora</Button>
+            
+            <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-3xl p-12 shadow-2xl">
+              <div className="space-y-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-primary mb-3">Comece Agora</div>
+                  <p className="text-gray-600 text-lg">Transforme sua forma de ensinar</p>
                 </div>
-                <div className="bg-background rounded-xl shadow-sm p-6 flex flex-col border-2 border-primary relative">
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs px-3 py-1 rounded-full">
-                    Mais popular
-                  </div>
-                  <h3 className="font-medium text-xl mb-2">Plano Escola</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Licenças em lote para instituições
-                  </p>
-                  <div className="text-3xl font-bold mb-4">
-                    Personalizado<span className="text-sm font-normal text-muted-foreground">/instituição</span>
-                  </div>
-                  <ul className="space-y-2 mb-6 flex-1">
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Acesso ilimitado para toda a escola</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Tokens personalizados por contrato</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Todos os cursos e certificações</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Gestão centralizada pelo administrador</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Controle de uso de tokens por usuário</span>
-                    </li>
-                    <li className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                      <span>Suporte dedicado</span>
-                    </li>
-                  </ul>
-                  <Button className="w-full">Solicitar orçamento</Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Depoimentos e Eventos Section */}
-        <section id="events" className="py-16 md:py-20">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-12 lg:grid-cols-2">
-              {/* Depoimentos */}
-              <div className="flex flex-col space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter">
-                    O que dizem nossos usuários
-                  </h2>
-                  <p className="max-w-[600px] text-muted-foreground">
-                    Experiências reais de professores e alunos transformadas pela iAula.
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <div className="bg-background rounded-lg p-6 shadow-sm border border-primary/10">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center flex-shrink-0">
-                        <User className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <p className="italic text-muted-foreground mb-4">
-                          "Consigo preparar minhas aulas em metade do tempo, com planos mais completos e detalhados. O assistente virtual ajuda a responder dúvidas dos alunos mesmo fora do horário escolar."
-                        </p>
-                        <p className="font-medium">Vanessa Santos</p>
-                        <p className="text-sm text-muted-foreground">Professora de História, Colégio Estadual</p>
-                      </div>
+                
+                <div className="space-y-6">
+                  <div className="flex items-center text-gray-700">
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center mr-4">
+                      <ChevronRight className="w-3 h-3 text-white" />
                     </div>
+                    <span className="text-lg">Acesso completo às ferramentas de IA</span>
                   </div>
-                  <div className="bg-background rounded-lg p-6 shadow-sm border border-primary/10">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-full bg-primary/10 w-12 h-12 flex items-center justify-center flex-shrink-0">
-                        <User className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <p className="italic text-muted-foreground mb-4">
-                          "A iAula revolucionou meus estudos. O assistente me ajuda a entender conteúdos complexos de forma simples, e a correção automática de redações me permitiu melhorar rapidamente minha escrita."
-                        </p>
-                        <p className="font-medium">Lucas Oliveira</p>
-                        <p className="text-sm text-muted-foreground">Estudante de Ensino Médio</p>
-                      </div>
+                  <div className="flex items-center text-gray-700">
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center mr-4">
+                      <ChevronRight className="w-3 h-3 text-white" />
                     </div>
+                    <span className="text-lg">Biblioteca rica em recursos educacionais</span>
                   </div>
-                  <div className="rounded-lg overflow-hidden shadow-md mt-4 border border-primary/10 bg-background p-2">
-                    <img 
-                      src={classroomImage}
-                      alt="Sala de aula moderna com tecnologia"
-                      className="w-full h-56 object-contain rounded-md"
-                    />
-                    <p className="text-xs text-center text-muted-foreground mt-2">
-                      Tecnologia IA integrada em salas de aula modernas
-                    </p>
+                  <div className="flex items-center text-gray-700">
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center mr-4">
+                      <ChevronRight className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-lg">Análises e relatórios detalhados</span>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center mr-4">
+                      <ChevronRight className="w-3 h-3 text-white" />
+                    </div>
+                    <span className="text-lg">Suporte técnico especializado</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Eventos */}
-              <div className="flex flex-col space-y-4">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-bold tracking-tighter">
-                    iAula Summit 2025
-                  </h2>
-                  <p className="max-w-[600px] text-muted-foreground">
-                    O maior evento de IA aplicada à educação no Brasil. Junte-se a educadores e especialistas em tecnologia educacional.
-                  </p>
-                </div>
-                <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <CalendarDays className="h-6 w-6 text-primary" />
-                      <span className="font-medium">15-17 de Maio, 2025</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <School className="h-6 w-6 text-primary" />
-                      <span className="font-medium">Centro de Convenções, São Paulo</span>
-                    </div>
-                    <div className="bg-background/80 backdrop-blur-sm rounded-lg p-4 mt-4">
-                      <h3 className="font-medium text-lg mb-2">Destaques do evento:</h3>
-                      <ul className="space-y-2">
-                        <li className="flex items-start gap-2 text-sm">
-                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                          <span>Keynotes com especialistas internacionais em IA educacional</span>
-                        </li>
-                        <li className="flex items-start gap-2 text-sm">
-                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                          <span>Workshops práticos sobre implementação de IA em sala de aula</span>
-                        </li>
-                        <li className="flex items-start gap-2 text-sm">
-                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                          <span>Networking com educadores inovadores de todo o país</span>
-                        </li>
-                        <li className="flex items-start gap-2 text-sm">
-                          <CheckCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" /> 
-                          <span>Certificado de participação reconhecido pelo MEC</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <Button size="lg" className="w-full">Inscreva-se para o evento</Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="py-16 md:py-20 bg-primary/5">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-                  Transforme sua escola com iAula!
-                </h2>
-                <p className="max-w-[800px] text-muted-foreground md:text-xl">
-                  A plataforma inteligente que reúne tudo de que educadores e alunos precisam, potencializada pela IA.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 min-[400px]:flex-row mt-6">
-                <Link href="/auth?register=true">
-                  <Button size="lg" className="gap-2">
-                    Comece agora gratuitamente <ArrowRight className="h-4 w-4" />
+                
+                <Link href="/auth">
+                  <Button className="w-full text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 bg-primary hover:bg-primary/90">
+                    Começar Gratuitamente
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline">
-                  Agendar demonstração
-                </Button>
+                
+                <p className="text-center text-sm text-gray-500">
+                  Sem compromisso • Configuração em minutos
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground max-w-[600px] mt-4">
-                Junte-se a milhares de educadores e alunos que já estão revolucionando o aprendizado com IA. 
-                Alinhada à LGPD e às diretrizes educacionais brasileiras.
-              </p>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="py-32 px-4 bg-primary">
+        <div className="container mx-auto max-w-6xl text-center">
+          <div className="space-y-10">
+            <div className="space-y-6">
+              <h2 className="text-5xl md:text-6xl font-bold text-white">
+                Pronto para o Futuro?
+              </h2>
+              <p className="text-xl text-white/90 max-w-3xl mx-auto">
+                Junte-se à revolução educacional. Milhares de educadores já estão 
+                transformando o ensino com o poder da Inteligência Artificial.
+              </p>
+            </div>
+            <Link href="/auth">
+              <Button size="lg" variant="secondary" className="px-12 py-4 text-lg font-semibold bg-white text-primary hover:bg-gray-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                Começar Agora - É Gratuito
+                <Rocket className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <p className="text-white/70 text-sm">
+              Mais de 50.000 educadores confiam na IAverse
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 md:py-16">
-        <div className="container px-4 md:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="col-span-2 md:col-span-1">
-              <a href="/" className="flex items-center gap-2 mb-4">
-                <LogoWithText textSize="md" />
-              </a>
-              <p className="text-sm text-muted-foreground mb-4">
-                A primeira plataforma de Inteligência Artificial Educacional para Professores e Alunos.
+      <footer className="bg-gray-900 text-white py-16 px-4">
+        <div className="container mx-auto max-w-7xl">
+          <div className="text-center space-y-6">
+            <div className="flex items-center justify-center space-x-3">
+              <img src={iaverseLogo} alt="IAverse" className="w-12 h-12" />
+              <span className="text-3xl font-bold">IAverse</span>
+            </div>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Transformando a educação através da Inteligência Artificial. 
+              Criando o futuro do aprendizado, hoje.
+            </p>
+            <div className="pt-8 border-t border-gray-800">
+              <p className="text-gray-500 text-sm">
+                © 2024 IAverse. Todos os direitos reservados.
               </p>
-              <div className="flex gap-3">
-                <a href="#" className="h-9 w-9 flex items-center justify-center rounded-md bg-muted">
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                  </svg>
-                </a>
-                <a href="#" className="h-9 w-9 flex items-center justify-center rounded-md bg-muted">
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                  </svg>
-                </a>
-                <a href="#" className="h-9 w-9 flex items-center justify-center rounded-md bg-muted">
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
-                  </svg>
-                </a>
-              </div>
             </div>
-            <div>
-              <h3 className="font-medium mb-3">Plataforma</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#features" className="hover:text-foreground">Recursos</a></li>
-                <li><a href="#courses" className="hover:text-foreground">Cursos</a></li>
-                <li><a href="#pricing" className="hover:text-foreground">Planos</a></li>
-                <li><a href="#events" className="hover:text-foreground">Eventos</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium mb-3">Empresa</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Sobre nós</a></li>
-                <li><a href="#" className="hover:text-foreground">Carreiras</a></li>
-                <li><a href="#" className="hover:text-foreground">Blog</a></li>
-                <li><a href="#" className="hover:text-foreground">Contato</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium mb-3">Legal</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Termos de Uso</a></li>
-                <li><a href="#" className="hover:text-foreground">Privacidade</a></li>
-                <li><a href="#" className="hover:text-foreground">Cookies</a></li>
-                <li><a href="#" className="hover:text-foreground">Licenças</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-xs text-muted-foreground">
-              © 2025 iAula. Todos os direitos reservados.
-            </p>
-            <p className="text-xs text-muted-foreground mt-4 md:mt-0">
-              Feito com ❤️ para professores e alunos do Brasil
-            </p>
           </div>
         </div>
       </footer>
