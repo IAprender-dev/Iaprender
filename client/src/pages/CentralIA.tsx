@@ -573,7 +573,7 @@ export default function CentralIA() {
   return (
     <>
       <Helmet>
-        <title>Central de IA | iAula</title>
+        <title>Central de IA | IAverse</title>
       </Helmet>
       
       <div className="flex h-screen overflow-hidden bg-white">

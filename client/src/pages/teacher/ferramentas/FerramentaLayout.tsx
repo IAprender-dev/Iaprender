@@ -25,7 +25,7 @@ export default function FerramentaLayout({
   return (
     <>
       <Helmet>
-        <title>{title} | iAula</title>
+        <title>{title} | IAverse</title>
       </Helmet>
 
       <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
