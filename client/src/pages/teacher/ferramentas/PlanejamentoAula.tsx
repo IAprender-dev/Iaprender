@@ -282,29 +282,8 @@ export default function PlanejamentoAula() {
                     />
                   </div>
 
-                  {/* Disciplina e Série */}
+                  {/* Ano/Série e Disciplina */}
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-slate-700">Disciplina</Label>
-                      <Select value={disciplina} onValueChange={setDisciplina}>
-                        <SelectTrigger className="border-slate-200 focus:border-blue-400">
-                          <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Matemática">Matemática</SelectItem>
-                          <SelectItem value="Português">Português</SelectItem>
-                          <SelectItem value="Ciências">Ciências</SelectItem>
-                          <SelectItem value="História">História</SelectItem>
-                          <SelectItem value="Geografia">Geografia</SelectItem>
-                          <SelectItem value="Física">Física</SelectItem>
-                          <SelectItem value="Química">Química</SelectItem>
-                          <SelectItem value="Biologia">Biologia</SelectItem>
-                          <SelectItem value="Arte">Arte</SelectItem>
-                          <SelectItem value="Inglês">Inglês</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-slate-700">Ano/Série</Label>
                       <Select value={serie} onValueChange={setSerie}>
@@ -324,6 +303,27 @@ export default function PlanejamentoAula() {
                           <SelectItem value="1º Ano EM">1º Ano - Ensino Médio</SelectItem>
                           <SelectItem value="2º Ano EM">2º Ano - Ensino Médio</SelectItem>
                           <SelectItem value="3º Ano EM">3º Ano - Ensino Médio</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-slate-700">Disciplina</Label>
+                      <Select value={disciplina} onValueChange={setDisciplina}>
+                        <SelectTrigger className="border-slate-200 focus:border-blue-400">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Matemática">Matemática</SelectItem>
+                          <SelectItem value="Português">Português</SelectItem>
+                          <SelectItem value="Ciências">Ciências</SelectItem>
+                          <SelectItem value="História">História</SelectItem>
+                          <SelectItem value="Geografia">Geografia</SelectItem>
+                          <SelectItem value="Física">Física</SelectItem>
+                          <SelectItem value="Química">Química</SelectItem>
+                          <SelectItem value="Biologia">Biologia</SelectItem>
+                          <SelectItem value="Arte">Arte</SelectItem>
+                          <SelectItem value="Inglês">Inglês</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
