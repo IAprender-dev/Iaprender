@@ -789,8 +789,12 @@ aiRouter.post("/education/generate-lesson-plan", authenticate, hasContract, asyn
         "disciplina": "${disciplina}",
         "serie": "${serie}",
         "duracao": "${duracao}",
-        "competencias_bncc": ["Lista das competências específicas da BNCC aplicáveis"],
-        "habilidades_bncc": ["Lista das habilidades específicas da BNCC que serão desenvolvidas"],
+        "competencias_bncc": ["Lista das competências gerais e específicas da BNCC aplicáveis"],
+        "habilidades_bncc": [
+          "Código da habilidade (ex: EF67LP01) - Descrição completa da habilidade específica da BNCC",
+          "Código da habilidade (ex: EF67LP02) - Descrição completa da habilidade específica da BNCC",
+          "Código da habilidade (ex: EF67LP03) - Descrição completa da habilidade específica da BNCC"
+        ],
         "objetivos_aprendizagem": [
           "Objetivo específico 1 com verbo da taxonomia de Bloom",
           "Objetivo específico 2 com verbo da taxonomia de Bloom",

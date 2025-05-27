@@ -99,8 +99,10 @@ export default function PlanejamentoAula() {
           "Competência geral 4 - Comunicação"
         ],
         habilidades_bncc: [
-          `(EF${serie.replace(/[^0-9]/g, '').padStart(2, '0')}${disciplina.substring(0,2).toUpperCase()}01) Compreender conceitos relacionados ao tema`,
-          `(EF${serie.replace(/[^0-9]/g, '').padStart(2, '0')}${disciplina.substring(0,2).toUpperCase()}02) Aplicar conhecimentos em situações práticas`
+          `(EF${serie.replace(/[^0-9]/g, '').padStart(2, '0')}${disciplina.substring(0,2).toUpperCase()}01) Identificar e compreender ${tema} através de análise e observação`,
+          `(EF${serie.replace(/[^0-9]/g, '').padStart(2, '0')}${disciplina.substring(0,2).toUpperCase()}02) Analisar situações-problema envolvendo ${tema} no contexto cotidiano`,
+          `(EF${serie.replace(/[^0-9]/g, '').padStart(2, '0')}${disciplina.substring(0,2).toUpperCase()}03) Aplicar conhecimentos sobre ${tema} em atividades práticas e investigativas`,
+          `(EF${serie.replace(/[^0-9]/g, '').padStart(2, '0')}${disciplina.substring(0,2).toUpperCase()}04) Comunicar descobertas e conclusões sobre ${tema} utilizando linguagem adequada`
         ],
         objetivos_aprendizagem: [
           `Identificar e compreender os principais conceitos de ${tema}`,
