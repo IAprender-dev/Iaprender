@@ -488,13 +488,13 @@ export default function PlanejamentoAula() {
                                 </Badge>
                               </div>
                               <p className="text-slate-700 text-sm mb-2">{momento.atividade}</p>
-                              <div className="flex items-center gap-2 text-xs text-slate-500">
+                              <div className="flex items-center gap-2 text-sm text-slate-700">
                                 <span><strong>Estratégia:</strong> {momento.estrategia}</span>
                               </div>
                               {momento.recursos && momento.recursos.length > 0 && (
                                 <div className="mt-2 flex flex-wrap gap-1">
                                   {momento.recursos.map((recurso: string, idx: number) => (
-                                    <Badge key={idx} variant="outline" className="text-xs">
+                                    <Badge key={idx} variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-700 font-medium">
                                       {recurso}
                                     </Badge>
                                   ))}
