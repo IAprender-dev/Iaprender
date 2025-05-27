@@ -726,4 +726,166 @@ aiRouter.post("/education/generate-activity", authenticate, hasContract, async (
   }
 });
 
+// Rota para geração de planos de aula
+aiRouter.post("/education/generate-lesson-plan", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const schema = z.object({
+      tema: z.string().min(1).max(500),
+      disciplina: z.string().min(1).max(100),
+      serie: z.string().min(1).max(50),
+      duracao: z.string().min(1).max(50),
+    });
+    
+    const { tema, disciplina, serie, duracao } = schema.parse(req.body);
+    
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({ message: "OpenAI service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1; // Valor temporário
+    const contractId = req.session.user?.contractId || 1; // Valor temporário
+    
+    // Prompt profissional seguindo diretrizes da BNCC e MEC
+    const prompt = `
+      Gere um plano de aula completo sobre o tema "${tema}" da disciplina ${disciplina}, para ${serie}. 
+      Utilize as diretrizes do MEC e da BNCC. Entregue um plano de aula profissional e detalhado, 
+      com o tempo de cada atividade, de forma a otimizar o ensino da matéria.
+
+      DIRETRIZES OBRIGATÓRIAS:
+      
+      1. ESTRUTURA PEDAGÓGICA COMPLETA:
+      - Seguir rigorosamente as competências e habilidades da BNCC para ${disciplina} - ${serie}
+      - Aplicar metodologias ativas e participativas conforme diretrizes do MEC
+      - Incluir momentos de diagnóstico, desenvolvimento e consolidação
+      - Garantir acessibilidade e inclusão educacional
+      
+      2. ORGANIZAÇÃO TEMPORAL DETALHADA:
+      - Duração total: ${duracao}
+      - Dividir em blocos de tempo específicos (ex: 5min, 10min, 15min)
+      - Incluir tempo para transições entre atividades
+      - Considerar ritmo de aprendizagem adequado para a faixa etária
+      
+      3. OBJETIVOS DE APRENDIZAGEM ESPECÍFICOS:
+      - Baseados nas competências gerais e específicas da BNCC
+      - Utilizar verbos da taxonomia de Bloom
+      - Incluir objetivos conceituais, procedimentais e atitudinais
+      - Ser mensuráveis e observáveis
+      
+      4. METODOLOGIA DIFERENCIADA:
+      - Incluir múltiplas estratégias de ensino
+      - Contemplar diferentes estilos de aprendizagem
+      - Usar recursos tecnológicos quando apropriado
+      - Promover protagonismo estudantil
+      
+      5. AVALIAÇÃO FORMATIVA E SOMATIVA:
+      - Critérios claros e objetivos
+      - Instrumentos diversificados
+      - Feedback contínuo
+      - Autoavaliação dos estudantes
+      
+      FORMATO DE RESPOSTA EM JSON:
+      {
+        "titulo": "Título específico e atrativo da aula",
+        "disciplina": "${disciplina}",
+        "serie": "${serie}",
+        "duracao": "${duracao}",
+        "competencias_bncc": ["Lista das competências específicas da BNCC aplicáveis"],
+        "habilidades_bncc": ["Lista das habilidades específicas da BNCC que serão desenvolvidas"],
+        "objetivos_aprendizagem": [
+          "Objetivo específico 1 com verbo da taxonomia de Bloom",
+          "Objetivo específico 2 com verbo da taxonomia de Bloom",
+          "Objetivo específico 3 com verbo da taxonomia de Bloom"
+        ],
+        "prerequisitos": ["Conhecimentos prévios necessários"],
+        "cronograma_detalhado": [
+          {
+            "momento": "Abertura/Motivação",
+            "tempo": "5 minutos",
+            "atividade": "Descrição detalhada da atividade de abertura",
+            "recursos": ["Lista de recursos específicos"],
+            "estrategia": "Estratégia pedagógica utilizada"
+          },
+          {
+            "momento": "Diagnóstico inicial",
+            "tempo": "10 minutos", 
+            "atividade": "Atividade para verificar conhecimentos prévios",
+            "recursos": ["Lista de recursos específicos"],
+            "estrategia": "Estratégia pedagógica utilizada"
+          },
+          {
+            "momento": "Desenvolvimento - Parte 1",
+            "tempo": "15 minutos",
+            "atividade": "Primeira parte do desenvolvimento do conteúdo",
+            "recursos": ["Lista de recursos específicos"],
+            "estrategia": "Estratégia pedagógica utilizada"
+          },
+          {
+            "momento": "Atividade prática",
+            "tempo": "15 minutos",
+            "atividade": "Atividade prática para aplicação do conhecimento",
+            "recursos": ["Lista de recursos específicos"],
+            "estrategia": "Estratégia pedagógica utilizada"
+          },
+          {
+            "momento": "Consolidação",
+            "tempo": "10 minutos",
+            "atividade": "Atividade de síntese e consolidação",
+            "recursos": ["Lista de recursos específicos"],
+            "estrategia": "Estratégia pedagógica utilizada"
+          },
+          {
+            "momento": "Avaliação/Fechamento",
+            "tempo": "5 minutos",
+            "atividade": "Atividade avaliativa e fechamento da aula",
+            "recursos": ["Lista de recursos específicos"],
+            "estrategia": "Estratégia pedagógica utilizada"
+          }
+        ],
+        "recursos_necessarios": {
+          "materiais": ["Lista detalhada de materiais físicos"],
+          "tecnologicos": ["Lista de recursos digitais/tecnológicos"],
+          "espacos": ["Descrição dos espaços necessários"]
+        },
+        "metodologias_ativas": ["Lista das metodologias ativas utilizadas"],
+        "diferenciacao_pedagogica": {
+          "estudantes_com_dificuldade": "Estratégias específicas para estudantes com dificuldade",
+          "estudantes_avancados": "Atividades desafiadoras para estudantes avançados",
+          "necessidades_especiais": "Adaptações para inclusão"
+        },
+        "avaliacao": {
+          "instrumentos": ["Lista de instrumentos avaliativos"],
+          "criterios": ["Critérios de avaliação específicos"],
+          "indicadores": ["Indicadores de aprendizagem observáveis"],
+          "feedback": "Como será dado o feedback aos estudantes"
+        },
+        "extensao_casa": "Atividade para casa que complementa a aula",
+        "referencias_complementares": ["Materiais de apoio para professor e estudantes"],
+        "observacoes_professor": "Dicas importantes para execução da aula"
+      }
+      
+      IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional antes ou depois.
+    `;
+    
+    const result = await OpenAIService.generateChatCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: "gpt-4o",
+      temperature: 0.3,
+      maxTokens: 4000
+    });
+    
+    return res.status(200).json({
+      content: result.content,
+      tokensUsed: result.tokensUsed
+    });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in lesson plan generation endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 export default aiRouter;

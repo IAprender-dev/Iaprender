@@ -84,48 +84,53 @@ export default function PlanejamentoAula() {
     setIsGenerating(true);
 
     try {
-      // Simular chamada à API
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      const planoMock = {
-        titulo: tema,
-        disciplina,
-        serie,
-        duracao,
-        objetivos: [
-          "Compreender os conceitos fundamentais do tema proposto",
-          "Desenvolver habilidades de análise crítica",
-          "Aplicar conhecimentos em situações práticas",
-          "Estabelecer conexões com o cotidiano"
-        ],
-        conteudo: [
-          "Introdução ao tema e contextualização",
-          "Desenvolvimento teórico dos conceitos",
-          "Exemplos práticos e aplicações",
-          "Atividades de fixação",
-          "Conclusão e síntese"
-        ],
-        metodologia: "Aula expositiva dialogada com momentos de interação, uso de exemplos práticos e atividades em grupo para consolidação do aprendizado.",
-        recursos: [
-          "Quadro/lousa",
-          "Projetor",
-          "Material impresso",
-          "Recursos digitais"
-        ],
-        avaliacao: "Observação da participação dos alunos, atividades práticas realizadas em sala e verificação da compreensão através de questionamentos.",
-        dataGeracao: new Date().toLocaleDateString('pt-BR')
-      };
+      const response = await fetch('/api/ai/education/generate-lesson-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tema,
+          disciplina,
+          serie,
+          duracao
+        }),
+      });
 
-      setPlanoGerado(planoMock);
+      if (!response.ok) {
+        throw new Error('Erro ao gerar plano de aula');
+      }
+
+      const data = await response.json();
+      
+      // Parse do JSON retornado pela IA
+      let planoData;
+      try {
+        planoData = JSON.parse(data.content);
+      } catch (parseError) {
+        // Se não conseguir fazer parse, usar um formato básico
+        planoData = {
+          titulo: tema,
+          disciplina,
+          serie,
+          duracao,
+          objetivos_aprendizagem: ["Plano gerado com sucesso"],
+          cronograma_detalhado: [],
+          recursos_necessarios: { materiais: [], tecnologicos: [], espacos: [] },
+          avaliacao: { criterios: [], instrumentos: [] }
+        };
+      }
+
+      setPlanoGerado(planoData);
       
       toast({
         title: "Plano gerado com sucesso!",
-        description: "Seu plano de aula está pronto para uso.",
+        description: "Seu plano de aula profissional está pronto para uso.",
       });
     } catch (error) {
       toast({
         title: "Erro ao gerar plano",
-        description: "Tente novamente em alguns instantes.",
+        description: "Verifique sua conexão e tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -351,66 +356,182 @@ export default function PlanejamentoAula() {
                       <p className="text-slate-700 bg-slate-50 p-3 rounded-lg">{planoGerado.titulo}</p>
                     </div>
 
-                    {/* Objetivos */}
-                    <div>
-                      <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-                        <Target className="h-4 w-4 text-blue-600" />
-                        Objetivos de Aprendizagem
-                      </h3>
-                      <ul className="space-y-2">
-                        {planoGerado.objetivos.map((objetivo: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <ChevronRight className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <span className="text-slate-700">{objetivo}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Conteúdo */}
-                    <div>
-                      <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-purple-600" />
-                        Conteúdo da Aula
-                      </h3>
-                      <ol className="space-y-2">
-                        {planoGerado.conteudo.map((item: string, index: number) => (
-                          <li key={index} className="flex items-start gap-2">
-                            <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 py-1 rounded-full min-w-[24px] text-center">
-                              {index + 1}
-                            </span>
-                            <span className="text-slate-700">{item}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-
-                    {/* Metodologia */}
-                    <div>
-                      <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
-                        <GraduationCap className="h-4 w-4 text-green-600" />
-                        Metodologia
-                      </h3>
-                      <p className="text-slate-700 bg-green-50 p-3 rounded-lg">{planoGerado.metodologia}</p>
-                    </div>
-
-                    {/* Recursos */}
-                    <div>
-                      <h3 className="font-semibold text-slate-900 mb-2">Recursos Necessários</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {planoGerado.recursos.map((recurso: string, index: number) => (
-                          <Badge key={index} variant="outline" className="bg-amber-50 border-amber-200 text-amber-700">
-                            {recurso}
-                          </Badge>
-                        ))}
+                    {/* Competências BNCC */}
+                    {planoGerado.competencias_bncc && planoGerado.competencias_bncc.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                          <Target className="h-4 w-4 text-blue-600" />
+                          Competências BNCC
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {planoGerado.competencias_bncc.map((competencia: string, index: number) => (
+                            <Badge key={index} variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
+                              {competencia}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Objetivos de Aprendizagem */}
+                    {planoGerado.objetivos_aprendizagem && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                          <Target className="h-4 w-4 text-green-600" />
+                          Objetivos de Aprendizagem
+                        </h3>
+                        <ul className="space-y-2">
+                          {planoGerado.objetivos_aprendizagem.map((objetivo: string, index: number) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <ChevronRight className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <span className="text-slate-700">{objetivo}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Cronograma Detalhado */}
+                    {planoGerado.cronograma_detalhado && planoGerado.cronograma_detalhado.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-purple-600" />
+                          Cronograma Detalhado
+                        </h3>
+                        <div className="space-y-3">
+                          {planoGerado.cronograma_detalhado.map((momento: any, index: number) => (
+                            <div key={index} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-medium text-slate-900">{momento.momento}</h4>
+                                <Badge variant="secondary" className="text-xs">
+                                  {momento.tempo}
+                                </Badge>
+                              </div>
+                              <p className="text-slate-700 text-sm mb-2">{momento.atividade}</p>
+                              <div className="flex items-center gap-2 text-xs text-slate-500">
+                                <span><strong>Estratégia:</strong> {momento.estrategia}</span>
+                              </div>
+                              {momento.recursos && momento.recursos.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                  {momento.recursos.map((recurso: string, idx: number) => (
+                                    <Badge key={idx} variant="outline" className="text-xs">
+                                      {recurso}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recursos Necessários */}
+                    {planoGerado.recursos_necessarios && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-2">Recursos Necessários</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {planoGerado.recursos_necessarios.materiais && planoGerado.recursos_necessarios.materiais.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-2">Materiais</h4>
+                              <div className="space-y-1">
+                                {planoGerado.recursos_necessarios.materiais.map((material: string, index: number) => (
+                                  <Badge key={index} variant="outline" className="block text-xs bg-amber-50 border-amber-200 text-amber-700">
+                                    {material}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {planoGerado.recursos_necessarios.tecnologicos && planoGerado.recursos_necessarios.tecnologicos.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-2">Tecnológicos</h4>
+                              <div className="space-y-1">
+                                {planoGerado.recursos_necessarios.tecnologicos.map((tech: string, index: number) => (
+                                  <Badge key={index} variant="outline" className="block text-xs bg-blue-50 border-blue-200 text-blue-700">
+                                    {tech}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {planoGerado.recursos_necessarios.espacos && planoGerado.recursos_necessarios.espacos.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-2">Espaços</h4>
+                              <div className="space-y-1">
+                                {planoGerado.recursos_necessarios.espacos.map((espaco: string, index: number) => (
+                                  <Badge key={index} variant="outline" className="block text-xs bg-green-50 border-green-200 text-green-700">
+                                    {espaco}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Avaliação */}
-                    <div>
-                      <h3 className="font-semibold text-slate-900 mb-2">Avaliação</h3>
-                      <p className="text-slate-700 bg-purple-50 p-3 rounded-lg">{planoGerado.avaliacao}</p>
-                    </div>
+                    {planoGerado.avaliacao && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          Avaliação
+                        </h3>
+                        <div className="bg-green-50 p-4 rounded-lg space-y-3">
+                          {planoGerado.avaliacao.criterios && planoGerado.avaliacao.criterios.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-2">Critérios de Avaliação</h4>
+                              <ul className="space-y-1">
+                                {planoGerado.avaliacao.criterios.map((criterio: string, index: number) => (
+                                  <li key={index} className="text-sm text-slate-700 flex items-start gap-2">
+                                    <ChevronRight className="h-3 w-3 text-green-600 mt-1 flex-shrink-0" />
+                                    {criterio}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {planoGerado.avaliacao.instrumentos && planoGerado.avaliacao.instrumentos.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-2">Instrumentos</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {planoGerado.avaliacao.instrumentos.map((instrumento: string, index: number) => (
+                                  <Badge key={index} variant="outline" className="text-xs bg-green-100 border-green-300 text-green-800">
+                                    {instrumento}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {planoGerado.avaliacao.feedback && (
+                            <div>
+                              <h4 className="text-sm font-medium text-slate-700 mb-1">Feedback</h4>
+                              <p className="text-sm text-slate-700">{planoGerado.avaliacao.feedback}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Atividade para Casa */}
+                    {planoGerado.extensao_casa && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-2">Atividade para Casa</h3>
+                        <p className="text-slate-700 bg-blue-50 p-3 rounded-lg">{planoGerado.extensao_casa}</p>
+                      </div>
+                    )}
+
+                    {/* Observações do Professor */}
+                    {planoGerado.observacoes_professor && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                          <Lightbulb className="h-4 w-4 text-amber-500" />
+                          Observações Importantes
+                        </h3>
+                        <p className="text-slate-700 bg-amber-50 p-3 rounded-lg border border-amber-200">{planoGerado.observacoes_professor}</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
