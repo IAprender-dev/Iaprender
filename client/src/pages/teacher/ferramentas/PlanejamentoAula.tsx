@@ -16,7 +16,8 @@ import {
   ChevronRight,
   GraduationCap,
   CheckCircle2,
-  Plus
+  Plus,
+  Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
