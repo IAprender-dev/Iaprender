@@ -312,10 +312,15 @@ export default function PlanejamentoAula() {
                           <SelectValue placeholder="Selecione" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="6º Ano">6º Ano</SelectItem>
-                          <SelectItem value="7º Ano">7º Ano</SelectItem>
-                          <SelectItem value="8º Ano">8º Ano</SelectItem>
-                          <SelectItem value="9º Ano">9º Ano</SelectItem>
+                          <SelectItem value="1º Ano EF">1º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="2º Ano EF">2º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="3º Ano EF">3º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="4º Ano EF">4º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="5º Ano EF">5º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="6º Ano EF">6º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="7º Ano EF">7º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="8º Ano EF">8º Ano - Ensino Fundamental</SelectItem>
+                          <SelectItem value="9º Ano EF">9º Ano - Ensino Fundamental</SelectItem>
                           <SelectItem value="1º Ano EM">1º Ano - Ensino Médio</SelectItem>
                           <SelectItem value="2º Ano EM">2º Ano - Ensino Médio</SelectItem>
                           <SelectItem value="3º Ano EM">3º Ano - Ensino Médio</SelectItem>
