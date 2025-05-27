@@ -361,31 +361,7 @@ export default function PlanejamentoAula() {
                 </CardContent>
               </Card>
 
-              {/* Sugestões de Temas */}
-              {getSugestoesPorDisciplina().length > 0 && (
-                <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Lightbulb className="h-5 w-5 text-amber-500" />
-                      Sugestões de Temas
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {getSugestoesPorDisciplina().map((sugestao, index) => (
-                        <Badge 
-                          key={index}
-                          variant="outline" 
-                          className="cursor-pointer hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors"
-                          onClick={() => setTema(sugestao)}
-                        >
-                          {sugestao}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+
             </div>
 
             {/* Resultado */}
