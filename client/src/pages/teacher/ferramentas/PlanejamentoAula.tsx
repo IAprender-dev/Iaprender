@@ -436,6 +436,28 @@ export default function PlanejamentoAula() {
                       </div>
                     )}
 
+                    {/* Habilidades BNCC */}
+                    {planoGerado.habilidades_bncc && planoGerado.habilidades_bncc.length > 0 && (
+                      <div>
+                        <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                          <Settings className="h-4 w-4 text-indigo-600" />
+                          Habilidades BNCC a Desenvolver
+                        </h3>
+                        <div className="space-y-3">
+                          {planoGerado.habilidades_bncc.map((habilidade: string, index: number) => (
+                            <div key={index} className="border border-indigo-200 rounded-lg p-3 bg-indigo-50">
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                  {index + 1}
+                                </div>
+                                <p className="text-slate-800 text-sm leading-relaxed">{habilidade}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Objetivos de Aprendizagem */}
                     {planoGerado.objetivos_aprendizagem && (
                       <div>
