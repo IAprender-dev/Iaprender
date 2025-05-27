@@ -866,19 +866,27 @@ aiRouter.post("/education/generate-lesson-plan", authenticate, hasContract, asyn
       IMPORTANTE: Retorne APENAS o JSON válido, sem texto adicional antes ou depois.
     `;
     
-    const result = await OpenAIService.generateChatCompletion({
-      userId,
-      contractId,
-      prompt,
-      model: "gpt-4o",
-      temperature: 0.3,
-      maxTokens: 4000
-    });
-    
-    return res.status(200).json({
-      content: result.content,
-      tokensUsed: result.tokensUsed
-    });
+    try {
+      const result = await OpenAIService.generateChatCompletion({
+        userId,
+        contractId,
+        prompt,
+        model: "gpt-4o",
+        temperature: 0.3,
+        maxTokens: 4000
+      });
+      
+      return res.status(200).json({
+        content: result.content,
+        tokensUsed: result.tokensUsed
+      });
+    } catch (aiError: any) {
+      console.error("Error calling OpenAI service:", aiError);
+      return res.status(500).json({ 
+        message: "Erro ao processar solicitação de IA", 
+        error: aiError.message 
+      });
+    }
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ message: error.errors });
