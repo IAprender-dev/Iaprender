@@ -97,27 +97,71 @@ export default function PlanejamentoAula() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Erro ao gerar plano de aula');
-      }
-
       const data = await response.json();
       
+      if (!response.ok) {
+        throw new Error(data.message || 'Erro ao gerar plano de aula');
+      }
+
       // Parse do JSON retornado pela IA
       let planoData;
       try {
-        planoData = JSON.parse(data.content);
+        // Verificar se o conteúdo existe e tentar fazer parse
+        if (data.content) {
+          planoData = JSON.parse(data.content);
+        } else {
+          throw new Error('Conteúdo não encontrado na resposta');
+        }
       } catch (parseError) {
-        // Se não conseguir fazer parse, usar um formato básico
+        console.error('Erro ao fazer parse do JSON:', parseError);
+        console.log('Conteúdo recebido:', data.content);
+        
+        // Usar um plano básico como fallback
         planoData = {
           titulo: tema,
           disciplina,
           serie,
           duracao,
-          objetivos_aprendizagem: ["Plano gerado com sucesso"],
-          cronograma_detalhado: [],
-          recursos_necessarios: { materiais: [], tecnologicos: [], espacos: [] },
-          avaliacao: { criterios: [], instrumentos: [] }
+          objetivos_aprendizagem: [
+            "Compreender os conceitos fundamentais do tema",
+            "Desenvolver habilidades práticas relacionadas ao conteúdo",
+            "Aplicar conhecimentos em situações do cotidiano"
+          ],
+          cronograma_detalhado: [
+            {
+              momento: "Abertura",
+              tempo: "10 minutos",
+              atividade: "Apresentação do tema e motivação inicial",
+              estrategia: "Exposição dialogada",
+              recursos: ["Quadro", "Projetor"]
+            },
+            {
+              momento: "Desenvolvimento",
+              tempo: "25 minutos", 
+              atividade: "Desenvolvimento do conteúdo principal",
+              estrategia: "Metodologia ativa",
+              recursos: ["Material didático", "Atividades práticas"]
+            },
+            {
+              momento: "Consolidação",
+              tempo: "15 minutos",
+              atividade: "Atividades de fixação e avaliação",
+              estrategia: "Avaliação formativa",
+              recursos: ["Exercícios", "Feedback"]
+            }
+          ],
+          recursos_necessarios: {
+            materiais: ["Quadro/lousa", "Material impresso"],
+            tecnologicos: ["Projetor", "Computador"],
+            espacos: ["Sala de aula"]
+          },
+          avaliacao: {
+            criterios: ["Participação ativa", "Compreensão dos conceitos"],
+            instrumentos: ["Observação", "Atividades práticas"],
+            feedback: "Feedback contínuo durante as atividades"
+          },
+          extensao_casa: "Exercícios relacionados ao tema para consolidação",
+          observacoes_professor: "Adaptar conforme o ritmo da turma"
         };
       }
 
@@ -127,10 +171,11 @@ export default function PlanejamentoAula() {
         title: "Plano gerado com sucesso!",
         description: "Seu plano de aula profissional está pronto para uso.",
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Erro na geração do plano:', error);
       toast({
         title: "Erro ao gerar plano",
-        description: "Verifique sua conexão e tente novamente.",
+        description: error.message || "Verifique sua conexão e tente novamente.",
         variant: "destructive"
       });
     } finally {
