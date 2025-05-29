@@ -154,8 +154,8 @@ export default function ImagemEducacional() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-4">
-                <Link href="/professor">
-                  <Button variant="outline" size="sm" className="gap-2 border-slate-300 bg-white hover:bg-slate-50">
+                <Link href="/professor/dashboard">
+                  <Button variant="ghost" size="sm" className="gap-2">
                     <ArrowLeft className="h-4 w-4" />
                     Voltar
                   </Button>
