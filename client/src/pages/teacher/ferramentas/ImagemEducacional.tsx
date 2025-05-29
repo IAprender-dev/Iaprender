@@ -1,19 +1,27 @@
 import { useState } from "react";
-import { ImageIcon, Download, Copy, RefreshCw, Loader2 } from "lucide-react";
-import FerramentaLayout from "./FerramentaLayout";
+import { Helmet } from "react-helmet";
+import { Link } from "wouter";
+import { 
+  ArrowLeft,
+  Image as ImageIcon,
+  Settings,
+  Download,
+  Sparkles,
+  Palette,
+  Zap,
+  Eye,
+  Copy
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
-// Interfaces para tipagem
 interface ImageResponse {
   url: string;
-  revised_prompt?: string;
 }
 
 interface ApiResponse {
@@ -23,26 +31,28 @@ interface ApiResponse {
 
 export default function ImagemEducacional() {
   const { toast } = useToast();
+  
+  // Estados principais
   const [prompt, setPrompt] = useState("");
-  const [estilo, setEstilo] = useState("fotorealista");
+  const [estilo, setEstilo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [imagensGeradas, setImagensGeradas] = useState<string[]>([]);
+  const [imagemGerada, setImagemGerada] = useState<string | null>(null);
 
-  // Lista de temas para inspiração
-  const exemplosTemas = [
-    "Sistema solar com todos os planetas e suas principais características",
-    "Diagrama do ciclo da água na natureza com explicações detalhadas",
-    "Mapa da América do Sul destacando os principais rios e montanhas",
-    "Representação visual do processo fotossintético em plantas",
-    "Linha do tempo ilustrada das principais civilizações antigas"
+  // Sugestões de prompts educacionais
+  const sugestoesTemas = [
+    "Sistema solar com todos os planetas e suas órbitas em cores vibrantes",
+    "Célula animal detalhada com organelas identificadas e coloridas",
+    "Ciclo da água completo com setas e legendas explicativas",
+    "Mapa do Brasil com regiões em cores diferentes e capitais",
+    "Esqueleto humano didático com principais ossos identificados"
   ];
 
-  // Função para gerar imagens usando a API do OpenAI/DALL-E
+  // Função para gerar imagem
   const gerarImagem = async () => {
-    if (!prompt.trim()) {
+    if (!prompt.trim() || !estilo) {
       toast({
-        title: "Descrição obrigatória",
-        description: "Por favor, descreva a imagem que deseja criar.",
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha a descrição e selecione um estilo.",
         variant: "destructive"
       });
       return;
@@ -51,53 +61,38 @@ export default function ImagemEducacional() {
     setIsLoading(true);
 
     try {
-      // Construir o prompt completo com estilo
-      let promptCompleto = `${prompt}, no estilo ${estilo}`;
-      
-      // Usar formato quadrado por padrão
-      const size = "1024x1024";
-      
-      // Chamada para a API
       const response = await fetch('/api/ai/openai/image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: promptCompleto,
-          size: size,
-          n: 1,  // DALL-E 3 só permite gerar 1 imagem por vez
+          prompt: `${prompt}. Estilo: ${estilo}. Educacional, didático, adequado para sala de aula.`,
+          style: estilo
         }),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Falha ao gerar imagens');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erro ao gerar imagem');
       }
+
+      const data: ApiResponse = await response.json();
       
-      const data = await response.json() as ApiResponse;
-      
-      // Extrair URLs das imagens
-      const imageUrls = data.images ? data.images.map(img => img.url) : [];
-      setImagensGeradas(imageUrls);
-      
-      toast({
-        title: "Imagem gerada com sucesso",
-        description: "Sua imagem educacional foi criada.",
-      });
+      if (data.images && data.images.length > 0) {
+        setImagemGerada(data.images[0].url);
+        toast({
+          title: "Imagem gerada com sucesso!",
+          description: "Sua imagem educacional foi criada com IA.",
+        });
+      } else {
+        throw new Error('Nenhuma imagem foi gerada');
+      }
     } catch (error) {
-      console.error("Erro ao gerar imagens:", error);
-      
-      // Para desenvolvimento, usando imagens mock caso a API falhe
-      const mockImagens = [
-        "https://placehold.co/800x800/e6f7ff/007bff?text=Imagem+Educacional+1",
-        "https://placehold.co/800x800/e6f7ff/007bff?text=Imagem+Educacional+2",
-      ];
-      
-      setImagensGeradas(mockImagens);
-      
+      console.error('Erro ao gerar imagem:', error);
       toast({
         title: "Erro ao gerar imagem",
-        description: "Ocorreu um erro ao processar sua solicitação. Usando imagem de demonstração.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -105,190 +100,237 @@ export default function ImagemEducacional() {
     }
   };
 
-  const copiarParaClipboard = (url: string) => {
-    navigator.clipboard.writeText(url);
-    toast({
-      title: "URL copiada",
-      description: "URL da imagem copiada para a área de transferência.",
-    });
-  };
-  
-  // Função para fazer download de imagens
-  const baixarImagem = async (url: string, nomeArquivo: string) => {
+  // Função para download
+  const baixarImagem = async () => {
+    if (!imagemGerada) return;
+    
     try {
-      // Buscar a imagem como um blob
-      const response = await fetch(url);
+      const response = await fetch(imagemGerada);
       const blob = await response.blob();
-      
-      // Criar URL do objeto blob
-      const blobUrl = URL.createObjectURL(blob);
-      
-      // Criar um elemento link temporário
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = nomeArquivo;
-      
-      // Adicionar ao documento, clicar e remover
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Liberar URL do objeto quando não for mais necessária
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `imagem-educacional-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
       
       toast({
-        title: "Download iniciado",
-        description: "Sua imagem está sendo salva no seu dispositivo.",
+        title: "Download concluído",
+        description: "Imagem salva com sucesso.",
       });
     } catch (error) {
-      console.error("Erro ao baixar imagem:", error);
       toast({
-        title: "Erro ao baixar",
-        description: "Não foi possível baixar a imagem. Tente novamente.",
+        title: "Erro no download",
+        description: "Não foi possível baixar a imagem.",
         variant: "destructive"
       });
     }
   };
 
+  // Função para copiar URL
+  const copiarUrl = () => {
+    if (!imagemGerada) return;
+    
+    navigator.clipboard.writeText(imagemGerada).then(() => {
+      toast({
+        title: "URL copiada",
+        description: "Link da imagem copiado para a área de transferência.",
+      });
+    });
+  };
+
   return (
-    <FerramentaLayout
-      title="Criar Imagem Educacional"
-      description="Gere imagens personalizadas para enriquecer suas aulas e materiais didáticos"
-      icon={<ImageIcon className="h-6 w-6 text-blue-600" />}
-      helpText="Descreva detalhadamente a imagem educacional que você deseja criar. Quanto mais específico for, melhores serão os resultados. A imagem será gerada em formato quadrado e você pode baixá-la após a geração."
-    >
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-        {/* Painel de controle - 2 colunas */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="space-y-4">
-            <Label htmlFor="prompt" className="text-base font-medium">Que imagem você quer gerar?</Label>
-            <Textarea 
-              id="prompt"
-              placeholder="Ex: Uma representação detalhada do sistema solar mostrando todos os planetas em órbita ao redor do sol, com legenda de cada planeta e suas principais características."
-              className="min-h-[150px]"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="estilo" className="text-sm">Estilo visual</Label>
-            <Select value={estilo} onValueChange={setEstilo}>
-              <SelectTrigger id="estilo">
-                <SelectValue placeholder="Selecione o estilo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fotorealista">Fotorealista</SelectItem>
-                <SelectItem value="ilustracao">Ilustração</SelectItem>
-                <SelectItem value="infografico">Infográfico</SelectItem>
-                <SelectItem value="cartoon">Cartoon educativo</SelectItem>
-                <SelectItem value="desenho">Desenho a mão</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="text-sm text-neutral-500 bg-neutral-50 p-4 rounded-lg border border-neutral-200">
-            <p className="font-medium mb-2">Exemplos de descrições eficazes:</p>
-            <ul className="space-y-1">
-              {exemplosTemas.map((exemplo, index) => (
-                <li 
-                  key={index}
-                  className="cursor-pointer hover:text-blue-600 hover:underline"
-                  onClick={() => setPrompt(exemplo)}
-                >
-                  • {exemplo}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <Button 
-            className="w-full" 
-            size="lg"
-            onClick={gerarImagem}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Gerando imagem...
-              </>
-            ) : (
-              <>
-                <ImageIcon className="mr-2 h-4 w-4" />
-                Gerar imagem
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {/* Painel de resultados - 3 colunas */}
-        <div className="md:col-span-3">
-          {imagensGeradas.length > 0 ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-neutral-900">Imagem gerada</h3>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setImagensGeradas([])}
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Limpar
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <Helmet>
+        <title>Criar Imagem Educacional - IAverse</title>
+      </Helmet>
+      
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/professor">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
                 </Button>
-              </div>
-              
-              <div>
-                {imagensGeradas.map((url, index) => (
-                  <Card key={index} className="overflow-hidden bg-neutral-50 border border-neutral-200">
-                    <div className="relative bg-neutral-100">
-                      <img 
-                        src={url} 
-                        alt={`Imagem educacional ${index + 1}`}
-                        className="w-full object-contain max-h-[500px]"
-                      />
-                    </div>
-                    <CardContent className="p-4">
-                      <div className="flex justify-between gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => copiarParaClipboard(url)}>
-                          <Copy className="mr-1 h-4 w-4" />
-                          Copiar URL
-                        </Button>
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="bg-blue-600 text-white hover:bg-blue-700"
-                          onClick={() => baixarImagem(url, `imagem-educacional-${index + 1}.png`)}
-                        >
-                          <Download className="mr-1 h-4 w-4" />
-                          Baixar Imagem
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              </Link>
+              <div className="h-6 w-px bg-slate-300" />
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                  <ImageIcon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">Criar Imagem Educacional</h1>
+                  <p className="text-sm text-slate-600">Gere imagens didáticas com Inteligência Artificial</p>
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full bg-neutral-50 rounded-lg border border-dashed border-neutral-200 p-12 text-center">
-              <ImageIcon className="h-12 w-12 text-neutral-400 mb-4" />
-              <h3 className="text-lg font-medium text-neutral-900 mb-2">Nenhuma imagem gerada</h3>
-              <p className="text-neutral-500 max-w-md mb-6">
-                Descreva detalhadamente a imagem educacional que você deseja criar e clique em "Gerar imagem".
-              </p>
-              <div className="text-sm text-neutral-500">
-                <p className="font-medium mb-2">Dicas para melhores resultados:</p>
-                <ul className="text-left space-y-1">
-                  <li>• Seja específico sobre o tema educacional</li>
-                  <li>• Mencione cores e elementos visuais desejados</li>
-                  <li>• Indique qual faixa etária a imagem se destina</li>
-                  <li>• Descreva se deseja gráficos, diagramas ou ilustrações</li>
-                </ul>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
-    </FerramentaLayout>
+
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Painel de Configuração */}
+          <div className="lg:col-span-1">
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-purple-600" />
+                  Configurar Imagem
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                
+                {/* Descrição */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Descrição da Imagem</Label>
+                  <Textarea
+                    placeholder="Ex: Sistema solar completo com todos os planetas em suas órbitas, mostrando as diferenças de tamanho e cores..."
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="min-h-[120px] resize-none border-slate-200 focus:border-purple-400"
+                  />
+                  <p className="text-xs text-slate-500">Seja específico para obter melhores resultados</p>
+                </div>
+
+                {/* Estilo */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">Estilo Visual</Label>
+                  <Select value={estilo} onValueChange={setEstilo}>
+                    <SelectTrigger className="border-slate-200 focus:border-purple-400">
+                      <SelectValue placeholder="Selecione o estilo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="educacional-realista">Educacional Realista</SelectItem>
+                      <SelectItem value="ilustracao-didatica">Ilustração Didática</SelectItem>
+                      <SelectItem value="cartoon-educativo">Cartoon Educativo</SelectItem>
+                      <SelectItem value="diagrama-tecnico">Diagrama Técnico</SelectItem>
+                      <SelectItem value="infografico">Infográfico</SelectItem>
+                      <SelectItem value="aquarela-educativa">Aquarela Educativa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Sugestões de Temas */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-slate-700">Sugestões Populares</Label>
+                  <div className="space-y-2">
+                    {sugestoesTemas.map((sugestao, index) => (
+                      <Badge 
+                        key={index}
+                        variant="outline" 
+                        className="cursor-pointer hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-colors text-xs p-2 h-auto leading-relaxed block text-left"
+                        onClick={() => setPrompt(sugestao)}
+                      >
+                        {sugestao}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Botão Gerar */}
+                <Button 
+                  onClick={gerarImagem}
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 rounded-xl transition-all duration-200 shadow-lg"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Gerando Imagem...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      Gerar Imagem com IA
+                    </div>
+                  )}
+                </Button>
+
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Painel de Resultado */}
+          <div className="lg:col-span-2">
+            {!imagemGerada ? (
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl h-full">
+                <CardContent className="flex items-center justify-center h-full min-h-[600px]">
+                  <div className="text-center">
+                    <div className="p-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                      <Palette className="h-12 w-12 text-purple-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">Pronto para criar imagens educacionais?</h3>
+                    <p className="text-slate-600 max-w-md mx-auto mb-6">
+                      Descreva a imagem que precisa, escolha um estilo e deixe a IA criar conteúdo visual perfeito para suas aulas.
+                    </p>
+                    <div className="space-y-2 text-sm text-slate-500">
+                      <p className="font-medium">Dicas para melhores resultados:</p>
+                      <ul className="text-left space-y-1 max-w-xs mx-auto">
+                        <li>• Seja específico sobre elementos visuais</li>
+                        <li>• Mencione cores e detalhes importantes</li>
+                        <li>• Indique se precisa de legendas ou setas</li>
+                        <li>• Especifique a faixa etária dos alunos</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <Eye className="h-5 w-5 text-green-600" />
+                        Imagem Gerada
+                      </CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
+                          {estilo}
+                        </Badge>
+                        <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700">
+                          Pronta para uso
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button variant="outline" size="sm" onClick={copiarUrl}>
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={baixarImagem}>
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-white rounded-lg p-4 border border-slate-200">
+                    <img 
+                      src={imagemGerada} 
+                      alt="Imagem educacional gerada"
+                      className="w-full h-auto rounded-lg shadow-lg"
+                    />
+                  </div>
+                  
+                  {/* Prompt usado */}
+                  <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Descrição utilizada:</Label>
+                    <p className="text-sm text-slate-600 leading-relaxed">{prompt}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
