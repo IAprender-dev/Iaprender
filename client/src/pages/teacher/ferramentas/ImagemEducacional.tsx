@@ -152,21 +152,36 @@ export default function ImagemEducacional() {
       <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/professor">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <ArrowLeft className="h-4 w-4" />
-                  Voltar
-                </Button>
-              </Link>
-              <div className="h-6 w-px bg-slate-300" />
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
-                  <ImageIcon className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-4">
+                <Link href="/professor">
+                  <Button variant="outline" size="sm" className="gap-2 border-slate-300 bg-white hover:bg-slate-50">
+                    <ArrowLeft className="h-4 w-4" />
+                    Voltar
+                  </Button>
+                </Link>
+                <div className="h-6 w-px bg-slate-300" />
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                    <ImageIcon className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-slate-900">Criar Imagem Educacional</h1>
+                    <p className="text-sm text-slate-600">Gere imagens didáticas com Inteligência Artificial</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-slate-900">Criar Imagem Educacional</h1>
-                  <p className="text-sm text-slate-600">Gere imagens didáticas com Inteligência Artificial</p>
+              </div>
+              
+              {/* Logo IAverse */}
+              <div className="flex items-center gap-2">
+                <div className="text-right">
+                  <div className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    IAverse
+                  </div>
+                  <div className="text-xs text-slate-500">Educação + IA</div>
+                </div>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-white" />
                 </div>
               </div>
             </div>
@@ -218,22 +233,7 @@ export default function ImagemEducacional() {
                   </Select>
                 </div>
 
-                {/* Sugestões de Temas */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium text-slate-700">Sugestões Populares</Label>
-                  <div className="space-y-2">
-                    {sugestoesTemas.map((sugestao, index) => (
-                      <Badge 
-                        key={index}
-                        variant="outline" 
-                        className="cursor-pointer hover:bg-purple-50 hover:border-purple-200 hover:text-purple-700 transition-colors text-xs p-2 h-auto leading-relaxed block text-left"
-                        onClick={() => setPrompt(sugestao)}
-                      >
-                        {sugestao}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+
 
                 {/* Botão Gerar */}
                 <Button 
