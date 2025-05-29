@@ -290,8 +290,8 @@ export default function GeradorAtividades() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Link href="/professor">
-                <Button variant="ghost" size="sm" className="gap-2">
+              <Link href="/professor/dashboard">
+                <Button variant="outline" size="sm" className="gap-2 border-slate-400 text-slate-700 hover:bg-slate-100">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>

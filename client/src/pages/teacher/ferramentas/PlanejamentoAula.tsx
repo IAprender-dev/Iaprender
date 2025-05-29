@@ -239,7 +239,7 @@ export default function PlanejamentoAula() {
           <div className="max-w-7xl mx-auto px-6 py-4">
             <div className="flex items-center gap-4">
               <Link href="/professor/dashboard">
-                <Button variant="ghost" size="sm" className="gap-2 text-slate-600 hover:text-blue-600">
+                <Button variant="outline" size="sm" className="gap-2 border-slate-400 text-slate-700 hover:bg-slate-100">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
