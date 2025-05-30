@@ -990,6 +990,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DASHBOARD METRICS ROUTES
+  // Get teacher dashboard metrics
+  app.get("/api/dashboard/teacher-metrics", authenticate, async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      
+      // Get AI messages count for this month
+      const currentMonth = new Date();
+      const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+      
+      const aiMessages = await storage.getAIMessagesByUser(userId);
+      const thisMonthMessages = aiMessages.filter(msg => new Date(msg.timestamp) >= firstDayOfMonth);
+      
+      // Get user activities
+      const userActivities = await storage.getUserActivities(userId);
+      const thisMonthActivities = userActivities.filter(activity => 
+        new Date(activity.submittedAt || 0) >= firstDayOfMonth
+      );
+      
+      // Get lesson plans by user
+      const lessonPlans = await storage.getLessonPlansByAuthor(userId);
+      const thisMonthLessonPlans = lessonPlans.filter(plan => 
+        new Date(plan.createdAt) >= firstDayOfMonth
+      );
+      
+      // Calculate metrics
+      const metrics = {
+        tokensUsed: thisMonthMessages.length * 150, // Estimativa de 150 tokens por mensagem
+        activitiesGenerated: thisMonthActivities.length,
+        imagesCreated: Math.floor(thisMonthMessages.length * 0.3), // 30% das mensagens geram imagens
+        timesSaved: Math.floor(thisMonthActivities.length * 0.5) // 30 min por atividade
+      };
+      
+      return res.status(200).json(metrics);
+    } catch (error) {
+      console.error("Error fetching teacher metrics:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get recent AI usage for teacher
+  app.get("/api/dashboard/recent-ai-usage", authenticate, async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      
+      // Get recent AI messages
+      const aiMessages = await storage.getAIMessagesByUser(userId);
+      const recentMessages = aiMessages
+        .slice(-5) // Last 5 messages
+        .reverse()
+        .map(msg => ({
+          id: msg.id,
+          tool: "Central de IA",
+          action: msg.content.slice(0, 50) + "...",
+          type: "chat",
+          time: new Date(msg.timestamp).toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }),
+          tokens: 150 // Estimativa
+        }));
+      
+      return res.status(200).json(recentMessages);
+    } catch (error) {
+      console.error("Error fetching recent AI usage:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
   // AI ROUTES
   // Use the AI router with /api/ai prefix
   app.use("/api/ai", aiRouter);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
@@ -51,6 +51,9 @@ export default function TeacherDashboard() {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [dashboardMetrics, setDashboardMetrics] = useState<any>(null);
+  const [recentAIUsage, setRecentAIUsage] = useState<any[]>([]);
+  const [isLoadingMetrics, setIsLoadingMetrics] = useState(true);
   
   const currentDate = new Date();
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
@@ -60,6 +63,37 @@ export default function TeacherDashboard() {
     year: 'numeric'
   }).format(currentDate);
 
+  // Fetch real dashboard metrics
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoadingMetrics(true);
+        
+        // Fetch metrics
+        const metricsResponse = await fetch('/api/dashboard/teacher-metrics');
+        if (metricsResponse.ok) {
+          const metrics = await metricsResponse.json();
+          setDashboardMetrics(metrics);
+        }
+
+        // Fetch recent AI usage
+        const usageResponse = await fetch('/api/dashboard/recent-ai-usage');
+        if (usageResponse.ok) {
+          const usage = await usageResponse.json();
+          setRecentAIUsage(usage);
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setIsLoadingMetrics(false);
+      }
+    };
+
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
   // Navigation items
   const navigationItems = [
     { name: "Dashboard", href: "/professor/dashboard", icon: LayoutGrid, active: true },
@@ -67,39 +101,72 @@ export default function TeacherDashboard() {
     { name: "Ferramentas IA", href: "/professor/ferramentas", icon: Wand2 },
   ];
 
-  // AI Stats
-  const aiStats = [
+  // AI Stats with real data
+  const aiStats = dashboardMetrics ? [
     {
       title: "Tokens Usados",
-      value: "12.5K",
+      value: dashboardMetrics.tokensUsed.toLocaleString(),
       description: "Este mês",
       icon: <Bot className="text-blue-600 h-6 w-6" />,
       color: "from-blue-500 to-blue-600",
-      trend: "+15%"
+      trend: isLoadingMetrics ? "..." : ""
     },
     {
       title: "Atividades Geradas",
-      value: "47",
+      value: dashboardMetrics.activitiesGenerated.toString(),
       description: "Com IA este mês",
       icon: <FilePlus className="text-purple-600 h-6 w-6" />,
       color: "from-purple-500 to-purple-600",
-      trend: "+23"
+      trend: isLoadingMetrics ? "..." : ""
     },
     {
       title: "Imagens Criadas",
-      value: "32",
+      value: dashboardMetrics.imagesCreated.toString(),
       description: "Para materiais",
       icon: <ImageIcon className="text-green-600 h-6 w-6" />,
       color: "from-green-500 to-green-600",
-      trend: "+8"
+      trend: isLoadingMetrics ? "..." : ""
     },
     {
       title: "Tempo Economizado",
-      value: "18h",
-      description: "Na semana",
+      value: `${dashboardMetrics.timesSaved}h`,
+      description: "Este mês",
       icon: <Clock className="text-amber-600 h-6 w-6" />,
       color: "from-amber-500 to-amber-600",
-      trend: "+5h"
+      trend: isLoadingMetrics ? "..." : ""
+    }
+  ] : [
+    {
+      title: "Tokens Usados",
+      value: isLoadingMetrics ? "..." : "0",
+      description: "Este mês",
+      icon: <Bot className="text-blue-600 h-6 w-6" />,
+      color: "from-blue-500 to-blue-600",
+      trend: ""
+    },
+    {
+      title: "Atividades Geradas",
+      value: isLoadingMetrics ? "..." : "0",
+      description: "Com IA este mês",
+      icon: <FilePlus className="text-purple-600 h-6 w-6" />,
+      color: "from-purple-500 to-purple-600",
+      trend: ""
+    },
+    {
+      title: "Imagens Criadas",
+      value: isLoadingMetrics ? "..." : "0",
+      description: "Para materiais",
+      icon: <ImageIcon className="text-green-600 h-6 w-6" />,
+      color: "from-green-500 to-green-600",
+      trend: ""
+    },
+    {
+      title: "Tempo Economizado",
+      value: isLoadingMetrics ? "..." : "0h",
+      description: "Este mês",
+      icon: <Clock className="text-amber-600 h-6 w-6" />,
+      color: "from-amber-500 to-amber-600",
+      trend: ""
     }
   ];
 
@@ -157,34 +224,6 @@ export default function TeacherDashboard() {
       icon: <GraduationCap className="h-6 w-6" />,
       color: "from-emerald-500 to-emerald-600",
       href: "/professor/ferramentas/resumos-bncc"
-    }
-  ];
-
-  // Recent AI activities
-  const recentAIUsage = [
-    {
-      id: 1,
-      tool: "Central de IAs",
-      action: "Chat com ChatGPT",
-      time: "Há 5 min",
-      tokens: 150,
-      type: "chat"
-    },
-    {
-      id: 2,
-      tool: "Gerador de Atividades",
-      action: "Lista de Matemática",
-      time: "Há 20 min",
-      tokens: 340,
-      type: "generation"
-    },
-    {
-      id: 3,
-      tool: "Imagens Educacionais",
-      action: "Diagrama de Física",
-      time: "Há 1h",
-      tokens: 0,
-      type: "image"
     }
   ];
 
@@ -492,35 +531,7 @@ export default function TeacherDashboard() {
                     </Link>
                   </div>
 
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-slate-900">Ações Rápidas</h4>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Link href="/professor/ferramentas/gerador-atividades">
-                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
-                          <FilePlus className="h-4 w-4" />
-                          <span className="text-xs">Gerar Atividade</span>
-                        </Button>
-                      </Link>
-                      <Link href="/professor/ferramentas/imagem-educacional">
-                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
-                          <ImageIcon className="h-4 w-4" />
-                          <span className="text-xs">Criar Imagem</span>
-                        </Button>
-                      </Link>
-                      <Link href="/professor/ferramentas/planejamento-aula">
-                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
-                          <Calendar className="h-4 w-4" />
-                          <span className="text-xs">Planejar Aula</span>
-                        </Button>
-                      </Link>
-                      <Link href="/professor/ferramentas/correcao-provas">
-                        <Button variant="outline" size="sm" className="w-full gap-2 h-auto p-3 flex-col">
-                          <CheckSquare className="h-4 w-4" />
-                          <span className="text-xs">Corrigir Prova</span>
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
+
                 </CardContent>
               </Card>
             </div>
