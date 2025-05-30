@@ -980,7 +980,7 @@ Formate o resultado como HTML profissional e didático com estrutura bem organiz
       maxTokens: 4000
     });
     
-    return res.status(200).json({ resumo: result.response });
+    return res.status(200).json({ resumo: result.content });
     
   } catch (error: any) {
     if (error instanceof z.ZodError) {
