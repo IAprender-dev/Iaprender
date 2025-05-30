@@ -174,8 +174,13 @@ export default function ResumosDidaticos() {
           </div>
         </section>
 
-        <section class="conteudo-principal">
-          <h2>📖 Conteúdo da Matéria</h2>
+        <section class="resumo-materia">
+          <h2>📖 Resumo da Matéria para Apresentação em Aula</h2>
+          ${conteudoEspecifico.resumoAula}
+        </section>
+
+        <section class="conteudo-detalhado">
+          <h2>📚 Desenvolvimento do Conteúdo</h2>
           ${conteudoEspecifico.conteudo}
         </section>
 
@@ -228,6 +233,38 @@ export default function ResumosDidaticos() {
             <li>Identificar e explicar fenômenos envolvidos na manutenção da vida, diferenciando e classificando os seres vivos</li>
             <li>Analisar e explicar a importância da fotossíntese para a manutenção da vida na Terra</li>
           </ul>`,
+        resumoAula: `
+          <div class="resumo-para-aula">
+            <p><strong>Objetivo da Aula:</strong> Compreender o processo de fotossíntese e sua importância para a vida na Terra.</p>
+            
+            <h3>🌱 O que é Fotossíntese?</h3>
+            <p>A fotossíntese é o processo pelo qual as plantas transformam luz solar, água e gás carbônico em açúcar (glicose) e oxigênio. É como se as plantas "cozinhassem" seu próprio alimento usando a luz do sol!</p>
+            
+            <h3>🔬 Ingredientes Necessários:</h3>
+            <ul>
+              <li><strong>Luz solar:</strong> Fonte de energia</li>
+              <li><strong>Água (H₂O):</strong> Absorvida pelas raízes</li>
+              <li><strong>Gás carbônico (CO₂):</strong> Obtido do ar pelos estômatos</li>
+              <li><strong>Clorofila:</strong> Pigmento verde que captura a luz</li>
+            </ul>
+            
+            <h3>⚗️ A "Receita" da Fotossíntese:</h3>
+            <p style="background: #f0f9ff; padding: 15px; border-left: 4px solid #3b82f6; margin: 10px 0;">
+              <strong>6CO₂ + 6H₂O + Luz Solar → C₆H₁₂O₆ + 6O₂</strong><br>
+              <em>Em palavras simples: Gás carbônico + Água + Luz = Açúcar + Oxigênio</em>
+            </p>
+            
+            <h3>📍 Onde Acontece?</h3>
+            <p>Principalmente nas folhas, dentro de pequenas estruturas chamadas <strong>cloroplastos</strong>, que contêm a clorofila verde.</p>
+            
+            <h3>🌍 Por que é Importante?</h3>
+            <ul>
+              <li>Produz o oxigênio que respiramos</li>
+              <li>Remove CO₂ da atmosfera</li>
+              <li>É a base de toda cadeia alimentar</li>
+              <li>Fonte primária de energia para a vida na Terra</li>
+            </ul>
+          </div>`,
         conteudo: `
           <p><strong>Fotossíntese</strong> é o processo biológico realizado pelas plantas, algas e algumas bactérias, onde a energia luminosa é convertida em energia química na forma de glicose.</p>
           
@@ -283,6 +320,37 @@ export default function ResumosDidaticos() {
           <li>Estabelecer relações interdisciplinares</li>
           <li>Desenvolver pensamento crítico e científico</li>
         </ul>`,
+      resumoAula: `
+        <div class="resumo-para-aula">
+          <p><strong>Objetivo da Aula:</strong> Compreender os aspectos fundamentais de ${assunto} e sua aplicação prática.</p>
+          
+          <h3>📚 Apresentação do Tema</h3>
+          <p>Nesta aula, abordaremos ${assunto} de forma clara e contextualizada, conectando o conteúdo com situações do cotidiano dos estudantes.</p>
+          
+          <h3>🎯 Pontos Principais a Serem Desenvolvidos:</h3>
+          <ul>
+            <li>Conceitos fundamentais e definições</li>
+            <li>Exemplos práticos e aplicações</li>
+            <li>Relações com conhecimentos prévios</li>
+            <li>Importância do tema para a formação dos estudantes</li>
+          </ul>
+          
+          <h3>🔍 Metodologia Sugerida:</h3>
+          <ol>
+            <li><strong>Introdução:</strong> Contextualização do tema</li>
+            <li><strong>Desenvolvimento:</strong> Apresentação dos conceitos principais</li>
+            <li><strong>Aplicação:</strong> Exemplos práticos e exercícios</li>
+            <li><strong>Síntese:</strong> Resumo dos pontos principais</li>
+          </ol>
+          
+          <h3>💡 Recursos de Apoio:</h3>
+          <ul>
+            <li>Material visual e audiovisual</li>
+            <li>Exemplos do cotidiano</li>
+            <li>Atividades interativas</li>
+            <li>Exercícios de fixação</li>
+          </ul>
+        </div>`,
       conteudo: `
         <p>Este tópico aborda os aspectos fundamentais de ${assunto}, proporcionando uma base sólida de conhecimento alinhada às diretrizes da BNCC.</p>
         <p>O conteúdo será desenvolvido de forma contextualizada, relacionando teoria e prática para facilitar a compreensão dos estudantes.</p>`,
