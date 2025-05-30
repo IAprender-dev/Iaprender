@@ -149,6 +149,13 @@ export default function TeacherDashboard() {
       icon: <BookOpen className="h-6 w-6" />,
       color: "from-indigo-500 to-indigo-600",
       href: "/professor/ferramentas/materiais-didaticos"
+    },
+    {
+      title: "Resumos BNCC",
+      description: "Resumos alinhados à Base Nacional Comum Curricular",
+      icon: <GraduationCap className="h-6 w-6" />,
+      color: "from-emerald-500 to-emerald-600",
+      href: "/professor/ferramentas/resumos-bncc"
     }
   ];
 

@@ -900,4 +900,95 @@ aiRouter.post("/education/generate-lesson-plan", authenticate, hasContract, asyn
   }
 });
 
+// Rota para geração de resumos BNCC
+aiRouter.post("/education/generate-bncc-summary", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const schema = z.object({
+      assunto: z.string().min(1).max(1000),
+      materia: z.string(),
+      serie: z.string(),
+      observacoes: z.string().optional()
+    });
+    
+    const { assunto, materia, serie, observacoes } = schema.parse(req.body);
+    
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({ message: "OpenAI service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+
+    const prompt = `Crie um resumo completo da matéria "${assunto}" para ${materia} - ${serie}, seguindo rigorosamente a Base Nacional Comum Curricular (BNCC).
+
+INFORMAÇÕES:
+- Assunto: ${assunto}
+- Matéria: ${materia}
+- Série: ${serie}
+- Observações: ${observacoes || 'Nenhuma observação específica'}
+
+ESTRUTURA OBRIGATÓRIA:
+
+1. COMPETÊNCIAS E HABILIDADES BNCC
+   - Competências específicas da área
+   - Habilidades específicas (com códigos BNCC)
+   - Objetos de conhecimento relacionados
+
+2. CONTEÚDO DA MATÉRIA
+   - Conceitos fundamentais
+   - Definições essenciais
+   - Princípios e teorias
+   - Processos e procedimentos
+
+3. CONHECIMENTOS ESSENCIAIS
+   - Fatos importantes
+   - Dados relevantes
+   - Relações e conexões
+   - Aplicações práticas
+
+4. DESENVOLVIMENTO PROGRESSIVO
+   - Pré-requisitos necessários
+   - Sequência lógica de apresentação
+   - Conexões interdisciplinares
+
+5. APLICAÇÕES E EXEMPLOS
+   - Situações do cotidiano
+   - Casos práticos
+   - Experimentos ou demonstrações
+   - Problemas e exercícios
+
+6. AVALIAÇÃO SUGERIDA
+   - Critérios de aprendizagem
+   - Indicadores de desenvolvimento
+   - Formas de verificação
+
+IMPORTANTE: 
+- Alinhe todo o conteúdo às competências gerais da BNCC
+- Use linguagem adequada à série especificada
+- Inclua apenas conteúdo obrigatório pela BNCC
+- Organize de forma didática e sequencial
+- Formate como HTML para visualização clara
+
+Formate o resultado como HTML profissional e didático com estrutura bem organizada.`;
+
+    const result = await OpenAIService.generateChatCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: "gpt-4o",
+      temperature: 0.7,
+      maxTokens: 4000
+    });
+    
+    return res.status(200).json({ resumo: result.response });
+    
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in BNCC summary generation endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 export default aiRouter;

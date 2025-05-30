@@ -88,6 +88,12 @@ export default function TeacherSidebar() {
       active: location === "/professor/ferramentas/materiais-didaticos"
     },
     {
+      name: "Resumos BNCC",
+      icon: <GraduationCap className="h-5 w-5" />,
+      href: "/professor/ferramentas/resumos-bncc",
+      active: location === "/professor/ferramentas/resumos-bncc"
+    },
+    {
       name: "Correção de Provas",
       icon: <CheckSquare className="h-5 w-5" />,
       href: "/professor/ferramentas/correcao-provas",

@@ -25,6 +25,7 @@ import NotFound from "@/pages/not-found";
 import ImagemEducacional from "@/pages/teacher/ferramentas/ImagemEducacional";
 import GeradorAtividades from "@/pages/teacher/ferramentas/GeradorAtividades";
 import MateriaisDidaticos from "@/pages/teacher/ferramentas/MateriaisDidaticos";
+import ResumosBNCC from "@/pages/teacher/ferramentas/ResumosBNCC";
 import CorrecaoProvas from "@/pages/teacher/ferramentas/CorrecaoProvas";
 import PlanejamentoAula from "@/pages/teacher/ferramentas/PlanejamentoAula";
 import ModelosPlanejamento from "@/pages/teacher/ferramentas/ModelosPlanejamento";
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/professor/ferramentas/imagem-educacional" component={ImagemEducacional} />
       <Route path="/professor/ferramentas/gerador-atividades" component={GeradorAtividades} />
       <Route path="/professor/ferramentas/materiais-didaticos" component={MateriaisDidaticos} />
+      <Route path="/professor/ferramentas/resumos-bncc" component={ResumosBNCC} />
       <Route path="/professor/ferramentas/correcao-provas" component={CorrecaoProvas} />
       <Route path="/professor/ferramentas/planejamento-aula" component={PlanejamentoAula} />
       <Route path="/professor/ferramentas/modelos-planejamento" component={ModelosPlanejamento} />
