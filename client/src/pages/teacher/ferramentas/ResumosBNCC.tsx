@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
 import { 
@@ -39,6 +39,11 @@ export default function ResumosBNCC() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [resumoGerado, setResumoGerado] = useState<ResumoGerado | null>(null);
   const [historico, setHistorico] = useState<ResumoGerado[]>([]);
+
+  // Garantir que a página sempre comece no topo em dispositivos móveis
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
 
   // Formulário simplificado
   const [assunto, setAssunto] = useState("");
@@ -171,36 +176,37 @@ export default function ResumosBNCC() {
         <title>Resumos BNCC - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 overflow-x-hidden">
         {/* Header */}
         <div className="border-b border-slate-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center gap-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link href="/professor">
                 <Button 
+                  size="sm"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar
+                  <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Voltar</span>
                 </Button>
               </Link>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
-                  <GraduationCap className="h-6 w-6 text-white" />
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
+                  <GraduationCap className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                     Resumos BNCC
                   </h1>
-                  <p className="text-slate-500 text-sm">Resumos educacionais alinhados à Base Nacional Comum Curricular</p>
+                  <p className="text-slate-500 text-xs sm:text-sm hidden sm:block">Resumos educacionais alinhados à Base Nacional Comum Curricular</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto p-6">
-          <div className="grid lg:grid-cols-2 gap-6">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Painel de Configuração */}
             <div className="space-y-6">
               <Card className="bg-white/80 backdrop-blur-sm border-slate-200/50 shadow-xl">
@@ -319,7 +325,7 @@ export default function ResumosBNCC() {
                       </div>
                     </div>
                     {resumoGerado && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Button
                           onClick={salvarResumo}
                           variant="outline"
@@ -327,7 +333,7 @@ export default function ResumosBNCC() {
                           className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
                         >
                           <Save className="h-4 w-4 mr-1" />
-                          Salvar
+                          <span className="hidden sm:inline">Salvar</span>
                         </Button>
                         <Button
                           onClick={downloadResumo}
@@ -336,7 +342,7 @@ export default function ResumosBNCC() {
                           className="text-slate-600 border-slate-200 hover:bg-slate-50"
                         >
                           <Download className="h-4 w-4 mr-1" />
-                          Download
+                          <span className="hidden sm:inline">Download</span>
                         </Button>
                       </div>
                     )}
@@ -359,22 +365,22 @@ export default function ResumosBNCC() {
                       
                       <div className="border-t border-slate-200"></div>
                       
-                      <ScrollArea className="h-[600px] pr-4">
+                      <ScrollArea className="h-[400px] sm:h-[600px] pr-2 sm:pr-4">
                         <div 
-                          className="prose prose-sm max-w-none text-slate-700"
+                          className="prose prose-sm max-w-none text-slate-700 text-sm sm:text-base"
                           dangerouslySetInnerHTML={{ __html: resumoGerado.conteudo }}
                         />
                       </ScrollArea>
                     </div>
                   ) : (
-                    <div className="h-[600px] flex items-center justify-center text-center">
-                      <div className="space-y-4">
-                        <div className="p-4 bg-slate-100 rounded-full w-fit mx-auto">
-                          <BookOpen className="h-12 w-12 text-slate-400" />
+                    <div className="h-[400px] sm:h-[600px] flex items-center justify-center text-center">
+                      <div className="space-y-4 px-4">
+                        <div className="p-3 sm:p-4 bg-slate-100 rounded-full w-fit mx-auto">
+                          <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-slate-400" />
                         </div>
                         <div className="space-y-2">
-                          <p className="text-slate-600 font-medium">Aguardando geração</p>
-                          <p className="text-slate-400 text-sm max-w-sm">
+                          <p className="text-slate-600 font-medium text-sm sm:text-base">Aguardando geração</p>
+                          <p className="text-slate-400 text-xs sm:text-sm max-w-sm">
                             Digite o assunto ao lado e clique em "Gerar Resumo BNCC" para criar um material educacional completo
                           </p>
                         </div>
