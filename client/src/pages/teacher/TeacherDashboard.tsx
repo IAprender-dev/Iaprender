@@ -144,8 +144,8 @@ export default function TeacherDashboard() {
       href: "/professor/ferramentas/planejamento-aula"
     },
     {
-      title: "Materiais Didáticos",
-      description: "Crie materiais educativos com IA",
+      title: "Resumos Didáticos",
+      description: "Crie resumos educativos com IA",
       icon: <BookOpen className="h-6 w-6" />,
       color: "from-indigo-500 to-indigo-600",
       href: "/professor/ferramentas/materiais-didaticos"

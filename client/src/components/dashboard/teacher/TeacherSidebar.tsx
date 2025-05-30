@@ -82,7 +82,7 @@ export default function TeacherSidebar() {
       active: location === "/professor/ferramentas/gerador-atividades"
     },
     {
-      name: "Materiais Didáticos IA",
+      name: "Resumos Didáticos IA",
       icon: <BookOpenCheck className="h-5 w-5" />,
       href: "/professor/ferramentas/materiais-didaticos",
       active: location === "/professor/ferramentas/materiais-didaticos"
