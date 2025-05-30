@@ -178,9 +178,7 @@ export default function ResumosBNCC() {
             <div className="flex items-center gap-4">
               <Link href="/professor">
                 <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-gradient-to-r hover:from-blue-600 hover:to-purple-600 hover:text-white hover:border-transparent transition-all duration-300"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Voltar
