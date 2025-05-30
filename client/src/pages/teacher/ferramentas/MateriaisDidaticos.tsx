@@ -234,126 +234,70 @@ export default function ResumosDidaticos() {
             <li>Analisar e explicar a importância da fotossíntese para a manutenção da vida na Terra</li>
           </ul>`,
         resumoAula: `
-          <div class="resumo-materia-aula">
-            <header style="background: #1e40af; color: white; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-              <h2 style="margin: 0; font-size: 22px; font-weight: bold;">RESUMO DA MATÉRIA: FOTOSSÍNTESE</h2>
-              <p style="margin: 5px 0 0 0; opacity: 0.9;">Material de preparação para aula | Ciências - 7º/8º ano EF</p>
+          <div class="conteudo-aula">
+            <header style="background: #1e40af; color: white; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+              <h2 style="margin: 0; font-size: 20px;">FOTOSSÍNTESE</h2>
+              <p style="margin: 3px 0 0 0; opacity: 0.9; font-size: 14px;">Conteúdo da aula - Ciências</p>
             </header>
 
-            <section style="margin-bottom: 30px;">
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">1. CONCEITO PRINCIPAL</h3>
-              <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #1e40af;">
-                <p style="margin: 0; line-height: 1.6; font-size: 16px;"><strong>Fotossíntese</strong> é o processo biológico realizado por plantas, algas e cianobactérias no qual a energia luminosa do sol é convertida em energia química (glicose), utilizando gás carbônico e água como matérias-primas e liberando oxigênio como produto.</p>
-              </div>
-            </section>
+            <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">O que é?</h3>
+              <p style="margin: 0; line-height: 1.5;">Processo onde plantas convertem luz solar em energia (glicose), absorvendo CO₂ e água, e liberando oxigênio.</p>
+            </div>
 
-            <section style="margin-bottom: 30px;">
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">2. EQUAÇÃO QUÍMICA</h3>
-              <div style="background: #eff6ff; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #bfdbfe;">
-                <p style="font-size: 20px; font-weight: bold; margin: 0 0 10px 0; color: #1e40af;">6CO₂ + 6H₂O + luz solar → C₆H₁₂O₆ + 6O₂</p>
-                <p style="margin: 0; font-style: italic; color: #64748b;">Gás carbônico + Água + Energia luminosa = Glicose + Oxigênio</p>
-              </div>
-            </section>
+            <div style="background: white; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Equação</h3>
+              <p style="margin: 0; text-align: center; font-weight: bold; font-size: 16px; color: #059669;">6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂</p>
+              <p style="margin: 5px 0 0 0; text-align: center; font-size: 13px; color: #6b7280;">(gás carbônico + água + luz = glicose + oxigênio)</p>
+            </div>
 
-            <section style="margin-bottom: 30px;">
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">3. COMPONENTES ESSENCIAIS</h3>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0;">
-                  <h4 style="color: #15803d; margin: 0 0 10px 0;">MATÉRIAS-PRIMAS</h4>
-                  <ul style="margin: 0; padding-left: 15px; line-height: 1.6;">
-                    <li>Gás carbônico (CO₂) - do ar</li>
-                    <li>Água (H₂O) - pelas raízes</li>
-                    <li>Luz solar - energia</li>
-                  </ul>
-                </div>
-                <div style="background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca;">
-                  <h4 style="color: #dc2626; margin: 0 0 10px 0;">PRODUTOS</h4>
-                  <ul style="margin: 0; padding-left: 15px; line-height: 1.6;">
-                    <li>Glicose (C₆H₁₂O₆) - alimento</li>
-                    <li>Oxigênio (O₂) - subproduto</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            <section style="margin-bottom: 30px;">
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">4. ESTRUTURAS ENVOLVIDAS</h3>
-              <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                  <li><strong>Cloroplastos:</strong> Organelas onde ocorre a fotossíntese</li>
-                  <li><strong>Clorofila:</strong> Pigmento verde que captura a luz solar</li>
-                  <li><strong>Estômatos:</strong> Poros nas folhas para entrada de CO₂ e saída de O₂</li>
-                  <li><strong>Folhas:</strong> Principal local onde ocorre o processo</li>
-                  <li><strong>Raízes:</strong> Absorvem a água necessária</li>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+              <div style="background: #f0fdf4; padding: 12px; border-radius: 6px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #15803d;">Precisa de:</h4>
+                <ul style="margin: 0; padding-left: 15px; font-size: 13px; line-height: 1.4;">
+                  <li>Luz solar</li>
+                  <li>Água (H₂O)</li>
+                  <li>Gás carbônico (CO₂)</li>
                 </ul>
               </div>
-            </section>
-
-            <section style="margin-bottom: 30px;">
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">5. ETAPAS DO PROCESSO</h3>
-              <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                <div style="margin-bottom: 15px;">
-                  <h4 style="color: #059669; margin: 0 0 8px 0;">Fase 1 - Reações Dependentes de Luz (Fotoquímica)</h4>
-                  <ul style="margin: 0; padding-left: 20px;">
-                    <li>Clorofila absorve energia luminosa</li>
-                    <li>Água é quebrada (fotólise)</li>
-                    <li>Oxigênio é liberado</li>
-                    <li>Energia é capturada em moléculas de ATP e NADPH</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4 style="color: #059669; margin: 0 0 8px 0;">Fase 2 - Reações Independentes de Luz (Ciclo de Calvin)</h4>
-                  <ul style="margin: 0; padding-left: 20px;">
-                    <li>CO₂ é fixado em compostos orgânicos</li>
-                    <li>ATP e NADPH fornecem energia</li>
-                    <li>Glicose é produzida</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            <section style="margin-bottom: 30px;">
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">6. IMPORTÂNCIA BIOLÓGICA E AMBIENTAL</h3>
-              <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border: 1px solid #fde047;">
-                <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                  <li><strong>Produção de oxigênio:</strong> Todo O₂ atmosférico vem da fotossíntese</li>
-                  <li><strong>Base da cadeia alimentar:</strong> Produtores primários do ecossistema</li>
-                  <li><strong>Remoção de CO₂:</strong> Controle do efeito estufa</li>
-                  <li><strong>Fonte de energia:</strong> Origem de todos os combustíveis fósseis</li>
-                  <li><strong>Ciclo do carbono:</strong> Fundamental para o equilíbrio ambiental</li>
+              <div style="background: #fef2f2; padding: 12px; border-radius: 6px;">
+                <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #dc2626;">Produz:</h4>
+                <ul style="margin: 0; padding-left: 15px; font-size: 13px; line-height: 1.4;">
+                  <li>Glicose (alimento)</li>
+                  <li>Oxigênio (O₂)</li>
                 </ul>
               </div>
-            </section>
+            </div>
 
-            <section style="margin-bottom: 30px;">
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">7. FATORES QUE INFLUENCIAM</h3>
-              <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                  <li><strong>Intensidade luminosa:</strong> Maior luz = maior taxa fotossintética (até um limite)</li>
-                  <li><strong>Concentração de CO₂:</strong> Mais CO₂ disponível aumenta a taxa</li>
-                  <li><strong>Temperatura:</strong> Temperaturas moderadas favorecem o processo</li>
-                  <li><strong>Disponibilidade de água:</strong> Água insuficiente limita o processo</li>
-                  <li><strong>Quantidade de clorofila:</strong> Mais pigmento = maior eficiência</li>
-                </ul>
-              </div>
-            </section>
+            <div style="background: white; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Onde acontece?</h3>
+              <ul style="margin: 0; padding-left: 15px; line-height: 1.5;">
+                <li><strong>Folhas:</strong> Principal local do processo</li>
+                <li><strong>Cloroplastos:</strong> Organelas que fazem a fotossíntese</li>
+                <li><strong>Clorofila:</strong> Pigmento verde que captura a luz</li>
+                <li><strong>Estômatos:</strong> Poros que controlam entrada de CO₂</li>
+              </ul>
+            </div>
 
-            <section>
-              <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">8. RELAÇÃO COM RESPIRAÇÃO CELULAR</h3>
-              <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                <p style="margin: 0 0 15px 0; line-height: 1.6;"><strong>Processos complementares:</strong></p>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                  <div>
-                    <h4 style="color: #15803d; margin: 0 0 8px 0;">FOTOSSÍNTESE</h4>
-                    <p style="margin: 0; font-size: 14px;">Produz glicose e O₂<br>Consome CO₂ e H₂O<br>Armazena energia</p>
-                  </div>
-                  <div>
-                    <h4 style="color: #dc2626; margin: 0 0 8px 0;">RESPIRAÇÃO</h4>
-                    <p style="margin: 0; font-size: 14px;">Consome glicose e O₂<br>Produz CO₂ e H₂O<br>Libera energia</p>
-                  </div>
-                </div>
-              </div>
-            </section>
+            <div style="background: #eff6ff; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Como funciona?</h3>
+              <ol style="margin: 0; padding-left: 15px; line-height: 1.5;">
+                <li>Clorofila absorve luz solar</li>
+                <li>Água é quebrada, liberando oxigênio</li>
+                <li>CO₂ é capturado do ar</li>
+                <li>Energia da luz converte CO₂ e água em glicose</li>
+              </ol>
+            </div>
+
+            <div style="background: #fef3c7; padding: 15px; border-radius: 6px;">
+              <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Por que é importante?</h3>
+              <ul style="margin: 0; padding-left: 15px; line-height: 1.5;">
+                <li>Produz todo o oxigênio que respiramos</li>
+                <li>Base da alimentação de todos os seres vivos</li>
+                <li>Remove CO₂ da atmosfera</li>
+                <li>Fornece energia para a vida na Terra</li>
+              </ul>
+            </div>
           </div>`,
         conteudo: `
           <p><strong>Fotossíntese</strong> é o processo biológico realizado pelas plantas, algas e algumas bactérias, onde a energia luminosa é convertida em energia química na forma de glicose.</p>
@@ -411,99 +355,56 @@ export default function ResumosDidaticos() {
           <li>Desenvolver pensamento crítico e científico</li>
         </ul>`,
       resumoAula: `
-        <div class="resumo-materia-aula">
-          <header style="background: #1e40af; color: white; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-            <h2 style="margin: 0; font-size: 22px; font-weight: bold;">RESUMO DA MATÉRIA: ${assunto.toUpperCase()}</h2>
-            <p style="margin: 5px 0 0 0; opacity: 0.9;">Material de preparação para aula | ${analise.materia} - ${analise.series.join(' e ')}</p>
+        <div class="conteudo-aula">
+          <header style="background: #1e40af; color: white; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px;">${assunto.toUpperCase()}</h2>
+            <p style="margin: 3px 0 0 0; opacity: 0.9; font-size: 14px;">Conteúdo da aula - ${analise.materia}</p>
           </header>
 
-          <section style="margin-bottom: 30px;">
-            <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">1. CONCEITO PRINCIPAL</h3>
-            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #1e40af;">
-              <p style="margin: 0; line-height: 1.6; font-size: 16px;">Este conteúdo aborda os aspectos fundamentais de <strong>${assunto}</strong>, proporcionando uma base sólida de conhecimento alinhada às diretrizes curriculares para ${analise.materia}.</p>
-            </div>
-          </section>
+          <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">O que é?</h3>
+            <p style="margin: 0; line-height: 1.5;">Este conteúdo aborda os aspectos fundamentais de ${assunto}, proporcionando base de conhecimento essencial para ${analise.materia}.</p>
+          </div>
 
-          <section style="margin-bottom: 30px;">
-            <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">2. DEFINIÇÕES FUNDAMENTAIS</h3>
-            <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
-              <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li><strong>Conceitos básicos:</strong> Definições essenciais e terminologia específica</li>
-                <li><strong>Princípios fundamentais:</strong> Bases teóricas que sustentam o tema</li>
-                <li><strong>Relações conceituais:</strong> Como se conecta com outros conhecimentos</li>
-                <li><strong>Aplicações práticas:</strong> Onde e como é utilizado no cotidiano</li>
-              </ul>
-            </div>
-          </section>
+          <div style="background: white; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Conceitos principais</h3>
+            <ul style="margin: 0; padding-left: 15px; line-height: 1.5;">
+              <li>Definições básicas e terminologia específica</li>
+              <li>Princípios fundamentais do tema</li>
+              <li>Relações com conhecimentos anteriores</li>
+              <li>Aplicações práticas no cotidiano</li>
+            </ul>
+          </div>
 
-          <section style="margin-bottom: 30px;">
-            <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">3. DESENVOLVIMENTO DO CONTEÚDO</h3>
-            <div style="background: #eff6ff; padding: 20px; border-radius: 8px; border: 1px solid #bfdbfe;">
-              <p style="margin: 0 0 15px 0; line-height: 1.6;">O tema será desenvolvido de forma progressiva, partindo dos conceitos mais simples para os mais complexos, sempre mantendo a conexão com o cotidiano dos estudantes.</p>
-              <h4 style="color: #1d4ed8; margin: 15px 0 10px 0;">Pontos principais a abordar:</h4>
-              <ul style="margin: 0; padding-left: 20px; line-height: 1.6;">
-                <li>Introdução contextualizada ao tema</li>
-                <li>Apresentação dos conceitos fundamentais</li>
-                <li>Exemplificação com situações práticas</li>
-                <li>Estabelecimento de relações interdisciplinares</li>
-              </ul>
-            </div>
-          </section>
+          <div style="background: #eff6ff; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Como explicar</h3>
+            <ol style="margin: 0; padding-left: 15px; line-height: 1.5;">
+              <li>Começar com exemplos conhecidos pelos alunos</li>
+              <li>Apresentar os conceitos de forma gradual</li>
+              <li>Usar comparações e analogias</li>
+              <li>Conectar com outras disciplinas</li>
+            </ol>
+          </div>
 
-          <section style="margin-bottom: 30px;">
-            <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">4. EXEMPLOS E APLICAÇÕES</h3>
-            <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0;">
-              <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li><strong>Situações cotidianas:</strong> Exemplos que os estudantes reconhecem em seu dia a dia</li>
-                <li><strong>Aplicações tecnológicas:</strong> Como o conhecimento é usado na tecnologia moderna</li>
-                <li><strong>Relevância social:</strong> Importância para a sociedade e meio ambiente</li>
-                <li><strong>Conexões interdisciplinares:</strong> Relações com outras matérias</li>
-              </ul>
-            </div>
-          </section>
+          <div style="background: #f0fdf4; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Exemplos práticos</h3>
+            <ul style="margin: 0; padding-left: 15px; line-height: 1.5;">
+              <li>Situações do dia a dia dos estudantes</li>
+              <li>Aplicações na tecnologia e sociedade</li>
+              <li>Experimentos simples para demonstrar</li>
+              <li>Conexões com outras matérias</li>
+            </ul>
+          </div>
 
-          <section style="margin-bottom: 30px;">
-            <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">5. METODOLOGIA SUGERIDA</h3>
-            <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
-              <div style="margin-bottom: 15px;">
-                <h4 style="color: #059669; margin: 0 0 8px 0;">Introdução (10 minutos)</h4>
-                <p style="margin: 0; font-size: 14px;">Levantamento de conhecimentos prévios e contextualização do tema</p>
-              </div>
-              <div style="margin-bottom: 15px;">
-                <h4 style="color: #059669; margin: 0 0 8px 0;">Desenvolvimento (25 minutos)</h4>
-                <p style="margin: 0; font-size: 14px;">Apresentação dos conceitos com exemplos práticos e atividades interativas</p>
-              </div>
-              <div>
-                <h4 style="color: #059669; margin: 0 0 8px 0;">Síntese (10 minutos)</h4>
-                <p style="margin: 0; font-size: 14px;">Resumo dos pontos principais e verificação da aprendizagem</p>
-              </div>
-            </div>
-          </section>
-
-          <section style="margin-bottom: 30px;">
-            <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">6. RECURSOS DIDÁTICOS</h3>
-            <div style="background: #fef3c7; padding: 20px; border-radius: 8px; border: 1px solid #fde047;">
-              <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li><strong>Material visual:</strong> Esquemas, gráficos e imagens explicativas</li>
-                <li><strong>Atividades práticas:</strong> Experimentos simples e demonstrações</li>
-                <li><strong>Recursos digitais:</strong> Vídeos educativos e simuladores</li>
-                <li><strong>Exercícios:</strong> Atividades de fixação e aplicação</li>
-              </ul>
-            </div>
-          </section>
-
-          <section>
-            <h3 style="color: #1e40af; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">7. PONTOS IMPORTANTES</h3>
-            <div style="background: #fef2f2; padding: 20px; border-radius: 8px; border: 1px solid #fecaca;">
-              <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li>Importância do tema para a formação integral dos estudantes</li>
-                <li>Conexões com conhecimentos prévios e futuras aprendizagens</li>
-                <li>Aplicabilidade prática na vida cotidiana e profissional</li>
-                <li>Desenvolvimento de competências e habilidades essenciais</li>
-                <li>Contribuição para o pensamento crítico e científico</li>
-              </ul>
-            </div>
-          </section>
+          <div style="background: #fef3c7; padding: 15px; border-radius: 6px;">
+            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;">Pontos importantes</h3>
+            <ul style="margin: 0; padding-left: 15px; line-height: 1.5;">
+              <li>Relevância para a formação dos estudantes</li>
+              <li>Aplicações práticas na vida real</li>
+              <li>Desenvolvimento do pensamento crítico</li>
+              <li>Preparação para conhecimentos futuros</li>
+            </ul>
+          </div>
         </div>`,
       conteudo: `
         <p>Este tópico aborda os aspectos fundamentais de ${assunto}, proporcionando uma base sólida de conhecimento alinhada às diretrizes da BNCC.</p>
