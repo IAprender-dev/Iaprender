@@ -77,11 +77,18 @@ export default function ResumosBNCC() {
       });
 
       if (!response.ok) {
-        throw new Error("Erro ao gerar resumo");
+        const errorText = await response.text();
+        console.error('Erro na API:', response.status, errorText);
+        throw new Error(`Erro da API: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Resposta da API:', data); // Debug
+      console.log('Resposta completa da API:', data);
+      
+      // Verificar se o conteúdo foi gerado
+      if (!data.resumo && !data.content) {
+        throw new Error("Conteúdo não foi gerado pela API");
+      }
       
       const novoResumo: ResumoGerado = {
         id: Date.now().toString(),
@@ -102,6 +109,7 @@ export default function ResumosBNCC() {
       });
 
     } catch (error) {
+      console.error('Erro na geração:', error);
       toast({
         title: "Erro ao gerar resumo",
         description: "Tente novamente em alguns instantes.",
