@@ -1008,26 +1008,172 @@ aiRouter.post("/education/generate-educational-summary", authenticate, hasContra
     const userId = req.session.user?.id || 1;
     const contractId = req.session.user?.contractId || 1;
 
-    const prompt = `Crie um resumo educacional completo sobre "${assunto}" seguindo as diretrizes da BNCC.
+    const prompt = `Crie um resumo educacional completo sobre "${assunto}" seguindo rigorosamente as diretrizes da BNCC (Base Nacional Comum Curricular).
 
 CONTEXTO ADICIONAL: ${contextoPedagogico || 'Nenhum contexto específico'}
 
-Estruture o resumo em HTML com:
+IMPORTANTE: Identifique automaticamente a matéria e os anos/séries da BNCC mais adequados para este assunto.
 
-1. CABEÇALHO
-   - Título: ${assunto}
-   - Matéria e série identificadas automaticamente
+Estruture o resumo em HTML com design moderno e didático:
 
-2. CONCEITO PRINCIPAL
-   - Definição clara e objetiva
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${assunto}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .title {
+            font-size: 2.5em;
+            margin: 0;
+            font-weight: bold;
+        }
+        .subtitle {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .bncc-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-left: 4px solid #007bff;
+            margin: 20px;
+            border-radius: 8px;
+        }
+        .section {
+            margin: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        .section-title {
+            color: #007bff;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        .concept-box {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .examples {
+            background: #d4edda;
+            padding: 15px;
+            border-left: 4px solid #28a745;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .footer {
+            background: #343a40;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">${assunto}</h1>
+            <p class="subtitle">Resumo Educacional - BNCC</p>
+        </div>
 
-3. TÓPICOS ORGANIZADOS
-   - Conceitos fundamentais
-   - Como explicar aos alunos
-   - Exemplos práticos
-   - Pontos importantes
+        <div class="bncc-info">
+            <h3>📚 Informações BNCC</h3>
+            <p><strong>Área do Conhecimento:</strong> [IDENTIFIQUE A ÁREA]</p>
+            <p><strong>Componente Curricular:</strong> [IDENTIFIQUE A MATÉRIA]</p>
+            <p><strong>Anos/Séries Recomendadas:</strong> [IDENTIFIQUE OS ANOS ESPECÍFICOS DA BNCC]</p>
+            <p><strong>Habilidades BNCC:</strong> [CITE CÓDIGOS ESPECÍFICOS QUANDO POSSÍVEL]</p>
+        </div>
 
-Formate como HTML limpo e didático para uso do professor.`;
+        <div class="section">
+            <h2 class="section-title">🎯 Conceito Principal</h2>
+            <div class="concept-box">
+                [DEFINIÇÃO CLARA E OBJETIVA DO CONCEITO]
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">📖 Fundamentos Teóricos</h2>
+            [CONCEITOS FUNDAMENTAIS ORGANIZADOS]
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">👨‍🏫 Como Ensinar</h2>
+            <div class="highlight">
+                [ESTRATÉGIAS PEDAGÓGICAS E METODOLOGIAS]
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">💡 Exemplos Práticos</h2>
+            <div class="examples">
+                [EXEMPLOS CONCRETOS E SITUAÇÕES DO COTIDIANO]
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">⚠️ Pontos de Atenção</h2>
+            [DIFICULDADES COMUNS E COMO SUPERÁ-LAS]
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">🎓 Atividades Sugeridas</h2>
+            [SUGESTÕES DE ATIVIDADES PRÁTICAS ALINHADAS À BNCC]
+        </div>
+
+        <div class="footer">
+            Gerado com IAprender - Revolucionando o aprendizado
+        </div>
+    </div>
+</body>
+</html>
+
+INSTRUÇÕES ESPECÍFICAS:
+1. Identifique automaticamente a matéria mais adequada (Matemática, Ciências, História, etc.)
+2. Especifique os anos/séries exatos da BNCC onde este conteúdo deve ser abordado
+3. Cite habilidades específicas da BNCC com seus códigos quando possível
+4. Mantenha linguagem adequada à faixa etária identificada
+5. Use o template HTML acima preenchendo cada seção adequadamente
+6. Garanta que o conteúdo esteja totalmente alinhado às diretrizes da BNCC`;
 
     const result = await OpenAIService.generateChatCompletion({
       userId,
