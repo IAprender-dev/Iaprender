@@ -991,4 +991,89 @@ Formate o resultado como HTML profissional e didático com estrutura bem organiz
   }
 });
 
+// Rota para geração de resumos educacionais (materiais didáticos)
+aiRouter.post("/education/generate-educational-summary", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const schema = z.object({
+      assunto: z.string().min(1).max(1000),
+      contextoPedagogico: z.string().optional()
+    });
+    
+    const { assunto, contextoPedagogico } = schema.parse(req.body);
+    
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(503).json({ message: "OpenAI service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+
+    const prompt = `Analise o assunto "${assunto}" e crie um resumo completo da matéria para preparação de aula.
+
+TAREFA PRINCIPAL:
+1. IDENTIFIQUE AUTOMATICAMENTE:
+   - A matéria/disciplina adequada para este assunto
+   - As séries/anos escolares apropriados conforme BNCC
+   - A área do conhecimento (Linguagens, Matemática, Ciências da Natureza, Ciências Humanas)
+
+2. CRIE UM RESUMO ESTRUTURADO:
+   - Conceito principal claro e direto
+   - Definições fundamentais que o professor precisa saber
+   - Desenvolvimento progressivo do conteúdo
+   - Exemplos práticos e aplicações
+   - Metodologia sugerida para apresentar o tema
+   - Recursos didáticos recomendados
+   - Pontos importantes para destacar
+
+CONTEXTO ADICIONAL: ${contextoPedagogico || 'Nenhum contexto específico fornecido'}
+
+FORMATO DE RESPOSTA:
+Retorne um objeto JSON com:
+{
+  "materia": "Nome da matéria identificada",
+  "serie": "Séries adequadas (ex: 7º e 8º ano EF)",
+  "area": "Área do conhecimento BNCC",
+  "resumo": "HTML estruturado do resumo da matéria"
+}
+
+O resumo HTML deve seguir esta estrutura:
+- Header com título e informações da matéria
+- Seções organizadas por tópicos numerados
+- Layout limpo e didático
+- Foco no conteúdo que o professor precisa dominar para dar a aula
+
+IMPORTANTE: Base toda a identificação nas diretrizes da BNCC e organize o conteúdo de forma que seja útil para o professor estudar antes da aula.`;
+
+    const result = await OpenAIService.generateChatCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: "gpt-4o",
+      temperature: 0.7,
+      maxTokens: 4000
+    });
+    
+    // Tentar parsear como JSON primeiro, se falhar retornar formato básico
+    try {
+      const parsedResult = JSON.parse(result.content || '{}');
+      return res.status(200).json(parsedResult);
+    } catch (parseError) {
+      // Se não conseguir parsear, retornar formato básico
+      return res.status(200).json({
+        materia: "Identificação automática",
+        serie: "Conforme BNCC",
+        area: "Multidisciplinar",
+        resumo: result.content || "Erro ao gerar resumo"
+      });
+    }
+    
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in educational summary generation endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 export default aiRouter;

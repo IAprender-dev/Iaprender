@@ -13,7 +13,8 @@ import {
   Heart,
   Share2,
   GraduationCap,
-  Target
+  Target,
+  CheckCircle
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -60,18 +61,27 @@ export default function ResumosDidaticos() {
     setIsLoading(true);
 
     try {
-      // Aqui seria a chamada para a API
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Mock de resposta com análise automática
-      const analiseAutomatica = analisarAssunto(assunto);
+      const response = await fetch("/api/education/generate-educational-summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assunto,
+          contextoPedagogico
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao gerar resumo");
+      }
+
+      const data = await response.json();
       
       const novoResumo: ResumoGerado = {
         id: `res-${Date.now()}`,
         titulo: assunto,
-        materia: analiseAutomatica.materia,
-        serie: analiseAutomatica.series.join(', '),
-        conteudo: mockConteudoResumoCompleto(analiseAutomatica),
+        materia: data.materia || "Identificação automática",
+        serie: data.serie || "Conforme BNCC",
+        conteudo: data.resumo,
         dataGeracao: new Date(),
         favorito: false
       };
@@ -563,6 +573,18 @@ export default function ResumosDidaticos() {
                   <p className="text-xs text-slate-500">
                     Opcional: Orientações específicas sobre abordagem ou contexto pedagógico
                   </p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm text-blue-800">
+                      <p className="font-medium mb-1">Identificação Automática pela IA</p>
+                      <p className="text-blue-700">
+                        A inteligência artificial identificará automaticamente a matéria e séries adequadas para o assunto, seguindo as diretrizes da BNCC.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Botão Gerar */}
