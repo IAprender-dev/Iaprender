@@ -67,7 +67,7 @@ export default function ResumosBNCC() {
     setIsGenerating(true);
 
     try {
-      const response = await fetch("/api/education/generate-educational-summary", {
+      const response = await fetch("/api/ai/education/generate-educational-summary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
