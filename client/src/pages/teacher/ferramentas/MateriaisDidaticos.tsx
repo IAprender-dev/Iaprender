@@ -235,35 +235,78 @@ export default function ResumosDidaticos() {
           </ul>`,
         resumoAula: `
           <div class="resumo-para-aula">
-            <p><strong>Objetivo da Aula:</strong> Compreender o processo de fotossíntese e sua importância para a vida na Terra.</p>
+            <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1e40af; margin: 0 0 10px 0;">📋 RESUMO DA MATÉRIA - FOTOSSÍNTESE</h3>
+              <p style="margin: 0; font-weight: 500;">Conteúdo alinhado à BNCC - Ciências da Natureza (7º e 8º ano EF)</p>
+            </div>
             
-            <h3>🌱 O que é Fotossíntese?</h3>
-            <p>A fotossíntese é o processo pelo qual as plantas transformam luz solar, água e gás carbônico em açúcar (glicose) e oxigênio. É como se as plantas "cozinhassem" seu próprio alimento usando a luz do sol!</p>
-            
-            <h3>🔬 Ingredientes Necessários:</h3>
-            <ul>
-              <li><strong>Luz solar:</strong> Fonte de energia</li>
-              <li><strong>Água (H₂O):</strong> Absorvida pelas raízes</li>
-              <li><strong>Gás carbônico (CO₂):</strong> Obtido do ar pelos estômatos</li>
-              <li><strong>Clorofila:</strong> Pigmento verde que captura a luz</li>
-            </ul>
-            
-            <h3>⚗️ A "Receita" da Fotossíntese:</h3>
-            <p style="background: #f0f9ff; padding: 15px; border-left: 4px solid #3b82f6; margin: 10px 0;">
-              <strong>6CO₂ + 6H₂O + Luz Solar → C₆H₁₂O₆ + 6O₂</strong><br>
-              <em>Em palavras simples: Gás carbônico + Água + Luz = Açúcar + Oxigênio</em>
-            </p>
-            
-            <h3>📍 Onde Acontece?</h3>
-            <p>Principalmente nas folhas, dentro de pequenas estruturas chamadas <strong>cloroplastos</strong>, que contêm a clorofila verde.</p>
-            
-            <h3>🌍 Por que é Importante?</h3>
-            <ul>
-              <li>Produz o oxigênio que respiramos</li>
-              <li>Remove CO₂ da atmosfera</li>
-              <li>É a base de toda cadeia alimentar</li>
-              <li>Fonte primária de energia para a vida na Terra</li>
-            </ul>
+            <section style="margin-bottom: 25px;">
+              <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">🎯 HABILIDADES BNCC DESENVOLVIDAS</h3>
+              <ul style="background: #f9fafb; padding: 15px; border-radius: 6px;">
+                <li><strong>(EF07CI05)</strong> Discutir o uso de diferentes fontes de energia e sua disponibilidade local e mundial</li>
+                <li><strong>(EF07CI06)</strong> Discutir e avaliar mudanças econômicas, culturais e sociais decorrentes da evolução dos meios de transporte e comunicação</li>
+                <li><strong>(EF08CI16)</strong> Discutir iniciativas que contribuam para restabelecer o equilíbrio ambiental a partir da identificação de alterações climáticas regionais e globais</li>
+              </ul>
+            </section>
+
+            <section style="margin-bottom: 25px;">
+              <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">📖 CONTEÚDO PRINCIPAL</h3>
+              
+              <h4 style="color: #059669;">1. Definição</h4>
+              <p>Fotossíntese é o processo bioquímico realizado por plantas, algas e cianobactérias que converte energia luminosa em energia química, produzindo glicose e liberando oxigênio.</p>
+              
+              <h4 style="color: #059669;">2. Equação Química</h4>
+              <div style="background: #f0f9ff; padding: 15px; border-left: 4px solid #3b82f6; margin: 15px 0;">
+                <p style="font-size: 16px; font-weight: bold; text-align: center; margin: 0;">
+                  6CO₂ + 6H₂O + Energia luminosa → C₆H₁₂O₆ + 6O₂
+                </p>
+                <p style="text-align: center; margin: 5px 0 0 0; font-style: italic;">
+                  (Dióxido de carbono + Água + Luz solar = Glicose + Oxigênio)
+                </p>
+              </div>
+              
+              <h4 style="color: #059669;">3. Componentes Essenciais</h4>
+              <ul>
+                <li><strong>Clorofila:</strong> Pigmento verde que absorve a luz solar</li>
+                <li><strong>Cloroplastos:</strong> Organelas onde ocorre o processo</li>
+                <li><strong>Estômatos:</strong> Estruturas que regulam as trocas gasosas</li>
+                <li><strong>Luz solar:</strong> Fonte primária de energia</li>
+              </ul>
+              
+              <h4 style="color: #059669;">4. Fases do Processo</h4>
+              <ol>
+                <li><strong>Fase Fotoquímica (Reações de Luz):</strong> Captura da energia luminosa e quebra da molécula de água</li>
+                <li><strong>Fase Química (Ciclo de Calvin):</strong> Fixação do CO₂ e produção de glicose</li>
+              </ol>
+              
+              <h4 style="color: #059669;">5. Importância Ecológica</h4>
+              <ul>
+                <li>Produção do oxigênio atmosférico</li>
+                <li>Base da cadeia alimentar terrestre</li>
+                <li>Remoção de CO₂ da atmosfera</li>
+                <li>Regulação do clima global</li>
+              </ul>
+            </section>
+
+            <section style="margin-bottom: 25px;">
+              <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">🔬 EXPERIMENTOS SUGERIDOS</h3>
+              <ol>
+                <li><strong>Teste do Iodo:</strong> Verificar presença de amido nas folhas</li>
+                <li><strong>Elodea aquática:</strong> Observar liberação de oxigênio</li>
+                <li><strong>Papel alumínio:</strong> Demonstrar necessidade de luz</li>
+              </ol>
+            </section>
+
+            <section>
+              <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">📝 PONTOS-CHAVE PARA AVALIAÇÃO</h3>
+              <ul style="background: #fef3c7; padding: 15px; border-radius: 6px;">
+                <li>Identificar os reagentes e produtos da fotossíntese</li>
+                <li>Explicar a importância da luz solar no processo</li>
+                <li>Relacionar fotossíntese com respiração celular</li>
+                <li>Compreender o papel ecológico do processo</li>
+                <li>Aplicar conhecimentos em situações cotidianas</li>
+              </ul>
+            </section>
           </div>`,
         conteudo: `
           <p><strong>Fotossíntese</strong> é o processo biológico realizado pelas plantas, algas e algumas bactérias, onde a energia luminosa é convertida em energia química na forma de glicose.</p>
@@ -322,34 +365,69 @@ export default function ResumosDidaticos() {
         </ul>`,
       resumoAula: `
         <div class="resumo-para-aula">
-          <p><strong>Objetivo da Aula:</strong> Compreender os aspectos fundamentais de ${assunto} e sua aplicação prática.</p>
+          <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="color: #1e40af; margin: 0 0 10px 0;">📋 RESUMO DA MATÉRIA - ${assunto.toUpperCase()}</h3>
+            <p style="margin: 0; font-weight: 500;">Conteúdo alinhado à BNCC - ${analise.area}</p>
+          </div>
           
-          <h3>📚 Apresentação do Tema</h3>
-          <p>Nesta aula, abordaremos ${assunto} de forma clara e contextualizada, conectando o conteúdo com situações do cotidiano dos estudantes.</p>
-          
-          <h3>🎯 Pontos Principais a Serem Desenvolvidos:</h3>
-          <ul>
-            <li>Conceitos fundamentais e definições</li>
-            <li>Exemplos práticos e aplicações</li>
-            <li>Relações com conhecimentos prévios</li>
-            <li>Importância do tema para a formação dos estudantes</li>
-          </ul>
-          
-          <h3>🔍 Metodologia Sugerida:</h3>
-          <ol>
-            <li><strong>Introdução:</strong> Contextualização do tema</li>
-            <li><strong>Desenvolvimento:</strong> Apresentação dos conceitos principais</li>
-            <li><strong>Aplicação:</strong> Exemplos práticos e exercícios</li>
-            <li><strong>Síntese:</strong> Resumo dos pontos principais</li>
-          </ol>
-          
-          <h3>💡 Recursos de Apoio:</h3>
-          <ul>
-            <li>Material visual e audiovisual</li>
-            <li>Exemplos do cotidiano</li>
-            <li>Atividades interativas</li>
-            <li>Exercícios de fixação</li>
-          </ul>
+          <section style="margin-bottom: 25px;">
+            <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">🎯 COMPETÊNCIAS BNCC DESENVOLVIDAS</h3>
+            <ul style="background: #f9fafb; padding: 15px; border-radius: 6px;">
+              <li>Exercitar a curiosidade intelectual e recorrer à abordagem científica</li>
+              <li>Compreender conceitos fundamentais e estruturas explicativas</li>
+              <li>Analisar situações-problema e avaliar aplicações do conhecimento científico</li>
+              <li>Desenvolver argumentação com base em fatos, dados e informações confiáveis</li>
+            </ul>
+          </section>
+
+          <section style="margin-bottom: 25px;">
+            <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">📖 CONTEÚDO PRINCIPAL</h3>
+            
+            <h4 style="color: #059669;">1. Introdução ao Tema</h4>
+            <p>Este conteúdo aborda ${assunto}, proporcionando aos estudantes uma compreensão clara e contextualizada do tema, conforme diretrizes da BNCC.</p>
+            
+            <h4 style="color: #059669;">2. Conceitos Fundamentais</h4>
+            <ul>
+              <li>Definições básicas e terminologia específica</li>
+              <li>Princípios e fundamentos teóricos</li>
+              <li>Relações com conhecimentos prévios</li>
+              <li>Aplicações práticas e exemplos</li>
+            </ul>
+            
+            <h4 style="color: #059669;">3. Desenvolvimento do Conteúdo</h4>
+            <p>O tema será desenvolvido de forma progressiva, partindo dos conceitos mais simples para os mais complexos, sempre mantendo a conexão com o cotidiano dos estudantes e a realidade local.</p>
+            
+            <h4 style="color: #059669;">4. Aplicações e Exemplos</h4>
+            <ul>
+              <li>Situações do cotidiano relacionadas ao tema</li>
+              <li>Exemplos práticos e demonstrações</li>
+              <li>Conexões interdisciplinares</li>
+              <li>Relevância social e cultural</li>
+            </ul>
+            
+            <h4 style="color: #059669;">5. Importância do Tema</h4>
+            <p>Este conteúdo contribui para a formação integral dos estudantes, desenvolvendo competências e habilidades essenciais para a compreensão do mundo e a participação social responsável.</p>
+          </section>
+
+          <section style="margin-bottom: 25px;">
+            <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">🔬 ATIVIDADES SUGERIDAS</h3>
+            <ol>
+              <li><strong>Discussão inicial:</strong> Levantamento de conhecimentos prévios</li>
+              <li><strong>Demonstração prática:</strong> Exemplos concretos do tema</li>
+              <li><strong>Exercícios dirigidos:</strong> Aplicação dos conceitos aprendidos</li>
+            </ol>
+          </section>
+
+          <section>
+            <h3 style="color: #374151; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">📝 PONTOS-CHAVE PARA AVALIAÇÃO</h3>
+            <ul style="background: #fef3c7; padding: 15px; border-radius: 6px;">
+              <li>Compreensão dos conceitos fundamentais</li>
+              <li>Capacidade de aplicar conhecimentos em situações práticas</li>
+              <li>Estabelecimento de relações com outros conteúdos</li>
+              <li>Desenvolvimento de argumentação coerente</li>
+              <li>Transferência de aprendizagem para novas situações</li>
+            </ul>
+          </section>
         </div>`,
       conteudo: `
         <p>Este tópico aborda os aspectos fundamentais de ${assunto}, proporcionando uma base sólida de conhecimento alinhada às diretrizes da BNCC.</p>
