@@ -109,7 +109,7 @@ export default function TeacherDashboard() {
       description: "Este mês",
       icon: <Bot className="text-blue-600 h-6 w-6" />,
       color: "from-blue-500 to-blue-600",
-      trend: isLoadingMetrics ? "..." : ""
+      trend: ""
     },
     {
       title: "Atividades Geradas",
@@ -117,7 +117,7 @@ export default function TeacherDashboard() {
       description: "Com IA este mês",
       icon: <FilePlus className="text-purple-600 h-6 w-6" />,
       color: "from-purple-500 to-purple-600",
-      trend: isLoadingMetrics ? "..." : ""
+      trend: ""
     },
     {
       title: "Imagens Criadas",
@@ -125,7 +125,7 @@ export default function TeacherDashboard() {
       description: "Para materiais",
       icon: <ImageIcon className="text-green-600 h-6 w-6" />,
       color: "from-green-500 to-green-600",
-      trend: isLoadingMetrics ? "..." : ""
+      trend: ""
     },
     {
       title: "Tempo Economizado",
@@ -133,7 +133,7 @@ export default function TeacherDashboard() {
       description: "Este mês",
       icon: <Clock className="text-amber-600 h-6 w-6" />,
       color: "from-amber-500 to-amber-600",
-      trend: isLoadingMetrics ? "..." : ""
+      trend: ""
     }
   ] : [
     {
@@ -233,173 +233,116 @@ export default function TeacherDashboard() {
         <title>Dashboard do Professor - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/50 shadow-xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="flex flex-col h-full">
             {/* Logo */}
-            <div className="flex items-center gap-4 p-6 border-b border-slate-200/50">
-              <div className="relative">
-                <img src={iaverseLogo} alt="IAverse" className="w-10 h-10 rounded-xl shadow-lg" />
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  IAverse
-                </h1>
-                <p className="text-xs text-slate-500 font-medium">Portal do Professor</p>
+            <div className="p-6 border-b border-slate-200/50">
+              <div className="flex items-center gap-3">
+                <img src={iaverseLogo} alt="IAverse" className="h-10 w-10 rounded-xl" />
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    IAverse
+                  </h1>
+                  <p className="text-sm text-slate-500">Professor</p>
+                </div>
               </div>
             </div>
 
             {/* Navigation */}
-            <ScrollArea className="flex-1 px-4 py-6">
-              <div className="space-y-2">
-                {navigationItems.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link key={index} href={item.href}>
-                      <Button
-                        variant={item.active ? "secondary" : "ghost"}
-                        className={`w-full justify-start gap-3 h-12 font-medium transition-all duration-200 ${
-                          item.active 
-                            ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200/50 shadow-sm hover:shadow-md" 
-                            : item.featured
-                            ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl"
-                            : "text-slate-600 hover:text-blue-600 hover:bg-blue-50/50"
-                        }`}
-                      >
-                        <Icon className="h-5 w-5" />
-                        <span>{item.name}</span>
-                        {item.featured && (
-                          <Sparkles className="h-4 w-4 ml-auto" />
-                        )}
-                      </Button>
-                    </Link>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+            <nav className="flex-1 p-6 space-y-2">
+              {navigationItems.map((item) => (
+                <Link key={item.name} href={item.href}>
+                  <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${
+                    item.active 
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg' 
+                      : 'text-slate-700 hover:bg-slate-100/80 hover:text-slate-900'
+                  }`}>
+                    <item.icon className={`h-5 w-5 ${item.featured ? 'text-purple-400' : ''}`} />
+                    <span className="font-medium">{item.name}</span>
+                    {item.featured && (
+                      <Badge className="ml-auto bg-purple-100 text-purple-700 border-purple-200">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Novo
+                      </Badge>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </nav>
 
-            {/* User Profile */}
+            {/* User Section */}
             <div className="p-6 border-t border-slate-200/50">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-semibold">
-                  {user?.firstName?.charAt(0) || "U"}
+                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                  {user?.firstName?.charAt(0) || 'U'}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-xs text-slate-500 truncate">Professor</p>
+                <div>
+                  <p className="font-semibold text-slate-900">{user?.firstName} {user?.lastName}</p>
+                  <p className="text-sm text-slate-500">Professor</p>
                 </div>
               </div>
               <Button 
+                onClick={logout}
                 variant="outline" 
                 size="sm" 
-                onClick={logout}
-                className="w-full gap-2 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
+                className="w-full gap-2 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
               >
                 <LogOut className="h-4 w-4" />
                 Sair
               </Button>
             </div>
           </div>
-        </div>
+        </aside>
 
         {/* Main Content */}
         <div className="lg:pl-72">
           {/* Header */}
-          <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="lg:hidden text-slate-600 hover:text-blue-600"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900">
-                    Olá, Prof. {user?.firstName}!
-                  </h1>
-                  <p className="text-sm text-slate-600 capitalize">
-                    {formattedDate}
-                  </p>
+          <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-30">
+            <div className="px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="lg:hidden"
+                    onClick={() => setIsSidebarOpen(true)}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                  <div>
+                    <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+                    <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                {/* Header actions removed as requested */}
+                <div className="flex items-center gap-3">
+                  <Link href="/central-ia">
+                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 gap-2">
+                      <Bot className="h-4 w-4" />
+                      Central de IAs
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </header>
 
-          {/* Dashboard Content */}
+          {/* Main Dashboard Content */}
           <main className="p-6 space-y-8">
-            {/* Hero Section - Central de IAs */}
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white shadow-2xl rounded-3xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-              <CardContent className="relative p-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
-                        <Bot className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-3xl font-bold mb-1">Central de IAs</h2>
-                        <p className="text-white/80 text-lg">Sua porta de entrada para todas as inteligências artificiais</p>
-                      </div>
-                    </div>
-                    <p className="text-white/90 mb-6 max-w-2xl">
-                      Acesse ChatGPT, Claude, Gemini e mais ferramentas de IA em uma interface unificada. 
-                      Otimize seu tempo e crie conteúdos educacionais incríveis.
-                    </p>
-                    <div className="flex gap-4">
-                      <Link href="/central-ia">
-                        <Button size="lg" className="bg-white text-blue-600 hover:bg-white/90 shadow-xl gap-3 font-semibold">
-                          <Sparkles className="h-5 w-5" />
-                          Acessar Central de IAs
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                  <div className="hidden lg:block">
-                    <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center">
-                      <Bot className="h-16 w-16 text-white/80" />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Stats Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 mb-1">Suas Métricas de IA</h2>
-                <p className="text-sm text-slate-600">Acompanhe seu uso das ferramentas de inteligência artificial</p>
-              </div>
-            </div>
-
-            {/* AI Stats Cards */}
+            {/* AI Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {aiStats.map((stat, index) => (
-                <Card key={index} className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl hover:scale-105">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
-                  <CardContent className="relative p-6">
+                <Card key={index} className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 group">
+                  <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} opacity-10 group-hover:opacity-20 transition-opacity`}>
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} opacity-15 group-hover:opacity-25 transition-opacity`}>
                         {stat.icon}
                       </div>
-                      <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                        {stat.trend}
-                      </span>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-600 mb-1">{stat.title}</p>
-                      <p className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</p>
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-slate-600">{stat.title}</p>
+                      <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
                       <p className="text-xs text-slate-500">{stat.description}</p>
                     </div>
                   </CardContent>
@@ -407,20 +350,12 @@ export default function TeacherDashboard() {
               ))}
             </div>
 
-            {/* AI Tools Section */}
+            {/* AI Tools Grid */}
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-              <CardHeader className="pb-4">
+              <CardHeader className="pb-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-br from-purple-100 to-blue-100 rounded-lg">
-                      <Sparkles className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl font-bold text-slate-900">Ferramentas de IA</CardTitle>
-                      <p className="text-sm text-slate-600">Potencialize suas aulas com inteligência artificial</p>
-                    </div>
-                  </div>
-                  <Link href="/teacher/tools">
+                  <CardTitle className="text-2xl font-bold text-slate-900">Ferramentas de IA</CardTitle>
+                  <Link href="/professor/ferramentas">
                     <Button variant="outline" size="sm" className="gap-2">
                       Ver todas
                       <ArrowRight className="h-4 w-4" />
@@ -432,10 +367,8 @@ export default function TeacherDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {aiTools.map((tool, index) => (
                     <Link key={index} href={tool.href}>
-                      <div className={`group relative p-6 rounded-2xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all cursor-pointer ${
-                        tool.featured ? 'bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200/50 shadow-lg' : ''
-                      }`}>
-                        <div className="flex items-center justify-between mb-4">
+                      <div className={`p-6 rounded-2xl border-2 border-transparent hover:border-purple-200/50 bg-gradient-to-br from-slate-50/50 to-white hover:shadow-xl transition-all duration-300 group cursor-pointer ${tool.featured ? 'ring-2 ring-purple-200/50 bg-gradient-to-br from-purple-50/50 to-blue-50/50' : ''}`}>
+                        <div className="flex items-start justify-between mb-4">
                           <div className={`p-3 rounded-xl bg-gradient-to-br ${tool.color} opacity-15 group-hover:opacity-25 transition-opacity`}>
                             {tool.icon}
                           </div>
@@ -480,7 +413,7 @@ export default function TeacherDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {recentAIUsage.map((usage) => (
+                  {recentAIUsage.length > 0 ? recentAIUsage.map((usage: any) => (
                     <div key={usage.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-3">
@@ -505,14 +438,20 @@ export default function TeacherDashboard() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="text-center py-8">
+                      <Bot className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                      <p className="text-slate-500">Nenhuma atividade recente</p>
+                      <p className="text-sm text-slate-400">Comece usando a Central de IAs</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
-              {/* AI Tips & Quick Actions */}
+              {/* AI Tips */}
               <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-900">Dicas e Ações Rápidas</CardTitle>
+                  <CardTitle className="text-xl font-bold text-slate-900">Dicas de IA</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50">
@@ -530,8 +469,6 @@ export default function TeacherDashboard() {
                       </Button>
                     </Link>
                   </div>
-
-
                 </CardContent>
               </Card>
             </div>
