@@ -39,9 +39,7 @@ export default function ResumosDidaticos() {
   
   // Estados para os parâmetros da geração
   const [assunto, setAssunto] = useState("");
-  const [materia, setMateria] = useState("");
-  const [serie, setSerie] = useState("");
-  const [objetivosEspecificos, setObjetivosEspecificos] = useState("");
+  const [contextoPedagogico, setContextoPedagogico] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
   // Estado para os resumos gerados
@@ -50,10 +48,10 @@ export default function ResumosDidaticos() {
   
   // Função para gerar resumos
   const gerarResumo = async () => {
-    if (!assunto.trim() || !materia.trim() || !serie.trim()) {
+    if (!assunto.trim()) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha assunto, matéria e série/ano.",
+        title: "Assunto obrigatório",
+        description: "Por favor, informe o assunto para criar o resumo didático.",
         variant: "destructive"
       });
       return;
@@ -65,13 +63,15 @@ export default function ResumosDidaticos() {
       // Aqui seria a chamada para a API
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Mock de resposta
+      // Mock de resposta com análise automática
+      const analiseAutomatica = analisarAssunto(assunto);
+      
       const novoResumo: ResumoGerado = {
         id: `res-${Date.now()}`,
         titulo: assunto,
-        materia: materia,
-        serie: serie,
-        conteudo: mockConteudoResumo(),
+        materia: analiseAutomatica.materia,
+        serie: analiseAutomatica.series.join(', '),
+        conteudo: mockConteudoResumoCompleto(analiseAutomatica),
         dataGeracao: new Date(),
         favorito: false
       };
@@ -94,16 +94,75 @@ export default function ResumosDidaticos() {
     }
   };
 
-  // Mock de conteúdo do resumo
-  const mockConteudoResumo = () => {
+  // Função para analisar o assunto e determinar matéria/série automaticamente
+  const analisarAssunto = (assunto: string) => {
+    const assuntoLower = assunto.toLowerCase();
+    
+    // Mapeamento de assuntos para matérias e séries
+    if (assuntoLower.includes('fotossíntese') || assuntoLower.includes('respiração') || assuntoLower.includes('célula')) {
+      return {
+        materia: 'Ciências/Biologia',
+        series: ['7º ano EF', '8º ano EF', '1º ano EM'],
+        area: 'Ciências da Natureza'
+      };
+    }
+    if (assuntoLower.includes('revolução industrial') || assuntoLower.includes('brasil colônia')) {
+      return {
+        materia: 'História',
+        series: ['8º ano EF', '9º ano EF'],
+        area: 'Ciências Humanas'
+      };
+    }
+    if (assuntoLower.includes('equação') || assuntoLower.includes('matemática') || assuntoLower.includes('geometria')) {
+      return {
+        materia: 'Matemática',
+        series: ['8º ano EF', '9º ano EF', '1º ano EM'],
+        area: 'Matemática'
+      };
+    }
+    if (assuntoLower.includes('figura de linguagem') || assuntoLower.includes('português') || assuntoLower.includes('literatura')) {
+      return {
+        materia: 'Língua Portuguesa',
+        series: ['6º ano EF', '7º ano EF', '8º ano EF'],
+        area: 'Linguagens'
+      };
+    }
+    if (assuntoLower.includes('sistema solar') || assuntoLower.includes('planeta') || assuntoLower.includes('astronomia')) {
+      return {
+        materia: 'Ciências',
+        series: ['6º ano EF', '7º ano EF'],
+        area: 'Ciências da Natureza'
+      };
+    }
+    if (assuntoLower.includes('bioma') || assuntoLower.includes('geografia') || assuntoLower.includes('clima')) {
+      return {
+        materia: 'Geografia',
+        series: ['6º ano EF', '7º ano EF', '8º ano EF'],
+        area: 'Ciências Humanas'
+      };
+    }
+    
+    // Padrão para assuntos não identificados
+    return {
+      materia: 'Multidisciplinar',
+      series: ['6º ao 9º ano EF'],
+      area: 'Geral'
+    };
+  };
+
+  // Conteúdo completo do resumo com informações reais
+  const mockConteudoResumoCompleto = (analise: any) => {
+    const conteudoEspecifico = obterConteudoEspecifico(assunto, analise);
+    
     return `
     <div class="resumo-content">
       <div class="resumo-header">
         <h1>${assunto}</h1>
         <div class="meta-info">
-          <p><strong>Matéria:</strong> ${materia}</p>
-          <p><strong>Série/Ano:</strong> ${serie}</p>
-          <p><strong>Alinhamento BNCC:</strong> Conforme diretrizes curriculares nacionais</p>
+          <p><strong>Área do Conhecimento:</strong> ${analise.area}</p>
+          <p><strong>Componente Curricular:</strong> ${analise.materia}</p>
+          <p><strong>Séries/Anos Recomendados:</strong> ${analise.series.join(', ')}</p>
+          <p><strong>Alinhamento BNCC:</strong> ✅ Conforme diretrizes curriculares nacionais</p>
         </div>
       </div>
       
@@ -111,78 +170,151 @@ export default function ResumosDidaticos() {
         <section class="competencias-bncc">
           <h2>🎯 Competências e Habilidades (BNCC)</h2>
           <div class="competencias-list">
-            <ul>
-              <li>Compreender conceitos fundamentais sobre ${assunto}</li>
-              <li>Desenvolver pensamento crítico e analítico</li>
-              <li>Aplicar conhecimentos em situações práticas</li>
-              <li>Estabelecer conexões interdisciplinares</li>
-            </ul>
+            ${conteudoEspecifico.competencias}
           </div>
         </section>
 
-        <section class="objetivos-aprendizagem">
-          <h2>📚 Objetivos de Aprendizagem</h2>
-          <p>Este resumo tem como objetivo proporcionar uma compreensão clara e estruturada sobre ${assunto}, seguindo as diretrizes da Base Nacional Comum Curricular (BNCC) para ${materia}.</p>
-          ${objetivosEspecificos ? `<p><strong>Objetivos específicos:</strong> ${objetivosEspecificos}</p>` : ''}
+        <section class="conteudo-principal">
+          <h2>📖 Conteúdo da Matéria</h2>
+          ${conteudoEspecifico.conteudo}
         </section>
 
         <section class="conceitos-fundamentais">
           <h2>💡 Conceitos Fundamentais</h2>
-          <p>Os principais conceitos abordados neste tema incluem definições essenciais, características principais e relações com outros conteúdos da disciplina.</p>
-          
-          <div class="conceitos-principais">
-            <h3>Definições Importantes:</h3>
-            <ul>
-              <li>Conceito A: Definição clara e objetiva</li>
-              <li>Conceito B: Explicação contextualizada</li>
-              <li>Conceito C: Relação com conhecimentos prévios</li>
-            </ul>
-          </div>
+          ${conteudoEspecifico.conceitos}
         </section>
 
         <section class="aplicacoes-praticas">
           <h2>🔧 Aplicações Práticas</h2>
-          <p>Este conteúdo pode ser aplicado em diversas situações do cotidiano e conecta-se com outras áreas do conhecimento, promovendo uma aprendizagem significativa.</p>
-          
-          <div class="exemplos-praticos">
-            <h3>Exemplos do Cotidiano:</h3>
-            <ul>
-              <li>Situação prática 1: Aplicação no dia a dia</li>
-              <li>Situação prática 2: Conexão interdisciplinar</li>
-              <li>Situação prática 3: Relevância social</li>
-            </ul>
-          </div>
+          ${conteudoEspecifico.aplicacoes}
         </section>
 
         <section class="metodologia-sugerida">
           <h2>🎓 Metodologia de Ensino Sugerida</h2>
           <div class="metodologia-steps">
             <ol>
-              <li><strong>Sensibilização:</strong> Apresentação do tema com exemplos práticos</li>
-              <li><strong>Desenvolvimento:</strong> Explicação dos conceitos principais</li>
-              <li><strong>Aplicação:</strong> Exercícios e atividades práticas</li>
-              <li><strong>Avaliação:</strong> Verificação da aprendizagem</li>
+              <li><strong>Sensibilização:</strong> ${conteudoEspecifico.metodologia.sensibilizacao}</li>
+              <li><strong>Desenvolvimento:</strong> ${conteudoEspecifico.metodologia.desenvolvimento}</li>
+              <li><strong>Aplicação:</strong> ${conteudoEspecifico.metodologia.aplicacao}</li>
+              <li><strong>Avaliação:</strong> ${conteudoEspecifico.metodologia.avaliacao}</li>
             </ol>
           </div>
         </section>
 
         <section class="recursos-complementares">
           <h2>📖 Recursos Complementares</h2>
-          <ul>
-            <li>Material de apoio: Livros didáticos e paradidáticos</li>
-            <li>Recursos digitais: Vídeos educacionais e simuladores</li>
-            <li>Atividades práticas: Experimentos e projetos</li>
-            <li>Avaliação: Instrumentos variados de verificação</li>
-          </ul>
+          ${conteudoEspecifico.recursos}
         </section>
 
         <section class="consideracoes-finais">
           <h2>✅ Considerações Finais</h2>
-          <p>Este resumo didático foi elaborado seguindo as diretrizes da BNCC, visando proporcionar uma base sólida para o desenvolvimento das competências e habilidades necessárias para ${serie} em ${materia}.</p>
-          <p>O conteúdo pode ser adaptado conforme as necessidades específicas da turma e complementado com recursos adicionais para enriquecer o processo de ensino-aprendizagem.</p>
+          <p>Este resumo didático foi elaborado seguindo as diretrizes da BNCC, visando proporcionar uma base sólida para o desenvolvimento das competências e habilidades necessárias para ${analise.series.join(' e ')} em ${analise.materia}.</p>
+          <p>O conteúdo apresenta uma abordagem completa sobre ${assunto}, integrando teoria e prática de forma contextualizada e significativa para os estudantes.</p>
+          ${contextoPedagogico ? `<p><strong>Contexto pedagógico adicional:</strong> ${contextoPedagogico}</p>` : ''}
         </section>
       </div>
     </div>`;
+  };
+
+  // Função para obter conteúdo específico baseado no assunto
+  const obterConteudoEspecifico = (assunto: string, analise: any) => {
+    const assuntoLower = assunto.toLowerCase();
+    
+    if (assuntoLower.includes('fotossíntese')) {
+      return {
+        competencias: `
+          <ul>
+            <li>Compreender a vida como um fenômeno natural e social, os problemas ambientais brasileiros e a importância da preservação do ambiente</li>
+            <li>Identificar e explicar fenômenos envolvidos na manutenção da vida, diferenciando e classificando os seres vivos</li>
+            <li>Analisar e explicar a importância da fotossíntese para a manutenção da vida na Terra</li>
+          </ul>`,
+        conteudo: `
+          <p><strong>Fotossíntese</strong> é o processo biológico realizado pelas plantas, algas e algumas bactérias, onde a energia luminosa é convertida em energia química na forma de glicose.</p>
+          
+          <h3>Processo da Fotossíntese:</h3>
+          <p><strong>Equação geral:</strong> 6CO₂ + 6H₂O + energia luminosa → C₆H₁₂O₆ + 6O₂</p>
+          
+          <p>O processo ocorre principalmente nas folhas, especificamente nos cloroplastos, organelas que contêm clorofila - pigmento verde responsável pela absorção da luz.</p>
+          
+          <h3>Etapas da Fotossíntese:</h3>
+          <ol>
+            <li><strong>Fase Clara (Fotoquímica):</strong> Ocorre nos tilacoides, onde a luz é capturada e a água é quebrada, liberando oxigênio</li>
+            <li><strong>Fase Escura (Ciclo de Calvin):</strong> Ocorre no estroma, onde o CO₂ é fixado para formar glicose</li>
+          </ol>`,
+        conceitos: `
+          <ul>
+            <li><strong>Clorofila:</strong> Pigmento verde que absorve a energia luminosa</li>
+            <li><strong>Cloroplastos:</strong> Organelas onde ocorre a fotossíntese</li>
+            <li><strong>Estômatos:</strong> Estruturas das folhas por onde entram CO₂ e sai O₂</li>
+            <li><strong>Glicose:</strong> Açúcar produzido que serve como alimento para a planta</li>
+            <li><strong>Respiração Celular:</strong> Processo complementar onde a glicose é quebrada para liberar energia</li>
+          </ul>`,
+        aplicacoes: `
+          <ul>
+            <li>Produção de oxigênio que respiramos</li>
+            <li>Base da cadeia alimentar terrestre</li>
+            <li>Absorção de CO₂ da atmosfera, ajudando no controle do efeito estufa</li>
+            <li>Agricultura e jardinagem: compreender necessidades das plantas</li>
+            <li>Biotecnologia: desenvolvimento de plantas mais eficientes</li>
+          </ul>`,
+        metodologia: {
+          sensibilizacao: "Demonstração com plantas em diferentes condições de luz, questionando por que plantas precisam de luz",
+          desenvolvimento: "Explicação do processo com esquemas e experimentos práticos observando produção de oxigênio",
+          aplicacao: "Experimentos com plantas aquáticas, observação de estômatos no microscópio",
+          avaliacao: "Análise de situações-problema envolvendo crescimento de plantas e produção de alimentos"
+        },
+        recursos: `
+          <ul>
+            <li>Experimento com Elodea para observar produção de oxigênio</li>
+            <li>Microscópio para observação de cloroplastos e estômatos</li>
+            <li>Plantas em diferentes condições para comparação</li>
+            <li>Vídeos educacionais sobre o processo</li>
+            <li>Esquemas e infográficos explicativos</li>
+          </ul>`
+      };
+    }
+    
+    // Conteúdo genérico para outros assuntos
+    return {
+      competencias: `
+        <ul>
+          <li>Desenvolver conhecimentos fundamentais sobre ${assunto}</li>
+          <li>Aplicar conceitos em situações práticas do cotidiano</li>
+          <li>Estabelecer relações interdisciplinares</li>
+          <li>Desenvolver pensamento crítico e científico</li>
+        </ul>`,
+      conteudo: `
+        <p>Este tópico aborda os aspectos fundamentais de ${assunto}, proporcionando uma base sólida de conhecimento alinhada às diretrizes da BNCC.</p>
+        <p>O conteúdo será desenvolvido de forma contextualizada, relacionando teoria e prática para facilitar a compreensão dos estudantes.</p>`,
+      conceitos: `
+        <ul>
+          <li>Conceitos básicos e definições importantes</li>
+          <li>Relações com conhecimentos prévios</li>
+          <li>Conexões interdisciplinares</li>
+          <li>Aplicações práticas no cotidiano</li>
+        </ul>`,
+      aplicacoes: `
+        <ul>
+          <li>Aplicações no cotidiano dos estudantes</li>
+          <li>Conexões com outras disciplinas</li>
+          <li>Relevância social e cultural</li>
+          <li>Preparação para estudos futuros</li>
+        </ul>`,
+      metodologia: {
+        sensibilizacao: "Apresentação do tema conectado ao cotidiano dos estudantes",
+        desenvolvimento: "Explicação progressiva dos conceitos com exemplos práticos",
+        aplicacao: "Atividades hands-on e resolução de problemas contextualizados",
+        avaliacao: "Instrumentos variados que verifiquem a compreensão e aplicação"
+      },
+      recursos: `
+        <ul>
+          <li>Material didático diversificado</li>
+          <li>Recursos audiovisuais</li>
+          <li>Atividades práticas e experimentais</li>
+          <li>Tecnologias educacionais</li>
+          <li>Bibliografia complementar</li>
+        </ul>`
+    };
   };
 
   const copiarParaClipboard = () => {
@@ -206,37 +338,6 @@ export default function ResumosDidaticos() {
       setResumoSelecionado(prev => prev ? { ...prev, favorito: !prev.favorito } : null);
     }
   };
-
-  const materias = [
-    "Língua Portuguesa",
-    "Matemática", 
-    "Ciências",
-    "História",
-    "Geografia",
-    "Arte",
-    "Educação Física",
-    "Língua Inglesa",
-    "Física",
-    "Química",
-    "Biologia",
-    "Filosofia",
-    "Sociologia"
-  ];
-
-  const series = [
-    "1º ano - Ensino Fundamental",
-    "2º ano - Ensino Fundamental",
-    "3º ano - Ensino Fundamental",
-    "4º ano - Ensino Fundamental",
-    "5º ano - Ensino Fundamental",
-    "6º ano - Ensino Fundamental",
-    "7º ano - Ensino Fundamental",
-    "8º ano - Ensino Fundamental",
-    "9º ano - Ensino Fundamental",
-    "1º ano - Ensino Médio",
-    "2º ano - Ensino Médio",
-    "3º ano - Ensino Médio"
-  ];
 
   const sugestoesAssuntos = [
     "Sistema Solar e Planetas",
@@ -324,65 +425,27 @@ export default function ResumosDidaticos() {
                   </div>
                 </div>
 
-                {/* Matéria */}
+                {/* Contexto Pedagógico */}
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium text-slate-700">
-                    Matéria *
-                  </Label>
-                  <Select value={materia} onValueChange={setMateria}>
-                    <SelectTrigger className="border-slate-300 focus:border-blue-500">
-                      <SelectValue placeholder="Selecione a matéria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {materias.map((mat) => (
-                        <SelectItem key={mat} value={mat}>
-                          {mat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Série */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium text-slate-700">
-                    Série/Ano *
-                  </Label>
-                  <Select value={serie} onValueChange={setSerie}>
-                    <SelectTrigger className="border-slate-300 focus:border-blue-500">
-                      <SelectValue placeholder="Selecione a série/ano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {series.map((ser) => (
-                        <SelectItem key={ser} value={ser}>
-                          {ser}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Objetivos Específicos */}
-                <div className="space-y-3">
-                  <Label htmlFor="objetivos" className="text-sm font-medium text-slate-700">
-                    Objetivos Específicos
+                  <Label htmlFor="contexto" className="text-sm font-medium text-slate-700">
+                    Contexto Pedagógico Adicional
                   </Label>
                   <Textarea 
-                    id="objetivos"
-                    placeholder="Ex: Compreender o processo de fotossíntese, identificar suas etapas e importância para os seres vivos"
+                    id="contexto"
+                    placeholder="Ex: Enfoque em experimentos práticos, adaptação para alunos com dificuldades de aprendizagem..."
                     className="min-h-[80px] resize-none border-slate-300 focus:border-blue-500"
-                    value={objetivosEspecificos}
-                    onChange={(e) => setObjetivosEspecificos(e.target.value)}
+                    value={contextoPedagogico}
+                    onChange={(e) => setContextoPedagogico(e.target.value)}
                   />
                   <p className="text-xs text-slate-500">
-                    Opcional: Defina objetivos específicos para personalizar o resumo
+                    Opcional: Orientações específicas sobre abordagem ou contexto pedagógico
                   </p>
                 </div>
 
                 {/* Botão Gerar */}
                 <Button 
                   onClick={gerarResumo}
-                  disabled={isLoading || !assunto.trim() || !materia.trim() || !serie.trim()}
+                  disabled={isLoading || !assunto.trim()}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-12"
                 >
                   {isLoading ? (
