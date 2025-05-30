@@ -76,18 +76,31 @@ export default function ResumosBNCC() {
         })
       });
 
+      console.log('Status da resposta:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('Erro na API:', response.status, errorText);
         throw new Error(`Erro da API: ${response.status}`);
       }
 
-      const data = await response.json();
-      console.log('Resposta completa da API:', data);
+      const responseText = await response.text();
+      console.log('Texto bruto da resposta:', responseText);
       
-      // Verificar se o conteúdo foi gerado
-      if (!data.resumo && !data.content) {
-        throw new Error("Conteúdo não foi gerado pela API");
+      let data;
+      try {
+        data = JSON.parse(responseText);
+        console.log('Dados parseados:', data);
+      } catch (parseError) {
+        console.error('Erro ao fazer parse do JSON:', parseError);
+        throw new Error("Resposta da API não é um JSON válido");
+      }
+      
+      // Verificar se existe conteúdo
+      const conteudo = data.resumo || data.content || data.response || "";
+      if (!conteudo.trim()) {
+        console.error('Nenhum conteúdo encontrado na resposta:', data);
+        throw new Error("Nenhum conteúdo foi gerado");
       }
       
       const novoResumo: ResumoGerado = {
@@ -95,10 +108,12 @@ export default function ResumosBNCC() {
         titulo: assunto,
         materia: data.materia || "Identificação automática",
         serie: data.serie || "Conforme BNCC",
-        conteudo: data.resumo || data.content || "Erro ao gerar conteúdo",
+        conteudo: conteudo,
         dataGeracao: new Date(),
         favorito: false
       };
+
+      console.log('Resumo criado:', novoResumo);
 
       setResumoGerado(novoResumo);
       setHistorico(prev => [novoResumo, ...prev.slice(0, 9)]);
@@ -109,10 +124,12 @@ export default function ResumosBNCC() {
       });
 
     } catch (error) {
-      console.error('Erro na geração:', error);
+      console.error('Erro detalhado na geração:', error);
+      console.error('Tipo do erro:', typeof error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'N/A');
       toast({
         title: "Erro ao gerar resumo",
-        description: "Tente novamente em alguns instantes.",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive"
       });
     } finally {
