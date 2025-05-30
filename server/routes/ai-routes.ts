@@ -1008,41 +1008,26 @@ aiRouter.post("/education/generate-educational-summary", authenticate, hasContra
     const userId = req.session.user?.id || 1;
     const contractId = req.session.user?.contractId || 1;
 
-    const prompt = `Analise o assunto "${assunto}" e crie um resumo completo da matéria para preparação de aula.
+    const prompt = `Crie um resumo educacional completo sobre "${assunto}" seguindo as diretrizes da BNCC.
 
-TAREFA PRINCIPAL:
-1. IDENTIFIQUE AUTOMATICAMENTE:
-   - A matéria/disciplina adequada para este assunto
-   - As séries/anos escolares apropriados conforme BNCC
-   - A área do conhecimento (Linguagens, Matemática, Ciências da Natureza, Ciências Humanas)
+CONTEXTO ADICIONAL: ${contextoPedagogico || 'Nenhum contexto específico'}
 
-2. CRIE UM RESUMO ESTRUTURADO:
-   - Conceito principal claro e direto
-   - Definições fundamentais que o professor precisa saber
-   - Desenvolvimento progressivo do conteúdo
-   - Exemplos práticos e aplicações
-   - Metodologia sugerida para apresentar o tema
-   - Recursos didáticos recomendados
-   - Pontos importantes para destacar
+Estruture o resumo em HTML com:
 
-CONTEXTO ADICIONAL: ${contextoPedagogico || 'Nenhum contexto específico fornecido'}
+1. CABEÇALHO
+   - Título: ${assunto}
+   - Matéria e série identificadas automaticamente
 
-FORMATO DE RESPOSTA:
-Retorne um objeto JSON com:
-{
-  "materia": "Nome da matéria identificada",
-  "serie": "Séries adequadas (ex: 7º e 8º ano EF)",
-  "area": "Área do conhecimento BNCC",
-  "resumo": "HTML estruturado do resumo da matéria"
-}
+2. CONCEITO PRINCIPAL
+   - Definição clara e objetiva
 
-O resumo HTML deve seguir esta estrutura:
-- Header com título e informações da matéria
-- Seções organizadas por tópicos numerados
-- Layout limpo e didático
-- Foco no conteúdo que o professor precisa dominar para dar a aula
+3. TÓPICOS ORGANIZADOS
+   - Conceitos fundamentais
+   - Como explicar aos alunos
+   - Exemplos práticos
+   - Pontos importantes
 
-IMPORTANTE: Base toda a identificação nas diretrizes da BNCC e organize o conteúdo de forma que seja útil para o professor estudar antes da aula.`;
+Formate como HTML limpo e didático para uso do professor.`;
 
     const result = await OpenAIService.generateChatCompletion({
       userId,
@@ -1053,19 +1038,13 @@ IMPORTANTE: Base toda a identificação nas diretrizes da BNCC e organize o cont
       maxTokens: 4000
     });
     
-    // Tentar parsear como JSON primeiro, se falhar retornar formato básico
-    try {
-      const parsedResult = JSON.parse(result.content || '{}');
-      return res.status(200).json(parsedResult);
-    } catch (parseError) {
-      // Se não conseguir parsear, retornar formato básico
-      return res.status(200).json({
-        materia: "Identificação automática",
-        serie: "Conforme BNCC",
-        area: "Multidisciplinar",
-        resumo: result.content || "Erro ao gerar resumo"
-      });
-    }
+    // Retornar formato estruturado
+    return res.status(200).json({
+      materia: "Identificação automática via IA",
+      serie: "Adequado conforme BNCC",
+      area: "Educacional",
+      resumo: result.content || "Erro ao gerar resumo"
+    });
     
   } catch (error: any) {
     if (error instanceof z.ZodError) {
