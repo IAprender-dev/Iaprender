@@ -81,13 +81,14 @@ export default function ResumosBNCC() {
       }
 
       const data = await response.json();
+      console.log('Resposta da API:', data); // Debug
       
       const novoResumo: ResumoGerado = {
         id: Date.now().toString(),
         titulo: assunto,
         materia: data.materia || "Identificação automática",
         serie: data.serie || "Conforme BNCC",
-        conteudo: data.resumo,
+        conteudo: data.resumo || data.content || "Erro ao gerar conteúdo",
         dataGeracao: new Date(),
         favorito: false
       };
