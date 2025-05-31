@@ -264,43 +264,7 @@ export default function StudentDashboard() {
               ))}
             </div>
 
-            {/* Recent Courses */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-bold text-slate-900">Meus Cursos</CardTitle>
-                  <Link href="/student/courses">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      Ver todos
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {recentCourses.map((course) => (
-                  <div key={course.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h4 className="font-semibold text-slate-900">{course.title}</h4>
-                        <p className="text-sm text-slate-600">{course.instructor}</p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {course.category}
-                      </Badge>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-slate-600">Progresso</span>
-                        <span className="font-medium text-slate-900">{course.completedLessons}/{course.totalLessons} aulas</span>
-                      </div>
-                      <Progress value={course.progress} className="h-2" />
-                      <p className="text-xs text-slate-500">{course.progress}% concluído</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+
 
             {/* Study Planning Section */}
             <Card className="border-0 bg-gradient-to-br from-purple-50 to-blue-50 backdrop-blur-sm shadow-lg rounded-2xl">
@@ -370,50 +334,7 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
 
-            {/* Recent Activities */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl font-bold text-slate-900">Atividades Recentes</CardTitle>
-                  <Link href="/aluno/atividades">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      Ver todas
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-slate-900">{activity.title}</h4>
-                      <Badge 
-                        variant={activity.priority === 'high' ? 'destructive' : activity.priority === 'medium' ? 'default' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {activity.priority === 'high' ? 'Alta' : activity.priority === 'medium' ? 'Média' : 'Baixa'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600">{activity.subject}</span>
-                      <div className="flex items-center gap-1 text-slate-500">
-                        <Calendar className="h-3 w-3" />
-                        <span>{new Date(activity.dueDate).toLocaleDateString('pt-BR')}</span>
-                      </div>
-                    </div>
-                    <div className="mt-2">
-                      <Badge 
-                        variant={activity.status === 'pending' ? 'outline' : 'secondary'}
-                        className="text-xs"
-                      >
-                        {activity.status === 'pending' ? 'Pendente' : 'Em andamento'}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+
           </main>
         </div>
 
