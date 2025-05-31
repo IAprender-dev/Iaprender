@@ -302,12 +302,80 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
 
+            {/* Study Planning Section */}
+            <Card className="border-0 bg-gradient-to-br from-purple-50 to-blue-50 backdrop-blur-sm shadow-lg rounded-2xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
+                      <Calendar className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-slate-900">Planejamento de Estudos</CardTitle>
+                      <p className="text-sm text-slate-600">Organize seus estudos da semana</p>
+                    </div>
+                  </div>
+                  <Link href="/aluno/planejamento">
+                    <Button className="gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
+                      <Target className="h-4 w-4" />
+                      Criar Plano
+                    </Button>
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                  {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day, index) => {
+                    const today = new Date();
+                    const weekDay = new Date(today);
+                    weekDay.setDate(today.getDate() - today.getDay() + index + 1);
+                    const isToday = weekDay.toDateString() === today.toDateString();
+                    
+                    return (
+                      <div key={index} className={`p-3 rounded-xl border transition-all ${
+                        isToday 
+                          ? 'border-purple-200 bg-gradient-to-br from-purple-100 to-blue-100' 
+                          : 'border-slate-200 bg-white/50'
+                      }`}>
+                        <div className="text-center">
+                          <p className={`text-xs font-medium ${isToday ? 'text-purple-700' : 'text-slate-600'}`}>
+                            {day}
+                          </p>
+                          <p className={`text-lg font-bold ${isToday ? 'text-purple-900' : 'text-slate-900'}`}>
+                            {weekDay.getDate()}
+                          </p>
+                          <div className="mt-2 space-y-1">
+                            {index < 5 && (
+                              <div className={`text-xs p-1 rounded ${
+                                isToday 
+                                  ? 'bg-purple-200 text-purple-800' 
+                                  : 'bg-blue-100 text-blue-700'
+                              }`}>
+                                19:00-21:00
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-4 p-3 bg-white/60 rounded-xl">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-slate-600">Progresso da semana</span>
+                    <span className="font-medium text-slate-900">3/5 sessões</span>
+                  </div>
+                  <Progress value={60} className="h-2 mt-2" />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Recent Activities */}
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-xl font-bold text-slate-900">Atividades Recentes</CardTitle>
-                  <Link href="/student/activities">
+                  <Link href="/aluno/atividades">
                     <Button variant="outline" size="sm" className="gap-2">
                       Ver todas
                       <ArrowRight className="h-4 w-4" />
