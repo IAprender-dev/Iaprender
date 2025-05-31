@@ -37,6 +37,12 @@ export default function StudentSidebar() {
       badge: 4
     },
     {
+      name: "Planejamento de Estudos",
+      icon: <Calendar className="h-4 w-4" />,
+      href: "/aluno/planejamento",
+      active: location === "/aluno/planejamento"
+    },
+    {
       name: "Conquistas",
       icon: <Medal className="h-4 w-4" />,
       href: "/aluno/conquistas",

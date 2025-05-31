@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/AuthContext";
+import { Helmet } from "react-helmet";
+import StudentHeader from "@/components/dashboard/student/StudentHeader";
+import StudentSidebar from "@/components/dashboard/student/StudentSidebar";
 
 // Matérias por ano escolar baseadas na BNCC
 const SUBJECTS_BY_YEAR = {
@@ -96,7 +99,7 @@ export default function StudyPlanning() {
     const newPlan: StudyPlan = {
       id: Date.now(),
       name: planForm.name,
-      schoolYear: user?.schoolYear || "1º ano",
+      schoolYear: (user as any)?.schoolYear || "1º ano",
       availableHoursPerDay: planForm.availableHoursPerDay,
       studyStartTime: planForm.studyStartTime,
       studyEndTime: planForm.studyEndTime,
@@ -177,15 +180,27 @@ export default function StudyPlanning() {
     }).sort((a, b) => new Date(a.examDate).getTime() - new Date(b.examDate).getTime());
   };
 
-  const subjects = user?.schoolYear ? SUBJECTS_BY_YEAR[user.schoolYear as keyof typeof SUBJECTS_BY_YEAR] || [] : [];
+  const subjects = (user as any)?.schoolYear ? SUBJECTS_BY_YEAR[(user as any).schoolYear as keyof typeof SUBJECTS_BY_YEAR] || [] : [];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <>
+      <Helmet>
+        <title>Planejamento de Estudos - IAverse</title>
+      </Helmet>
+      
+      <div className="flex h-screen bg-gray-50">
+        <StudentSidebar />
+        
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <StudentHeader />
+          
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
+            <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Planejamento de Estudos</h1>
           <p className="text-muted-foreground">
-            Organize seus estudos de acordo com seu ano escolar ({user?.schoolYear || "Não informado"})
+            Organize seus estudos de acordo com seu ano escolar ({(user as any)?.schoolYear || "Não informado"})
           </p>
         </div>
       </div>
@@ -567,6 +582,10 @@ export default function StudyPlanning() {
           </TabsContent>
         </Tabs>
       )}
-    </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </>
   );
 }
