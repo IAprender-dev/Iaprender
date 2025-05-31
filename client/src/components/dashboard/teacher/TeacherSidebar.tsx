@@ -93,12 +93,7 @@ export default function TeacherSidebar() {
       href: "/professor/ferramentas/resumos-bncc",
       active: location === "/professor/ferramentas/resumos-bncc"
     },
-    {
-      name: "Correção de Provas",
-      icon: <CheckSquare className="h-5 w-5" />,
-      href: "/professor/ferramentas/correcao-provas",
-      active: location === "/professor/ferramentas/correcao-provas"
-    },
+
     {
       name: "Planejamento de Aula",
       icon: <ClipboardList className="h-5 w-5" />,

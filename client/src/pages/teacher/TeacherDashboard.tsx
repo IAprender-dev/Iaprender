@@ -189,14 +189,7 @@ export default function TeacherDashboard() {
       href: "/professor/ferramentas/gerador-atividades",
       badge: "Popular"
     },
-    {
-      title: "Correção Inteligente",
-      description: "Correção automatizada de provas",
-      icon: <CheckSquare className="h-6 w-6" />,
-      color: "from-purple-500 to-purple-600",
-      href: "/professor/ferramentas/correcao-provas",
-      badge: "Novo"
-    },
+
     {
       title: "Imagens Educacionais",
       description: "Gere ilustrações para suas aulas",
