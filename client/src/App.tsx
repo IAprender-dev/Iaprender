@@ -19,6 +19,7 @@ import TeacherTools from "@/pages/teacher/TeacherTools";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
+import StudyPlanning from "@/pages/student/StudyPlanning";
 import NotFound from "@/pages/not-found";
 
 // Ferramentas IA
@@ -85,6 +86,7 @@ function Router() {
       <Route path="/aluno/dashboard" component={StudentDashboard} />
       <Route path="/aluno/cursos" component={StudentCourses} />
       <Route path="/aluno/atividades" component={StudentActivities} />
+      <Route path="/aluno/planejamento" component={StudyPlanning} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

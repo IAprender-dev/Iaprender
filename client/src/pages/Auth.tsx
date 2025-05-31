@@ -24,6 +24,7 @@ const registerSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
   role: z.enum(["teacher", "student"]),
+  schoolYear: z.string().optional(),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -250,6 +251,29 @@ export default function Auth() {
                         <p className="text-sm text-red-600">{registerForm.formState.errors.role.message}</p>
                       )}
                     </div>
+                    
+                    {registerForm.watch("role") === "student" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="schoolYear">Ano Escolar</Label>
+                        <select
+                          id="schoolYear"
+                          className="w-full px-3 py-2 border border-input bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-ring"
+                          {...registerForm.register("schoolYear")}
+                        >
+                          <option value="">Selecione seu ano escolar</option>
+                          <option value="6º ano">6º ano</option>
+                          <option value="7º ano">7º ano</option>
+                          <option value="8º ano">8º ano</option>
+                          <option value="9º ano">9º ano</option>
+                          <option value="1º ano">1º ano (Ensino Médio)</option>
+                          <option value="2º ano">2º ano (Ensino Médio)</option>
+                          <option value="3º ano">3º ano (Ensino Médio)</option>
+                        </select>
+                        {registerForm.formState.errors.schoolYear && (
+                          <p className="text-sm text-red-600">{registerForm.formState.errors.schoolYear.message}</p>
+                        )}
+                      </div>
+                    )}
                     
                     <Button 
                       type="submit" 

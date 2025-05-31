@@ -9,7 +9,11 @@ import {
   Category, InsertCategory,
   LessonPlan, InsertLessonPlan,
   AIMessage, InsertAIMessage,
-  Certificate, InsertCertificate
+  Certificate, InsertCertificate,
+  SavedItem, InsertSavedItem,
+  StudyPlan, InsertStudyPlan,
+  StudySchedule, InsertStudySchedule,
+  Exam, InsertExam
 } from "@shared/schema";
 
 // Storage interface definition
