@@ -67,6 +67,27 @@ export interface IStorage {
   getSavedItemsByUser(userId: number): Promise<SavedItem[]>;
   createSavedItem(savedItem: InsertSavedItem): Promise<SavedItem>;
   deleteSavedItem(id: number, userId: number): Promise<boolean>;
+  
+  // Study plan operations
+  getStudyPlansByUser(userId: number): Promise<StudyPlan[]>;
+  getActiveStudyPlan(userId: number): Promise<StudyPlan | undefined>;
+  createStudyPlan(studyPlan: InsertStudyPlan): Promise<StudyPlan>;
+  updateStudyPlan(id: number, studyPlan: Partial<StudyPlan>): Promise<StudyPlan | undefined>;
+  deleteStudyPlan(id: number, userId: number): Promise<boolean>;
+  
+  // Study schedule operations
+  getStudyScheduleByPlan(studyPlanId: number): Promise<StudySchedule[]>;
+  getStudyScheduleByWeek(studyPlanId: number, startDate: Date, endDate: Date): Promise<StudySchedule[]>;
+  createStudyScheduleItem(scheduleItem: InsertStudySchedule): Promise<StudySchedule>;
+  updateStudyScheduleItem(id: number, scheduleItem: Partial<StudySchedule>): Promise<StudySchedule | undefined>;
+  deleteStudyScheduleItem(id: number): Promise<boolean>;
+  
+  // Exam operations
+  getExamsByUser(userId: number): Promise<Exam[]>;
+  getUpcomingExams(userId: number): Promise<Exam[]>;
+  createExam(exam: InsertExam): Promise<Exam>;
+  updateExam(id: number, exam: Partial<Exam>): Promise<Exam | undefined>;
+  deleteExam(id: number, userId: number): Promise<boolean>;
 }
 
 // In-memory storage implementation
@@ -83,6 +104,9 @@ export class MemStorage implements IStorage {
   private aiMessages: Map<number, AIMessage>;
   private certificates: Map<number, Certificate>;
   private savedItems: Map<number, SavedItem>;
+  private studyPlans: Map<number, StudyPlan>;
+  private studySchedule: Map<number, StudySchedule>;
+  private exams: Map<number, Exam>;
   
   private currentIds: {
     users: number;

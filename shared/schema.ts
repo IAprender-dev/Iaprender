@@ -27,6 +27,7 @@ export const users = pgTable("users", {
   forcePasswordChange: boolean("force_password_change").default(false),
   profileImage: text("profile_image"),
   contractId: integer("contract_id").references(() => contracts.id),
+  schoolYear: text("school_year"), // Ano escolar para estudantes (1º ano, 2º ano, etc.)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLoginAt: timestamp("last_login_at"),
 });
@@ -246,6 +247,46 @@ export const savedItems = pgTable("saved_items", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Study Plans table
+export const studyPlans = pgTable("study_plans", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  schoolYear: text("school_year").notNull(),
+  availableHoursPerDay: integer("available_hours_per_day").notNull(),
+  studyStartTime: text("study_start_time").notNull(), // formato HH:MM
+  studyEndTime: text("study_end_time").notNull(), // formato HH:MM
+  studyDays: text("study_days").array().notNull(), // ['monday', 'tuesday', etc.]
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Study Schedule table (calendar events)
+export const studySchedule = pgTable("study_schedule", {
+  id: serial("id").primaryKey(),
+  studyPlanId: integer("study_plan_id").references(() => studyPlans.id).notNull(),
+  subject: text("subject").notNull(),
+  date: timestamp("date").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  description: text("description"),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Exams table
+export const exams = pgTable("exams", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  subject: text("subject").notNull(),
+  title: text("title").notNull(),
+  examDate: timestamp("exam_date").notNull(),
+  description: text("description"),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -351,6 +392,22 @@ export const insertSavedItemSchema = createInsertSchema(savedItems).omit({
   createdAt: true,
 });
 
+export const insertStudyPlanSchema = createInsertSchema(studyPlans).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertStudyScheduleSchema = createInsertSchema(studySchedule).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertExamSchema = createInsertSchema(exams).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -411,3 +468,12 @@ export type NewsletterIssue = typeof newsletterIssues.$inferSelect;
 
 export type InsertSavedItem = z.infer<typeof insertSavedItemSchema>;
 export type SavedItem = typeof savedItems.$inferSelect;
+
+export type InsertStudyPlan = z.infer<typeof insertStudyPlanSchema>;
+export type StudyPlan = typeof studyPlans.$inferSelect;
+
+export type InsertStudySchedule = z.infer<typeof insertStudyScheduleSchema>;
+export type StudySchedule = typeof studySchedule.$inferSelect;
+
+export type InsertExam = z.infer<typeof insertExamSchema>;
+export type Exam = typeof exams.$inferSelect;
