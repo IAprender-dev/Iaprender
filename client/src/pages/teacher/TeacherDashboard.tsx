@@ -252,9 +252,8 @@ export default function TeacherDashboard() {
                 <div className="flex items-center gap-3">
                   <Button 
                     onClick={logout}
-                    variant="outline"
                     size="sm"
-                    className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
+                    className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <LogOut className="h-4 w-4" />
                     Sair
