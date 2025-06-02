@@ -182,12 +182,14 @@ export default function PlanejamentoAula() {
                 </Button>
               </Link>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl">
-                  <Calendar className="h-6 w-6 text-blue-600" />
-                </div>
+                <img 
+                  src="/attached_assets/Design sem nome (5).png" 
+                  alt="AIverse Logo" 
+                  className="w-12 h-12 object-contain"
+                />
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-900">Planejamento de Aula</h1>
-                  <p className="text-slate-600">Geração inteligente com IA baseada nas diretrizes do MEC e BNCC</p>
+                  <h1 className="text-2xl font-bold text-slate-900">AIverse - Seu Universo de IA</h1>
+                  <p className="text-slate-600">Planejamento de Aula - Geração inteligente com IA baseada nas diretrizes do MEC e BNCC</p>
                 </div>
               </div>
             </div>
