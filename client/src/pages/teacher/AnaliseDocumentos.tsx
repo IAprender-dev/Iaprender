@@ -167,25 +167,26 @@ ${analysisResult.assessment}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-rose-400 transition-colors">
+                <div 
+                  className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-rose-400 transition-colors cursor-pointer"
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                >
                   <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <div className="space-y-2">
                     <p className="text-slate-700 font-medium">Arraste e solte seu arquivo aqui</p>
                     <p className="text-sm text-slate-500">ou clique para selecionar</p>
                     <p className="text-xs text-slate-400">Suporte para PDF, DOC e DOCX (máx. 10MB)</p>
                   </div>
-                  <Input
+                  <input
                     type="file"
                     accept=".pdf,.doc,.docx"
                     onChange={handleFileUpload}
                     className="hidden"
                     id="file-upload"
                   />
-                  <Label htmlFor="file-upload" className="cursor-pointer">
-                    <Button className="mt-4 bg-rose-600 hover:bg-rose-700">
-                      Selecionar Arquivo
-                    </Button>
-                  </Label>
+                  <Button className="mt-4 bg-rose-600 hover:bg-rose-700 pointer-events-none">
+                    Selecionar Arquivo
+                  </Button>
                 </div>
 
                 {file && (
