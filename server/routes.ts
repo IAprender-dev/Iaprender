@@ -1137,6 +1137,159 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Análise de tema baseada nas diretrizes do MEC e BNCC
+  app.post("/api/analyze-tema", authenticate, async (req, res) => {
+    try {
+      const { tema } = req.body;
+      
+      if (!tema || typeof tema !== 'string') {
+        return res.status(400).json({ message: "Tema é obrigatório" });
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-7-sonnet-20250219', // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+          max_tokens: 1024,
+          messages: [{
+            role: 'user',
+            content: `Analise o seguinte tema de aula baseado nas diretrizes do MEC e BNCC:
+
+"${tema}"
+
+Identifique:
+1. A disciplina mais adequada
+2. O ano/série escolar recomendado
+3. Se está alinhado com as diretrizes da BNCC
+4. Observações caso esteja fora das diretrizes
+
+Responda em JSON com esta estrutura:
+{
+  "disciplina": "nome da disciplina",
+  "anoSerie": "ano ou série recomendado",
+  "conformeRegulasBNCC": true/false,
+  "observacoes": "explicação detalhada se não conforme"
+}`
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro na API da Anthropic');
+      }
+
+      const data = await response.json();
+      const analysisText = data.content[0].text;
+      
+      try {
+        const analysis = JSON.parse(analysisText);
+        return res.status(200).json(analysis);
+      } catch (parseError) {
+        // Fallback se não conseguir fazer parse do JSON
+        return res.status(200).json({
+          disciplina: "Multidisciplinar",
+          anoSerie: "A definir",
+          conformeRegulasBNCC: false,
+          observacoes: "Não foi possível analisar automaticamente. Verifique se o tema está alinhado com as diretrizes da BNCC."
+        });
+      }
+    } catch (error) {
+      console.error("Error analyzing tema:", error);
+      return res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // Geração de plano de aula com IA
+  app.post("/api/generate-lesson-plan", authenticate, async (req, res) => {
+    try {
+      const { tema, duracao, analysis } = req.body;
+      
+      if (!tema || !duracao || !analysis) {
+        return res.status(400).json({ message: "Dados incompletos" });
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-7-sonnet-20250219', // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+          max_tokens: 2048,
+          messages: [{
+            role: 'user',
+            content: `Crie um plano de aula profissional e detalhado baseado nas diretrizes do MEC e BNCC:
+
+TEMA: ${tema}
+DISCIPLINA: ${analysis.disciplina}
+ANO/SÉRIE: ${analysis.anoSerie}
+DURAÇÃO: ${duracao} minutos
+CONFORME BNCC: ${analysis.conformeRegulasBNCC ? 'Sim' : 'Não'}
+
+${!analysis.conformeRegulasBNCC ? `OBSERVAÇÕES IMPORTANTES: ${analysis.observacoes}` : ''}
+
+Gere um plano completo seguindo a estrutura pedagógica brasileira. Responda em JSON:
+
+{
+  "titulo": "título completo da aula",
+  "disciplina": "${analysis.disciplina}",
+  "serie": "${analysis.anoSerie}",
+  "duracao": "${duracao} minutos",
+  "objetivo": "objetivo geral da aula",
+  "conteudoProgramatico": ["item 1", "item 2", "item 3", "item 4"],
+  "metodologia": "descrição detalhada da metodologia",
+  "recursos": ["recurso 1", "recurso 2", "recurso 3"],
+  "avaliacao": "método de avaliação proposto",
+  "observacoes": "dicas pedagógicas importantes"${!analysis.conformeRegulasBNCC ? ',\n  "observacoesBNCC": "' + analysis.observacoes + '"' : ''}
+}`
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro na API da Anthropic');
+      }
+
+      const data = await response.json();
+      const planText = data.content[0].text;
+      
+      try {
+        const plan = JSON.parse(planText);
+        return res.status(200).json(plan);
+      } catch (parseError) {
+        // Fallback caso não consiga fazer parse
+        return res.status(200).json({
+          titulo: `${tema} - ${analysis.anoSerie}`,
+          disciplina: analysis.disciplina,
+          serie: analysis.anoSerie,
+          duracao: `${duracao} minutos`,
+          objetivo: `Desenvolver o entendimento sobre ${tema}, promovendo o aprendizado significativo conforme as diretrizes da BNCC.`,
+          conteudoProgramatico: [
+            `Introdução ao conceito de ${tema}`,
+            `Desenvolvimento teórico e contextualização`,
+            `Atividades práticas e exercícios`,
+            `Avaliação e síntese do conhecimento`
+          ],
+          metodologia: "Aula expositiva dialogada com recursos audiovisuais, seguida de atividades práticas para fixação do conteúdo.",
+          recursos: ["Quadro branco", "Projetor multimídia", "Material impresso", "Computador/tablet"],
+          avaliacao: "Participação em discussões, resolução de exercícios práticos e questionário avaliativo.",
+          observacoes: "Adaptar o ritmo conforme a turma. Oferecer atendimento individualizado quando necessário.",
+          ...((!analysis.conformeRegulasBNCC) && { observacoesBNCC: analysis.observacoes })
+        });
+      }
+    } catch (error) {
+      console.error("Error generating lesson plan:", error);
+      return res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
   // AI ROUTES
   // Use the AI router with /api/ai prefix
   app.use("/api/ai", aiRouter);
