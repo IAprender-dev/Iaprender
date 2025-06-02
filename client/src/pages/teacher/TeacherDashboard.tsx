@@ -241,7 +241,7 @@ export default function TeacherDashboard() {
                     className="lg:hidden"
                     onClick={() => setIsSidebarOpen(true)}
                   >
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-5 w-5 text-black" />
                   </Button>
                   <div>
                     <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
