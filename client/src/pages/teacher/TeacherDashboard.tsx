@@ -150,6 +150,13 @@ export default function TeacherDashboard() {
       icon: <GraduationCap className="h-6 w-6" />,
       color: "from-emerald-500 to-emerald-600",
       href: "/professor/ferramentas/resumos-bncc"
+    },
+    {
+      title: "Análise de Documentos",
+      description: "Transforme qualquer documento em material didático estruturado",
+      icon: <FileText className="h-6 w-6" />,
+      color: "from-rose-500 to-rose-600",
+      href: "/professor/ferramentas/analise-documentos"
     }
   ];
 
@@ -261,15 +268,7 @@ export default function TeacherDashboard() {
             {/* AI Tools Grid */}
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
               <CardHeader className="pb-6">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-2xl font-bold text-slate-900">Ferramentas de IA</CardTitle>
-                  <Link href="/professor/ferramentas">
-                    <Button variant="outline" size="sm" className="gap-2">
-                      Ver todas
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
+                <CardTitle className="text-2xl font-bold text-slate-900">Ferramentas de IA</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
