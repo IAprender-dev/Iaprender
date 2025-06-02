@@ -277,8 +277,10 @@ export default function TeacherDashboard() {
                     <Link key={index} href={tool.href}>
                       <div className={`p-6 rounded-2xl border-2 border-transparent hover:border-purple-200/50 bg-gradient-to-br from-slate-50/50 to-white hover:shadow-xl transition-all duration-300 group cursor-pointer ${tool.featured ? 'ring-2 ring-purple-200/50 bg-gradient-to-br from-purple-50/50 to-blue-50/50' : ''}`}>
                         <div className="flex items-start justify-between mb-4">
-                          <div className={`p-3 rounded-xl bg-gradient-to-br ${tool.color} opacity-15 group-hover:opacity-25 transition-opacity`}>
-                            {tool.icon}
+                          <div className={`p-3 rounded-xl bg-gradient-to-br ${tool.color}`}>
+                            <div className="text-white">
+                              {tool.icon}
+                            </div>
                           </div>
                           {tool.badge && (
                             <Badge 
