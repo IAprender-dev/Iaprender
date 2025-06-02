@@ -101,74 +101,7 @@ export default function TeacherDashboard() {
     { name: "Ferramentas IA", href: "/professor/ferramentas", icon: Wand2 },
   ];
 
-  // AI Stats with real data
-  const aiStats = dashboardMetrics ? [
-    {
-      title: "Tokens Usados",
-      value: dashboardMetrics.tokensUsed.toLocaleString(),
-      description: "Este mês",
-      icon: <Bot className="text-blue-600 h-6 w-6" />,
-      color: "from-blue-500 to-blue-600",
-      trend: ""
-    },
-    {
-      title: "Atividades Geradas",
-      value: dashboardMetrics.activitiesGenerated.toString(),
-      description: "Com IA este mês",
-      icon: <FilePlus className="text-purple-600 h-6 w-6" />,
-      color: "from-purple-500 to-purple-600",
-      trend: ""
-    },
-    {
-      title: "Imagens Criadas",
-      value: dashboardMetrics.imagesCreated.toString(),
-      description: "Para materiais",
-      icon: <ImageIcon className="text-green-600 h-6 w-6" />,
-      color: "from-green-500 to-green-600",
-      trend: ""
-    },
-    {
-      title: "Tempo Economizado",
-      value: `${dashboardMetrics.timesSaved}h`,
-      description: "Este mês",
-      icon: <Clock className="text-amber-600 h-6 w-6" />,
-      color: "from-amber-500 to-amber-600",
-      trend: ""
-    }
-  ] : [
-    {
-      title: "Tokens Usados",
-      value: isLoadingMetrics ? "..." : "0",
-      description: "Este mês",
-      icon: <Bot className="text-blue-600 h-6 w-6" />,
-      color: "from-blue-500 to-blue-600",
-      trend: ""
-    },
-    {
-      title: "Atividades Geradas",
-      value: isLoadingMetrics ? "..." : "0",
-      description: "Com IA este mês",
-      icon: <FilePlus className="text-purple-600 h-6 w-6" />,
-      color: "from-purple-500 to-purple-600",
-      trend: ""
-    },
-    {
-      title: "Imagens Criadas",
-      value: isLoadingMetrics ? "..." : "0",
-      description: "Para materiais",
-      icon: <ImageIcon className="text-green-600 h-6 w-6" />,
-      color: "from-green-500 to-green-600",
-      trend: ""
-    },
-    {
-      title: "Tempo Economizado",
-      value: isLoadingMetrics ? "..." : "0h",
-      description: "Este mês",
-      icon: <Clock className="text-amber-600 h-6 w-6" />,
-      color: "from-amber-500 to-amber-600",
-      trend: ""
-    }
-  ];
+  // Removed AI Stats section as requested
 
   // AI Tools
   const aiTools = [
@@ -323,25 +256,7 @@ export default function TeacherDashboard() {
 
           {/* Main Dashboard Content */}
           <main className="p-6 space-y-8">
-            {/* AI Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {aiStats.map((stat, index) => (
-                <Card key={index} className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl hover:shadow-xl transition-all duration-300 group">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} opacity-15 group-hover:opacity-25 transition-opacity`}>
-                        {stat.icon}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-slate-600">{stat.title}</p>
-                      <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
-                      <p className="text-xs text-slate-500">{stat.description}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+
 
             {/* AI Tools Grid */}
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
