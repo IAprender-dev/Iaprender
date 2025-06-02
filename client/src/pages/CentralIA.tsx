@@ -322,7 +322,7 @@ export default function CentralIA() {
               
               {/* Botão Voltar */}
               <Link href="/professor/dashboard">
-                <Button variant="outline" size="sm" className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-50">
+                <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
