@@ -57,38 +57,69 @@ export default function GeradorAtividades() {
   const processarConteudoAtividade = (conteudo: string): string => {
     if (!conteudo) return '';
     
-    // Remove qualquer texto explicativo antes do HTML
     let htmlLimpo = conteudo;
     
-    // Se começar com texto explicativo, extrair apenas o HTML
+    // Remove texto explicativo antes do HTML
     const inicioDiv = htmlLimpo.indexOf('<div');
     if (inicioDiv > 0) {
       htmlLimpo = htmlLimpo.substring(inicioDiv);
     }
     
-    // Remove texto explicativo após o HTML se existir
+    // Remove texto explicativo após o HTML
     const fimDiv = htmlLimpo.lastIndexOf('</div>') + 6;
     if (fimDiv < htmlLimpo.length) {
       htmlLimpo = htmlLimpo.substring(0, fimDiv);
     }
     
-    // Se não contém HTML estruturado, criar um layout básico
+    // Limpa caracteres de formatação markdown e especiais
+    htmlLimpo = htmlLimpo
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // **texto** para <strong>
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>') // *texto* para <em>
+      .replace(/\\n/g, '<br>') // \n para quebra de linha
+      .replace(/\\\\/g, '') // Remove barras duplas
+      .replace(/\\\*/g, '*') // Remove escape de asterisco
+      .replace(/\\"/g, '"') // Remove escape de aspas
+      .replace(/\\_/g, '_') // Remove escape de underscore
+      .replace(/###\s*/g, '') // Remove ### markdown
+      .replace(/##\s*/g, '') // Remove ## markdown
+      .replace(/#\s*/g, '') // Remove # markdown
+      .replace(/\*\s*\*/g, '') // Remove ** vazios
+      .replace(/\s\s+/g, ' ') // Remove espaços duplos
+      .trim();
+    
+    // Se não contém HTML estruturado, criar layout básico
     if (!htmlLimpo.includes('<div')) {
-      const linhas = conteudo.split('\n').filter(linha => linha.trim());
       const dataAtual = new Date().toLocaleDateString('pt-BR');
+      
+      // Limpa o texto de caracteres especiais
+      const textoLimpo = conteudo
+        .replace(/\*\*/g, '')
+        .replace(/\*/g, '')
+        .replace(/\\/g, '')
+        .replace(/#{1,6}\s*/g, '')
+        .replace(/^\s*[-+*]\s+/gm, '')
+        .trim();
       
       return `
         <div style="max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Times New Roman', serif; line-height: 1.6; background: white; color: #000;">
-          <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px;">
-            <h1 style="font-size: 24px; font-weight: bold; color: #000; margin: 0 0 10px 0;">Atividade Educacional</h1>
-            <div style="font-size: 14px; color: #666;">${atividadeGerada?.materia || 'Disciplina'} | ${atividadeGerada?.serie || 'Série'} | ${dataAtual}</div>
+          <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 20px;">
+            <h1 style="font-size: 22px; font-weight: bold; color: #000; margin: 0 0 10px 0;">ATIVIDADE EDUCACIONAL</h1>
+            <div style="font-size: 14px; color: #333;">
+              <strong>Disciplina:</strong> ${atividadeGerada?.materia || 'Multidisciplinar'} | 
+              <strong>Série:</strong> ${atividadeGerada?.serie || 'Ensino Fundamental'} | 
+              <strong>Data:</strong> ___/___/______
+            </div>
+            <div style="font-size: 14px; color: #333; margin-top: 5px;">
+              <strong>Nome:</strong> ______________________________________________ 
+              <strong>Turma:</strong> __________
+            </div>
           </div>
           <div style="white-space: pre-line; font-size: 16px; line-height: 1.8;">
-            ${linhas.join('\n')}
+            ${textoLimpo}
           </div>
-          <div style="margin-top: 40px; text-align: center; border-top: 1px solid #ccc; padding-top: 20px;">
+          <div style="margin-top: 40px; text-align: center; border-top: 1px solid #ccc; padding-top: 15px;">
             <div style="font-size: 12px; color: #666;">
-              Atividade gerada por <strong>AIverse - Seu Universo de IA</strong> | ${dataAtual}
+              Atividade gerada por <strong>AIverse - Seu Universo de IA</strong>
             </div>
           </div>
         </div>

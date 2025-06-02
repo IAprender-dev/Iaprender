@@ -307,9 +307,13 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       - As alternativas de múltipla escolha devem ser plausíveis, não óbvias
       - Inclua questões que testem diferentes níveis de conhecimento (básico, intermediário, avançado)
       
-      IMPORTANTE: Retorne APENAS o HTML da atividade formatada, sem textos explicativos.
+      IMPORTANTE: 
+      - Retorne APENAS o HTML da atividade formatada, sem textos explicativos antes ou depois
+      - NÃO use asteriscos (*), barras invertidas (\) ou formatação markdown
+      - Use apenas HTML puro e limpo
+      - Deixe uma linha vazia entre cada questão
       
-      Formate a atividade seguindo EXATAMENTE este modelo para questionário educacional:
+      Formate a atividade seguindo EXATAMENTE este modelo:
 
       <div style="max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Times New Roman', serif; font-size: 16px; line-height: 1.6; background: white; color: #000000;">
         
@@ -334,22 +338,22 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
         <div style="margin-bottom: 30px;">
           <!-- REPITA ESTE FORMATO PARA CADA QUESTÃO ${quantidadeQuestoes} VEZES -->
           
-          <div style="margin-bottom: 25px; page-break-inside: avoid;">
-            <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: bold; color: #000000;">
+          <div style="margin-bottom: 35px; page-break-inside: avoid;">
+            <p style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold; color: #000000;">
               1. [ENUNCIADO DA QUESTÃO]
             </p>
             
             <div style="margin-left: 20px; font-size: 16px;">
-              <p style="margin: 8px 0; color: #000000;">
+              <p style="margin: 10px 0; color: #000000;">
                 a) [ALTERNATIVA A]
               </p>
-              <p style="margin: 8px 0; color: #000000;">
+              <p style="margin: 10px 0; color: #000000;">
                 b) [ALTERNATIVA B]
               </p>
-              <p style="margin: 8px 0; color: #000000;">
+              <p style="margin: 10px 0; color: #000000;">
                 c) [ALTERNATIVA C]
               </p>
-              <p style="margin: 8px 0; color: #000000;">
+              <p style="margin: 10px 0; color: #000000;">
                 d) [ALTERNATIVA D]
               </p>
             </div>
