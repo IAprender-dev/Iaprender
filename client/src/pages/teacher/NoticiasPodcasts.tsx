@@ -333,15 +333,14 @@ export default function NoticiasPodcasts() {
               Notícias IA
             </Button>
             <Button
-              variant={activeTab === 'podcasts' ? 'default' : 'outline'}
               onClick={() => setActiveTab('podcasts')}
               className={`gap-3 h-12 px-6 rounded-xl font-medium ${
                 activeTab === 'podcasts' 
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg' 
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg border-0' 
+                  : 'border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white'
               }`}
             >
-              <Headphones className="h-5 w-5" />
+              <Headphones className={`h-5 w-5 ${activeTab === 'podcasts' ? 'text-white' : 'text-gray-700'}`} />
               Podcasts
             </Button>
           </div>
