@@ -307,18 +307,18 @@ export default function TeacherDashboard() {
                 </Card>
               </Link>
 
-              <Link href="/professor/ferramentas/analise-documentos">
-                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100">
+              <Link href="/professor/noticias-podcasts">
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="p-3 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl">
-                        <FileText className="h-6 w-6 text-white" />
+                      <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">
+                        <PlayCircle className="h-6 w-6 text-white" />
                       </div>
-                      <Badge className="bg-rose-100 text-rose-700 border-rose-200">Popular</Badge>
+                      <Badge className="bg-orange-100 text-orange-700 border-orange-200">Novo</Badge>
                     </div>
-                    <h3 className="font-bold text-lg text-slate-900 mb-2">Análise de Documentos</h3>
-                    <p className="text-sm text-slate-600">Transforme PDFs em material didático</p>
-                    <div className="mt-4 flex items-center text-rose-600 group-hover:text-rose-700">
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Notícias do Universo IA</h3>
+                    <p className="text-sm text-slate-600">Últimas novidades em IA e educação</p>
+                    <div className="mt-4 flex items-center text-orange-600 group-hover:text-orange-700">
                       <span className="text-sm font-medium">Acessar</span>
                       <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                     </div>
@@ -416,18 +416,18 @@ export default function TeacherDashboard() {
                 </Card>
               </Link>
 
-              <Link href="/professor/noticias-podcasts">
-                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100">
+              <Link href="/professor/ferramentas/analise-documentos">
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">
-                        <PlayCircle className="h-6 w-6 text-white" />
+                      <div className="p-3 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl">
+                        <FileText className="h-6 w-6 text-white" />
                       </div>
-                      <Badge className="bg-orange-100 text-orange-700 border-orange-200">Novo</Badge>
+                      <Badge className="bg-rose-100 text-rose-700 border-rose-200">Popular</Badge>
                     </div>
-                    <h3 className="font-bold text-lg text-slate-900 mb-2">Notícias do Universo IA</h3>
-                    <p className="text-sm text-slate-600">Últimas novidades em IA e educação</p>
-                    <div className="mt-4 flex items-center text-orange-600 group-hover:text-orange-700">
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Análise de Documentos</h3>
+                    <p className="text-sm text-slate-600">Transforme PDFs em material didático</p>
+                    <div className="mt-4 flex items-center text-rose-600 group-hover:text-rose-700">
                       <span className="text-sm font-medium">Acessar</span>
                       <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                     </div>
