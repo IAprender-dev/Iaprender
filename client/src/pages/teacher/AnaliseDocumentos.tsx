@@ -177,11 +177,11 @@ ${analysisResult.assessment}
                   <div className="space-y-2">
                     <p className="text-slate-700 font-medium">Arraste e solte seu arquivo aqui</p>
                     <p className="text-sm text-slate-500">ou clique para selecionar</p>
-                    <p className="text-xs text-slate-400">Suporte para PDF, DOC e DOCX (máx. 10MB)</p>
+                    <p className="text-xs text-slate-400">Suporte para DOC e DOCX (máx. 10MB)</p>
                   </div>
                   <input
                     type="file"
-                    accept=".pdf,.doc,.docx"
+                    accept=".doc,.docx"
                     onChange={handleFileUpload}
                     className="hidden"
                     id="file-upload"
