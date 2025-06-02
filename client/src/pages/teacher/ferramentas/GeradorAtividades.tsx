@@ -357,12 +357,10 @@ export default function GeradorAtividades() {
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="exercicios">Lista de Exercícios</SelectItem>
-                      <SelectItem value="prova">Prova/Avaliação</SelectItem>
-                      <SelectItem value="quiz">Quiz Interativo</SelectItem>
-                      <SelectItem value="trabalho">Trabalho de Pesquisa</SelectItem>
-                      <SelectItem value="pratica">Atividade Prática</SelectItem>
-                      <SelectItem value="dissertativa">Questões Dissertativas</SelectItem>
+                      <SelectItem value="lista-multipla-escolha">Lista de exercícios múltipla escolha</SelectItem>
+                      <SelectItem value="lista-dissertativa">Lista de exercícios dissertativa</SelectItem>
+                      <SelectItem value="avaliacao-multipla-escolha">Avaliação múltipla escolha</SelectItem>
+                      <SelectItem value="avaliacao-dissertativa">Avaliação dissertativa</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

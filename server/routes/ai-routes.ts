@@ -269,6 +269,10 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
     const userId = req.session.user?.id || 1; // Valor temporário
     const contractId = req.session.user?.contractId || 1; // Valor temporário
 
+    // Determina se é questão dissertativa ou múltipla escolha
+    const isMultiplaEscolha = tipoAtividade.includes('multipla-escolha');
+    const isAvaliacao = tipoAtividade.includes('avaliacao');
+    
     // Constrói o prompt para geração da atividade com detecção automática
     const promptAtividade = autoDetectSubject ? `
       Você é um educador especialista que cria atividades educacionais de alta qualidade seguindo as diretrizes da BNCC.
@@ -285,6 +289,14 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       - Nível de dificuldade: ${nivelDificuldade}
       - Incluir gabarito: ${incluirGabarito ? 'Sim' : 'Não'}
       
+      ${isMultiplaEscolha ? 
+        'FORMATO: Questões de múltipla escolha com 4 alternativas (a, b, c, d) cada uma.' : 
+        'FORMATO: Questões dissertativas que requerem respostas desenvolvidas pelos alunos.'}
+      
+      ${isAvaliacao ? 
+        'CONTEXTO: Esta é uma AVALIAÇÃO formal, portanto as questões devem ser mais rigorosas e abrangentes.' : 
+        'CONTEXTO: Esta é uma LISTA DE EXERCÍCIOS para prática e fixação do conteúdo.'}
+      
       RETORNE também no final as informações identificadas:
       - Matéria detectada
       - Série detectada
@@ -297,6 +309,14 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       - Quantidade de questões: ${quantidadeQuestoes} (IMPORTANTE: gere EXATAMENTE este número de questões)
       - Nível de dificuldade: ${nivelDificuldade}
       - Incluir gabarito: ${incluirGabarito ? 'Sim' : 'Não'}
+      
+      ${isMultiplaEscolha ? 
+        'FORMATO: Questões de múltipla escolha com 4 alternativas (a, b, c, d) cada uma.' : 
+        'FORMATO: Questões dissertativas que requerem respostas desenvolvidas pelos alunos.'}
+      
+      ${isAvaliacao ? 
+        'CONTEXTO: Esta é uma AVALIAÇÃO formal, portanto as questões devem ser mais rigorosas e abrangentes.' : 
+        'CONTEXTO: Esta é uma LISTA DE EXERCÍCIOS para prática e fixação do conteúdo.'}
       
       DIRETRIZES IMPORTANTES:
       - Crie questões desafiadoras e criativas, não apenas memorização de fatos
@@ -336,8 +356,8 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
         
         <!-- Questões -->
         <div style="margin-bottom: 30px;">
-          <!-- REPITA ESTE FORMATO PARA CADA QUESTÃO ${quantidadeQuestoes} VEZES -->
-          
+          ${isMultiplaEscolha ? `
+          <!-- FORMATO MÚLTIPLA ESCOLHA - REPITA ${quantidadeQuestoes} VEZES -->
           <div style="margin-bottom: 35px; page-break-inside: avoid;">
             <p style="margin: 0 0 15px 0; font-size: 16px; font-weight: bold; color: #000000;">
               1. [ENUNCIADO DA QUESTÃO]
@@ -358,6 +378,22 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
               </p>
             </div>
           </div>
+          ` : `
+          <!-- FORMATO DISSERTATIVO - REPITA ${quantidadeQuestoes} VEZES -->
+          <div style="margin-bottom: 45px; page-break-inside: avoid;">
+            <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: bold; color: #000000;">
+              1. [ENUNCIADO DA QUESTÃO DISSERTATIVA]
+            </p>
+            
+            <div style="margin-left: 20px;">
+              <div style="border: 1px solid #ccc; min-height: 80px; padding: 10px; background-color: #fafafa;">
+                <p style="margin: 0; font-size: 12px; color: #999; font-style: italic;">
+                  Espaço para resposta
+                </p>
+              </div>
+            </div>
+          </div>
+          `}
           
           <!-- CONTINUAR PARA TODAS AS QUESTÕES -->
         </div>
