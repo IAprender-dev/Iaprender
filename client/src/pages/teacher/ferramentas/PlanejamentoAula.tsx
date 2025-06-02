@@ -392,6 +392,29 @@ export default function PlanejamentoAula() {
                         <p className="text-slate-700 text-sm leading-relaxed">{planoGerado.objetivo}</p>
                       </div>
 
+                      {/* Cronograma de Atividades */}
+                      {planoGerado.cronograma && (
+                        <div>
+                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
+                            <Clock className="h-4 w-4 text-blue-600" />
+                            Cronograma da Aula
+                          </h3>
+                          <div className="space-y-3">
+                            {planoGerado.cronograma.map((etapa: any, index: number) => (
+                              <div key={index} className="bg-slate-50 p-3 rounded-lg border-l-4 border-blue-500">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-medium text-slate-900 text-sm">{etapa.atividade}</span>
+                                  <Badge variant="outline" className="text-xs font-medium">
+                                    {etapa.tempo}
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-slate-600">{etapa.descricao}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Conteúdo Programático */}
                       <div>
                         <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">

@@ -1248,7 +1248,7 @@ CONFORME BNCC: ${analysis.conformeRegulasBNCC ? 'Sim' : 'Não'}
 
 ${!analysis.conformeRegulasBNCC ? `OBSERVAÇÕES IMPORTANTES: ${analysis.observacoes}` : ''}
 
-Gere um plano completo seguindo a estrutura pedagógica brasileira. Responda em JSON:
+Gere um plano completo seguindo a estrutura pedagógica brasileira com cronograma detalhado. Responda em JSON:
 
 {
   "titulo": "título completo da aula",
@@ -1257,6 +1257,12 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira. Responda em 
   "duracao": "${duracao} minutos",
   "objetivo": "objetivo geral da aula",
   "conteudoProgramatico": ["item 1", "item 2", "item 3", "item 4"],
+  "cronograma": [
+    {"atividade": "Abertura e motivação", "tempo": "X minutos", "descricao": "breve descrição"},
+    {"atividade": "Desenvolvimento do conteúdo", "tempo": "X minutos", "descricao": "breve descrição"},
+    {"atividade": "Atividade prática", "tempo": "X minutos", "descricao": "breve descrição"},
+    {"atividade": "Fechamento e avaliação", "tempo": "X minutos", "descricao": "breve descrição"}
+  ],
   "metodologia": "descrição detalhada da metodologia",
   "recursos": ["recurso 1", "recurso 2", "recurso 3"],
   "avaliacao": "método de avaliação proposto",
@@ -1278,12 +1284,40 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira. Responda em 
         return res.status(200).json(plan);
       } catch (parseError) {
         // Fallback caso não consiga fazer parse
+        const tempoBase = parseInt(duracao);
+        const tempoAbertura = Math.ceil(tempoBase * 0.1);
+        const tempoDesenvolvimento = Math.ceil(tempoBase * 0.5);
+        const tempoPratica = Math.ceil(tempoBase * 0.3);
+        const tempoFechamento = tempoBase - (tempoAbertura + tempoDesenvolvimento + tempoPratica);
+
         return res.status(200).json({
           titulo: `${tema} - ${analysis.anoSerie}`,
           disciplina: analysis.disciplina,
           serie: analysis.anoSerie,
           duracao: `${duracao} minutos`,
           objetivo: `Desenvolver o entendimento sobre ${tema}, promovendo o aprendizado significativo conforme as diretrizes da BNCC.`,
+          cronograma: [
+            {
+              atividade: "Abertura e motivação",
+              tempo: `${tempoAbertura} minutos`,
+              descricao: "Apresentação do tema, ativação de conhecimentos prévios e motivação dos alunos"
+            },
+            {
+              atividade: "Desenvolvimento do conteúdo",
+              tempo: `${tempoDesenvolvimento} minutos`,
+              descricao: "Exposição dialogada do conteúdo principal com exemplos e explicações"
+            },
+            {
+              atividade: "Atividade prática",
+              tempo: `${tempoPratica} minutos`,
+              descricao: "Exercícios práticos para fixação e aplicação do conhecimento"
+            },
+            {
+              atividade: "Fechamento e avaliação",
+              tempo: `${tempoFechamento} minutos`,
+              descricao: "Síntese do aprendizado e avaliação da compreensão dos alunos"
+            }
+          ],
           conteudoProgramatico: [
             `Introdução ao conceito de ${tema}`,
             `Desenvolvimento teórico e contextualização`,
