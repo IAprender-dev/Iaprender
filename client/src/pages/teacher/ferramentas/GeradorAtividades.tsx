@@ -45,7 +45,7 @@ export default function GeradorAtividades() {
   // Estados principais
   const [tema, setTema] = useState("");
   const [tipoAtividade, setTipoAtividade] = useState("");
-  const [quantidadeQuestoes, setQuantidadeQuestoes] = useState([10]);
+  const [quantidadeQuestoes, setQuantidadeQuestoes] = useState([5]);
   const [nivelDificuldade, setNivelDificuldade] = useState("");
   const [incluirGabarito, setIncluirGabarito] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -376,12 +376,12 @@ export default function GeradorAtividades() {
                     value={quantidadeQuestoes}
                     onValueChange={setQuantidadeQuestoes}
                     max={20}
-                    min={5}
-                    step={5}
+                    min={1}
+                    step={1}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-slate-500">
-                    <span>5 questões</span>
+                    <span>1 questão</span>
                     <span>20 questões</span>
                   </div>
                 </div>
