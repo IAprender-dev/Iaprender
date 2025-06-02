@@ -16,12 +16,16 @@ import { User, Bot,
   DownloadCloud,
   Bookmark,
   Home,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  Trash2,
+  Calendar,
+  Copy
 } from "lucide-react";
-import iaverseLogo from "@/assets/IAverse.png";
+import aiverseLogo from "@assets/Design sem nome (5).png";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "wouter";
@@ -578,7 +582,7 @@ export default function CentralIA() {
   return (
     <>
       <Helmet>
-        <title>Central de IA | IAverse</title>
+        <title>Central de IA | Aiverse</title>
       </Helmet>
       
       <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50/30">
@@ -588,8 +592,8 @@ export default function CentralIA() {
             {/* Header com Logo IAverse */}
             <div className="h-20 flex items-center justify-between px-6 border-b border-slate-200 bg-gradient-to-r from-primary/5 to-blue-50">
               <Link href="/" className="flex items-center space-x-3">
-                <img src={iaverseLogo} alt="IAverse" className="w-8 h-8" />
-                <span className="text-xl font-bold text-gray-900">IAverse</span>
+                <img src={aiverseLogo} alt="Aiverse" className="w-12 h-12 object-contain" />
+                <span className="text-xl font-bold text-gray-900">Aiverse</span>
               </Link>
               <div className="text-sm font-medium text-slate-600 bg-blue-100 px-3 py-1 rounded-full">
                 Central de IA
