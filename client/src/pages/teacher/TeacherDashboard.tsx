@@ -306,80 +306,29 @@ export default function TeacherDashboard() {
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Recent AI Usage */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl font-bold text-slate-900">Atividade Recente de IA</CardTitle>
-                    <Link href="/central-ia">
-                      <Button variant="outline" size="sm" className="gap-2">
-                        Ver histórico
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
+            {/* AI Tips */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl max-w-2xl mx-auto">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold text-slate-900">Dicas de IA</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Lightbulb className="h-5 w-5 text-blue-600" />
+                    <h4 className="font-semibold text-slate-900">Dica do Dia</h4>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {recentAIUsage.length > 0 ? recentAIUsage.map((usage: any) => (
-                    <div key={usage.id} className="p-4 rounded-xl border border-slate-200/50 hover:border-blue-200/50 hover:bg-blue-50/30 transition-all group">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${
-                            usage.type === 'chat' ? 'bg-blue-100' :
-                            usage.type === 'generation' ? 'bg-purple-100' : 'bg-green-100'
-                          }`}>
-                            {usage.type === 'chat' ? <Bot className="h-4 w-4 text-blue-600" /> :
-                             usage.type === 'generation' ? <FilePlus className="h-4 w-4 text-purple-600" /> :
-                             <ImageIcon className="h-4 w-4 text-green-600" />}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-slate-900">{usage.tool}</h4>
-                            <p className="text-sm text-slate-600">{usage.action}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-slate-500">{usage.time}</p>
-                          {usage.tokens > 0 && (
-                            <p className="text-xs text-slate-400">{usage.tokens} tokens</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className="text-center py-8">
-                      <Bot className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-                      <p className="text-slate-500">Nenhuma atividade recente</p>
-                      <p className="text-sm text-slate-400">Comece usando a Central de IAs</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* AI Tips */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-900">Dicas de IA</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200/50">
-                    <div className="flex items-center gap-3 mb-3">
-                      <Lightbulb className="h-5 w-5 text-blue-600" />
-                      <h4 className="font-semibold text-slate-900">Dica do Dia</h4>
-                    </div>
-                    <p className="text-sm text-slate-700 mb-3">
-                      Use a Central de IAs para comparar respostas de diferentes modelos (ChatGPT, Claude, Gemini) 
-                      e obter perspectivas variadas para seus materiais educacionais.
-                    </p>
-                    <Link href="/central-ia">
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                        Experimentar Agora
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <p className="text-sm text-slate-700 mb-3">
+                    Use a Central de IAs para comparar respostas de diferentes modelos (ChatGPT, Claude, Gemini) 
+                    e obter perspectivas variadas para seus materiais educacionais.
+                  </p>
+                  <Link href="/central-ia">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                      Experimentar Agora
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </main>
         </div>
 
