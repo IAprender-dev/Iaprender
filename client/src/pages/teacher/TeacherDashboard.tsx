@@ -415,6 +415,25 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
               </Link>
+
+              <Link href="/professor/noticias-podcasts">
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-orange-50 to-red-50 hover:from-orange-100 hover:to-red-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">
+                        <PlayCircle className="h-6 w-6 text-white" />
+                      </div>
+                      <Badge className="bg-orange-100 text-orange-700 border-orange-200">Novo</Badge>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Notícias do Universo IA</h3>
+                    <p className="text-sm text-slate-600">Últimas novidades em IA e educação</p>
+                    <div className="mt-4 flex items-center text-orange-600 group-hover:text-orange-700">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
 
             {/* Dicas de IA para Educadores */}
