@@ -630,7 +630,7 @@ export default function ResumosDidaticos() {
                       <div className="flex-1">
                         <p className="text-sm font-medium text-slate-800">{resumo.titulo}</p>
                         <p className="text-xs text-slate-500">
-                          {resumo.materia} • {resumo.serie}
+                          {resumo.materia}
                         </p>
                       </div>
                       <Button
@@ -666,10 +666,10 @@ export default function ResumosDidaticos() {
                           {resumoSelecionado.titulo}
                         </CardTitle>
                         <CardDescription className="text-slate-600">
-                          {resumoSelecionado.materia} • {resumoSelecionado.serie}
+                          {resumoSelecionado.materia}
                         </CardDescription>
-                        <Badge variant="outline" className="mt-1 text-xs">
-                          Alinhado com BNCC
+                        <Badge variant="outline" className="mt-1 text-xs text-black">
+                          Alinhado com a BNCC
                         </Badge>
                       </div>
                     </div>
