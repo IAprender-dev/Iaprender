@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
 import { 
@@ -37,6 +37,11 @@ export default function PlanejamentoAula() {
   const [duracao, setDuracao] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [planoGerado, setPlanoGerado] = useState<any>(null);
+
+  // Garantir que a página sempre inicie no topo
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
 
   // Sugestões de temas por disciplina
   const sugestoesTemas = {
