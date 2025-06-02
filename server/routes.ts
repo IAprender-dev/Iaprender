@@ -33,7 +33,7 @@ import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
 import aiRouter from "./routes/ai-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
 import mammoth from "mammoth";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.js";
+import pdfParse from "pdf-parse-new";
 
 // Define login schema
 const loginSchema = z.object({
@@ -1099,19 +1099,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       try {
         if (fileType === 'application/pdf') {
-          // Extract text from PDF using pdfjs-dist
-          const loadingTask = getDocument({ data: req.file.buffer });
-          const pdf = await loadingTask.promise;
-          let textContent = '';
-          
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            const pageText = content.items.map((item: any) => item.str).join(' ');
-            textContent += pageText + '\n';
-          }
-          
-          extractedText = textContent.trim();
+          // Extract text from PDF using pdf-parse-new
+          const pdfData = await pdfParse(req.file.buffer);
+          extractedText = pdfData.text;
         } else if (fileType === 'application/msword' || fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
           const result = await mammoth.extractRawText({buffer: req.file.buffer});
           extractedText = result.value;
