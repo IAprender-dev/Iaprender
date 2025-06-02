@@ -250,7 +250,7 @@ ${analysisResult.assessment}
                   Material Didático Gerado
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="max-h-[600px] overflow-y-auto">
                 {!analysisResult ? (
                   <div className="text-center py-12">
                     <FileText className="h-16 w-16 text-slate-300 mx-auto mb-4" />
@@ -258,65 +258,136 @@ ${analysisResult.assessment}
                     <p className="text-sm text-slate-400">Faça upload de um documento para começar</p>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    {/* Overview */}
-                    <div className="p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200">
-                      <h3 className="font-bold text-slate-900 text-lg mb-3">{analysisResult.title}</h3>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-rose-600" />
-                          <span className="text-slate-600">{analysisResult.targetAudience}</span>
+                  <div className="space-y-8">
+                    {/* Header Section */}
+                    <div className="bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 rounded-2xl p-6 border border-rose-100">
+                      <h2 className="text-2xl font-bold text-slate-900 mb-4 leading-tight">{analysisResult.title}</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl border border-white/40">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <Users className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Público-alvo</p>
+                            <p className="text-sm font-semibold text-slate-800">{analysisResult.targetAudience}</p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-rose-600" />
-                          <span className="text-slate-600">{analysisResult.duration}</span>
+                        <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl border border-white/40">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <Clock className="h-4 w-4 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Duração</p>
+                            <p className="text-sm font-semibold text-slate-800">{analysisResult.duration}</p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Target className="h-4 w-4 text-rose-600" />
-                          <span className="text-slate-600">{analysisResult.difficulty}</span>
+                        <div className="flex items-center gap-3 p-3 bg-white/70 rounded-xl border border-white/40">
+                          <div className="p-2 bg-purple-100 rounded-lg">
+                            <Target className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Nível</p>
+                            <p className="text-sm font-semibold text-slate-800">{analysisResult.difficulty}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Objectives */}
-                    <div>
-                      <h4 className="font-semibold text-slate-900 mb-3">Objetivos de Aprendizagem</h4>
-                      <div className="space-y-2">
+                    {/* Learning Objectives */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-2 bg-blue-100 rounded-lg">
+                          <Target className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900">Objetivos de Aprendizagem</h3>
+                      </div>
+                      <div className="grid gap-3">
                         {analysisResult.objectives.map((objective: string, index: number) => (
-                          <div key={index} className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm text-slate-700">{objective}</span>
+                          <div key={index} className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-white/50">
+                            <div className="p-1 bg-green-100 rounded-full mt-0.5">
+                              <CheckCircle className="h-3 w-3 text-green-600" />
+                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed">{objective}</p>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Content Sections */}
-                    <div>
-                      <h4 className="font-semibold text-slate-900 mb-3">Estrutura do Conteúdo</h4>
-                      <div className="space-y-3">
-                        {analysisResult.sections.map((section: any, index: number) => (
-                          <div key={index} className="p-3 border border-slate-200 rounded-lg">
-                            <h5 className="font-medium text-slate-900 mb-2">{section.title}</h5>
-                            <p className="text-sm text-slate-600 mb-2">{section.summary}</p>
-                            <div className="flex gap-2">
-                              <Badge variant="outline" className="text-xs">
-                                {section.keyPoints.length} pontos-chave
-                              </Badge>
+                    {/* Content Structure */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-2 bg-orange-100 rounded-lg">
+                          <BookOpen className="h-5 w-5 text-orange-600" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900">Estrutura do Conteúdo</h3>
+                      </div>
+                      {analysisResult.sections.map((section: any, index: number) => (
+                        <div key={index} className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-100">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                              {index + 1}
+                            </div>
+                            <h4 className="font-semibold text-slate-900 text-base">{section.title}</h4>
+                          </div>
+                          <p className="text-sm text-slate-700 mb-4 leading-relaxed bg-white/50 p-3 rounded-lg">{section.summary}</p>
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Pontos-chave:</p>
+                            <div className="grid gap-2">
+                              {section.keyPoints.map((point: string, pointIndex: number) => (
+                                <div key={pointIndex} className="flex items-start gap-2">
+                                  <div className="w-4 h-4 bg-orange-200 rounded-full flex items-center justify-center mt-0.5">
+                                    <div className="w-1.5 h-1.5 bg-orange-600 rounded-full"></div>
+                                  </div>
+                                  <p className="text-sm text-slate-700">{point}</p>
+                                </div>
+                              ))}
                             </div>
                           </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Activities */}
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-2 bg-purple-100 rounded-lg">
+                          <Lightbulb className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900">Atividades Sugeridas</h3>
+                      </div>
+                      <div className="grid gap-3">
+                        {analysisResult.activities.map((activity: string, index: number) => (
+                          <div key={index} className="flex items-start gap-3 p-3 bg-white/60 rounded-lg border border-white/50">
+                            <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                              {index + 1}
+                            </div>
+                            <p className="text-sm text-slate-700 leading-relaxed">{activity}</p>
+                          </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="pt-4 border-t border-slate-200">
+                    {/* Assessment */}
+                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="p-2 bg-emerald-100 rounded-lg">
+                          <Award className="h-5 w-5 text-emerald-600" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900">Método de Avaliação</h3>
+                      </div>
+                      <div className="p-4 bg-white/60 rounded-lg border border-white/50">
+                        <p className="text-sm text-slate-700 leading-relaxed">{analysisResult.assessment}</p>
+                      </div>
+                    </div>
+
+                    {/* Download Action */}
+                    <div className="pt-6 border-t border-slate-200">
                       <Button 
                         onClick={downloadMaterial}
-                        className="w-full bg-rose-600 hover:bg-rose-700 gap-2"
+                        className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 gap-3"
                       >
-                        <Download className="h-4 w-4" />
-                        Baixar Material Completo
+                        <Download className="h-5 w-5" />
+                        Baixar Material Didático Completo
                       </Button>
                     </div>
                   </div>
