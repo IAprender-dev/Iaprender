@@ -330,6 +330,8 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       - NÃO use asteriscos (*), barras invertidas (\) ou formatação markdown
       - Use apenas HTML puro e limpo
       - Deixe uma linha vazia entre cada questão
+      - Para frações, use o formato visual 5/8 ou "cinco oitavos" em vez de notação LaTeX como \frac{5}{8}
+      - Evite notação matemática complexa, prefira linguagem natural e clara
       
       Formate a atividade seguindo EXATAMENTE este modelo:
 

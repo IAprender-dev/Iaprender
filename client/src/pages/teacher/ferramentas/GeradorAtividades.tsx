@@ -82,6 +82,13 @@ export default function GeradorAtividades() {
       .replace(/Competência Geral \d+[\s\S]*?$/gi, '')
       .replace(/Habilidade EF\d+[\s\S]*?$/gi, '');
     
+    // Converte frações LaTeX para formato visual HTML
+    htmlLimpo = htmlLimpo
+      .replace(/\\?frac\{([^}]+)\}\{([^}]+)\}/g, '<span style="display: inline-block; text-align: center; vertical-align: middle;"><span style="display: block; border-bottom: 1px solid black; padding: 0 2px; line-height: 1;">$1</span><span style="display: block; padding: 0 2px; line-height: 1;">$2</span></span>')
+      .replace(/\\\(([^)]*)\\\)/g, '$1') // Remove delimitadores LaTeX
+      .replace(/\\\[([^\]]*)\\\]/g, '$1') // Remove delimitadores LaTeX block
+      .replace(/\$([^$]*)\$/g, '$1'); // Remove delimitadores matemáticos simples
+    
     // Limpa caracteres de formatação markdown e especiais
     htmlLimpo = htmlLimpo
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // **texto** para <strong>
