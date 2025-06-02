@@ -89,12 +89,9 @@ export default function GeradorAtividades() {
       .replace(/\\\[([^\]]*)\\\]/g, '$1')
       .replace(/\$([^$]*)\$/g, '$1');
     
-    // Função para converter fração em HTML visual
+    // Função para converter fração em formato texto simples
     const converterFracao = (numerador: string, denominador: string) => {
-      return `<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 3px; font-family: 'Times New Roman', serif;">
-        <span style="display: block; border-bottom: 2px solid #000; padding: 2px 6px; line-height: 1.1; font-size: 16px; font-weight: bold;">${numerador.trim()}</span>
-        <span style="display: block; padding: 2px 6px; line-height: 1.1; font-size: 16px; font-weight: bold;">${denominador.trim()}</span>
-      </span>`;
+      return `${numerador.trim()}/${denominador.trim()}`;
     };
     
     // Aplica conversões em ordem de especificidade
