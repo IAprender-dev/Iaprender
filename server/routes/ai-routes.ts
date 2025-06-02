@@ -330,8 +330,10 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       - NÃO use asteriscos (*), barras invertidas (\) ou formatação markdown
       - Use apenas HTML puro e limpo
       - Deixe uma linha vazia entre cada questão
-      - Para frações, use o formato visual 5/8 ou "cinco oitavos" em vez de notação LaTeX como \frac{5}{8}
-      - Evite notação matemática complexa, prefira linguagem natural e clara
+      - Para frações matemáticas, escreva SEMPRE no formato simples: "1/2", "3/4", "5/8" etc
+      - NUNCA use notação LaTeX como \frac{}, frac{} ou qualquer formato com chaves {}
+      - Para operações matemáticas, use símbolos simples: +, -, ×, ÷ 
+      - Prefira linguagem clara e direta para conceitos matemáticos
       
       Formate a atividade seguindo EXATAMENTE este modelo:
 

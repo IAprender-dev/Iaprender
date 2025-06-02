@@ -82,12 +82,20 @@ export default function GeradorAtividades() {
       .replace(/Competência Geral \d+[\s\S]*?$/gi, '')
       .replace(/Habilidade EF\d+[\s\S]*?$/gi, '');
     
-    // Converte frações LaTeX para formato visual HTML
+    // Converte diferentes formatos de frações para HTML visual
     htmlLimpo = htmlLimpo
-      .replace(/\\?frac\{([^}]+)\}\{([^}]+)\}/g, '<span style="display: inline-block; text-align: center; vertical-align: middle;"><span style="display: block; border-bottom: 1px solid black; padding: 0 2px; line-height: 1;">$1</span><span style="display: block; padding: 0 2px; line-height: 1;">$2</span></span>')
-      .replace(/\\\(([^)]*)\\\)/g, '$1') // Remove delimitadores LaTeX
-      .replace(/\\\[([^\]]*)\\\]/g, '$1') // Remove delimitadores LaTeX block
-      .replace(/\$([^$]*)\$/g, '$1'); // Remove delimitadores matemáticos simples
+      // LaTeX com ou sem barra inicial
+      .replace(/\\?frac\{([^}]+)\}\{([^}]+)\}/g, '<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px;"><span style="display: block; border-bottom: 1px solid #000; padding: 0 4px; line-height: 1.2; font-size: 14px;">$1</span><span style="display: block; padding: 0 4px; line-height: 1.2; font-size: 14px;">$2</span></span>')
+      // Formato ( frac{x}{y} ) que aparece no conteúdo
+      .replace(/\(\s*frac\{([^}]+)\}\{([^}]+)\}\s*\)/g, '<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px;"><span style="display: block; border-bottom: 1px solid #000; padding: 0 4px; line-height: 1.2; font-size: 14px;">$1</span><span style="display: block; padding: 0 4px; line-height: 1.2; font-size: 14px;">$2</span></span>')
+      // Formato simples frac{x}{y}
+      .replace(/frac\{([^}]+)\}\{([^}]+)\}/g, '<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px;"><span style="display: block; border-bottom: 1px solid #000; padding: 0 4px; line-height: 1.2; font-size: 14px;">$1</span><span style="display: block; padding: 0 4px; line-height: 1.2; font-size: 14px;">$2</span></span>')
+      // Remove delimitadores matemáticos
+      .replace(/\\\(([^)]*)\\\)/g, '$1')
+      .replace(/\\\[([^\]]*)\\\]/g, '$1')
+      .replace(/\$([^$]*)\$/g, '$1')
+      // Remove parenteses vazios restantes
+      .replace(/\(\s*\)/g, '');
     
     // Limpa caracteres de formatação markdown e especiais
     htmlLimpo = htmlLimpo
