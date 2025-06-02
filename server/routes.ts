@@ -1068,6 +1068,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const fileName = req.file.originalname;
       const fileType = req.file.mimetype;
+      const userId = req.session.user!.id;
+      const contractId = req.session.user!.contractId || 1;
 
       // Extract text from document based on file type
       let extractedText = "";
@@ -1080,62 +1082,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Tipo de arquivo não suportado" });
       }
 
-      // Check if OpenAI API key is available
-      if (!process.env.OPENAI_API_KEY) {
-        return res.status(500).json({ message: "Chave da API OpenAI não configurada" });
-      }
-
-      // Analyze with AI (using OpenAI)
-      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: `Você é um especialista em educação que analisa documentos e cria materiais didáticos estruturados. 
-              Analise o conteúdo fornecido e retorne um JSON com a seguinte estrutura:
-              {
-                "title": "Título do material didático",
-                "targetAudience": "Público-alvo",
-                "duration": "Duração estimada",
-                "difficulty": "Nível de dificuldade",
-                "objectives": ["objetivo1", "objetivo2", "objetivo3"],
-                "sections": [
-                  {
-                    "title": "Título da seção",
-                    "summary": "Resumo da seção",
-                    "keyPoints": ["ponto1", "ponto2", "ponto3"]
-                  }
-                ],
-                "activities": ["atividade1", "atividade2", "atividade3"],
-                "assessment": "Método de avaliação sugerido"
-              }`
-            },
-            {
-              role: 'user',
-              content: `Analise este documento e crie um material didático estruturado: ${extractedText}`
-            }
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 2000
-        }),
+      // Use OpenAI service to analyze document
+      const result = await OpenAIService.analyzeDocument({
+        userId,
+        contractId,
+        documentContent: extractedText,
+        fileName
       });
 
-      if (!openaiResponse.ok) {
-        throw new Error('Erro na API OpenAI');
-      }
-
-      const aiResult = await openaiResponse.json();
-      const analysisResult = JSON.parse(aiResult.choices[0].message.content);
-
-      res.json(analysisResult);
-    } catch (error) {
+      res.json(result.content);
+    } catch (error: any) {
       console.error('Erro na análise do documento:', error);
+      if (error.message.includes("API key")) {
+        return res.status(503).json({ message: "Serviço OpenAI não disponível. Verifique a configuração da API." });
+      }
       res.status(500).json({ message: "Erro interno do servidor" });
     }
   });

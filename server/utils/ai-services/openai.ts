@@ -34,6 +34,13 @@ interface ImageGenerationRequest {
   n?: number;
 }
 
+interface DocumentAnalysisRequest {
+  userId: number;
+  contractId: number;
+  documentContent: string;
+  fileName: string;
+}
+
 // Função para gerar conclusão de chat com GPT
 export async function generateChatCompletion({
   userId,
@@ -94,7 +101,7 @@ export async function generateChatCompletion({
 }
 
 // Função para gerar imagens com DALL-E
-interface DocumentAnalysisRequest {
+interface DocumentAnalysisRequestOld {
   userId: number;
   contractId: number;
   file: string; // Base64 do arquivo
@@ -104,7 +111,7 @@ interface DocumentAnalysisRequest {
 }
 
 // Função para analisar documentos (PDF, imagens) usando modelos de visão
-export async function analyzeDocument({
+export async function analyzeDocumentWithVision({
   userId,
   contractId,
   file,
@@ -168,6 +175,68 @@ export async function analyzeDocument({
 
     return {
       content: responseContent,
+      tokensUsed: tokensUsed,
+    };
+  } catch (error: any) {
+    console.error("Error analyzing document with OpenAI:", error);
+    throw new Error(`Failed to analyze document: ${error.message}`);
+  }
+}
+
+// Função para análise de documentos
+export async function analyzeDocument({
+  userId,
+  contractId,
+  documentContent,
+  fileName,
+}: DocumentAnalysisRequest) {
+  if (!openai) {
+    throw new Error("OpenAI client is not initialized. API key may be missing.");
+  }
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `Você é um especialista em educação que analisa documentos e cria materiais didáticos estruturados. 
+          Analise o conteúdo fornecido e retorne um JSON com a seguinte estrutura:
+          {
+            "title": "Título do material didático",
+            "targetAudience": "Público-alvo",
+            "duration": "Duração estimada",
+            "difficulty": "Nível de dificuldade",
+            "objectives": ["objetivo1", "objetivo2", "objetivo3"],
+            "sections": [
+              {
+                "title": "Título da seção",
+                "summary": "Resumo da seção",
+                "keyPoints": ["ponto1", "ponto2", "ponto3"]
+              }
+            ],
+            "activities": ["atividade1", "atividade2", "atividade3"],
+            "assessment": "Método de avaliação sugerido"
+          }`
+        },
+        {
+          role: "user",
+          content: `Analise este documento "${fileName}" e crie um material didático estruturado: ${documentContent}`
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 2000,
+      temperature: 0.7,
+    });
+
+    const responseContent = response.choices[0].message.content;
+    const tokensUsed = response.usage?.total_tokens || 0;
+    
+    // Parse JSON response
+    const analysisResult = JSON.parse(responseContent || "{}");
+
+    return {
+      content: analysisResult,
       tokensUsed: tokensUsed,
     };
   } catch (error: any) {
