@@ -259,111 +259,153 @@ export default function GeradorAtividades() {
     }
   };
 
-  // Função para baixar PDF com renderização fiel ao conteúdo na tela
+  // Função para baixar PDF com qualidade profissional
   const baixarPDF = async () => {
     if (!atividadeGerada) return;
     
     try {
-      // Encontra o elemento da atividade na tela
-      const activityElement = document.querySelector('.activity-content');
-      if (!activityElement) {
-        throw new Error('Elemento da atividade não encontrado');
-      }
-
-      // Configura opções para captura de alta qualidade
-      const canvas = await html2canvas(activityElement as HTMLElement, {
-        scale: 2, // Alta resolução
+      // Cria um container temporário otimizado para impressão
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = processarConteudoAtividade(atividadeGerada.conteudo);
+      
+      // Aplica estilos otimizados para PDF
+      tempContainer.style.cssText = `
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+        width: 794px;
+        padding: 60px 50px;
+        font-family: 'Times New Roman', serif;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #000000;
+        background: #ffffff;
+        box-sizing: border-box;
+      `;
+      
+      document.body.appendChild(tempContainer);
+      
+      // Aguarda o carregamento das fontes
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Captura com configurações otimizadas
+      const canvas = await html2canvas(tempContainer, {
+        scale: 2.5, // Alta resolução para texto nítido
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        width: 800,
-        height: activityElement.scrollHeight,
+        width: 794,
+        height: tempContainer.scrollHeight,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        logging: false,
+        letterRendering: true,
+        foreignObjectRendering: false
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png', 1.0);
       
-      // Configurações do PDF (A4: 595 x 842 pontos)
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      const pdfWidth = 595;
-      const pdfHeight = 842;
+      // Configurações PDF A4 em pontos
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4',
+        compress: true
+      });
       
-      // Margens do documento
+      const pageWidth = 595.28;
+      const pageHeight = 841.89;
       const margin = 40;
-      const contentWidth = pdfWidth - (margin * 2);
-      const contentHeight = pdfHeight - (margin * 2);
+      const usableWidth = pageWidth - (margin * 2);
+      const usableHeight = pageHeight - (margin * 2);
       
-      // Calcula a escala para ajustar a largura
+      // Calcula dimensões da imagem
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      const scale = contentWidth / imgWidth;
-      const scaledHeight = imgHeight * scale;
+      const ratio = usableWidth / imgWidth;
+      const scaledHeight = imgHeight * ratio;
       
-      // Divide o conteúdo em páginas se necessário
-      let sourceY = 0;
-      let pageNumber = 0;
+      let currentPosition = 0;
+      let pageCount = 0;
       
-      while (sourceY < imgHeight) {
-        if (pageNumber > 0) {
+      // Divide o conteúdo em páginas
+      while (currentPosition < scaledHeight) {
+        if (pageCount > 0) {
           pdf.addPage();
         }
         
-        // Calcula a altura do slice atual
-        const sliceHeight = Math.min(contentHeight / scale, imgHeight - sourceY);
+        // Calcula a altura da seção atual
+        const remainingHeight = scaledHeight - currentPosition;
+        const sectionHeight = Math.min(usableHeight, remainingHeight);
         
-        // Cria um canvas temporário para cada página
-        const pageCanvas = document.createElement('canvas');
-        const pageCtx = pageCanvas.getContext('2d');
+        // Calcula a posição Y na imagem original
+        const sourceY = currentPosition / ratio;
+        const sourceHeight = sectionHeight / ratio;
         
-        pageCanvas.width = imgWidth;
-        pageCanvas.height = sliceHeight;
+        // Cria canvas para esta seção
+        const sectionCanvas = document.createElement('canvas');
+        const sectionCtx = sectionCanvas.getContext('2d');
         
-        // Desenha a parte correspondente da imagem original
-        pageCtx?.drawImage(
-          canvas, 
-          0, sourceY,           // Posição de origem
-          imgWidth, sliceHeight, // Tamanho de origem
-          0, 0,                 // Posição de destino
-          imgWidth, sliceHeight  // Tamanho de destino
-        );
+        sectionCanvas.width = imgWidth;
+        sectionCanvas.height = sourceHeight;
         
-        // Converte o slice para base64
-        const sliceImgData = pageCanvas.toDataURL('image/png');
+        // Preenche com fundo branco
+        if (sectionCtx) {
+          sectionCtx.fillStyle = '#ffffff';
+          sectionCtx.fillRect(0, 0, imgWidth, sourceHeight);
+          
+          // Desenha a seção da imagem
+          sectionCtx.drawImage(
+            canvas,
+            0, sourceY, imgWidth, sourceHeight,
+            0, 0, imgWidth, sourceHeight
+          );
+        }
         
-        // Adiciona o slice ao PDF
+        // Converte para base64
+        const sectionData = sectionCanvas.toDataURL('image/png', 1.0);
+        
+        // Adiciona ao PDF
         pdf.addImage(
-          sliceImgData, 
-          'PNG', 
-          margin, 
-          margin, 
-          contentWidth, 
-          sliceHeight * scale,
+          sectionData,
+          'PNG',
+          margin,
+          margin,
+          usableWidth,
+          sectionHeight,
           undefined,
-          'FAST'
+          'MEDIUM'
         );
         
-        sourceY += sliceHeight;
-        pageNumber++;
+        currentPosition += sectionHeight;
+        pageCount++;
       }
       
-      // Salva o PDF
-      const nomeArquivo = atividadeGerada.titulo
+      // Remove o elemento temporário
+      document.body.removeChild(tempContainer);
+      
+      // Gera nome do arquivo
+      const nomeArquivo = (atividadeGerada.titulo || 'atividade')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-zA-Z0-9\s]/g, '')
         .replace(/\s+/g, '_')
-        .toLowerCase() || 'atividade';
+        .toLowerCase()
+        .substring(0, 50);
       
+      // Salva o PDF
       pdf.save(`${nomeArquivo}.pdf`);
       
       toast({
         title: "PDF gerado com sucesso",
-        description: "Atividade salva como PDF com formatação preservada.",
+        description: `Documento salvo com ${pageCount} página(s) e margens adequadas.`,
       });
+      
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
       toast({
         title: "Erro ao gerar PDF",
-        description: "Não foi possível criar o PDF. Tente novamente.",
+        description: "Não foi possível criar o PDF. Verifique o conteúdo e tente novamente.",
         variant: "destructive"
       });
     }
