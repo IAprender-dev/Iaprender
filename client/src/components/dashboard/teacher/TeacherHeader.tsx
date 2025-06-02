@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,12 +13,13 @@ import { User, LogOut, Menu, X, Bell } from "lucide-react";
 import iaverseLogo from "@/assets/IAverse.png";
 
 export default function TeacherHeader() {
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
+    navigate('/');
   };
 
   const toggleMenu = () => {
