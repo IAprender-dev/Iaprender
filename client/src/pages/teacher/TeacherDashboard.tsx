@@ -72,8 +72,8 @@ export default function TeacherDashboard() {
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <img src={alverseLogo} alt="Alverse" className="h-12 w-12 rounded-xl" />
+                <div className="flex items-center gap-4">
+                  <img src={alverseLogo} alt="Alverse" className="h-16 w-16 object-contain" />
                   <div>
                     <h1 className="text-2xl font-bold text-slate-900">Seu Universo de IA</h1>
                     <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
