@@ -57,7 +57,7 @@ export default function GeradorAtividades() {
   const processarConteudoAtividade = (conteudo: string): string => {
     if (!conteudo) return '';
     
-    // Remove texto explicativo antes do HTML se existir
+    // Remove qualquer texto explicativo antes do HTML
     let htmlLimpo = conteudo;
     
     // Se começar com texto explicativo, extrair apenas o HTML
@@ -72,13 +72,33 @@ export default function GeradorAtividades() {
       htmlLimpo = htmlLimpo.substring(0, fimDiv);
     }
     
-    // Substitui [DATA ATUAL] pela data atual
-    const dataAtual = new Date().toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit', 
-      year: 'numeric'
-    });
+    // Se não contém HTML estruturado, criar um layout básico
+    if (!htmlLimpo.includes('<div')) {
+      const linhas = conteudo.split('\n').filter(linha => linha.trim());
+      const dataAtual = new Date().toLocaleDateString('pt-BR');
+      
+      return `
+        <div style="max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Times New Roman', serif; line-height: 1.6; background: white; color: #000;">
+          <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px;">
+            <h1 style="font-size: 24px; font-weight: bold; color: #000; margin: 0 0 10px 0;">Atividade Educacional</h1>
+            <div style="font-size: 14px; color: #666;">${atividadeGerada?.materia || 'Disciplina'} | ${atividadeGerada?.serie || 'Série'} | ${dataAtual}</div>
+          </div>
+          <div style="white-space: pre-line; font-size: 16px; line-height: 1.8;">
+            ${linhas.join('\n')}
+          </div>
+          <div style="margin-top: 40px; text-align: center; border-top: 1px solid #ccc; padding-top: 20px;">
+            <div style="font-size: 12px; color: #666;">
+              Atividade gerada por <strong>AIverse - Seu Universo de IA</strong> | ${dataAtual}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Substitui placeholders pela data atual
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
     htmlLimpo = htmlLimpo.replace(/\[DATA ATUAL\]/g, dataAtual);
+    htmlLimpo = htmlLimpo.replace(/\[DATA\]/g, dataAtual);
     
     return htmlLimpo;
   };
@@ -428,44 +448,49 @@ export default function GeradorAtividades() {
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-                    {/* Área de visualização da atividade */}
-                    <div 
-                      className="activity-display p-8 max-h-[700px] overflow-y-auto"
-                      style={{ 
-                        fontFamily: 'Arial, sans-serif',
-                        lineHeight: '1.6',
-                        color: '#1a1a1a'
-                      }}
-                      dangerouslySetInnerHTML={{ 
-                        __html: atividadeGerada.conteudo 
-                      }}
-                    />
-                    
-                    {/* Barra de ações no final */}
-                    <div className="border-t border-slate-200 p-4 bg-slate-50 rounded-b-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-slate-600">
-                          Atividade pronta para uso em sala de aula
-                        </div>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={copiarConteudo}>
-                            <Copy className="h-4 w-4 mr-1" />
-                            Copiar HTML
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={baixarPDF}>
-                            <Download className="h-4 w-4 mr-1" />
-                            Baixar PDF
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-blue-600 hover:bg-blue-700"
-                            onClick={() => window.print()}
-                          >
-                            🖨️ Imprimir
-                          </Button>
-                        </div>
+                  {/* Barra de ações superior */}
+                  <div className="border-b border-slate-200 p-4 bg-slate-50">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-slate-700 font-medium">
+                        Atividade pronta para uso em sala de aula
                       </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={copiarConteudo}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copiar
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={baixarPDF}>
+                          <Download className="h-4 w-4 mr-2" />
+                          PDF
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={() => window.print()}
+                        >
+                          Imprimir
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Área de visualização da atividade */}
+                  <div className="activity-container bg-white">
+                    <div 
+                      className="activity-content p-12 max-h-[800px] overflow-y-auto"
+                      style={{
+                        maxWidth: '21cm',
+                        margin: '0 auto',
+                        fontFamily: '"Times New Roman", serif',
+                        fontSize: '16px',
+                        lineHeight: '1.6',
+                        color: '#000000',
+                        backgroundColor: '#ffffff'
+                      }}
+                    >
+                      <div dangerouslySetInnerHTML={{ 
+                        __html: processarConteudoAtividade(atividadeGerada.conteudo) 
+                      }} />
                     </div>
                   </div>
                 </CardContent>

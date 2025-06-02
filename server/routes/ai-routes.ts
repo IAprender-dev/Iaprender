@@ -307,85 +307,70 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       - As alternativas de múltipla escolha devem ser plausíveis, não óbvias
       - Inclua questões que testem diferentes níveis de conhecimento (básico, intermediário, avançado)
       
-      IMPORTANTE: Retorne APENAS o HTML da atividade, sem textos explicativos antes ou depois.
+      IMPORTANTE: Retorne APENAS o HTML da atividade formatada, sem textos explicativos.
       
-      A atividade deve ser formatada seguindo este modelo EXATO:
+      Formate a atividade seguindo EXATAMENTE este modelo para questionário educacional:
 
-      <div style="max-width: 21cm; margin: 0 auto; padding: 2.5cm; font-family: 'Arial', sans-serif; line-height: 1.6; background: white; color: #1a1a1a; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+      <div style="max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Times New Roman', serif; font-size: 16px; line-height: 1.6; background: white; color: #000000;">
         
-        <!-- Cabeçalho Institucional -->
-        <div style="text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 3px solid #2563eb;">
-          <h1 style="font-size: 1.8rem; font-weight: bold; color: #1e40af; margin: 0 0 0.5rem 0; letter-spacing: 0.5px;">[TÍTULO CRIATIVO DA ATIVIDADE]</h1>
-          <div style="background: #f1f5f9; padding: 0.75rem; border-radius: 8px; margin-top: 1rem;">
-            <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.95rem; color: #374151;">
-              <span><strong>Disciplina:</strong> [MATÉRIA]</span>
-              <span><strong>Série:</strong> [SÉRIE]</span>
-              <span><strong>Tipo:</strong> [TIPO DE ATIVIDADE]</span>
-            </div>
+        <!-- Cabeçalho -->
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000000; padding-bottom: 20px;">
+          <h1 style="font-size: 22px; font-weight: bold; color: #000000; margin: 0 0 10px 0; text-transform: uppercase;">[TÍTULO DA ATIVIDADE]</h1>
+          <div style="font-size: 14px; color: #333333;">
+            <strong>Disciplina:</strong> [MATÉRIA] | <strong>Série:</strong> [SÉRIE] | <strong>Data:</strong> ___/___/______
+          </div>
+          <div style="font-size: 14px; color: #333333; margin-top: 5px;">
+            <strong>Nome:</strong> ______________________________________________ <strong>Turma:</strong> __________
           </div>
         </div>
         
         <!-- Instruções -->
-        <div style="margin-bottom: 2rem; padding: 1.25rem; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 5px solid #3b82f6; border-radius: 0 8px 8px 0;">
-          <h3 style="margin: 0 0 0.75rem 0; font-size: 1.1rem; color: #1e40af; font-weight: 600; display: flex; align-items: center;">
-            📝 Instruções
-          </h3>
-          <p style="margin: 0; color: #374151; font-size: 1rem; line-height: 1.5;">[INSTRUÇÕES CLARAS E DETALHADAS]</p>
+        <div style="margin-bottom: 25px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
+          <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: #000000;">Instruções:</h3>
+          <p style="margin: 0; font-size: 14px; color: #333333;">[INSTRUÇÕES PARA OS ALUNOS]</p>
         </div>
         
         <!-- Questões -->
-        <div style="margin-bottom: 2.5rem;">
-          <!-- REPITA EXATAMENTE ${quantidadeQuestoes} VEZES: -->
+        <div style="margin-bottom: 30px;">
+          <!-- REPITA ESTE FORMATO PARA CADA QUESTÃO ${quantidadeQuestoes} VEZES -->
           
-          <div style="margin-bottom: 2rem; padding: 1.5rem; background: #fafbfc; border-radius: 12px; border: 1px solid #e5e7eb;">
-            <div style="margin-bottom: 1rem;">
-              <span style="display: inline-block; background: #2563eb; color: white; width: 2rem; height: 2rem; border-radius: 50%; text-align: center; line-height: 2rem; font-weight: bold; margin-right: 0.75rem; font-size: 0.9rem;">1</span>
-              <span style="font-size: 1.05rem; font-weight: 500; color: #1f2937;">[ENUNCIADO DA QUESTÃO]</span>
-            </div>
+          <div style="margin-bottom: 25px; page-break-inside: avoid;">
+            <p style="margin: 0 0 12px 0; font-size: 16px; font-weight: bold; color: #000000;">
+              1. [ENUNCIADO DA QUESTÃO]
+            </p>
             
-            <div style="margin-left: 2.75rem; space-y: 0.5rem;">
-              <div style="margin: 0.5rem 0; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; transition: all 0.2s;">
-                <span style="font-weight: 600; color: #4b5563; margin-right: 0.75rem;">a)</span>
-                <span style="color: #374151;">[ALTERNATIVA A]</span>
-              </div>
-              <div style="margin: 0.5rem 0; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; transition: all 0.2s;">
-                <span style="font-weight: 600; color: #4b5563; margin-right: 0.75rem;">b)</span>
-                <span style="color: #374151;">[ALTERNATIVA B]</span>
-              </div>
-              <div style="margin: 0.5rem 0; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; transition: all 0.2s;">
-                <span style="font-weight: 600; color: #4b5563; margin-right: 0.75rem;">c)</span>
-                <span style="color: #374151;">[ALTERNATIVA C]</span>
-              </div>
-              <div style="margin: 0.5rem 0; padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; transition: all 0.2s;">
-                <span style="font-weight: 600; color: #4b5563; margin-right: 0.75rem;">d)</span>
-                <span style="color: #374151;">[ALTERNATIVA D]</span>
-              </div>
+            <div style="margin-left: 20px; font-size: 16px;">
+              <p style="margin: 8px 0; color: #000000;">
+                a) [ALTERNATIVA A]
+              </p>
+              <p style="margin: 8px 0; color: #000000;">
+                b) [ALTERNATIVA B]
+              </p>
+              <p style="margin: 8px 0; color: #000000;">
+                c) [ALTERNATIVA C]
+              </p>
+              <p style="margin: 8px 0; color: #000000;">
+                d) [ALTERNATIVA D]
+              </p>
             </div>
           </div>
           
-          <!-- Repetir para todas as questões -->
+          <!-- CONTINUAR PARA TODAS AS QUESTÕES -->
         </div>
         
-        <!-- Gabarito (se solicitado) -->
         ${incluirGabarito ? `
-        <div style="margin-top: 2.5rem; padding: 1.5rem; background: #f0fdf4; border-left: 5px solid #22c55e; border-radius: 0 8px 8px 0;">
-          <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: #166534; font-weight: 600; display: flex; align-items: center;">
-            ✅ Gabarito
-          </h3>
-          [INCLUIR GABARITO COM RESPOSTAS E JUSTIFICATIVAS]
+        <!-- Gabarito -->
+        <div style="margin-top: 40px; padding: 20px; background-color: #e8f5e8; border: 1px solid #28a745; border-radius: 5px; page-break-before: always;">
+          <h3 style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #155724;">GABARITO</h3>
+          [INCLUIR RESPOSTAS CORRETAS COM EXPLICAÇÕES]
         </div>
         ` : ''}
         
         <!-- Rodapé -->
-        <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid #e5e7eb; text-align: center;">
-          <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; display: inline-block;">
-            <span style="color: #6b7280; font-size: 0.9rem;">
-              🤖 Atividade gerada por <strong style="color: #2563eb;">AIverse - Seu Universo de IA</strong>
-            </span>
-            <div style="margin-top: 0.25rem; font-size: 0.8rem; color: #9ca3af;">
-              [DATA ATUAL]
-            </div>
-          </div>
+        <div style="margin-top: 40px; text-align: center; border-top: 1px solid #cccccc; padding-top: 15px;">
+          <p style="margin: 0; font-size: 12px; color: #666666;">
+            Atividade gerada por <strong>AIverse - Seu Universo de IA</strong>
+          </p>
         </div>
         
       </div>
