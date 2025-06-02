@@ -276,30 +276,49 @@ export default function GeradorAtividades() {
       const scaledHeight = imgHeight * scale;
       
       // Divide o conteúdo em páginas se necessário
-      let position = 0;
+      let sourceY = 0;
       let pageNumber = 0;
       
-      while (position < scaledHeight) {
+      while (sourceY < imgHeight) {
         if (pageNumber > 0) {
           pdf.addPage();
         }
         
-        // Calcula a altura da página atual
-        const pageContentHeight = Math.min(contentHeight, scaledHeight - position);
+        // Calcula a altura do slice atual
+        const sliceHeight = Math.min(contentHeight / scale, imgHeight - sourceY);
         
-        // Adiciona a imagem na posição correta
+        // Cria um canvas temporário para cada página
+        const pageCanvas = document.createElement('canvas');
+        const pageCtx = pageCanvas.getContext('2d');
+        
+        pageCanvas.width = imgWidth;
+        pageCanvas.height = sliceHeight;
+        
+        // Desenha a parte correspondente da imagem original
+        pageCtx?.drawImage(
+          canvas, 
+          0, sourceY,           // Posição de origem
+          imgWidth, sliceHeight, // Tamanho de origem
+          0, 0,                 // Posição de destino
+          imgWidth, sliceHeight  // Tamanho de destino
+        );
+        
+        // Converte o slice para base64
+        const sliceImgData = pageCanvas.toDataURL('image/png');
+        
+        // Adiciona o slice ao PDF
         pdf.addImage(
-          imgData, 
+          sliceImgData, 
           'PNG', 
           margin, 
-          margin - position, 
+          margin, 
           contentWidth, 
-          scaledHeight,
+          sliceHeight * scale,
           undefined,
           'FAST'
         );
         
-        position += contentHeight;
+        sourceY += sliceHeight;
         pageNumber++;
       }
       
