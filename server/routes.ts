@@ -33,6 +33,7 @@ import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
 import aiRouter from "./routes/ai-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
 import mammoth from "mammoth";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.js";
 
 // Define login schema
 const loginSchema = z.object({
@@ -1098,19 +1099,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       try {
         if (fileType === 'application/pdf') {
-          return res.status(400).json({ message: "PDFs não são suportados no momento. Por favor, use documentos Word (.docx) ou converta seu PDF para Word." });
+          // Extract text from PDF using pdfjs-dist
+          const loadingTask = getDocument({ data: req.file.buffer });
+          const pdf = await loadingTask.promise;
+          let textContent = '';
+          
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            const pageText = content.items.map((item: any) => item.str).join(' ');
+            textContent += pageText + '\n';
+          }
+          
+          extractedText = textContent.trim();
         } else if (fileType === 'application/msword' || fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
           const result = await mammoth.extractRawText({buffer: req.file.buffer});
           extractedText = result.value;
-          
-          if (!extractedText || extractedText.trim().length === 0) {
-            return res.status(400).json({ message: "Documento está vazio ou não foi possível extrair o texto" });
-          }
-          
-          console.log('Texto extraído do documento:', extractedText.substring(0, 200) + '...');
         } else {
-          return res.status(400).json({ message: "Tipo de arquivo não suportado. Use apenas documentos Word (.docx)" });
+          return res.status(400).json({ message: "Tipo de arquivo não suportado. Use documentos PDF ou Word (.docx)" });
         }
+
+        if (!extractedText || extractedText.trim().length === 0) {
+          return res.status(400).json({ message: "Documento está vazio ou não foi possível extrair o texto" });
+        }
+        
+        console.log('Texto extraído do documento:', extractedText.substring(0, 200) + '...');
       } catch (extractionError) {
         console.error('Erro na extração de texto:', extractionError);
         return res.status(400).json({ message: "Erro ao processar o documento. Verifique se o arquivo não está corrompido." });
