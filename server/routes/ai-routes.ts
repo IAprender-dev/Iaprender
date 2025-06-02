@@ -309,102 +309,59 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       
       A atividade deve ser formatada em HTML seguindo o formato abaixo RIGOROSAMENTE:
       
-      <div class="activity-content" style="max-width: 900px; margin: 0 auto; font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; background: #ffffff; color: #1a202c;">
-        <!-- Header Principal com Gradiente -->
-        <header style="background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: white; padding: 2rem; border-radius: 12px 12px 0 0; text-align: center; margin-bottom: 0;">
-          <div style="background: rgba(255,255,255,0.1); padding: 1.5rem; border-radius: 8px; backdrop-filter: blur(10px);">
-            <h1 style="font-size: 2rem; font-weight: 700; margin: 0 0 1rem 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">[TÍTULO DA ATIVIDADE]</h1>
-            <div style="display: flex; justify-content: center; gap: 2rem; font-size: 1rem; flex-wrap: wrap;">
-              <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 500;">
-                <span style="opacity: 0.9;">📚</span> <strong>Disciplina:</strong> [MATÉRIA]
-              </div>
-              <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 500;">
-                <span style="opacity: 0.9;">🎓</span> <strong>Série:</strong> [SÉRIE]
-              </div>
-              <div style="background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 500;">
-                <span style="opacity: 0.9;">📝</span> <strong>Tipo:</strong> [TIPO DE ATIVIDADE]
-              </div>
-            </div>
-          </div>
-        </header>
+      <div class="activity-content" style="max-width: 800px; margin: 0 auto; padding: 2rem; font-family: 'Times New Roman', serif; line-height: 1.5; background: #ffffff; color: #000000;">
         
-        <!-- Container Principal -->
-        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px; padding: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-          
-          <!-- Seção de Instruções -->
-          <div class="instructions" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-left: 5px solid #3b82f6; padding: 1.5rem; margin-bottom: 2rem; border-radius: 8px;">
-            <div style="display: flex; align-items: center; margin-bottom: 0.75rem;">
-              <span style="font-size: 1.25rem; margin-right: 0.5rem;">💡</span>
-              <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600; color: #1e40af;">Instruções</h3>
-            </div>
-            <p style="margin: 0; color: #374151; font-size: 1rem; line-height: 1.6;">[INSTRUÇÕES DA ATIVIDADE]</p>
+        <!-- Cabeçalho da Atividade -->
+        <div style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #333333; padding-bottom: 1rem;">
+          <h1 style="font-size: 1.8rem; font-weight: bold; color: #000000; margin: 0 0 0.5rem 0; text-transform: uppercase;">[TÍTULO DA ATIVIDADE]</h1>
+          <div style="font-size: 1rem; color: #333333; margin-top: 0.5rem;">
+            <strong>Disciplina:</strong> [MATÉRIA] | <strong>Série:</strong> [SÉRIE] | <strong>Tipo:</strong> [TIPO DE ATIVIDADE]
           </div>
-          
-          <!-- Seção de Questões -->
-          <div class="questions">
-            <div style="display: flex; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid #f1f5f9;">
-              <span style="font-size: 1.25rem; margin-right: 0.5rem;">❓</span>
-              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1e40af;">Questões</h3>
-            </div>
-            
-            <ol style="list-style: none; padding: 0; margin: 0; counter-reset: question;">
-              <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${quantidadeQuestoes} vezes -->
-              <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
-              <li style="margin-bottom: 2rem; counter-increment: question; background: #fafbfc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; transition: all 0.2s ease;">
-                
-                <!-- Número e Texto da Questão -->
-                <div style="display: flex; align-items: flex-start; margin-bottom: 1rem;">
-                  <div style="background: #3b82f6; color: white; width: 2.5rem; height: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.125rem; margin-right: 1rem; flex-shrink: 0;">
-                    1
-                  </div>
-                  <div style="flex: 1;">
-                    <p style="margin: 0; font-size: 1.125rem; font-weight: 500; color: #1a202c; line-height: 1.6;">[TEXTO DA QUESTÃO AQUI]</p>
-                  </div>
-                </div>
-                
-                <!-- Alternativas -->
-                <div style="background: white; border-radius: 8px; padding: 1rem; border: 1px solid #e2e8f0;">
-                  <div style="display: grid; gap: 0.75rem;">
-                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid #f1f5f9; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: #fafbfc;">
-                      <div style="width: 2rem; height: 2rem; border: 2px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; font-weight: 700; color: #4a5568; background: white;">A</div>
-                      <span style="color: #2d3748; font-size: 1rem; line-height: 1.5;">[ALTERNATIVA A]</span>
-                    </label>
-                    
-                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid #f1f5f9; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: #fafbfc;">
-                      <div style="width: 2rem; height: 2rem; border: 2px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; font-weight: 700; color: #4a5568; background: white;">B</div>
-                      <span style="color: #2d3748; font-size: 1rem; line-height: 1.5;">[ALTERNATIVA B]</span>
-                    </label>
-                    
-                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid #f1f5f9; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: #fafbfc;">
-                      <div style="width: 2rem; height: 2rem; border: 2px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; font-weight: 700; color: #4a5568; background: white;">C</div>
-                      <span style="color: #2d3748; font-size: 1rem; line-height: 1.5;">[ALTERNATIVA C]</span>
-                    </label>
-                    
-                    <label style="display: flex; align-items: center; padding: 0.75rem; border: 2px solid #f1f5f9; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; background: #fafbfc;">
-                      <div style="width: 2rem; height: 2rem; border: 2px solid #cbd5e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 1rem; font-weight: 700; color: #4a5568; background: white;">D</div>
-                      <span style="color: #2d3748; font-size: 1rem; line-height: 1.5;">[ALTERNATIVA D]</span>
-                    </label>
-                  </div>
-                </div>
-              </li>
-              <!-- FIM DO EXEMPLO DE QUESTÃO -->
-            </ol>
-          </div>
-          
-          <!-- GABARITO (INCLUIR APENAS SE SOLICITADO) -->
-          [INCLUIR GABARITO AQUI SE SOLICITADO COM DESIGN SIMILAR]
-          
         </div>
         
-        <!-- Footer Elegante -->
-        <footer style="margin-top: 2rem; text-align: center; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: #64748b; font-size: 0.875rem; font-weight: 500;">
-            <span style="font-size: 1rem;">🤖</span>
-            <span>Atividade gerada por <strong style="color: #3b82f6;">AIverse - Seu Universo de IA</strong></span>
-            <span style="margin: 0 0.5rem;">•</span>
-            <span>[DATA]</span>
+        <!-- Instruções -->
+        <div style="margin-bottom: 2rem; padding: 1rem; background-color: #f5f5f5; border-left: 4px solid #0066cc;">
+          <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: #000000; font-weight: bold;">Instruções:</h3>
+          <p style="margin: 0; color: #333333; font-size: 1rem;">[INSTRUÇÕES DA ATIVIDADE]</p>
+        </div>
+        
+        <!-- Questões -->
+        <div class="questions" style="margin-bottom: 2rem;">
+          <!-- IMPORTANTE: Repita o formato abaixo EXATAMENTE ${quantidadeQuestoes} vezes -->
+          <!-- EXEMPLO DE QUESTÃO (REPITA ESTE FORMATO) -->
+          <div style="margin-bottom: 1.5rem;">
+            <p style="margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: bold; color: #000000;">
+              <strong>1.</strong> [TEXTO DA QUESTÃO AQUI]
+            </p>
+            
+            <div style="margin-left: 1rem;">
+              <p style="margin: 0.3rem 0; font-size: 1rem; color: #000000;">
+                <strong>a)</strong> [ALTERNATIVA A]
+              </p>
+              <p style="margin: 0.3rem 0; font-size: 1rem; color: #000000;">
+                <strong>b)</strong> [ALTERNATIVA B]
+              </p>
+              <p style="margin: 0.3rem 0; font-size: 1rem; color: #000000;">
+                <strong>c)</strong> [ALTERNATIVA C]
+              </p>
+              <p style="margin: 0.3rem 0; font-size: 1rem; color: #000000;">
+                <strong>d)</strong> [ALTERNATIVA D]
+              </p>
+            </div>
           </div>
-        </footer>
+          <!-- FIM DO EXEMPLO DE QUESTÃO -->
+        </div>
+        
+        <!-- GABARITO (INCLUIR APENAS SE SOLICITADO) -->
+        [INCLUIR GABARITO AQUI SE SOLICITADO]
+        
+        <!-- Rodapé -->
+        <div style="margin-top: 3rem; text-align: center; border-top: 1px solid #cccccc; padding-top: 1rem;">
+          <p style="margin: 0; font-size: 0.9rem; color: #666666;">
+            Atividade gerada por <strong>AIverse - Seu Universo de IA</strong> | [DATA]
+          </p>
+        </div>
+        
       </div>
       
       Fornece uma atividade educacional completa em HTML, seguindo as diretrizes acima. A atividade deve incluir:
