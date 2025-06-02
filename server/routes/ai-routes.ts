@@ -297,10 +297,8 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
         'CONTEXTO: Esta é uma AVALIAÇÃO formal, portanto as questões devem ser mais rigorosas e abrangentes.' : 
         'CONTEXTO: Esta é uma LISTA DE EXERCÍCIOS para prática e fixação do conteúdo.'}
       
-      RETORNE também no final as informações identificadas:
-      - Matéria detectada
-      - Série detectada
-      - Habilidades BNCC aplicáveis` : `
+      
+      IMPORTANTE: NÃO inclua no final do documento as informações de análise (matéria detectada, série detectada, habilidades BNCC). Apenas gere a atividade limpa e formatada.` : `
       Você é um educador especialista que cria atividades educacionais de alta qualidade.
       
       Crie uma atividade educacional completa com as seguintes características:

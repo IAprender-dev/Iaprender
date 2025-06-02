@@ -71,6 +71,16 @@ export default function GeradorAtividades() {
       htmlLimpo = htmlLimpo.substring(0, fimDiv);
     }
     
+    // Remove seções indesejadas antes da limpeza de formatação
+    // Remove informações da BNCC que aparecem no final
+    htmlLimpo = htmlLimpo
+      .replace(/Informações Identificadas:[\s\S]*?Habilidades BNCC Aplicáveis:[\s\S]*?$/gi, '')
+      .replace(/Matéria Detectada:[\s\S]*?$/gi, '')
+      .replace(/Série Detectada:[\s\S]*?$/gi, '')
+      .replace(/Habilidades BNCC Aplicáveis:[\s\S]*?$/gi, '')
+      .replace(/Competência Geral \d+[\s\S]*?$/gi, '')
+      .replace(/Habilidade EF\d+[\s\S]*?$/gi, '');
+    
     // Limpa caracteres de formatação markdown e especiais
     htmlLimpo = htmlLimpo
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // **texto** para <strong>
@@ -450,16 +460,16 @@ export default function GeradorAtividades() {
                         {atividadeGerada.titulo}
                       </CardTitle>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs text-black border-slate-400">
                           {atividadeGerada.materia}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs text-black border-slate-400">
                           {atividadeGerada.serie}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs text-black border-slate-400">
                           {atividadeGerada.tipoAtividade}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs text-black border-slate-400">
                           {atividadeGerada.quantidadeQuestoes} questões
                         </Badge>
                       </div>
