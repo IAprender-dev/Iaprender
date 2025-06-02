@@ -270,23 +270,9 @@ export default function TeacherDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-3xl font-bold mb-2">Olá, {user?.firstName}! 👋</h2>
-                    <p className="text-blue-100 text-lg mb-6">
+                    <p className="text-blue-100 text-lg">
                       Transforme sua educação com o poder da Inteligência Artificial
                     </p>
-                    <div className="flex flex-wrap gap-4">
-                      <Link href="/central-ia">
-                        <Button className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm gap-2">
-                          <Bot className="h-4 w-4" />
-                          Central de IAs
-                        </Button>
-                      </Link>
-                      <Link href="/professor/ferramentas/analise-documentos">
-                        <Button variant="outline" className="bg-white/10 hover:bg-white/20 text-white border-white/30 gap-2">
-                          <FileText className="h-4 w-4" />
-                          Análise de Documentos
-                        </Button>
-                      </Link>
-                    </div>
                   </div>
                   <div className="hidden md:block">
                     <div className="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
