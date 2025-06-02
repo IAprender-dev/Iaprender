@@ -32,6 +32,7 @@ import multer from "multer";
 import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
 import aiRouter from "./routes/ai-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
+import mammoth from "mammoth";
 
 // Define login schema
 const loginSchema = z.object({
@@ -1095,12 +1096,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract text from document based on file type
       let extractedText = "";
       
-      if (fileType === 'application/pdf') {
-        extractedText = `Documento PDF: ${fileName}. Conteúdo: Este é um documento educacional que contém informações importantes sobre métodos de ensino, estratégias pedagógicas e desenvolvimento de competências estudantis. O material aborda conceitos fundamentais da educação moderna.`;
-      } else if (fileType.includes('word') || fileType.includes('document')) {
-        extractedText = `Documento Word: ${fileName}. Conteúdo: Material didático sobre práticas educacionais inovadoras, incluindo metodologias ativas de aprendizagem, uso de tecnologia em sala de aula e desenvolvimento de projetos interdisciplinares.`;
-      } else {
-        return res.status(400).json({ message: "Tipo de arquivo não suportado" });
+      try {
+        if (fileType === 'application/pdf') {
+          return res.status(400).json({ message: "PDFs não são suportados no momento. Por favor, use documentos Word (.docx) ou converta seu PDF para Word." });
+        } else if (fileType === 'application/msword' || fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          const result = await mammoth.extractRawText({buffer: req.file.buffer});
+          extractedText = result.value;
+          
+          if (!extractedText || extractedText.trim().length === 0) {
+            return res.status(400).json({ message: "Documento está vazio ou não foi possível extrair o texto" });
+          }
+          
+          console.log('Texto extraído do documento:', extractedText.substring(0, 200) + '...');
+        } else {
+          return res.status(400).json({ message: "Tipo de arquivo não suportado. Use apenas documentos Word (.docx)" });
+        }
+      } catch (extractionError) {
+        console.error('Erro na extração de texto:', extractionError);
+        return res.status(400).json({ message: "Erro ao processar o documento. Verifique se o arquivo não está corrompido." });
       }
 
       // Use OpenAI service to analyze document
