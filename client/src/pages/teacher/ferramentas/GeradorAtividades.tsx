@@ -84,18 +84,31 @@ export default function GeradorAtividades() {
     
     // Converte diferentes formatos de frações para HTML visual
     htmlLimpo = htmlLimpo
-      // LaTeX com ou sem barra inicial
-      .replace(/\\?frac\{([^}]+)\}\{([^}]+)\}/g, '<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px;"><span style="display: block; border-bottom: 1px solid #000; padding: 0 4px; line-height: 1.2; font-size: 14px;">$1</span><span style="display: block; padding: 0 4px; line-height: 1.2; font-size: 14px;">$2</span></span>')
-      // Formato ( frac{x}{y} ) que aparece no conteúdo
-      .replace(/\(\s*frac\{([^}]+)\}\{([^}]+)\}\s*\)/g, '<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px;"><span style="display: block; border-bottom: 1px solid #000; padding: 0 4px; line-height: 1.2; font-size: 14px;">$1</span><span style="display: block; padding: 0 4px; line-height: 1.2; font-size: 14px;">$2</span></span>')
-      // Formato simples frac{x}{y}
-      .replace(/frac\{([^}]+)\}\{([^}]+)\}/g, '<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 2px;"><span style="display: block; border-bottom: 1px solid #000; padding: 0 4px; line-height: 1.2; font-size: 14px;">$1</span><span style="display: block; padding: 0 4px; line-height: 1.2; font-size: 14px;">$2</span></span>')
-      // Remove delimitadores matemáticos
+      // Remove delimitadores matemáticos primeiro
       .replace(/\\\(([^)]*)\\\)/g, '$1')
       .replace(/\\\[([^\]]*)\\\]/g, '$1')
-      .replace(/\$([^$]*)\$/g, '$1')
+      .replace(/\$([^$]*)\$/g, '$1');
+    
+    // Função para converter fração em HTML visual
+    const converterFracao = (numerador: string, denominador: string) => {
+      return `<span style="display: inline-block; text-align: center; vertical-align: middle; margin: 0 3px; font-family: 'Times New Roman', serif;">
+        <span style="display: block; border-bottom: 2px solid #000; padding: 2px 6px; line-height: 1.1; font-size: 16px; font-weight: bold;">${numerador.trim()}</span>
+        <span style="display: block; padding: 2px 6px; line-height: 1.1; font-size: 16px; font-weight: bold;">${denominador.trim()}</span>
+      </span>`;
+    };
+    
+    // Aplica conversões em ordem de especificidade
+    htmlLimpo = htmlLimpo
+      // Formato completo com parênteses ( frac{xx}{yy} )
+      .replace(/\(\s*\\?frac\{([^}]+)\}\{([^}]+)\}\s*\)/g, (match, num, den) => converterFracao(num, den))
+      // Formato LaTeX completo \frac{xx}{yy}
+      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, (match, num, den) => converterFracao(num, den))
+      // Formato simples frac{xx}{yy}
+      .replace(/frac\{([^}]+)\}\{([^}]+)\}/g, (match, num, den) => converterFracao(num, den))
       // Remove parenteses vazios restantes
-      .replace(/\(\s*\)/g, '');
+      .replace(/\(\s*\)/g, '')
+      // Converte frações simples como 12/25 para formato visual também
+      .replace(/(\d{1,2})\/(\d{1,2})/g, (match, num, den) => converterFracao(num, den));
     
     // Limpa caracteres de formatação markdown e especiais
     htmlLimpo = htmlLimpo
