@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
+import aiverseLogo from "@assets/Design sem nome (5).png";
 import { useAuth } from "@/lib/AuthContext";
 import { 
   ArrowLeft,
@@ -294,26 +295,27 @@ export default function NoticiasPodcasts() {
 
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-8 py-8 max-w-7xl">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          {/* Header with Logo and Back Button */}
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-4">
+              <img src={aiverseLogo} alt="AIverse" className="w-16 h-16 object-contain" />
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">AIverse</h1>
+                <p className="text-gray-600 text-lg">Centro de Conteúdo</p>
+              </div>
+            </div>
+            
+            {/* Back Button */}
             <Link href="/professor/dashboard">
-              <Button variant="ghost" size="sm" className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+              <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                 <ArrowLeft className="h-4 w-4" />
-                Voltar ao Dashboard
+                Voltar
               </Button>
             </Link>
           </div>
 
           <div className="mb-10">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
-                <Newspaper className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Centro de Conteúdo</h1>
-                <p className="text-gray-600 text-lg">Mantenha-se atualizado com as últimas novidades em IA e educação</p>
-              </div>
-            </div>
+            <p className="text-gray-600 text-lg">Mantenha-se atualizado com as últimas novidades em IA e educação</p>
           </div>
 
           {/* Tab Navigation */}
