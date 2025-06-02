@@ -30,6 +30,7 @@ import ResumosBNCC from "@/pages/teacher/ferramentas/ResumosBNCC";
 
 import PlanejamentoAula from "@/pages/teacher/ferramentas/PlanejamentoAula";
 import ModelosPlanejamento from "@/pages/teacher/ferramentas/ModelosPlanejamento";
+import AnaliseDocumentos from "@/pages/teacher/AnaliseDocumentos";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -81,6 +82,7 @@ function Router() {
 
       <Route path="/professor/ferramentas/planejamento-aula" component={PlanejamentoAula} />
       <Route path="/professor/ferramentas/modelos-planejamento" component={ModelosPlanejamento} />
+      <Route path="/professor/ferramentas/analise-documentos" component={AnaliseDocumentos} />
       
       {/* Student routes */}
       <Route path="/aluno/dashboard" component={StudentDashboard} />

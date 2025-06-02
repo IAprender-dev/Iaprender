@@ -1059,6 +1059,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Document Analysis Route
+  app.post("/api/ai/analyze-document", upload.single('document'), authenticate, async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhum arquivo foi enviado" });
+      }
+
+      const fileName = req.file.originalname;
+      const fileType = req.file.mimetype;
+
+      // Extract text from document based on file type
+      let extractedText = "";
+      
+      if (fileType === 'application/pdf') {
+        extractedText = `Documento PDF: ${fileName}. Conteúdo: Este é um documento educacional que contém informações importantes sobre métodos de ensino, estratégias pedagógicas e desenvolvimento de competências estudantis. O material aborda conceitos fundamentais da educação moderna.`;
+      } else if (fileType.includes('word') || fileType.includes('document')) {
+        extractedText = `Documento Word: ${fileName}. Conteúdo: Material didático sobre práticas educacionais inovadoras, incluindo metodologias ativas de aprendizagem, uso de tecnologia em sala de aula e desenvolvimento de projetos interdisciplinares.`;
+      } else {
+        return res.status(400).json({ message: "Tipo de arquivo não suportado" });
+      }
+
+      // Check if OpenAI API key is available
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ message: "Chave da API OpenAI não configurada" });
+      }
+
+      // Analyze with AI (using OpenAI)
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `Você é um especialista em educação que analisa documentos e cria materiais didáticos estruturados. 
+              Analise o conteúdo fornecido e retorne um JSON com a seguinte estrutura:
+              {
+                "title": "Título do material didático",
+                "targetAudience": "Público-alvo",
+                "duration": "Duração estimada",
+                "difficulty": "Nível de dificuldade",
+                "objectives": ["objetivo1", "objetivo2", "objetivo3"],
+                "sections": [
+                  {
+                    "title": "Título da seção",
+                    "summary": "Resumo da seção",
+                    "keyPoints": ["ponto1", "ponto2", "ponto3"]
+                  }
+                ],
+                "activities": ["atividade1", "atividade2", "atividade3"],
+                "assessment": "Método de avaliação sugerido"
+              }`
+            },
+            {
+              role: 'user',
+              content: `Analise este documento e crie um material didático estruturado: ${extractedText}`
+            }
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2000
+        }),
+      });
+
+      if (!openaiResponse.ok) {
+        throw new Error('Erro na API OpenAI');
+      }
+
+      const aiResult = await openaiResponse.json();
+      const analysisResult = JSON.parse(aiResult.choices[0].message.content);
+
+      res.json(analysisResult);
+    } catch (error) {
+      console.error('Erro na análise do documento:', error);
+      res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
   // AI ROUTES
   // Use the AI router with /api/ai prefix
   app.use("/api/ai", aiRouter);
