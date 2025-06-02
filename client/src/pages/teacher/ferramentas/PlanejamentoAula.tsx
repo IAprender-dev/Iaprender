@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
+import aiverseLogoNew from "@/assets/aiverse-logo-new.png";
 import { 
   Calendar, 
   BookOpen, 
@@ -183,7 +184,7 @@ export default function PlanejamentoAula() {
               </Link>
               <div className="flex items-center gap-3">
                 <img 
-                  src="/attached_assets/Design sem nome (5).png" 
+                  src={aiverseLogoNew} 
                   alt="AIverse Logo" 
                   className="w-12 h-12 object-contain"
                 />
