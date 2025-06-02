@@ -78,6 +78,7 @@ function Router() {
       <Route path="/central-ia/image-gen" component={ImageGenPage} />
       
       {/* Teacher routes */}
+      <Route path="/professor" component={TeacherDashboard} />
       <Route path="/professor/dashboard" component={TeacherDashboard} />
       <Route path="/professor/cursos" component={TeacherCourses} />
       <Route path="/professor/planejamento" component={TeacherPlanning} />
