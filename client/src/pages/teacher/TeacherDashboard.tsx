@@ -249,6 +249,17 @@ export default function TeacherDashboard() {
                     <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-3">
+                  <Button 
+                    onClick={logout}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-50"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sair
+                  </Button>
+                </div>
               </div>
             </div>
           </header>
