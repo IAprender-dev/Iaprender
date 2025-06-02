@@ -245,17 +245,9 @@ export default function TeacherDashboard() {
                     <Menu className="h-5 w-5 text-black" />
                   </Button>
                   <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+                    <h1 className="text-2xl font-bold text-slate-900">Área do Professor</h1>
                     <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
                   </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Link href="/central-ia">
-                    <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 gap-2">
-                      <Bot className="h-4 w-4" />
-                      Central de IAs
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </div>
