@@ -153,36 +153,39 @@ export default function NoticiasPodcasts() {
   };
 
   const NewsSection = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Featured News */}
       {news.filter(item => item.isHighlighted).map((item) => (
-        <Card key={item.id} className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg rounded-2xl overflow-hidden">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
+        <Card key={item.id} className="border-0 bg-white shadow-lg hover:shadow-xl rounded-3xl overflow-hidden transition-all duration-300">
+          <CardContent className="p-8">
+            <div className="flex items-start gap-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Newspaper className="h-10 w-10 text-blue-600" />
+              </div>
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge className="bg-blue-600 text-white">Destaque</Badge>
-                  <Badge variant="outline">{item.category}</Badge>
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge className="bg-blue-600 text-white px-3 py-1 rounded-full">✨ Destaque</Badge>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1 rounded-full">{item.category}</Badge>
                 </div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-3 leading-tight">{item.title}</h2>
-                <p className="text-slate-700 mb-4 leading-relaxed">{item.summary}</p>
+                <h2 className="text-3xl font-bold text-slate-900 mb-4 leading-tight">{item.title}</h2>
+                <p className="text-slate-700 mb-6 leading-relaxed text-lg">{item.summary}</p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 text-sm text-slate-600">
-                    <span>Por {item.author}</span>
+                    <span className="font-medium">Por {item.author}</span>
                     <Separator orientation="vertical" className="h-4" />
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-blue-500" />
                       {formatDate(item.publishedAt)}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="gap-2">
+                  <div className="flex gap-3">
+                    <Button size="sm" variant="outline" className="gap-2 border-slate-300 hover:bg-slate-50">
                       <Share2 className="h-4 w-4" />
                       Compartilhar
                     </Button>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6">
                       <BookOpen className="h-4 w-4" />
-                      Ler Mais
+                      Ler Artigo
                     </Button>
                   </div>
                 </div>
@@ -193,27 +196,30 @@ export default function NoticiasPodcasts() {
       ))}
 
       {/* Regular News */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {news.filter(item => !item.isHighlighted).map((item) => (
-          <Card key={item.id} className="border border-slate-200 hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden group">
+          <Card key={item.id} className="border-0 bg-white hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
             <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Badge variant="outline">{item.category}</Badge>
+              <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-indigo-100 transition-all duration-300">
+                <Newspaper className="h-6 w-6 text-slate-600 group-hover:text-blue-600 transition-colors" />
               </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 rounded-full px-3 py-1">{item.category}</Badge>
+              </div>
+              <h3 className="font-bold text-xl text-slate-900 mb-3 group-hover:text-blue-600 transition-colors leading-tight line-clamp-2">
                 {item.title}
               </h3>
-              <p className="text-sm text-slate-600 mb-4 line-clamp-3">{item.summary}</p>
+              <p className="text-slate-600 mb-4 line-clamp-3 leading-relaxed">{item.summary}</p>
               <div className="flex items-center justify-between">
-                <div className="text-xs text-slate-500">
-                  <div className="flex items-center gap-1 mb-1">
-                    <Calendar className="h-3 w-3" />
+                <div className="text-sm text-slate-500">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="h-3 w-3 text-blue-500" />
                     {formatDate(item.publishedAt)}
                   </div>
-                  <span>Por {item.author}</span>
+                  <span className="font-medium">Por {item.author}</span>
                 </div>
-                <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 gap-1">
-                  <ExternalLink className="h-3 w-3" />
+                <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-2 rounded-full">
+                  <ExternalLink className="h-4 w-4" />
                   Ler
                 </Button>
               </div>
@@ -227,35 +233,35 @@ export default function NoticiasPodcasts() {
   const PodcastSection = () => (
     <div className="space-y-6">
       {podcasts.map((podcast) => (
-        <Card key={podcast.id} className="border border-slate-200 hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden">
+        <Card key={podcast.id} className="border-0 bg-white hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
           <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Headphones className="h-8 w-8 text-purple-600" />
+            <div className="flex items-start gap-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:from-purple-200 group-hover:to-indigo-200 transition-all duration-300">
+                <Headphones className="h-10 w-10 text-purple-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="outline">{podcast.category}</Badge>
-                  <div className="flex items-center gap-1 text-sm text-slate-500">
-                    <Clock className="h-3 w-3" />
-                    {podcast.duration}
+                <div className="flex items-center gap-3 mb-3">
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 rounded-full px-3 py-1">{podcast.category}</Badge>
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Clock className="h-4 w-4 text-purple-500" />
+                    <span className="font-medium">{podcast.duration}</span>
                   </div>
                 </div>
-                <h3 className="font-bold text-lg text-slate-900 mb-2">{podcast.title}</h3>
-                <p className="text-sm text-slate-600 mb-4 line-clamp-2">{podcast.description}</p>
+                <h3 className="font-bold text-xl text-slate-900 mb-3 group-hover:text-purple-600 transition-colors leading-tight">{podcast.title}</h3>
+                <p className="text-slate-600 mb-4 line-clamp-2 leading-relaxed">{podcast.description}</p>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-xs text-slate-500">
-                    <Calendar className="h-3 w-3" />
-                    {formatDate(podcast.publishedAt)}
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Calendar className="h-4 w-4 text-purple-500" />
+                    <span className="font-medium">{formatDate(podcast.publishedAt)}</span>
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="gap-2">
+                  <div className="flex gap-3">
+                    <Button size="sm" variant="outline" className="gap-2 border-slate-300 hover:bg-slate-50 rounded-full">
                       <Download className="h-4 w-4" />
                       Download
                     </Button>
                     <Button 
                       size="sm" 
-                      className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+                      className="bg-purple-600 hover:bg-purple-700 text-white gap-2 px-6 rounded-full"
                       onClick={() => togglePodcast(podcast.id)}
                     >
                       {currentlyPlaying === podcast.id ? (
@@ -286,39 +292,54 @@ export default function NoticiasPodcasts() {
         <title>Notícias e Podcasts - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
-        <div className="container mx-auto px-6 py-8 max-w-7xl">
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-8 py-8 max-w-7xl">
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <Link href="/professor/dashboard">
-              <Button variant="ghost" size="sm" className="gap-2">
+              <Button variant="ghost" size="sm" className="gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar ao Dashboard
               </Button>
             </Link>
           </div>
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Notícias e Podcasts</h1>
-            <p className="text-slate-600">Mantenha-se atualizado com as últimas novidades em educação e tecnologia</p>
+          <div className="mb-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
+                <Newspaper className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">Centro de Conteúdo</h1>
+                <p className="text-gray-600 text-lg">Mantenha-se atualizado com as últimas novidades em IA e educação</p>
+              </div>
+            </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex gap-2 mb-8">
+          <div className="flex gap-4 mb-10">
             <Button
               variant={activeTab === 'news' ? 'default' : 'outline'}
               onClick={() => setActiveTab('news')}
-              className={`gap-2 ${activeTab === 'news' ? 'bg-blue-600 hover:bg-blue-700 text-white' : ''}`}
+              className={`gap-3 h-12 px-6 rounded-xl font-medium ${
+                activeTab === 'news' 
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
             >
-              <Newspaper className="h-4 w-4" />
-              Notícias
+              <Newspaper className="h-5 w-5" />
+              Notícias IA
             </Button>
             <Button
               variant={activeTab === 'podcasts' ? 'default' : 'outline'}
               onClick={() => setActiveTab('podcasts')}
-              className={`gap-2 ${activeTab === 'podcasts' ? 'bg-purple-600 hover:bg-purple-700 text-white' : ''}`}
+              className={`gap-3 h-12 px-6 rounded-xl font-medium ${
+                activeTab === 'podcasts' 
+                  ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg' 
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
             >
-              <PlayCircle className="h-4 w-4" />
+              <Headphones className="h-5 w-5" />
               Podcasts
             </Button>
           </div>
