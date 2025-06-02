@@ -94,18 +94,22 @@ export default function GeradorAtividades() {
       return `${numerador.trim()}/${denominador.trim()}`;
     };
     
-    // Aplica conversões em ordem de especificidade
+    // Aplica conversões em ordem de especificidade para capturar todos os formatos LaTeX
     htmlLimpo = htmlLimpo
-      // Formato completo com parênteses ( frac{xx}{yy} )
+      // Remove espaços extras ao redor de frações
+      .replace(/\s*\\?frac\s*/g, 'frac')
+      // Formato completo com parênteses ( frac{xx}{yy} ) ou ( \frac{xx}{yy} )
       .replace(/\(\s*\\?frac\{([^}]+)\}\{([^}]+)\}\s*\)/g, (match, num, den) => converterFracao(num, den))
       // Formato LaTeX completo \frac{xx}{yy}
       .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, (match, num, den) => converterFracao(num, den))
       // Formato simples frac{xx}{yy}
       .replace(/frac\{([^}]+)\}\{([^}]+)\}/g, (match, num, den) => converterFracao(num, den))
+      // Formato com espaços frac{ xx }{ yy }
+      .replace(/frac\{\s*([^}]+)\s*\}\{\s*([^}]+)\s*\}/g, (match, num, den) => converterFracao(num, den))
+      // Captura frações que podem ter escapado - qualquer padrão {numero}{numero}
+      .replace(/\{(\d+)\}\{(\d+)\}/g, (match, num, den) => converterFracao(num, den))
       // Remove parenteses vazios restantes
-      .replace(/\(\s*\)/g, '')
-      // Converte frações simples como 12/25 para formato visual também
-      .replace(/(\d{1,2})\/(\d{1,2})/g, (match, num, den) => converterFracao(num, den));
+      .replace(/\(\s*\)/g, '');
     
     // Limpa caracteres de formatação markdown e especiais
     htmlLimpo = htmlLimpo
@@ -299,7 +303,6 @@ export default function GeradorAtividades() {
         scrollX: 0,
         scrollY: 0,
         logging: false,
-        letterRendering: true,
         foreignObjectRendering: false
       });
 
