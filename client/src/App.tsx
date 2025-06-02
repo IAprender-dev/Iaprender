@@ -12,6 +12,10 @@ import Auth from "@/pages/Auth";
 import Courses from "@/pages/Courses";
 import CourseDetails from "@/pages/CourseDetails";
 import CentralIA from "@/pages/CentralIA";
+import ChatGPTPage from "@/pages/ai/ChatGPTPage";
+import ClaudePage from "@/pages/ai/ClaudePage";
+import PerplexityPage from "@/pages/ai/PerplexityPage";
+import ImageGenPage from "@/pages/ai/ImageGenPage";
 import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
 import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
@@ -66,8 +70,12 @@ function Router() {
       <Route path="/cursos" component={Courses} />
       <Route path="/curso/:id" component={CourseDetails} />
       
-      {/* Central de IA route - temporariamente sem autenticação para testes */}
+      {/* Central de IA routes */}
       <Route path="/central-ia" component={CentralIA} />
+      <Route path="/central-ia/chatgpt" component={ChatGPTPage} />
+      <Route path="/central-ia/claude" component={ClaudePage} />
+      <Route path="/central-ia/perplexity" component={PerplexityPage} />
+      <Route path="/central-ia/image-gen" component={ImageGenPage} />
       
       {/* Teacher routes */}
       <Route path="/professor/dashboard" component={TeacherDashboard} />
