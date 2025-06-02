@@ -321,10 +321,10 @@ export default function CentralIA() {
               </Link>
               
               {/* Botão Voltar */}
-              <Link href="/teacher-dashboard">
-                <Button variant="outline" size="sm" className="flex items-center gap-2">
+              <Link href="/professor/dashboard">
+                <Button variant="outline" size="sm" className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-50">
                   <ArrowLeft className="h-4 w-4" />
-                  Voltar ao Dashboard
+                  Voltar
                 </Button>
               </Link>
             </div>
