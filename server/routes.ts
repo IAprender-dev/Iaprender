@@ -1158,22 +1158,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           max_tokens: 1024,
           messages: [{
             role: 'user',
-            content: `Analise o seguinte tema de aula baseado nas diretrizes do MEC e BNCC:
+            content: `Você é um especialista em educação brasileira e BNCC. Analise o tema de aula:
 
-"${tema}"
+TEMA: "${tema}"
 
-Identifique:
-1. A disciplina mais adequada
-2. O ano/série escolar recomendado
-3. Se está alinhado com as diretrizes da BNCC
-4. Observações caso esteja fora das diretrizes
+Baseado nas diretrizes da BNCC (Base Nacional Comum Curricular) do MEC, identifique:
 
-Responda em JSON com esta estrutura:
+1. Disciplina principal (Língua Portuguesa, Matemática, Ciências, História, Geografia, Arte, Educação Física, Inglês, etc.)
+2. Ano/série mais adequado (1º ao 9º ano do Ensino Fundamental ou 1ª à 3ª série do Ensino Médio)
+3. Se o tema está presente na BNCC para a disciplina identificada
+4. Observações importantes se não estiver alinhado
+
+RESPONDA APENAS COM JSON VÁLIDO:
 {
   "disciplina": "nome da disciplina",
-  "anoSerie": "ano ou série recomendado",
-  "conformeRegulasBNCC": true/false,
-  "observacoes": "explicação detalhada se não conforme"
+  "anoSerie": "X ano" ou "Xa série",
+  "conformeRegulasBNCC": true ou false,
+  "observacoes": "texto explicativo se necessário"
 }`
           }]
         })
@@ -1186,10 +1187,22 @@ Responda em JSON com esta estrutura:
       const data = await response.json();
       const analysisText = data.content[0].text;
       
+      console.log('Resposta da IA para análise do tema:', analysisText);
+      
       try {
-        const analysis = JSON.parse(analysisText);
-        return res.status(200).json(analysis);
+        // Tentar extrair JSON do texto da resposta
+        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const analysis = JSON.parse(jsonMatch[0]);
+          console.log('Análise parseada com sucesso:', analysis);
+          return res.status(200).json(analysis);
+        } else {
+          throw new Error('JSON não encontrado na resposta');
+        }
       } catch (parseError) {
+        console.error('Erro no parse da análise:', parseError);
+        console.error('Texto recebido:', analysisText);
+        
         // Fallback se não conseguir fazer parse do JSON
         return res.status(200).json({
           disciplina: "Multidisciplinar",
