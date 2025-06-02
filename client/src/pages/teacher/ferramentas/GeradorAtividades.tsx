@@ -53,6 +53,36 @@ export default function GeradorAtividades() {
   // Estados para resultado
   const [atividadeGerada, setAtividadeGerada] = useState<AtividadeGerada | null>(null);
 
+  // Função para processar e limpar o conteúdo da atividade
+  const processarConteudoAtividade = (conteudo: string): string => {
+    if (!conteudo) return '';
+    
+    // Remove texto explicativo antes do HTML se existir
+    let htmlLimpo = conteudo;
+    
+    // Se começar com texto explicativo, extrair apenas o HTML
+    const inicioDiv = htmlLimpo.indexOf('<div');
+    if (inicioDiv > 0) {
+      htmlLimpo = htmlLimpo.substring(inicioDiv);
+    }
+    
+    // Remove texto explicativo após o HTML se existir
+    const fimDiv = htmlLimpo.lastIndexOf('</div>') + 6;
+    if (fimDiv < htmlLimpo.length) {
+      htmlLimpo = htmlLimpo.substring(0, fimDiv);
+    }
+    
+    // Substitui [DATA ATUAL] pela data atual
+    const dataAtual = new Date().toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit', 
+      year: 'numeric'
+    });
+    htmlLimpo = htmlLimpo.replace(/\[DATA ATUAL\]/g, dataAtual);
+    
+    return htmlLimpo;
+  };
+
   // Função para gerar atividade
   const gerarAtividade = async () => {
     if (!tema.trim() || !tipoAtividade || !nivelDificuldade) {
@@ -397,11 +427,47 @@ export default function GeradorAtividades() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="p-6">
-                  <div 
-                    className="prose prose-sm max-w-none bg-white rounded-lg p-6 border border-slate-200 max-h-[600px] overflow-y-auto"
-                    dangerouslySetInnerHTML={{ __html: atividadeGerada.conteudo }}
-                  />
+                <CardContent className="p-0">
+                  <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+                    {/* Área de visualização da atividade */}
+                    <div 
+                      className="activity-display p-8 max-h-[700px] overflow-y-auto"
+                      style={{ 
+                        fontFamily: 'Arial, sans-serif',
+                        lineHeight: '1.6',
+                        color: '#1a1a1a'
+                      }}
+                      dangerouslySetInnerHTML={{ 
+                        __html: atividadeGerada.conteudo 
+                      }}
+                    />
+                    
+                    {/* Barra de ações no final */}
+                    <div className="border-t border-slate-200 p-4 bg-slate-50 rounded-b-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-slate-600">
+                          Atividade pronta para uso em sala de aula
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={copiarConteudo}>
+                            <Copy className="h-4 w-4 mr-1" />
+                            Copiar HTML
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={baixarPDF}>
+                            <Download className="h-4 w-4 mr-1" />
+                            Baixar PDF
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => window.print()}
+                          >
+                            🖨️ Imprimir
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
