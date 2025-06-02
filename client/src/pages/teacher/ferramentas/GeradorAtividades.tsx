@@ -25,6 +25,7 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface AtividadeGerada {
   id: string;
@@ -238,91 +239,75 @@ export default function GeradorAtividades() {
     if (!atividadeGerada) return;
     
     try {
-      // Cria um elemento temporário com o conteúdo HTML completo
-      const tempContainer = document.createElement('div');
-      tempContainer.innerHTML = processarConteudoAtividade(atividadeGerada.conteudo);
-      tempContainer.style.cssText = `
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        width: 794px;
-        padding: 40px;
-        font-family: 'Times New Roman', serif;
-        font-size: 16px;
-        line-height: 1.6;
-        color: #000000;
-        background: white;
-      `;
+      // Encontra o elemento da atividade na tela
+      const activityElement = document.querySelector('.activity-content');
+      if (!activityElement) {
+        throw new Error('Elemento da atividade não encontrado');
+      }
+
+      // Configura opções para captura de alta qualidade
+      const canvas = await html2canvas(activityElement as HTMLElement, {
+        scale: 2, // Alta resolução
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: 800,
+        height: activityElement.scrollHeight,
+        scrollX: 0,
+        scrollY: 0
+      });
+
+      const imgData = canvas.toDataURL('image/png');
       
-      document.body.appendChild(tempContainer);
-      
-      // Calcula a altura total do conteúdo
-      const contentHeight = tempContainer.scrollHeight;
-      const pageHeight = 1123; // Altura A4 em pixels (aproximadamente)
-      const totalPages = Math.ceil(contentHeight / pageHeight);
-      
+      // Configurações do PDF (A4: 595 x 842 pontos)
       const pdf = new jsPDF('p', 'pt', 'a4');
+      const pdfWidth = 595;
+      const pdfHeight = 842;
       
-      // Processa o HTML e adiciona ao PDF
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) {
+      // Margens do documento
+      const margin = 40;
+      const contentWidth = pdfWidth - (margin * 2);
+      const contentHeight = pdfHeight - (margin * 2);
+      
+      // Calcula a escala para ajustar a largura
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const scale = contentWidth / imgWidth;
+      const scaledHeight = imgHeight * scale;
+      
+      // Divide o conteúdo em páginas se necessário
+      let position = 0;
+      let pageNumber = 0;
+      
+      while (position < scaledHeight) {
+        if (pageNumber > 0) {
           pdf.addPage();
         }
         
-        // Calcula o offset para cada página
-        const yOffset = page * pageHeight;
+        // Calcula a altura da página atual
+        const pageContentHeight = Math.min(contentHeight, scaledHeight - position);
         
-        // Cria um canvas temporário para renderizar o conteúdo
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 794;
-        canvas.height = Math.min(pageHeight, contentHeight - yOffset);
+        // Adiciona a imagem na posição correta
+        pdf.addImage(
+          imgData, 
+          'PNG', 
+          margin, 
+          margin - position, 
+          contentWidth, 
+          scaledHeight,
+          undefined,
+          'FAST'
+        );
         
-        // Renderiza o conteúdo HTML no canvas (simulação básica)
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = 'black';
-        ctx.font = '16px Times New Roman';
-        
-        // Extrai o texto do HTML e adiciona ao PDF
-        const textLines = tempContainer.textContent.split('\n');
-        let currentY = 40;
-        const lineHeight = 20;
-        
-        textLines.forEach((line, index) => {
-          const adjustedY = currentY - yOffset;
-          if (adjustedY > 0 && adjustedY < pageHeight - 40) {
-            // Quebra linhas longas
-            const words = line.split(' ');
-            let currentLine = '';
-            
-            words.forEach(word => {
-              const testLine = currentLine + word + ' ';
-              if (testLine.length > 80 && currentLine !== '') {
-                pdf.text(currentLine.trim(), 40, adjustedY);
-                currentLine = word + ' ';
-                currentY += lineHeight;
-              } else {
-                currentLine = testLine;
-              }
-            });
-            
-            if (currentLine.trim() !== '') {
-              pdf.text(currentLine.trim(), 40, adjustedY);
-            }
-          }
-          currentY += lineHeight;
-        });
+        position += contentHeight;
+        pageNumber++;
       }
-      
-      // Remove o elemento temporário
-      document.body.removeChild(tempContainer);
       
       // Salva o PDF
       const nomeArquivo = atividadeGerada.titulo
         .replace(/[^a-zA-Z0-9\s]/g, '')
         .replace(/\s+/g, '_')
-        .toLowerCase();
+        .toLowerCase() || 'atividade';
       
       pdf.save(`${nomeArquivo}.pdf`);
       
