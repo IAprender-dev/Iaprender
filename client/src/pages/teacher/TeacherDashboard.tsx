@@ -98,6 +98,7 @@ export default function TeacherDashboard() {
   const navigationItems = [
     { name: "Dashboard", href: "/professor/dashboard", icon: LayoutGrid, active: true },
     { name: "Central de IAs", href: "/central-ia", icon: Bot, featured: true },
+    { name: "Notícias e Podcasts", href: "/professor/noticias-podcasts", icon: PlayCircle },
   ];
 
   // Removed AI Stats section as requested

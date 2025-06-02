@@ -16,6 +16,7 @@ import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
 import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
 import TeacherTools from "@/pages/teacher/TeacherTools";
+import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
@@ -73,6 +74,7 @@ function Router() {
       <Route path="/professor/cursos" component={TeacherCourses} />
       <Route path="/professor/planejamento" component={TeacherPlanning} />
       <Route path="/professor/ferramentas" component={TeacherTools} />
+      <Route path="/professor/noticias-podcasts" component={NoticiasPodcasts} />
       
       {/* Teacher AI Tools routes */}
       <Route path="/professor/ferramentas/imagem-educacional" component={ImagemEducacional} />
