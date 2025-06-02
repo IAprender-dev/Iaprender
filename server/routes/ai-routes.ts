@@ -1161,7 +1161,7 @@ Estruture o resumo em HTML com design moderno e didático:
         </div>
 
         <div class="footer">
-            Gerado com IAprender - Revolucionando o aprendizado
+            Gerado por AIverse - Seu Universo de IA
         </div>
     </div>
 </body>
@@ -1184,12 +1184,18 @@ INSTRUÇÕES ESPECÍFICAS:
       maxTokens: 4000
     });
     
+    // Limpar o conteúdo removendo markdown desnecessário
+    let cleanContent = result.content || "Erro ao gerar resumo";
+    
+    // Remover ```html do início e ``` do final se existirem
+    cleanContent = cleanContent.replace(/^```html\s*/i, '').replace(/\s*```$/, '');
+    
     // Retornar formato estruturado
     return res.status(200).json({
       materia: "Identificação automática via IA",
       serie: "Adequado conforme BNCC",
       area: "Educacional",
-      resumo: result.content || "Erro ao gerar resumo"
+      resumo: cleanContent
     });
     
   } catch (error: any) {
