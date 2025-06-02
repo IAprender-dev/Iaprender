@@ -87,27 +87,43 @@ export default function CentralIA() {
   const modelInfo = {
     "chatgpt": {
       name: "ChatGPT",
-      icon: <Sparkles className="h-5 w-5" />,
-      avatarColor: "bg-emerald-500",
-      description: "Conversação avançada e análise de texto"
+      icon: <Sparkles className="h-6 w-6" />,
+      avatarColor: "bg-gradient-to-br from-green-400 to-emerald-500",
+      cardColor: "from-green-50 to-emerald-50",
+      borderColor: "border-green-200",
+      hoverColor: "hover:border-green-400",
+      description: "Conversação avançada e análise de texto",
+      route: "/central-ia/chatgpt"
     },
     "claude": {
       name: "Claude",
-      icon: <Bot className="h-5 w-5" />,
-      avatarColor: "bg-purple-500",
-      description: "Análise profunda e raciocínio complexo"
+      icon: <Bot className="h-6 w-6" />,
+      avatarColor: "bg-gradient-to-br from-purple-400 to-violet-500",
+      cardColor: "from-purple-50 to-violet-50",
+      borderColor: "border-purple-200",
+      hoverColor: "hover:border-purple-400",
+      description: "Análise profunda e raciocínio complexo",
+      route: "/central-ia/claude"
     },
     "perplexity": {
       name: "Perplexity",
-      icon: <Search className="h-5 w-5" />,
-      avatarColor: "bg-blue-500",
-      description: "Pesquisa em tempo real com fontes"
+      icon: <Search className="h-6 w-6" />,
+      avatarColor: "bg-gradient-to-br from-blue-400 to-indigo-500",
+      cardColor: "from-blue-50 to-indigo-50",
+      borderColor: "border-blue-200",
+      hoverColor: "hover:border-blue-400",
+      description: "Pesquisa em tempo real com fontes",
+      route: "/central-ia/perplexity"
     },
     "image-gen": {
       name: "Gerador de Imagens",
-      icon: <ImageIcon className="h-5 w-5" />,
-      avatarColor: "bg-orange-500",
-      description: "Criação de imagens educacionais"
+      icon: <ImageIcon className="h-6 w-6" />,
+      avatarColor: "bg-gradient-to-br from-orange-400 to-amber-500",
+      cardColor: "from-orange-50 to-amber-50",
+      borderColor: "border-orange-200",
+      hoverColor: "hover:border-orange-400",
+      description: "Criação de imagens educacionais",
+      route: "/central-ia/image-gen"
     }
   };
 
@@ -141,21 +157,10 @@ export default function CentralIA() {
     setCurrentConversation(newConversation);
   };
 
-  // Troca de modelo de IA
-  const handleModelChange = (model: AIModel) => {
-    setCurrentModel(model);
-    
-    if (currentConversation) {
-      const shouldCreateNew = confirm(
-        "Deseja iniciar uma nova conversa com este modelo? Clique em OK para iniciar nova conversa ou Cancelar para manter a atual."
-      );
-      
-      if (shouldCreateNew) {
-        createNewConversation();
-      }
-    } else {
-      createNewConversation();
-    }
+  // Navegar para a IA selecionada
+  const handleAISelection = (model: AIModel) => {
+    // Redirecionar para a interface específica da IA
+    window.location.href = modelInfo[model].route;
   };
 
   // Lidar com envio de prompt
@@ -327,214 +332,74 @@ export default function CentralIA() {
         </header>
 
         {/* Conteúdo Principal */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           
-          {/* Seleção de IA - Cards em destaque */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Central de Inteligência Artificial</h1>
-            <p className="text-slate-600 mb-8">Escolha a IA que melhor atende às suas necessidades educacionais</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {Object.entries(modelInfo).map(([key, info]) => (
-                <Card 
-                  key={key}
-                  className={`cursor-pointer transition-all duration-300 hover:shadow-lg border-2 ${
-                    currentModel === key 
-                      ? 'border-blue-500 bg-blue-50/50 shadow-md' 
-                      : 'border-slate-200 hover:border-blue-300'
-                  }`}
-                  onClick={() => handleModelChange(key as AIModel)}
-                >
-                  <CardContent className="p-6 text-center">
-                    <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${info.avatarColor}`}>
-                      <div className="text-white text-2xl">
-                        {info.icon}
-                      </div>
+          {/* Header da Central */}
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-slate-900 mb-4">Central de Inteligência Artificial</h1>
+            <p className="text-xl text-slate-600 mb-2">Escolha a IA que melhor atende às suas necessidades educacionais</p>
+            <p className="text-sm text-slate-500">Clique em uma das opções abaixo para começar</p>
+          </div>
+          
+          {/* Cards das IAs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {Object.entries(modelInfo).map(([key, info]) => (
+              <Card 
+                key={key}
+                className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 ${info.borderColor} ${info.hoverColor} bg-gradient-to-br ${info.cardColor}`}
+                onClick={() => handleAISelection(key as AIModel)}
+              >
+                <CardContent className="p-8 text-center">
+                  <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center ${info.avatarColor} shadow-lg`}>
+                    <div className="text-white">
+                      {info.icon}
                     </div>
-                    <h3 className="font-semibold text-lg text-slate-900 mb-2">{info.name}</h3>
-                    <p className="text-sm text-slate-600 mb-3">
-                      {info.description}
-                    </p>
-                    {currentModel === key && (
-                      <div className="mt-3 text-blue-600 font-medium text-sm">
-                        ✓ Selecionado
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                  <h3 className="font-bold text-xl text-slate-900 mb-3">{info.name}</h3>
+                  <p className="text-sm text-slate-700 mb-6 leading-relaxed">
+                    {info.description}
+                  </p>
+                  <div className="flex items-center justify-center text-blue-600 font-medium">
+                    <span>Começar conversa</span>
+                    <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
-          {/* Layout da Conversa */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            
-            {/* Painel Lateral - Conversas e Salvos */}
-            <div className="lg:col-span-1 space-y-6">
-              
-              {/* Controles de Conversa */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200/50 p-6">
-                <Button 
-                  onClick={createNewConversation}
-                  className="w-full mb-4 bg-blue-600 hover:bg-blue-700"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Conversa
-                </Button>
-                
-                <Button 
-                  onClick={() => setShowSavedItems(!showSavedItems)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Bookmark className="h-4 w-4 mr-2" />
-                  Itens Salvos ({savedItems.length})
-                </Button>
-              </div>
-
-              {/* Lista de Conversas */}
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200/50 p-6">
-                <h3 className="font-semibold text-slate-900 mb-4">Conversas Recentes</h3>
-                <ScrollArea className="h-64">
-                  {conversations.length === 0 ? (
-                    <p className="text-slate-500 text-sm">Nenhuma conversa ainda</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {conversations.map((conv) => (
-                        <div
-                          key={conv.id}
-                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                            currentConversation?.id === conv.id
-                              ? 'bg-blue-50 border border-blue-200'
-                              : 'hover:bg-slate-50'
-                          }`}
-                          onClick={() => setCurrentConversation(conv)}
-                        >
-                          <div className="font-medium text-sm text-slate-900 truncate">
-                            {conv.title}
-                          </div>
-                          <div className="text-xs text-slate-500 mt-1">
-                            {modelInfo[conv.model].name} • {conv.messages.length} mensagens
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-              </div>
-            </div>
-
-            {/* Área Principal da Conversa */}
-            <div className="lg:col-span-3">
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200/50 h-[600px] flex flex-col">
-                
-                {/* Header da conversa */}
-                {currentConversation && (
-                  <div className="p-6 border-b border-slate-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-slate-900">{currentConversation.title}</h3>
-                        <p className="text-sm text-slate-500">
-                          Conversando com {modelInfo[currentModel].name}
-                        </p>
-                      </div>
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${modelInfo[currentModel].avatarColor}`}>
-                        <div className="text-white">
-                          {modelInfo[currentModel].icon}
-                        </div>
-                      </div>
-                    </div>
+          {/* Informações adicionais */}
+          <div className="mt-16 text-center">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-4xl mx-auto">
+              <h2 className="text-2xl font-bold text-slate-900 mb-4">Como usar a Central de IA</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-blue-600 font-bold text-sm">1</span>
                   </div>
-                )}
-
-                {/* Área de mensagens */}
-                <div className="flex-1 overflow-y-auto">
-                  {!currentConversation ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                      <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-                        {modelInfo[currentModel].icon}
-                      </div>
-                      <h2 className="text-xl font-bold mb-2">
-                        Bem-vindo à Central de IA
-                      </h2>
-                      <p className="text-slate-600 max-w-md mb-6">
-                        Comece uma nova conversa com {modelInfo[currentModel].name} ou escolha outro modelo de IA.
-                      </p>
-                      <Button onClick={createNewConversation}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Nova Conversa
-                      </Button>
-                    </div>
-                  ) : currentConversation.messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                      <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-                        {modelInfo[currentModel].icon}
-                      </div>
-                      <h2 className="text-xl font-bold mb-2">
-                        Conversa com {modelInfo[currentModel].name}
-                      </h2>
-                      <p className="text-slate-600 max-w-md">
-                        Faça uma pergunta ou forneça um prompt para começar.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-0">
-                      {currentConversation.messages.map(renderMessage)}
-                      {isLoading && (
-                        <div className="py-6 bg-white">
-                          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-                            <div className="flex items-start gap-4 max-w-3xl mx-auto">
-                              <Avatar>
-                                <AvatarFallback className={modelInfo[currentModel].avatarColor}>
-                                  {modelInfo[currentModel].icon}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <div className="text-sm font-medium text-neutral-700 mb-2">
-                                  {modelInfo[currentModel].name}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                  <span className="text-sm text-slate-500">Pensando...</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  )}
+                  <div>
+                    <h3 className="font-semibold text-slate-900 mb-1">Escolha sua IA</h3>
+                    <p className="text-sm text-slate-600">Selecione a inteligência artificial que melhor se adequa à sua tarefa</p>
+                  </div>
                 </div>
-
-                {/* Input de mensagem */}
-                {currentConversation && (
-                  <div className="p-6 border-t border-slate-200">
-                    <form onSubmit={handleSubmit} className="flex gap-3">
-                      <div className="flex-1">
-                        <textarea
-                          value={prompt}
-                          onChange={(e) => setPrompt(e.target.value)}
-                          placeholder={`Digite sua mensagem para ${modelInfo[currentModel].name}...`}
-                          className="w-full p-3 border border-slate-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={3}
-                          disabled={isLoading}
-                        />
-                      </div>
-                      <Button 
-                        type="submit" 
-                        disabled={!prompt.trim() || isLoading}
-                        className="bg-blue-600 hover:bg-blue-700 self-end"
-                      >
-                        {isLoading ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </form>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-blue-600 font-bold text-sm">2</span>
                   </div>
-                )}
+                  <div>
+                    <h3 className="font-semibold text-slate-900 mb-1">Digite sua pergunta</h3>
+                    <p className="text-sm text-slate-600">Faça perguntas, peça análises ou solicite criação de conteúdo</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <span className="text-blue-600 font-bold text-sm">3</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-900 mb-1">Anexe arquivos</h3>
+                    <p className="text-sm text-slate-600">Adicione documentos, imagens ou outros materiais para análise</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
