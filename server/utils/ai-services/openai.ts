@@ -118,7 +118,7 @@ export async function analyzeDocumentWithVision({
   prompt,
   model = "gpt-4o",
   maxTokens = 4000,
-}: DocumentAnalysisRequest) {
+}: DocumentAnalysisRequestOld) {
   if (!openai) {
     throw new Error("OpenAI client is not initialized. API key may be missing.");
   }
@@ -183,8 +183,8 @@ export async function analyzeDocumentWithVision({
   }
 }
 
-// Função para análise de documentos
-export async function analyzeDocument({
+// Função para análise de documentos de texto
+export async function analyzeDocumentText({
   userId,
   contractId,
   documentContent,

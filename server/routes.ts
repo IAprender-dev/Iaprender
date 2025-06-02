@@ -31,6 +31,7 @@ import MemoryStore from "memorystore";
 import multer from "multer";
 import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
 import aiRouter from "./routes/ai-routes";
+import * as OpenAIService from "./utils/ai-services/openai";
 
 // Define login schema
 const loginSchema = z.object({
@@ -1083,7 +1084,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use OpenAI service to analyze document
-      const result = await OpenAIService.analyzeDocument({
+      const result = await OpenAIService.analyzeDocumentText({
         userId,
         contractId,
         documentContent: extractedText,
