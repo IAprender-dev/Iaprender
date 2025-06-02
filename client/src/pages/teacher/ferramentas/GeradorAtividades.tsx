@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
+import aiverseLogoNew from "@/assets/aiverse-logo-new.png";
 import { 
   ArrowLeft,
   FileText,
@@ -286,24 +287,42 @@ export default function GeradorAtividades() {
       </Helmet>
       
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
+      <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          {/* Top Brand Section */}
+          <div className="flex items-center justify-center py-4 border-b border-slate-100">
+            <div className="flex items-center gap-4">
+              <img 
+                src={aiverseLogoNew} 
+                alt="AIverse Logo" 
+                className="w-12 h-12 object-contain"
+              />
+              <div className="text-center">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  AIverse
+                </h1>
+                <p className="text-sm text-slate-600 font-medium">Seu Universo de IA</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Navigation Section */}
+          <div className="flex items-center justify-between h-14">
             <div className="flex items-center gap-4">
               <Link href="/professor/dashboard">
-                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
               </Link>
               <div className="h-6 w-px bg-slate-300" />
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-sm">
                   <Sparkles className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-slate-900">Gerador de Atividades</h1>
-                  <p className="text-sm text-slate-600">Crie atividades educacionais com Inteligência Artificial</p>
+                  <h2 className="text-lg font-bold text-slate-900">Gerador de Atividades</h2>
+                  <p className="text-sm text-slate-600">Crie atividades educacionais personalizadas</p>
                 </div>
               </div>
             </div>
