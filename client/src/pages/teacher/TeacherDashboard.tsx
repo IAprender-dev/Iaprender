@@ -283,7 +283,7 @@ export default function TeacherDashboard() {
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Ferramentas de IA */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Link href="/central-ia">
                 <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100">
@@ -329,8 +329,10 @@ export default function TeacherDashboard() {
               <Link href="/professor/ferramentas/planejamento-aula">
                 <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100">
                   <CardContent className="p-6">
-                    <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl mb-4">
-                      <Calendar className="h-6 w-6 text-white" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl">
+                        <Calendar className="h-6 w-6 text-white" />
+                      </div>
                     </div>
                     <h3 className="font-bold text-lg text-slate-900 mb-2">Planos de Aula</h3>
                     <p className="text-sm text-slate-600">Planejamento inteligente com IA</p>
@@ -345,8 +347,10 @@ export default function TeacherDashboard() {
               <Link href="/professor/ferramentas/gerador-atividades">
                 <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100">
                   <CardContent className="p-6">
-                    <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl mb-4">
-                      <FilePlus className="h-6 w-6 text-white" />
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl">
+                        <FilePlus className="h-6 w-6 text-white" />
+                      </div>
                     </div>
                     <h3 className="font-bold text-lg text-slate-900 mb-2">Gerar Atividades</h3>
                     <p className="text-sm text-slate-600">Exercícios personalizados com IA</p>
@@ -357,155 +361,95 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
               </Link>
+
+              <Link href="/professor/ferramentas/imagem-educacional">
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-green-50 to-teal-50 hover:from-green-100 hover:to-teal-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl">
+                        <ImageIcon className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Imagens Educacionais</h3>
+                    <p className="text-sm text-slate-600">Gere ilustrações para suas aulas</p>
+                    <div className="mt-4 flex items-center text-green-600 group-hover:text-green-700">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/professor/ferramentas/materiais-didaticos">
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl">
+                        <BookOpen className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Resumos Didáticos</h3>
+                    <p className="text-sm text-slate-600">Crie resumos educativos com IA</p>
+                    <div className="mt-4 flex items-center text-indigo-600 group-hover:text-indigo-700">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+
+              <Link href="/professor/ferramentas/resumos-bncc">
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl">
+                        <GraduationCap className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Resumos BNCC</h3>
+                    <p className="text-sm text-slate-600">Resumos alinhados à Base Nacional</p>
+                    <div className="mt-4 flex items-center text-cyan-600 group-hover:text-cyan-700">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
 
-            {/* All AI Tools */}
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-              <CardHeader className="pb-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                      <Wand2 className="h-6 w-6 text-purple-600" />
-                      Todas as Ferramentas de IA
-                    </CardTitle>
-                    <p className="text-slate-600 mt-1">Explore todo o potencial da inteligência artificial na educação</p>
-                  </div>
-                </div>
+            {/* Dicas de IA para Educadores */}
+            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl max-w-4xl mx-auto">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-amber-500" />
+                  Dicas de IA para Educadores
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {aiTools.map((tool, index) => (
-                    <Link key={index} href={tool.href}>
-                      <div className="group p-6 rounded-2xl border border-slate-200/50 hover:border-purple-200 bg-white hover:shadow-lg transition-all duration-300 cursor-pointer">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className={`p-3 rounded-xl bg-gradient-to-br ${tool.color} group-hover:scale-110 transition-transform duration-300`}>
-                            <div className="text-white">
-                              {tool.icon}
-                            </div>
-                          </div>
-                          {tool.badge && (
-                            <Badge 
-                              variant={tool.featured ? "default" : "secondary"} 
-                              className={`text-xs ${tool.featured ? 'bg-purple-600 text-white' : 'bg-slate-100 text-slate-700'}`}
-                            >
-                              {tool.badge}
-                            </Badge>
-                          )}
-                        </div>
-                        <h4 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-purple-700 transition-colors">
-                          {tool.title}
-                        </h4>
-                        <p className="text-sm text-slate-600 mb-4 line-clamp-2">{tool.description}</p>
-                        <div className="flex items-center text-slate-500 group-hover:text-purple-600 transition-colors">
-                          <span className="text-sm font-medium">Explorar ferramenta</span>
-                          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50">
+                  <h4 className="font-semibold text-slate-900 mb-2">💡 Dica do Dia</h4>
+                  <p className="text-sm text-slate-700 mb-3">
+                    Use a Central de IAs para comparar respostas de diferentes modelos e obter perspectivas variadas para seus materiais educacionais.
+                  </p>
+                  <Link href="/central-ia">
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                      Experimentar Agora
+                    </Button>
+                  </Link>
+                </div>
+                <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200/50">
+                  <h4 className="font-semibold text-slate-900 mb-2">📚 Recurso Destacado</h4>
+                  <p className="text-sm text-slate-700 mb-3">
+                    A Análise de Documentos pode transformar qualquer PDF ou Word em material didático estruturado automaticamente.
+                  </p>
+                  <Link href="/professor/ferramentas/analise-documentos">
+                    <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                      Testar Agora
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
-
-            {/* Educational Insights */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* AI Tips */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5 text-amber-500" />
-                    Dicas de IA para Educadores
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50">
-                    <h4 className="font-semibold text-slate-900 mb-2">💡 Dica do Dia</h4>
-                    <p className="text-sm text-slate-700 mb-3">
-                      Use a Central de IAs para comparar respostas de diferentes modelos e obter perspectivas variadas para seus materiais educacionais.
-                    </p>
-                    <Link href="/central-ia">
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                        Experimentar Agora
-                      </Button>
-                    </Link>
-                  </div>
-                  <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200/50">
-                    <h4 className="font-semibold text-slate-900 mb-2">📚 Recurso Destacado</h4>
-                    <p className="text-sm text-slate-700 mb-3">
-                      A Análise de Documentos pode transformar qualquer PDF ou Word em material didático estruturado automaticamente.
-                    </p>
-                    <Link href="/professor/ferramentas/analise-documentos">
-                      <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50">
-                        Testar Agora
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Links */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <Target className="h-5 w-5 text-purple-500" />
-                    Acesso Rápido
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Link href="/central-ia">
-                    <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Bot className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">Central de IAs</p>
-                        <p className="text-xs text-slate-500">ChatGPT, Claude, Gemini</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
-                    </div>
-                  </Link>
-                  
-                  <Link href="/professor/ferramentas/resumos-bncc">
-                    <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer">
-                      <div className="p-2 bg-emerald-100 rounded-lg">
-                        <GraduationCap className="h-4 w-4 text-emerald-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">Resumos BNCC</p>
-                        <p className="text-xs text-slate-500">Base Nacional Comum Curricular</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
-                    </div>
-                  </Link>
-
-                  <Link href="/professor/ferramentas/imagem-educacional">
-                    <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <ImageIcon className="h-4 w-4 text-green-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">Imagens Educacionais</p>
-                        <p className="text-xs text-slate-500">Gere ilustrações para aulas</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-green-600 transition-colors" />
-                    </div>
-                  </Link>
-
-                  <Link href="/professor/ferramentas/materiais-didaticos">
-                    <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer">
-                      <div className="p-2 bg-indigo-100 rounded-lg">
-                        <BookOpen className="h-4 w-4 text-indigo-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900">Resumos Didáticos</p>
-                        <p className="text-xs text-slate-500">Materiais educativos com IA</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
-            </div>
           </main>
         </div>
 
