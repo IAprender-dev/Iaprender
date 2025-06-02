@@ -294,14 +294,14 @@ export default function GeradorAtividades() {
                   <Slider
                     value={quantidadeQuestoes}
                     onValueChange={setQuantidadeQuestoes}
-                    max={50}
+                    max={20}
                     min={5}
                     step={5}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-slate-500">
                     <span>5 questões</span>
-                    <span>50 questões</span>
+                    <span>20 questões</span>
                   </div>
                 </div>
 

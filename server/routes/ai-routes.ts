@@ -253,15 +253,14 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
   try {
     const schema = z.object({
       tema: z.string().min(1).max(1000),
-      materia: z.string(),
-      serie: z.string(),
       tipoAtividade: z.string(),
       quantidadeQuestoes: z.number().min(1).max(20),
       nivelDificuldade: z.string(),
       incluirGabarito: z.boolean().optional().default(true),
+      autoDetectSubject: z.boolean().optional().default(false),
     });
     
-    const { tema, materia, serie, tipoAtividade, quantidadeQuestoes, nivelDificuldade, incluirGabarito } = schema.parse(req.body);
+    const { tema, tipoAtividade, quantidadeQuestoes, nivelDificuldade, incluirGabarito, autoDetectSubject } = schema.parse(req.body);
     
     if (!process.env.OPENAI_API_KEY) {
       return res.status(503).json({ message: "OpenAI service is not available" });
@@ -270,15 +269,30 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
     const userId = req.session.user?.id || 1; // Valor temporário
     const contractId = req.session.user?.contractId || 1; // Valor temporário
 
-    // Constrói o prompt para geração da atividade
-    // Aqui está o novo prompt personalizado que pode ser modificado
-    const promptAtividade = `
+    // Constrói o prompt para geração da atividade com detecção automática
+    const promptAtividade = autoDetectSubject ? `
+      Você é um educador especialista que cria atividades educacionais de alta qualidade seguindo as diretrizes da BNCC.
+      
+      PRIMEIRO: Analise o tema "${tema}" e identifique automaticamente:
+      1. Qual a disciplina/matéria mais adequada segundo a BNCC
+      2. Qual o ano/série mais apropriado para este conteúdo
+      3. Quais competências e habilidades da BNCC são contempladas
+      
+      DEPOIS: Crie uma atividade educacional completa com as seguintes características:
+      - Tema: ${tema}
+      - Tipo de atividade: ${tipoAtividade}
+      - Quantidade de questões: ${quantidadeQuestoes} (IMPORTANTE: gere EXATAMENTE este número de questões)
+      - Nível de dificuldade: ${nivelDificuldade}
+      - Incluir gabarito: ${incluirGabarito ? 'Sim' : 'Não'}
+      
+      RETORNE também no final as informações identificadas:
+      - Matéria detectada
+      - Série detectada
+      - Habilidades BNCC aplicáveis` : `
       Você é um educador especialista que cria atividades educacionais de alta qualidade.
       
       Crie uma atividade educacional completa com as seguintes características:
       - Tema: ${tema}
-      - Matéria: ${materia}
-      - Série/Ano: ${serie}
       - Tipo de atividade: ${tipoAtividade}
       - Quantidade de questões: ${quantidadeQuestoes} (IMPORTANTE: gere EXATAMENTE este número de questões)
       - Nível de dificuldade: ${nivelDificuldade}
@@ -370,7 +384,58 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
       maxTokens: 8000  // Aumentamos o limite para atividades completas e mais elaboradas
     });
     
-    return res.status(200).json(result);
+    // Se está usando detecção automática, tenta extrair as informações identificadas
+    let responseData = {
+      content: result.content,
+      tokensUsed: result.tokensUsed
+    };
+    
+    if (autoDetectSubject) {
+      // Tenta extrair informações automaticamente detectadas
+      try {
+        // Busca por padrões no texto para identificar matéria e série
+        const content = result.content.toLowerCase();
+        
+        // Detecta matéria
+        let materia = "Identificação automática";
+        if (content.includes('matemática') || content.includes('frações') || content.includes('geometria')) {
+          materia = "Matemática";
+        } else if (content.includes('português') || content.includes('literatura') || content.includes('gramática')) {
+          materia = "Língua Portuguesa";
+        } else if (content.includes('ciências') || content.includes('biologia') || content.includes('física')) {
+          materia = "Ciências";
+        } else if (content.includes('história') || content.includes('brasil') || content.includes('colonial')) {
+          materia = "História";
+        } else if (content.includes('geografia') || content.includes('mapas') || content.includes('relevo')) {
+          materia = "Geografia";
+        } else if (content.includes('inglês') || content.includes('english')) {
+          materia = "Inglês";
+        }
+        
+        // Detecta série baseada na complexidade do tema
+        let serie = "Identificação automática";
+        if (tema.toLowerCase().includes('alfabetização') || tema.toLowerCase().includes('vogais')) {
+          serie = "1º ao 2º ano";
+        } else if (tema.toLowerCase().includes('frações') || tema.toLowerCase().includes('multiplicação')) {
+          serie = "3º ao 5º ano";
+        } else if (tema.toLowerCase().includes('equações') || tema.toLowerCase().includes('adolescência')) {
+          serie = "6º ao 9º ano";
+        } else {
+          serie = "Ensino Fundamental";
+        }
+        
+        responseData = {
+          ...responseData,
+          materia,
+          serie,
+          titulo: `Atividade de ${materia} - ${tema}`
+        };
+      } catch (detectError) {
+        console.log('Erro na detecção automática, usando valores padrão');
+      }
+    }
+    
+    return res.status(200).json(responseData);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ message: error.errors });
