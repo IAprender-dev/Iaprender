@@ -1,26 +1,23 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
 import aiverseLogoNew from "@/assets/aiverse-logo-new.png";
 import { 
   ArrowLeft,
   FileText,
-  Settings,
   Download,
   Copy,
-  Printer,
-  Upload,
-  X,
   Sparkles,
   BookOpen,
   Clock,
   Target,
-  Zap
+  Zap,
+  CheckCircle,
+  Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -47,25 +44,18 @@ export default function GeradorAtividades() {
   
   // Estados principais
   const [tema, setTema] = useState("");
-  const [disciplina, setDisciplina] = useState("");
-  const [serie, setSerie] = useState("");
   const [tipoAtividade, setTipoAtividade] = useState("");
   const [quantidadeQuestoes, setQuantidadeQuestoes] = useState([10]);
   const [nivelDificuldade, setNivelDificuldade] = useState("");
   const [incluirGabarito, setIncluirGabarito] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Estados para PDF
-  const [pdfSelecionado, setPdfSelecionado] = useState<File | null>(null);
-  const [usarPdf, setUsarPdf] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
   // Estados para resultado
   const [atividadeGerada, setAtividadeGerada] = useState<AtividadeGerada | null>(null);
 
   // Função para gerar atividade
   const gerarAtividade = async () => {
-    if (!tema.trim() || !disciplina || !serie || !tipoAtividade || !nivelDificuldade) {
+    if (!tema.trim() || !tipoAtividade || !nivelDificuldade) {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos para gerar a atividade.",
@@ -77,43 +67,21 @@ export default function GeradorAtividades() {
     setIsLoading(true);
 
     try {
-      let response;
-      
-      if (usarPdf && pdfSelecionado) {
-        // Gerar com PDF
-        const formData = new FormData();
-        formData.append('tema', tema);
-        formData.append('materia', disciplina);
-        formData.append('serie', serie);
-        formData.append('tipoAtividade', tipoAtividade);
-        formData.append('quantidadeQuestoes', quantidadeQuestoes[0].toString());
-        formData.append('nivelDificuldade', nivelDificuldade);
-        formData.append('incluirGabarito', incluirGabarito.toString());
-        formData.append('usarPdf', 'true');
-        formData.append('pdfFile', pdfSelecionado);
-        
-        response = await fetch('/api/ai/openai/activity-with-pdf', {
-          method: 'POST',
-          body: formData
-        });
-      } else {
-        // Gerar sem PDF
-        response = await fetch('/api/ai/openai/activity', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            tema,
-            materia: disciplina,
-            serie,
-            tipoAtividade,
-            quantidadeQuestoes: quantidadeQuestoes[0],
-            nivelDificuldade,
-            incluirGabarito
-          }),
-        });
-      }
+      // Gerar atividade com detecção automática de disciplina e série
+      const response = await fetch('/api/ai/openai/activity', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tema,
+          tipoAtividade,
+          quantidadeQuestoes: quantidadeQuestoes[0],
+          nivelDificuldade,
+          incluirGabarito,
+          autoDetectSubject: true // Flag para detecção automática
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -134,9 +102,9 @@ export default function GeradorAtividades() {
       
       const novaAtividade: AtividadeGerada = {
         id: `ativ-${Date.now()}`,
-        titulo: `Atividade de ${disciplina} - ${tema}`,
-        materia: disciplina,
-        serie,
+        titulo: data.titulo || `Atividade - ${tema}`,
+        materia: data.materia || "Detectado automaticamente",
+        serie: data.serie || "Detectado automaticamente",
         conteudo: conteudoLimpo,
         tipoAtividade,
         dataGeracao: new Date(),
@@ -163,88 +131,19 @@ export default function GeradorAtividades() {
     }
   };
 
-  // Função para upload de PDF
-  const handlePdfUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type === 'application/pdf') {
-        setPdfSelecionado(file);
-        setUsarPdf(true);
-        toast({
-          title: "PDF adicionado",
-          description: `O arquivo ${file.name} será usado para gerar a atividade.`,
-        });
-      } else {
-        toast({
-          title: "Formato inválido",
-          description: "Por favor, selecione um arquivo PDF.",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
-  const removerPdf = () => {
-    setPdfSelecionado(null);
-    setUsarPdf(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  // Funções de ação
-  const copiarAtividade = () => {
-    if (!atividadeGerada) return;
-    
-    const temp = document.createElement('div');
-    temp.innerHTML = atividadeGerada.conteudo;
-    const textContent = temp.textContent || temp.innerText;
-    
-    navigator.clipboard.writeText(textContent).then(() => {
+  // Função para copiar conteúdo
+  const copiarConteudo = () => {
+    if (atividadeGerada) {
+      navigator.clipboard.writeText(atividadeGerada.conteudo);
       toast({
-        title: "Copiado!",
+        title: "Conteúdo copiado!",
         description: "Atividade copiada para a área de transferência.",
       });
-    });
+    }
   };
 
-  const imprimirAtividade = () => {
-    if (!atividadeGerada) return;
-    
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${atividadeGerada.titulo}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            h1 { font-size: 18px; margin-bottom: 10px; }
-            .meta { font-size: 12px; color: #666; margin-bottom: 20px; }
-          </style>
-        </head>
-        <body>
-          <h1>${atividadeGerada.titulo}</h1>
-          <div class="meta">
-            ${atividadeGerada.tipoAtividade} | ${atividadeGerada.materia} | ${atividadeGerada.serie}
-          </div>
-          ${atividadeGerada.conteudo}
-        </body>
-      </html>
-    `);
-    
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 250);
-  };
-
-  const downloadPDF = () => {
+  // Função para baixar PDF
+  const baixarPDF = () => {
     if (!atividadeGerada) return;
     
     try {
@@ -283,7 +182,7 @@ export default function GeradorAtividades() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Helmet>
-        <title>Gerador de Atividades - IAverse</title>
+        <title>Gerador de Atividades - AIverse</title>
       </Helmet>
       
       {/* Header */}
@@ -334,131 +233,104 @@ export default function GeradorAtividades() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Painel de Configuração */}
-          <div className="lg:col-span-1">
-            <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-blue-600" />
-                  Configurar Atividade
+          <div className="lg:col-span-1 space-y-6">
+            <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-slate-800">
+                  <FileText className="h-5 w-5 text-blue-600" />
+                  Configurações da Atividade
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 
                 {/* Tema */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-700">Tema da Atividade</Label>
+                  <Label htmlFor="tema" className="text-sm font-semibold text-slate-700">
+                    Tema da Atividade *
+                  </Label>
                   <Textarea
-                    placeholder="Ex: Interpretação de textos narrativos..."
+                    id="tema"
+                    placeholder="Ex: Frações, Sistema Solar, Brasil Colônia..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
-                    className="min-h-[80px] resize-none border-slate-200 focus:border-blue-400"
+                    className="min-h-[80px] resize-none"
                   />
-                </div>
-
-                {/* Disciplina e Série */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-700">Disciplina</Label>
-                    <Select value={disciplina} onValueChange={setDisciplina}>
-                      <SelectTrigger className="border-slate-200 focus:border-blue-400">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Matemática">Matemática</SelectItem>
-                        <SelectItem value="Português">Português</SelectItem>
-                        <SelectItem value="Ciências">Ciências</SelectItem>
-                        <SelectItem value="História">História</SelectItem>
-                        <SelectItem value="Geografia">Geografia</SelectItem>
-                        <SelectItem value="Física">Física</SelectItem>
-                        <SelectItem value="Química">Química</SelectItem>
-                        <SelectItem value="Biologia">Biologia</SelectItem>
-                        <SelectItem value="Arte">Arte</SelectItem>
-                        <SelectItem value="Inglês">Inglês</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-700">Ano/Série</Label>
-                    <Select value={serie} onValueChange={setSerie}>
-                      <SelectTrigger className="border-slate-200 focus:border-blue-400">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1º Ano EF">1º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="2º Ano EF">2º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="3º Ano EF">3º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="4º Ano EF">4º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="5º Ano EF">5º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="6º Ano EF">6º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="7º Ano EF">7º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="8º Ano EF">8º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="9º Ano EF">9º Ano - Ensino Fundamental</SelectItem>
-                        <SelectItem value="1º Ano EM">1º Ano - Ensino Médio</SelectItem>
-                        <SelectItem value="2º Ano EM">2º Ano - Ensino Médio</SelectItem>
-                        <SelectItem value="3º Ano EM">3º Ano - Ensino Médio</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-xs text-blue-800">
+                        <p className="font-medium mb-1">Detecção Automática BNCC</p>
+                        <p>A IA analisará o tema e identificará automaticamente a disciplina e ano/série conforme as diretrizes da BNCC.</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Tipo e Dificuldade */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-700">Tipo de Atividade</Label>
-                    <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
-                      <SelectTrigger className="border-slate-200 focus:border-blue-400">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Lista de Exercícios">Lista de Exercícios</SelectItem>
-                        <SelectItem value="Avaliação">Avaliação</SelectItem>
-                        <SelectItem value="Trabalho em Grupo">Trabalho em Grupo</SelectItem>
-                        <SelectItem value="Projeto">Projeto</SelectItem>
-                        <SelectItem value="Questionário">Questionário</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-700">Dificuldade</Label>
-                    <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
-                      <SelectTrigger className="border-slate-200 focus:border-blue-400">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Fácil">Fácil</SelectItem>
-                        <SelectItem value="Médio">Médio</SelectItem>
-                        <SelectItem value="Difícil">Difícil</SelectItem>
-                        <SelectItem value="Misto">Misto</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                {/* Tipo de Atividade */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">
+                    Tipo de Atividade *
+                  </Label>
+                  <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="exercicios">Lista de Exercícios</SelectItem>
+                      <SelectItem value="prova">Prova/Avaliação</SelectItem>
+                      <SelectItem value="quiz">Quiz Interativo</SelectItem>
+                      <SelectItem value="trabalho">Trabalho de Pesquisa</SelectItem>
+                      <SelectItem value="pratica">Atividade Prática</SelectItem>
+                      <SelectItem value="dissertativa">Questões Dissertativas</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Quantidade de Questões */}
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium text-slate-700">Quantidade de Questões</Label>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                      {quantidadeQuestoes[0]} questões
-                    </Badge>
-                  </div>
+                  <Label className="text-sm font-semibold text-slate-700">
+                    Quantidade de Questões: {quantidadeQuestoes[0]}
+                  </Label>
                   <Slider
                     value={quantidadeQuestoes}
                     onValueChange={setQuantidadeQuestoes}
-                    max={20}
+                    max={50}
                     min={5}
-                    step={1}
+                    step={5}
                     className="w-full"
                   />
+                  <div className="flex justify-between text-xs text-slate-500">
+                    <span>5 questões</span>
+                    <span>50 questões</span>
+                  </div>
                 </div>
 
-                {/* Gabarito */}
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-                  <div>
-                    <Label className="text-sm font-medium text-slate-700">Incluir Gabarito</Label>
-                    <p className="text-xs text-slate-500">Adicionar respostas corretas</p>
+                {/* Nível de Dificuldade */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700">
+                    Nível de Dificuldade *
+                  </Label>
+                  <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o nível" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basico">Básico</SelectItem>
+                      <SelectItem value="intermediario">Intermediário</SelectItem>
+                      <SelectItem value="avancado">Avançado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Incluir Gabarito */}
+                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium text-slate-700">
+                      Incluir Gabarito
+                    </Label>
+                    <p className="text-xs text-slate-500">
+                      Adicionar respostas e explicações
+                    </p>
                   </div>
                   <Switch
                     checked={incluirGabarito}
@@ -466,120 +338,98 @@ export default function GeradorAtividades() {
                   />
                 </div>
 
-                {/* Upload PDF */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium text-slate-700">Material de Apoio (Opcional)</Label>
-                  
-                  {!pdfSelecionado ? (
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                      <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-sm text-slate-600 mb-2">Envie um PDF para criar atividades baseadas no conteúdo</p>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".pdf"
-                        onChange={handlePdfUpload}
-                        className="hidden"
-                      />
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Selecionar PDF
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-medium text-green-800">{pdfSelecionado.name}</span>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={removerPdf}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-
                 {/* Botão Gerar */}
                 <Button 
                   onClick={gerarAtividade}
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 rounded-xl transition-all duration-200 shadow-lg"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
                 >
                   {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
                       Gerando Atividade...
-                    </div>
+                    </>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4" />
+                    <>
+                      <Sparkles className="h-5 w-5 mr-2" />
                       Gerar Atividade com IA
-                    </div>
+                    </>
                   )}
                 </Button>
-
               </CardContent>
             </Card>
           </div>
 
-          {/* Painel de Resultado */}
+          {/* Resultado */}
           <div className="lg:col-span-2">
-            {!atividadeGerada ? (
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl h-full">
-                <CardContent className="flex items-center justify-center h-full min-h-[600px]">
-                  <div className="text-center">
-                    <div className="p-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                      <BookOpen className="h-12 w-12 text-blue-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">Pronto para criar atividades incríveis?</h3>
-                    <p className="text-slate-600 max-w-md mx-auto">
-                      Configure os parâmetros ao lado e clique em "Gerar Atividade" para criar conteúdo educacional personalizado com IA.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
+            {atividadeGerada ? (
+              <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+                <CardHeader className="border-b border-slate-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                      <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-green-600" />
-                        Atividade Gerada
+                      <CardTitle className="text-xl text-slate-800">
+                        {atividadeGerada.titulo}
                       </CardTitle>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <Badge variant="outline" className="text-xs">
                           {atividadeGerada.materia}
                         </Badge>
-                        <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700">
+                        <Badge variant="outline" className="text-xs">
                           {atividadeGerada.serie}
                         </Badge>
-                        <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
+                        <Badge variant="outline" className="text-xs">
+                          {atividadeGerada.tipoAtividade}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
                           {atividadeGerada.quantidadeQuestoes} questões
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={copiarAtividade}>
-                        <Copy className="h-4 w-4" />
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={copiarConteudo}>
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copiar
                       </Button>
-                      <Button variant="outline" size="sm" onClick={imprimirAtividade}>
-                        <Printer className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={downloadPDF}>
-                        <Download className="h-4 w-4" />
+                      <Button variant="outline" size="sm" onClick={baixarPDF}>
+                        <Download className="h-4 w-4 mr-1" />
+                        PDF
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-6">
                   <div 
-                    className="prose prose-sm max-w-none bg-white rounded-lg p-6 border border-slate-200"
+                    className="prose prose-sm max-w-none bg-white rounded-lg p-6 border border-slate-200 max-h-[600px] overflow-y-auto"
                     dangerouslySetInnerHTML={{ __html: atividadeGerada.conteudo }}
                   />
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="p-6 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl mb-6">
+                    <BookOpen className="h-16 w-16 text-emerald-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-800 mb-2">
+                    Pronto para Criar Atividades Incríveis?
+                  </h3>
+                  <p className="text-slate-600 max-w-md mb-6">
+                    Configure o tema e as opções desejadas, depois clique em "Gerar Atividade com IA" para criar conteúdo educacional personalizado.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-lg">
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                      <Target className="h-5 w-5 text-emerald-600" />
+                      <span className="text-sm text-slate-700">Detecção Automática BNCC</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                      <Clock className="h-5 w-5 text-blue-600" />
+                      <span className="text-sm text-slate-700">Geração Rápida</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                      <Zap className="h-5 w-5 text-purple-600" />
+                      <span className="text-sm text-slate-700">IA Avançada</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             )}
