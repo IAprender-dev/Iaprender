@@ -1060,8 +1060,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Configure upload for documents (PDF, Word)
+  const documentUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (_req, file, cb) => {
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Apenas arquivos PDF e Word são permitidos'));
+      }
+    },
+  });
+
   // Document Analysis Route
-  app.post("/api/ai/analyze-document", upload.single('document'), authenticate, async (req, res) => {
+  app.post("/api/ai/analyze-document", documentUpload.single('document'), authenticate, async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "Nenhum arquivo foi enviado" });
