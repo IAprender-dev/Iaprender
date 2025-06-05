@@ -24,7 +24,8 @@ import {
   X,
   Home,
   User,
-  LogOut
+  LogOut,
+  Plus
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -122,90 +123,17 @@ export default function StudentDashboard() {
     year: 'numeric'
   }).format(currentDate);
 
-  // Navigation items
-  const navigationItems = [
-    { name: "Dashboard", href: "/student/dashboard", icon: LayoutGrid, active: true },
-    { name: "Meus Cursos", href: "/student/courses", icon: BookOpen },
-    { name: "Atividades", href: "/student/activities", icon: CheckSquare },
-    { name: "Certificados", href: "/student/certificates", icon: Award },
-    { name: "Wikipedia", href: "/student/wikipedia", icon: Book },
-    { name: "Central de IAs", href: "/central-ia", icon: Bot },
-  ];
+  const handleLogout = () => {
+    logout();
+    setLocation("/");
+  };
 
-  // Progress summary stats
-  const progressStats = [
-    {
-      title: "Cursos Ativos",
-      value: "3",
-      description: "Em andamento",
-      icon: <BookOpen className="text-blue-600 h-6 w-6" />,
-      color: "from-blue-500 to-blue-600"
-    },
-    {
-      title: "Tarefas Pendentes",
-      value: "2",
-      description: "Para entregar",
-      icon: <CheckSquare className="text-amber-600 h-6 w-6" />,
-      color: "from-amber-500 to-amber-600"
-    },
-    {
-      title: "Certificados",
-      value: "5",
-      description: "Conquistados",
-      icon: <Award className="text-green-600 h-6 w-6" />,
-      color: "from-green-500 to-green-600"
-    }
-  ];
-
-  // Recent courses
-  const recentCourses = [
-    {
-      id: 1,
-      title: "Matemática Avançada",
-      progress: 75,
-      totalLessons: 24,
-      completedLessons: 18,
-      category: "Matemática",
-      instructor: "Prof. Silva"
-    },
-    {
-      id: 2,
-      title: "História do Brasil",
-      progress: 45,
-      totalLessons: 16,
-      completedLessons: 7,
-      category: "História",
-      instructor: "Prof. Santos"
-    },
-    {
-      id: 3,
-      title: "Ciências Naturais",
-      progress: 90,
-      totalLessons: 20,
-      completedLessons: 18,
-      category: "Ciências",
-      instructor: "Prof. Costa"
-    }
-  ];
-
-  // Recent activities
-  const recentActivities = [
-    {
-      id: 1,
-      title: "Resolução de Equações",
-      subject: "Matemática",
-      dueDate: "2024-01-15",
-      status: "pending",
-      priority: "high"
-    },
-    {
-      id: 2,
-      title: "Ensaio sobre Período Colonial",
-      subject: "História",
-      dueDate: "2024-01-18",
-      status: "in_progress",
-      priority: "medium"
-    }
+  const menuItems = [
+    { icon: Home, label: "Dashboard", href: "/student/dashboard", isActive: location === "/student/dashboard" },
+    { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
+    { icon: CheckSquare, label: "Atividades", href: "/student/activities", isActive: location === "/student/activities" },
+    { icon: Calendar, label: "Planejamento", href: "/aluno/planejamento", isActive: location === "/aluno/planejamento" },
+    { icon: Book, label: "Wikipedia", href: "/student/wikipedia", isActive: location === "/student/wikipedia" },
   ];
 
   return (
@@ -214,312 +142,365 @@ export default function StudentDashboard() {
         <title>Dashboard do Aluno - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/50 shadow-xl transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-          <div className="flex flex-col h-full">
-            {/* Logo */}
-            <div className="flex items-center gap-4 p-6 border-b border-slate-200/50">
-              <div className="relative">
-                <img src={iaverseLogo} alt="IAverse" className="w-10 h-10 rounded-xl shadow-lg" />
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  IAverse
-                </h1>
-                <p className="text-xs text-slate-500 font-medium">Portal do Aluno</p>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        {/* Mobile Header */}
+        <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-blue-100 p-4 flex items-center justify-between sticky top-0 z-50">
+          <div className="flex items-center gap-3">
+            <img src={iaverseLogo} alt="IAverse" className="h-8 w-8" />
+            <span className="font-bold text-slate-800">IAverse</span>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsSidebarOpen(true)}
+            className="lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
 
-            {/* Navigation */}
-            <ScrollArea className="flex-1 px-4 py-6">
-              <div className="space-y-2">
-                {navigationItems.map((item, index) => {
-                  const Icon = item.icon;
-                  return (
-                    <Link key={index} href={item.href}>
+        <div className="flex">
+          {/* Sidebar */}
+          <div className={`
+            fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white/90 backdrop-blur-sm border-r border-blue-100
+            transform transition-transform duration-300 ease-in-out lg:translate-x-0
+            ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          `}>
+            <div className="h-full flex flex-col">
+              {/* Logo */}
+              <div className="p-6 border-b border-blue-100">
+                <div className="flex items-center gap-3">
+                  <img src={iaverseLogo} alt="IAverse" className="h-8 w-8" />
+                  <div>
+                    <h1 className="font-bold text-slate-800">IAverse</h1>
+                    <p className="text-xs text-slate-600">Portal do Aluno</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* User Info */}
+              <div className="p-6 border-b border-blue-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                    <User className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">{user?.username}</p>
+                    <p className="text-sm text-slate-600">Aluno</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Navigation */}
+              <ScrollArea className="flex-1 px-4 py-6">
+                <nav className="space-y-2">
+                  {menuItems.map((item) => (
+                    <Link key={item.href} href={item.href}>
                       <Button
-                        variant={item.active ? "secondary" : "ghost"}
-                        className={`w-full justify-start gap-3 h-12 font-medium transition-all duration-200 ${
-                          item.active 
-                            ? "bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border border-blue-200/50 shadow-sm hover:shadow-md" 
-                            : "text-slate-600 hover:text-blue-600 hover:bg-blue-50/50"
+                        variant={item.isActive ? "default" : "ghost"}
+                        className={`w-full justify-start gap-3 ${
+                          item.isActive 
+                            ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm" 
+                            : "text-slate-700 hover:bg-blue-50 hover:text-blue-700"
                         }`}
+                        onClick={() => setIsSidebarOpen(false)}
                       >
-                        <Icon className="h-5 w-5" />
-                        <span>{item.name}</span>
+                        <item.icon className="h-5 w-5" />
+                        {item.label}
                       </Button>
                     </Link>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+                  ))}
+                </nav>
+              </ScrollArea>
 
-            {/* User Profile */}
-            <div className="p-6 border-t border-slate-200/50">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-semibold">
-                  {user?.firstName?.charAt(0) || "U"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">
-                    {user?.firstName} {user?.lastName}
-                  </p>
-                  <p className="text-xs text-slate-500 truncate">Aluno</p>
-                </div>
+              {/* Logout */}
+              <div className="p-4 border-t border-blue-100">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 text-slate-700 hover:bg-red-50 hover:text-red-700"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-5 w-5" />
+                  Sair
+                </Button>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={logout}
-                className="w-full gap-2 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
+
+              {/* Close button for mobile */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute top-4 right-4 lg:hidden"
+                onClick={() => setIsSidebarOpen(false)}
               >
-                <LogOut className="h-4 w-4" />
-                Sair
+                <X className="h-5 w-5" />
               </Button>
             </div>
           </div>
-        </div>
 
-        {/* Main Content */}
-        <div className="lg:pl-72">
-          {/* Header */}
-          <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
-            <div className="flex items-center justify-between px-6 py-4">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  className="lg:hidden text-slate-600 hover:text-blue-600"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900">
-                    Bem-vindo, {user?.firstName}!
-                  </h1>
-                  <p className="text-sm text-slate-600 capitalize">
-                    {formattedDate}
-                  </p>
-                </div>
+          {/* Main Content */}
+          <main className="flex-1 lg:ml-0 min-h-screen">
+            <div className="p-6 lg:p-8">
+              {/* Header */}
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent mb-2">
+                  Bem-vindo de volta, {user?.username}!
+                </h1>
+                <p className="text-slate-700 capitalize">{formattedDate}</p>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <Link href="/central-ia">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
-                    <Bot className="h-4 w-4 mr-2" />
-                    Central de IAs
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </header>
 
-          {/* Dashboard Content */}
-          <main className="p-6 space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {progressStats.map((stat, index) => (
-                <Card key={index} className="group relative overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl hover:scale-105">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity`}></div>
-                  <CardContent className="relative p-6">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
+                  <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-slate-600 mb-1">{stat.title}</p>
-                        <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
-                        <p className="text-xs text-slate-500 mt-1">{stat.description}</p>
+                        <p className="text-blue-100 text-sm font-medium">Cursos Ativos</p>
+                        <p className="text-3xl font-bold">3</p>
                       </div>
-                      <div className={`p-3 rounded-xl bg-gradient-to-br ${stat.color} opacity-10 group-hover:opacity-20 transition-opacity`}>
-                        {stat.icon}
+                      <BookOpen className="h-10 w-10 text-blue-200" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-500 text-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-100 text-sm font-medium">Atividades Concluídas</p>
+                        <p className="text-3xl font-bold">12</p>
+                      </div>
+                      <CheckSquare className="h-10 w-10 text-green-200" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-purple-100 text-sm font-medium">Certificados</p>
+                        <p className="text-3xl font-bold">2</p>
+                      </div>
+                      <Award className="h-10 w-10 text-purple-200" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-0 bg-gradient-to-br from-orange-500 to-red-500 text-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-orange-100 text-sm font-medium">Horas de Estudo</p>
+                        <p className="text-3xl font-bold">45h</p>
+                      </div>
+                      <Clock className="h-10 w-10 text-orange-200" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Courses Card */}
+                <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 backdrop-blur-sm shadow-lg rounded-2xl">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="flex-1 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl">
+                            <BookOpen className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-800">Meus Cursos</h3>
+                            <p className="text-sm text-slate-600">Continue seus estudos</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-700 mb-4 leading-relaxed">
+                          Acesse seus cursos ativos e continue aprendendo com conteúdo interativo e personalizado!
+                        </p>
+                        <Link href="/student/courses">
+                          <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-sm">
+                            <BookOpen className="h-4 w-4" />
+                            Ver Cursos
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="hidden md:block p-6">
+                        <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center border border-blue-200">
+                          <div className="text-6xl">📚</div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
 
-            {/* Wikipedia Explorer Card */}
-            <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 backdrop-blur-sm shadow-md rounded-2xl overflow-hidden border border-blue-100">
-              <CardContent className="p-0">
-                <div className="flex items-center">
-                  <div className="flex-1 p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-sm">
-                        <Book className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-800">Explorador Wikipedia</h3>
-                        <p className="text-sm text-slate-600">Acesso ao conhecimento mundial</p>
-                      </div>
-                    </div>
-                    <p className="text-slate-700 mb-4 leading-relaxed">
-                      Pesquise milhões de artigos da Wikipedia e expanda seus conhecimentos sobre qualquer assunto educacional!
-                    </p>
-                    <Link href="/student/wikipedia">
-                      <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-sm">
-                        <Book className="h-4 w-4" />
-                        Explorar Wikipedia
-                      </Button>
-                    </Link>
-                  </div>
-                  <div className="hidden md:block p-6">
-                    <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center border border-blue-200">
-                      <div className="text-6xl">📚</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Study Planning Section */}
-            <Card className="border-0 bg-gradient-to-br from-purple-50 to-blue-50 backdrop-blur-sm shadow-lg rounded-2xl">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
-                      <Calendar className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl font-bold text-slate-900">Planejamento de Estudos</CardTitle>
-                      <p className="text-sm text-slate-600">Organize seus estudos da semana</p>
-                    </div>
-                  </div>
-                  <Link href="/aluno/planejamento">
-                    <Button className="gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                      <Target className="h-4 w-4" />
-                      Criar Plano
-                    </Button>
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {studyPlan ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-slate-800">{studyPlan.name}</h3>
-                        <p className="text-sm text-slate-600">
-                          Criado em {studyPlan.createdAt.toLocaleDateString('pt-BR')}
-                        </p>
-                      </div>
-                      <Badge variant="default">Ativo</Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <Card className="p-4 bg-blue-50 border-blue-200">
-                        <h4 className="font-semibold text-blue-800 mb-2">Progresso da Semana</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Concluídas:</span>
-                            <span>{getWeekProgress().completed} / {getWeekProgress().total}</span>
+                {/* Activities Card */}
+                <Card className="border-0 bg-gradient-to-br from-green-50 to-emerald-50 backdrop-blur-sm shadow-lg rounded-2xl">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="flex-1 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl">
+                            <CheckSquare className="h-6 w-6 text-white" />
                           </div>
-                          <Progress value={getWeekProgress().percentage} className="h-2" />
-                          <p className="text-xs text-blue-700">{getWeekProgress().percentage}% completo</p>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-800">Atividades</h3>
+                            <p className="text-sm text-slate-600">Exercícios e avaliações</p>
+                          </div>
                         </div>
-                      </Card>
-                      
-                      <Card className="p-4 bg-green-50 border-green-200">
-                        <h4 className="font-semibold text-green-800 mb-2">Sessões de Hoje</h4>
-                        <div className="space-y-2">
-                          {getTodaySessions().length > 0 ? (
-                            getTodaySessions().slice(0, 2).map(session => (
-                              <div key={session.id} className="text-sm">
-                                <div className="font-medium text-green-800">{session.subject}</div>
-                                <div className="text-green-600">
-                                  {session.startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - 
-                                  {session.endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                </div>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-sm text-green-600">Nenhuma sessão programada para hoje</p>
-                          )}
+                        <p className="text-slate-700 mb-4 leading-relaxed">
+                          Complete atividades interativas e acompanhe seu progresso em tempo real!
+                        </p>
+                        <Link href="/student/activities">
+                          <Button className="gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-sm">
+                            <CheckSquare className="h-4 w-4" />
+                            Ver Atividades
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="hidden md:block p-6">
+                        <div className="w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center border border-green-200">
+                          <div className="text-6xl">✅</div>
                         </div>
-                      </Card>
+                      </div>
                     </div>
-                    
-                    <div className="flex gap-3">
-                      <Link href="/aluno/planejamento">
-                        <Button className="gap-2" size="sm">
-                          <Calendar className="h-4 w-4" />
-                          Ver Cronograma Completo
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Wikipedia Explorer */}
+              <Card className="border-0 bg-gradient-to-br from-orange-50 to-yellow-50 backdrop-blur-sm shadow-lg rounded-2xl mb-8">
+                <CardContent className="p-0">
+                  <div className="flex flex-col md:flex-row">
+                    <div className="flex-1 p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl">
+                          <Book className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-slate-800">Explorador Wikipedia</h3>
+                          <p className="text-sm text-slate-600">Acesso ao conhecimento mundial</p>
+                        </div>
+                      </div>
+                      <p className="text-slate-700 mb-4 leading-relaxed">
+                        Pesquise milhões de artigos da Wikipedia e expanda seus conhecimentos sobre qualquer assunto educacional!
+                      </p>
+                      <Link href="/student/wikipedia">
+                        <Button className="gap-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white shadow-sm">
+                          <Book className="h-4 w-4" />
+                          Explorar Wikipedia
                         </Button>
                       </Link>
-                      <Link href="/aluno/planejamento">
-                        <Button variant="outline" size="sm" className="gap-2">
-                          <Target className="h-4 w-4" />
-                          Editar Plano
-                        </Button>
-                      </Link>
+                    </div>
+                    <div className="hidden md:block p-6">
+                      <div className="w-32 h-32 bg-gradient-to-br from-orange-100 to-yellow-100 rounded-2xl flex items-center justify-center border border-orange-200">
+                        <div className="text-6xl">📚</div>
+                      </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                    <h3 className="font-semibold text-slate-700 mb-2">Nenhum plano ativo</h3>
-                    <p className="text-sm text-slate-600 mb-4">
-                      Crie seu plano de estudos personalizado baseado na BNCC
-                    </p>
+                </CardContent>
+              </Card>
+
+              {/* Study Planning Section */}
+              <Card className="border-0 bg-gradient-to-br from-purple-50 to-blue-50 backdrop-blur-sm shadow-lg rounded-2xl">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
+                        <Calendar className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-slate-900">Planejamento de Estudos</CardTitle>
+                        <p className="text-sm text-slate-600">Organize seus estudos da semana</p>
+                      </div>
+                    </div>
                     <Link href="/aluno/planejamento">
-                      <Button className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Criar Plano de Estudos
+                      <Button className="gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
+                        <Target className="h-4 w-4" />
+                        Criar Plano
                       </Button>
                     </Link>
                   </div>
-                )}
-                
-                <div className="hidden">
-                <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
-                  {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day, index) => {
-                    const today = new Date();
-                    const weekDay = new Date(today);
-                    weekDay.setDate(today.getDate() - today.getDay() + index + 1);
-                    const isToday = weekDay.toDateString() === today.toDateString();
-                    
-                    return (
-                      <div key={index} className={`p-3 rounded-xl border transition-all ${
-                        isToday 
-                          ? 'border-purple-200 bg-gradient-to-br from-purple-100 to-blue-100' 
-                          : 'border-slate-200 bg-white/50'
-                      }`}>
-                        <div className="text-center">
-                          <p className={`text-xs font-medium ${isToday ? 'text-purple-700' : 'text-slate-600'}`}>
-                            {day}
+                </CardHeader>
+                <CardContent>
+                  {studyPlan ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-slate-800">{studyPlan.name}</h3>
+                          <p className="text-sm text-slate-600">
+                            Criado em {studyPlan.createdAt.toLocaleDateString('pt-BR')}
                           </p>
-                          <p className={`text-lg font-bold ${isToday ? 'text-purple-900' : 'text-slate-900'}`}>
-                            {weekDay.getDate()}
-                          </p>
-                          <div className="mt-2 space-y-1">
-                            {index < 5 && (
-                              <div className={`text-xs p-1 rounded ${
-                                isToday 
-                                  ? 'bg-purple-200 text-purple-800' 
-                                  : 'bg-blue-100 text-blue-700'
-                              }`}>
-                                19:00-21:00
-                              </div>
+                        </div>
+                        <Badge variant="default" className="bg-blue-500 text-white">Ativo</Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card className="p-4 bg-blue-50 border-blue-200">
+                          <h4 className="font-semibold text-blue-800 mb-2">Progresso da Semana</h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span>Concluídas:</span>
+                              <span>{getWeekProgress().completed} / {getWeekProgress().total}</span>
+                            </div>
+                            <Progress value={getWeekProgress().percentage} className="h-2" />
+                            <p className="text-xs text-blue-700">{getWeekProgress().percentage}% completo</p>
+                          </div>
+                        </Card>
+                        
+                        <Card className="p-4 bg-green-50 border-green-200">
+                          <h4 className="font-semibold text-green-800 mb-2">Sessões de Hoje</h4>
+                          <div className="space-y-2">
+                            {getTodaySessions().length > 0 ? (
+                              getTodaySessions().slice(0, 2).map(session => (
+                                <div key={session.id} className="text-sm">
+                                  <div className="font-medium text-green-800">{session.subject}</div>
+                                  <div className="text-green-600">
+                                    {session.startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - 
+                                    {session.endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-green-600">Nenhuma sessão programada para hoje</p>
                             )}
                           </div>
-                        </div>
+                        </Card>
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 p-3 bg-white/60 rounded-xl">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-600">Progresso da semana</span>
-                    <span className="font-medium text-slate-900">3/5 sessões</span>
-                  </div>
-                  <Progress value={60} className="h-2 mt-2" />
-                </div>
-                </div>
-              </CardContent>
-            </Card>
-
-
+                      
+                      <div className="flex gap-3">
+                        <Link href="/aluno/planejamento">
+                          <Button className="gap-2" size="sm">
+                            <Calendar className="h-4 w-4" />
+                            Ver Cronograma Completo
+                          </Button>
+                        </Link>
+                        <Link href="/aluno/planejamento">
+                          <Button variant="outline" size="sm" className="gap-2">
+                            <Target className="h-4 w-4" />
+                            Editar Plano
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                      <h3 className="font-semibold text-slate-700 mb-2">Nenhum plano ativo</h3>
+                      <p className="text-sm text-slate-600 mb-4">
+                        Crie seu plano de estudos personalizado baseado na BNCC
+                      </p>
+                      <Link href="/aluno/planejamento">
+                        <Button className="gap-2">
+                          <Plus className="h-4 w-4" />
+                          Criar Plano de Estudos
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </main>
         </div>
 
