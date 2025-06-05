@@ -25,7 +25,7 @@ import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
-import StudyPlanning from "@/pages/student/StudyPlanning";
+import StudyPlanning from "@/pages/student/StudyPlanningSimple";
 import WikipediaExplorer from "@/pages/student/WikipediaExplorer";
 import NotFound from "@/pages/not-found";
 

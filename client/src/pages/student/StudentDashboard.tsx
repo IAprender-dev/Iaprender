@@ -34,10 +34,85 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import iaverseLogo from "@/assets/IAverse.png";
 
+interface StudySession {
+  id: number;
+  subject: string;
+  startTime: Date;
+  endTime: Date;
+  isCompleted: boolean;
+  pomodoroCount: number;
+  dayOfWeek: string;
+}
+
+interface StudyPlan {
+  id: number;
+  name: string;
+  schoolYear: string;
+  sessions: StudySession[];
+  createdAt: Date;
+  isActive: boolean;
+}
+
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
+  
+  // Carregar plano de estudos do localStorage
+  useEffect(() => {
+    const savedPlan = localStorage.getItem('iaulaStudyPlan');
+    if (savedPlan) {
+      try {
+        const plan = JSON.parse(savedPlan);
+        // Converter strings de data de volta para objetos Date
+        plan.createdAt = new Date(plan.createdAt);
+        plan.sessions = plan.sessions.map((session: any) => ({
+          ...session,
+          startTime: new Date(session.startTime),
+          endTime: new Date(session.endTime)
+        }));
+        setStudyPlan(plan);
+      } catch (error) {
+        console.error('Erro ao carregar plano de estudos:', error);
+        localStorage.removeItem('iaulaStudyPlan');
+      }
+    }
+  }, []);
+
+  const getTodaySessions = () => {
+    if (!studyPlan) return [];
+    
+    const today = new Date();
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    return studyPlan.sessions.filter(session => 
+      session.startTime >= startOfDay && session.startTime <= endOfDay
+    );
+  };
+
+  const getWeekProgress = () => {
+    if (!studyPlan) return { completed: 0, total: 0, percentage: 0 };
+    
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    const weekSessions = studyPlan.sessions.filter(session => 
+      session.startTime >= startOfWeek && session.startTime <= endOfWeek
+    );
+    
+    const completed = weekSessions.filter(s => s.isCompleted).length;
+    const total = weekSessions.length;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    
+    return { completed, total, percentage };
+  };
   
   const currentDate = new Date();
   const formattedDate = new Intl.DateTimeFormat('pt-BR', {
@@ -320,6 +395,83 @@ export default function StudentDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
+                {studyPlan ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-slate-800">{studyPlan.name}</h3>
+                        <p className="text-sm text-slate-600">
+                          Criado em {studyPlan.createdAt.toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <Badge variant="default">Ativo</Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card className="p-4 bg-blue-50 border-blue-200">
+                        <h4 className="font-semibold text-blue-800 mb-2">Progresso da Semana</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Concluídas:</span>
+                            <span>{getWeekProgress().completed} / {getWeekProgress().total}</span>
+                          </div>
+                          <Progress value={getWeekProgress().percentage} className="h-2" />
+                          <p className="text-xs text-blue-700">{getWeekProgress().percentage}% completo</p>
+                        </div>
+                      </Card>
+                      
+                      <Card className="p-4 bg-green-50 border-green-200">
+                        <h4 className="font-semibold text-green-800 mb-2">Sessões de Hoje</h4>
+                        <div className="space-y-2">
+                          {getTodaySessions().length > 0 ? (
+                            getTodaySessions().slice(0, 2).map(session => (
+                              <div key={session.id} className="text-sm">
+                                <div className="font-medium text-green-800">{session.subject}</div>
+                                <div className="text-green-600">
+                                  {session.startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - 
+                                  {session.endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-green-600">Nenhuma sessão programada para hoje</p>
+                          )}
+                        </div>
+                      </Card>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <Link href="/aluno/planejamento">
+                        <Button className="gap-2" size="sm">
+                          <Calendar className="h-4 w-4" />
+                          Ver Cronograma Completo
+                        </Button>
+                      </Link>
+                      <Link href="/aluno/planejamento">
+                        <Button variant="outline" size="sm" className="gap-2">
+                          <Target className="h-4 w-4" />
+                          Editar Plano
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                    <h3 className="font-semibold text-slate-700 mb-2">Nenhum plano ativo</h3>
+                    <p className="text-sm text-slate-600 mb-4">
+                      Crie seu plano de estudos personalizado baseado na BNCC
+                    </p>
+                    <Link href="/aluno/planejamento">
+                      <Button className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Criar Plano de Estudos
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+                
+                <div className="hidden">
                 <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
                   {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((day, index) => {
                     const today = new Date();
@@ -362,6 +514,7 @@ export default function StudentDashboard() {
                     <span className="font-medium text-slate-900">3/5 sessões</span>
                   </div>
                   <Progress value={60} className="h-2 mt-2" />
+                </div>
                 </div>
               </CardContent>
             </Card>
