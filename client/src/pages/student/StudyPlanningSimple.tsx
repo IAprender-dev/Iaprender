@@ -160,7 +160,7 @@ interface StudyPlan {
   schoolYear: string;
   dailyStudyTime: number;
   studyDays: string[];
-  schedules: { [key: string]: { start: string; end: string } };
+  schedules: { [key: string]: { start: string } };
   sessions: StudySession[];
   createdAt: Date;
   isActive: boolean;
@@ -174,14 +174,14 @@ export default function StudyPlanning() {
     dailyStudyTime: 2,
     studyDays: [] as string[],
     schedules: {
-      monday: { start: "19:00", end: "21:00" },
-      tuesday: { start: "19:00", end: "21:00" },
-      wednesday: { start: "19:00", end: "21:00" },
-      thursday: { start: "19:00", end: "21:00" },
-      friday: { start: "19:00", end: "21:00" },
-      saturday: { start: "14:00", end: "16:00" },
-      sunday: { start: "14:00", end: "16:00" }
-    } as Record<string, { start: string; end: string }>
+      monday: { start: "19:00" },
+      tuesday: { start: "19:00" },
+      wednesday: { start: "19:00" },
+      thursday: { start: "19:00" },
+      friday: { start: "19:00" },
+      saturday: { start: "14:00" },
+      sunday: { start: "14:00" }
+    } as Record<string, { start: string }>
   });
 
   const schoolYear = (user as any)?.schoolYear || "1º ano";
@@ -235,14 +235,17 @@ export default function StudyPlanning() {
         
         const schedule = planForm.schedules[dayKey];
         const [startHour, startMinute] = schedule.start.split(':').map(Number);
-        const [endHour, endMinute] = schedule.end.split(':').map(Number);
         
         sessionDate.setHours(startHour, startMinute, 0, 0);
-        const endTime = new Date(sessionDate);
-        endTime.setHours(endHour, endMinute, 0, 0);
         
-        const durationMinutes = (endTime.getTime() - sessionDate.getTime()) / (1000 * 60);
-        const pomodoroCount = Math.floor(durationMinutes / 25);
+        // Calcular fim baseado na técnica Pomodoro
+        const totalStudyMinutes = planForm.dailyStudyTime * 60;
+        const pomodoroCount = Math.ceil(totalStudyMinutes / 25);
+        const shortBreaks = Math.max(0, pomodoroCount - 1) * 5;
+        const longBreaks = Math.floor(pomodoroCount / 4) * 15;
+        const totalDuration = totalStudyMinutes + shortBreaks + longBreaks;
+        
+        const endTime = new Date(sessionDate.getTime() + totalDuration * 60 * 1000);
         
         // Selecionar matéria por prioridade
         let selectedSubject;
@@ -299,17 +302,34 @@ export default function StudyPlanning() {
     }));
   };
 
-  const updateSchedule = (dayKey: string, field: 'start' | 'end', value: string) => {
+  const updateSchedule = (dayKey: string, value: string) => {
     setPlanForm(prev => ({
       ...prev,
       schedules: {
         ...prev.schedules,
         [dayKey]: {
-          ...prev.schedules[dayKey],
-          [field]: value
+          start: value
         }
       }
     }));
+  };
+
+  // Calcular horário de fim baseado na técnica Pomodoro
+  const calculateEndTime = (startTime: string, dailyHours: number) => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const start = new Date();
+    start.setHours(hours, minutes, 0, 0);
+    
+    // Cada hora de estudo = 2 pomodoros (25min + 5min pausa) + pausa longa de 15min a cada 4 pomodoros
+    const totalMinutes = dailyHours * 60; // Tempo líquido de estudo
+    const pomodoroSessions = Math.ceil((dailyHours * 60) / 25); // Número de pomodoros
+    const shortBreaks = Math.max(0, pomodoroSessions - 1) * 5; // Pausas curtas (5min entre pomodoros)
+    const longBreaks = Math.floor(pomodoroSessions / 4) * 15; // Pausas longas (15min a cada 4 pomodoros)
+    
+    const totalDuration = totalMinutes + shortBreaks + longBreaks;
+    
+    const end = new Date(start.getTime() + totalDuration * 60 * 1000);
+    return end.toTimeString().slice(0, 5);
   };
 
   const getWeekSessions = () => {
@@ -336,21 +356,21 @@ export default function StudyPlanning() {
         <title>Planejamento de Estudos - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
               <Link href="/student/dashboard">
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2 bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
               </Link>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold text-slate-800">
                   Planejamento de Estudos
                 </h1>
-                <p className="text-slate-700">
+                <p className="text-slate-600">
                   Plano bimestral baseado na BNCC para {schoolYear}
                 </p>
               </div>
@@ -358,7 +378,7 @@ export default function StudyPlanning() {
             
             <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
               <DialogTrigger asChild>
-                <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
+                <Button className="gap-2 bg-slate-800 text-white hover:bg-slate-700 shadow-sm">
                   <Calendar className="h-4 w-4" />
                   Criar Novo Plano
                 </Button>
@@ -416,30 +436,31 @@ export default function StudyPlanning() {
                         {planForm.studyDays.map((dayKey) => {
                           const dayInfo = WEEK_DAYS.find(d => d.key === dayKey);
                           const schedule = planForm.schedules[dayKey];
+                          const endTime = calculateEndTime(schedule.start, planForm.dailyStudyTime);
                           
                           return (
-                            <Card key={dayKey} className="p-4">
+                            <Card key={dayKey} className="p-4 bg-slate-50 border-slate-200">
                               <div className="flex items-center justify-between">
                                 <h4 className="font-semibold text-slate-800">{dayInfo?.label}</h4>
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-4">
                                   <div className="flex items-center gap-2">
-                                    <Label className="text-sm">Início:</Label>
+                                    <Label className="text-sm text-slate-600">Início:</Label>
                                     <Input
                                       type="time"
                                       value={schedule.start}
-                                      onChange={(e) => updateSchedule(dayKey, 'start', e.target.value)}
-                                      className="w-24"
+                                      onChange={(e) => updateSchedule(dayKey, e.target.value)}
+                                      className="w-24 bg-white border-slate-300"
                                     />
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Label className="text-sm">Fim:</Label>
-                                    <Input
-                                      type="time"
-                                      value={schedule.end}
-                                      onChange={(e) => updateSchedule(dayKey, 'end', e.target.value)}
-                                      className="w-24"
-                                    />
+                                    <Label className="text-sm text-slate-600">Fim:</Label>
+                                    <div className="text-sm font-medium text-slate-700 bg-slate-100 px-3 py-1 rounded border">
+                                      {endTime}
+                                    </div>
                                   </div>
+                                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                    {planForm.dailyStudyTime}h Pomodoro
+                                  </Badge>
                                 </div>
                               </div>
                             </Card>
@@ -486,18 +507,18 @@ export default function StudyPlanning() {
           {studyPlan ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-md rounded-2xl border border-blue-100">
-                  <CardHeader>
+                <Card className="bg-white shadow-sm rounded-xl border border-slate-200">
+                  <CardHeader className="border-b border-slate-100 pb-4">
                     <CardTitle className="flex items-center gap-2 text-slate-800">
-                      <Calendar className="h-5 w-5 text-blue-600" />
+                      <Calendar className="h-5 w-5 text-slate-600" />
                       Cronograma da Semana
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     {weekSessions.length > 0 ? (
                       <div className="space-y-3">
                         {weekSessions.map(session => (
-                          <Card key={session.id} className={`border ${session.isCompleted ? 'border-green-200 bg-green-50' : 'border-blue-200 bg-blue-50'}`}>
+                          <Card key={session.id} className={`border ${session.isCompleted ? 'border-green-200 bg-green-50' : 'border-slate-200 bg-slate-50'}`}>
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -509,12 +530,12 @@ export default function StudyPlanning() {
                                       {session.endTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                     <div className="flex items-center gap-2 mt-1">
-                                      <Timer className="h-3 w-3 text-orange-500" />
+                                      <Timer className="h-3 w-3 text-slate-500" />
                                       <span className="text-xs text-slate-500">{session.pomodoroCount} Pomodoros</span>
                                     </div>
                                   </div>
                                 </div>
-                                <Badge variant={session.isCompleted ? "success" : "default"}>
+                                <Badge variant={session.isCompleted ? "default" : "outline"} className={session.isCompleted ? "bg-green-100 text-green-700 border-green-200" : "bg-slate-100 text-slate-700 border-slate-200"}>
                                   {session.isCompleted ? "Concluído" : "Pendente"}
                                 </Badge>
                               </div>
@@ -530,20 +551,20 @@ export default function StudyPlanning() {
               </div>
 
               <div className="space-y-6">
-                <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-md rounded-2xl border border-blue-100">
-                  <CardHeader>
+                <Card className="bg-white shadow-sm rounded-xl border border-slate-200">
+                  <CardHeader className="border-b border-slate-100 pb-4">
                     <CardTitle className="flex items-center gap-2 text-slate-800">
-                      <TrendingUp className="h-5 w-5 text-blue-600" />
+                      <TrendingUp className="h-5 w-5 text-slate-600" />
                       Progresso Semanal
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-6">
                     <div className="space-y-4">
                       <div className="text-center">
                         <div className="text-3xl font-bold text-slate-800">{Math.round(progressPercentage)}%</div>
                         <p className="text-sm text-slate-600">Sessões Concluídas</p>
                       </div>
-                      <Progress value={progressPercentage} className="h-3" />
+                      <Progress value={progressPercentage} className="h-2 bg-slate-100" />
                       <div className="flex justify-between text-sm text-slate-600">
                         <span>{completedSessions} concluídas</span>
                         <span>{weekSessions.length} total</span>
