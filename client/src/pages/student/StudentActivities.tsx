@@ -4,8 +4,6 @@ import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import StudentHeader from "@/components/dashboard/student/StudentHeader";
-import StudentSidebar from "@/components/dashboard/student/StudentSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { BackButton } from "@/components/ui/back-button";
+import aiverseLogo from "@assets/Design sem nome (5)_1749151937571.png";
 import { 
   Brain, 
   Trophy, 
@@ -30,7 +29,9 @@ import {
   XCircle,
   Loader2,
   ChevronRight,
-  Star
+  Star,
+  ArrowLeft,
+  User
 } from "lucide-react";
 
 interface Question {
@@ -285,7 +286,6 @@ export default function StudentActivities() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900">{subject.name}</h3>
-                    <p className="text-sm text-gray-500">Exercícios BNCC</p>
                   </div>
                   <ChevronRight className="h-5 w-5 text-gray-400" />
                 </div>
@@ -595,22 +595,51 @@ export default function StudentActivities() {
   return (
     <>
       <Helmet>
-        <title>Exercícios com IA - IAverse</title>
+        <title>Exercícios com IA - AIverse</title>
       </Helmet>
       
-      <div className="flex h-screen bg-gray-50">
-        <StudentSidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <StudentHeader />
-          <main className="flex-1 overflow-auto">
-            <div className="container mx-auto px-6 py-8">
-              {currentView === 'subjects' && renderSubjectSelection()}
-              {currentView === 'topics' && renderTopicSelection()}
-              {currentView === 'quiz' && renderQuiz()}
-              {currentView === 'results' && renderResults()}
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        {/* Header */}
+        <header className="bg-white shadow-sm border-b">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <img 
+                  src={aiverseLogo} 
+                  alt="AIverse Logo" 
+                  className="w-10 h-10"
+                />
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">AIverse</h1>
+                  <p className="text-sm text-gray-600">Exercícios com IA</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                {user && (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {user.firstName || 'Aluno'}
+                    </span>
+                  </div>
+                )}
+                
+                <BackButton href="/student/dashboard" label="Dashboard" />
+              </div>
             </div>
-          </main>
-        </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="container mx-auto px-6 py-8">
+          {currentView === 'subjects' && renderSubjectSelection()}
+          {currentView === 'topics' && renderTopicSelection()}
+          {currentView === 'quiz' && renderQuiz()}
+          {currentView === 'results' && renderResults()}
+        </main>
       </div>
     </>
   );
