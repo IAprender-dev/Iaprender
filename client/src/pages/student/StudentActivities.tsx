@@ -71,13 +71,13 @@ export default function StudentActivities() {
 
   // BNCC subjects based on grade level (assuming 6th grade for demo)
   const subjects = [
-    { id: 'português', name: 'Português', icon: BookOpen, color: 'bg-blue-500' },
-    { id: 'matemática', name: 'Matemática', icon: Calculator, color: 'bg-green-500' },
-    { id: 'ciências', name: 'Ciências', icon: Microscope, color: 'bg-purple-500' },
-    { id: 'história', name: 'História', icon: Globe, color: 'bg-orange-500' },
-    { id: 'geografia', name: 'Geografia', icon: Globe, color: 'bg-teal-500' },
-    { id: 'arte', name: 'Arte', icon: Palette, color: 'bg-pink-500' },
-    { id: 'educação-física', name: 'Educação Física', icon: Target, color: 'bg-red-500' }
+    { id: 'português', name: 'Português', icon: BookOpen, color: 'bg-blue-500', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
+    { id: 'matemática', name: 'Matemática', icon: Calculator, color: 'bg-green-500', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
+    { id: 'ciências', name: 'Ciências', icon: Microscope, color: 'bg-purple-500', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
+    { id: 'história', name: 'História', icon: Globe, color: 'bg-orange-500', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
+    { id: 'geografia', name: 'Geografia', icon: Globe, color: 'bg-teal-500', bgColor: 'bg-teal-50', borderColor: 'border-teal-200' },
+    { id: 'arte', name: 'Arte', icon: Palette, color: 'bg-pink-500', bgColor: 'bg-pink-50', borderColor: 'border-pink-200' },
+    { id: 'educação-física', name: 'Educação Física', icon: Target, color: 'bg-red-500', bgColor: 'bg-red-50', borderColor: 'border-red-200' }
   ];
 
   const getTopicsBySubject = (subject: string) => {
@@ -276,7 +276,7 @@ export default function StudentActivities() {
           return (
             <Card 
               key={subject.id}
-              className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-200"
+              className={`cursor-pointer hover:shadow-lg transition-all duration-200 border-2 ${subject.borderColor} ${subject.bgColor} hover:shadow-xl`}
               onClick={() => handleSubjectSelect(subject.id)}
             >
               <CardContent className="p-6">
