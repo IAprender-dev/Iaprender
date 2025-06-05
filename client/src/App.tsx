@@ -25,6 +25,7 @@ import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
 import StudyPlanning from "@/pages/student/StudyPlanning";
+import PokemonExplorer from "@/pages/student/PokemonExplorer";
 import NotFound from "@/pages/not-found";
 
 // Ferramentas IA
@@ -96,6 +97,10 @@ function Router() {
       <Route path="/professor/ferramentas/analise-documentos" component={AnaliseDocumentos} />
       
       {/* Student routes */}
+      <Route path="/student/dashboard" component={StudentDashboard} />
+      <Route path="/student/courses" component={StudentCourses} />
+      <Route path="/student/activities" component={StudentActivities} />
+      <Route path="/student/pokemon" component={PokemonExplorer} />
       <Route path="/aluno/dashboard" component={StudentDashboard} />
       <Route path="/aluno/cursos" component={StudentCourses} />
       <Route path="/aluno/atividades" component={StudentActivities} />

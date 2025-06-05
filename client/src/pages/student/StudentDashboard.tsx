@@ -53,6 +53,7 @@ export default function StudentDashboard() {
     { name: "Meus Cursos", href: "/student/courses", icon: BookOpen },
     { name: "Atividades", href: "/student/activities", icon: CheckSquare },
     { name: "Certificados", href: "/student/certificates", icon: Award },
+    { name: "Explorador Pokémon", href: "/student/pokemon", icon: Sparkles },
     { name: "Central de IAs", href: "/central-ia", icon: Bot },
   ];
 
@@ -264,7 +265,38 @@ export default function StudentDashboard() {
               ))}
             </div>
 
-
+            {/* Pokemon Explorer Card */}
+            <Card className="border-0 bg-gradient-to-br from-yellow-50 to-orange-50 backdrop-blur-sm shadow-lg rounded-2xl overflow-hidden">
+              <CardContent className="p-0">
+                <div className="flex items-center">
+                  <div className="flex-1 p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl">
+                        <Sparkles className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900">Explorador Pokémon</h3>
+                        <p className="text-sm text-slate-600">Descubra o mundo dos Pokémon</p>
+                      </div>
+                    </div>
+                    <p className="text-slate-700 mb-4">
+                      Explore centenas de Pokémon, veja suas estatísticas, habilidades e aprenda sobre seus tipos!
+                    </p>
+                    <Link href="/student/pokemon">
+                      <Button className="gap-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white shadow-lg">
+                        <Sparkles className="h-4 w-4" />
+                        Explorar Pokémon
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="hidden md:block p-6">
+                    <div className="w-32 h-32 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl flex items-center justify-center">
+                      <div className="text-6xl">🔍</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Study Planning Section */}
             <Card className="border-0 bg-gradient-to-br from-purple-50 to-blue-50 backdrop-blur-sm shadow-lg rounded-2xl">
