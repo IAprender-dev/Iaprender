@@ -1346,7 +1346,7 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   app.use("/api/translate", translateRoutes);
 
   // AI Quiz Generation with BNCC validation
-  app.post('/api/ai/generate-quiz', authenticate, async (req: Request, res: Response) => {
+  app.post('/api/ai/generate-quiz', async (req: Request, res: Response) => {
     try {
       const { subject, topic, grade, questionCount = 5, validateTopic } = req.body;
       

@@ -248,10 +248,9 @@ export default function StudentActivities() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center space-x-3 mb-6">
           <Button
-            variant="ghost"
             size="sm"
             onClick={handleBackToSubjects}
-            className="text-gray-600 hover:text-gray-900"
+            className="bg-blue-600 text-white hover:bg-blue-700"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
@@ -316,10 +315,9 @@ export default function StudentActivities() {
         {/* Header do quiz */}
         <div className="flex items-center justify-between">
           <Button
-            variant="ghost"
             size="sm"
             onClick={handleBackToTopicInput}
-            className="text-gray-600 hover:text-gray-900"
+            className="bg-blue-600 text-white hover:bg-blue-700"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
