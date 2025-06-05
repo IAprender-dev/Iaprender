@@ -124,7 +124,7 @@ export default function LibreTranslateWidget() {
             <Languages className="h-6 w-6 text-white" />
           </div>
           <div>
-            <CardTitle className="text-xl font-bold text-slate-800">Tradutor LibreTranslate</CardTitle>
+            <CardTitle className="text-xl font-bold text-slate-800">Tradutor Educacional</CardTitle>
             <p className="text-sm text-slate-600">Traduza textos educacionais instantaneamente</p>
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function LibreTranslateWidget() {
 
         {/* Info */}
         <p className="text-xs text-slate-500 text-center">
-          Powered by LibreTranslate - Tradução gratuita e open source
+          Powered by MyMemory API - Tradução educacional gratuita
         </p>
       </CardContent>
     </Card>

@@ -11,18 +11,12 @@ router.post("/translate", async (req, res) => {
       return res.status(400).json({ error: "Texto e idioma de destino são obrigatórios" });
     }
 
-    // Usando LibreTranslate público
-    const response = await fetch('https://libretranslate.de/translate', {
-      method: 'POST',
+    // Usando MyMemory API (gratuita e confiável)
+    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang === "auto" ? "autodetect" : sourceLang}|${targetLang}`, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        q: text,
-        source: sourceLang === "auto" ? "auto" : sourceLang,
-        target: targetLang,
-        format: "text"
-      })
+        'User-Agent': 'IAverse Educational Platform'
+      }
     });
 
     if (!response.ok) {
@@ -30,7 +24,12 @@ router.post("/translate", async (req, res) => {
     }
 
     const data = await response.json();
-    res.json({ translatedText: data.translatedText });
+    
+    if (data.responseStatus === 200) {
+      res.json({ translatedText: data.responseData.translatedText });
+    } else {
+      throw new Error('Erro na resposta da API de tradução');
+    }
 
   } catch (error) {
     console.error('Erro na tradução:', error);
