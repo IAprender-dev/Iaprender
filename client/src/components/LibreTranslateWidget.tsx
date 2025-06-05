@@ -24,7 +24,7 @@ const LANGUAGES = [
 export default function LibreTranslateWidget() {
   const [sourceText, setSourceText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
-  const [sourceLang, setSourceLang] = useState("auto");
+  const [sourceLang, setSourceLang] = useState("pt");
   const [targetLang, setTargetLang] = useState("en");
   const [isTranslating, setIsTranslating] = useState(false);
   const { toast } = useToast();
@@ -158,7 +158,7 @@ export default function LibreTranslateWidget() {
                 size="icon"
                 onClick={handleSwapLanguages}
                 disabled={sourceLang === "auto"}
-                className="h-12 w-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border-0 disabled:opacity-50 disabled:bg-gray-300"
+                className="h-12 w-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <ArrowRightLeft className="h-5 w-5" />
               </Button>
