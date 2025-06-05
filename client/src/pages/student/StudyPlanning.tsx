@@ -544,7 +544,7 @@ export default function StudyPlanning() {
                           {curriculum?.subjects.map((subject) => (
                             <Badge 
                               key={subject.name} 
-                              variant={subject.priority === 'high' ? 'default' : subject.priority === 'medium' ? 'secondary' : 'outline'}
+                              variant="default"
                               className="text-xs"
                             >
                               {subject.name} ({subject.weeklyHours}h/sem)
@@ -684,7 +684,7 @@ export default function StudyPlanning() {
                                       <Play className="h-4 w-4" />
                                       Iniciar
                                     </Button>
-                                    <Badge variant={session.isCompleted ? "secondary" : "default"}>
+                                    <Badge variant={session.isCompleted ? "success" : "default"}>
                                       {session.isCompleted ? "Concluído" : "Pendente"}
                                     </Badge>
                                   </div>
@@ -784,7 +784,7 @@ export default function StudyPlanning() {
                           <div key={subject.name} className="flex items-center justify-between">
                             <span className="text-sm text-slate-700">{subject.name}</span>
                             <Badge 
-                              variant={subject.priority === 'high' ? 'default' : subject.priority === 'medium' ? 'secondary' : 'outline'}
+                              variant="default"
                               className="text-xs"
                             >
                               {subject.weeklyHours}h/sem
@@ -818,7 +818,7 @@ export default function StudyPlanning() {
                     </div>
                     
                     <div className="flex items-center justify-center gap-2">
-                      <Badge variant={pomodoroTimer.isBreak ? "secondary" : "default"}>
+                      <Badge variant={pomodoroTimer.isBreak ? "warning" : "default"}>
                         {pomodoroTimer.isBreak ? "Pausa" : "Foco"}
                       </Badge>
                       <span className="text-sm text-slate-600">

@@ -16,19 +16,19 @@ export default function CourseCard({ course, variant = "standard" }: CourseCardP
     switch (course.status) {
       case "in_progress":
         return (
-          <Badge variant="secondary" className="bg-primary-50 text-primary">
+          <Badge variant="default">
             Em andamento
           </Badge>
         );
       case "completed":
         return (
-          <Badge variant="secondary" className="bg-[#34C759]/10 text-[#34C759]">
+          <Badge variant="success">
             Concluído
           </Badge>
         );
       case "not_started":
         return (
-          <Badge variant="secondary" className="bg-[#FF9500]/10 text-[#FF9500]">
+          <Badge variant="warning">
             Novo
           </Badge>
         );

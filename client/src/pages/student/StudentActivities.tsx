@@ -395,15 +395,14 @@ export default function StudentActivities() {
                             </div>
                             <p className="text-sm text-neutral-600 mb-2">{activity.description}</p>
                             <div className="flex flex-wrap gap-2 mt-3">
-                              <Badge variant="outline" className="bg-neutral-100 text-neutral-600 border-0">
+                              <Badge variant="default">
                                 {activity.category}
                               </Badge>
-                              <Badge variant="outline" className={`
-                                ${activity.priority === 'high' ? 'bg-red-100 text-red-600' : 
-                                activity.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' : 
-                                'bg-green-100 text-green-600'}
-                                border-0
-                              `}>
+                              <Badge variant={
+                                activity.priority === 'high' ? 'destructive' : 
+                                activity.priority === 'medium' ? 'warning' : 
+                                'success'
+                              }>
                                 Prioridade {activity.priority === 'high' ? 'alta' : 
                                           activity.priority === 'medium' ? 'média' : 'baixa'}
                               </Badge>
