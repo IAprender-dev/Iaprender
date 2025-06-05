@@ -69,15 +69,20 @@ export default function StudentActivities() {
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState<boolean>(false);
 
-  // BNCC subjects based on grade level (assuming 6th grade for demo)
+  // BNCC subjects from 1st grade elementary to 3rd grade high school
   const subjects = [
     { id: 'português', name: 'Português', icon: BookOpen, color: 'bg-blue-500', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
     { id: 'matemática', name: 'Matemática', icon: Calculator, color: 'bg-green-500', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
     { id: 'ciências', name: 'Ciências', icon: Microscope, color: 'bg-purple-500', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
     { id: 'história', name: 'História', icon: Globe, color: 'bg-orange-500', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
     { id: 'geografia', name: 'Geografia', icon: Globe, color: 'bg-teal-500', bgColor: 'bg-teal-50', borderColor: 'border-teal-200' },
-    { id: 'arte', name: 'Arte', icon: Palette, color: 'bg-pink-500', bgColor: 'bg-pink-50', borderColor: 'border-pink-200' },
-    { id: 'educação-física', name: 'Educação Física', icon: Target, color: 'bg-red-500', bgColor: 'bg-red-50', borderColor: 'border-red-200' }
+    { id: 'biologia', name: 'Biologia', icon: Microscope, color: 'bg-emerald-500', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' },
+    { id: 'química', name: 'Química', icon: Microscope, color: 'bg-cyan-500', bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
+    { id: 'física', name: 'Física', icon: Target, color: 'bg-indigo-500', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
+    { id: 'inglês', name: 'Inglês', icon: Globe, color: 'bg-rose-500', bgColor: 'bg-rose-50', borderColor: 'border-rose-200' },
+    { id: 'filosofia', name: 'Filosofia', icon: Brain, color: 'bg-amber-500', bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
+    { id: 'sociologia', name: 'Sociologia', icon: Brain, color: 'bg-violet-500', bgColor: 'bg-violet-50', borderColor: 'border-violet-200' },
+    { id: 'literatura', name: 'Literatura', icon: BookOpen, color: 'bg-pink-500', bgColor: 'bg-pink-50', borderColor: 'border-pink-200' }
   ];
 
   const getTopicsBySubject = (subject: string) => {
@@ -117,19 +122,54 @@ export default function StudentActivities() {
         'Recursos Naturais',
         'Globalização'
       ],
-      'arte': [
-        'História da Arte',
-        'Arte Brasileira',
-        'Técnicas Artísticas',
-        'Arte Contemporânea',
-        'Cultura Popular'
+      'biologia': [
+        'Citologia',
+        'Genética',
+        'Evolução',
+        'Ecologia',
+        'Anatomia e Fisiologia'
       ],
-      'educação-física': [
-        'Esportes Coletivos',
-        'Ginástica',
-        'Dança',
-        'Jogos e Brincadeiras',
-        'Saúde e Bem-estar'
+      'química': [
+        'Estrutura Atômica',
+        'Tabela Periódica',
+        'Ligações Químicas',
+        'Reações Químicas',
+        'Química Orgânica'
+      ],
+      'física': [
+        'Mecânica',
+        'Termologia',
+        'Óptica',
+        'Ondulatória',
+        'Eletromagnetismo'
+      ],
+      'inglês': [
+        'Gramática Inglesa',
+        'Vocabulário',
+        'Compreensão Textual',
+        'Conversação',
+        'Cultura Anglófona'
+      ],
+      'filosofia': [
+        'Filosofia Antiga',
+        'Ética e Moral',
+        'Filosofia Política',
+        'Teoria do Conhecimento',
+        'Filosofia Contemporânea'
+      ],
+      'sociologia': [
+        'Sociedade e Cultura',
+        'Estratificação Social',
+        'Movimentos Sociais',
+        'Globalização',
+        'Problemas Sociais Contemporâneos'
+      ],
+      'literatura': [
+        'Literatura Brasileira',
+        'Literatura Portuguesa',
+        'Escolas Literárias',
+        'Análise de Obras',
+        'Gêneros Textuais'
       ]
     };
     
