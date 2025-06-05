@@ -68,30 +68,49 @@ export default function StudentActivities() {
     { id: 'literatura', name: 'Literatura', icon: BookOpen, color: 'bg-pink-500', bgColor: 'bg-pink-50', borderColor: 'border-pink-200' }
   ];
 
-  // Geração de questão individual
-  const generateQuestionMutation = useMutation({
+  // Estados para o quiz
+  const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [isQuizComplete, setIsQuizComplete] = useState<boolean>(false);
+
+  // Geração de quiz com 5 questões
+  const generateQuizMutation = useMutation({
     mutationFn: async ({ subject, topic }: { subject: string; topic: string }) => {
       const response = await apiRequest('POST', '/api/ai/generate-quiz', {
         subject,
         topic,
         grade: '6º ano',
-        questionCount: 1
+        questionCount: 5,
+        validateTopic: true
       });
       return response.json();
     },
     onSuccess: (data) => {
+      if (data.error) {
+        toast({
+          title: "Tema não válido",
+          description: data.error,
+          variant: "destructive"
+        });
+        setIsLoadingQuestion(false);
+        return;
+      }
+      
       if (data.questions && data.questions.length > 0) {
+        setQuizQuestions(data.questions);
+        setCurrentQuestionIndex(0);
         setCurrentQuestion(data.questions[0]);
         setSelectedAnswer(null);
         setShowExplanation(false);
         setIsLoadingQuestion(false);
+        setIsQuizComplete(false);
         setCurrentView('quiz');
       }
     },
     onError: (error) => {
       toast({
         title: "Erro",
-        description: "Não foi possível gerar a questão. Tente novamente.",
+        description: "Não foi possível gerar o quiz. Verifique sua conexão ou tente novamente.",
         variant: "destructive"
       });
       setIsLoadingQuestion(false);
@@ -115,7 +134,7 @@ export default function StudentActivities() {
     }
     
     setIsLoadingQuestion(true);
-    generateQuestionMutation.mutate({ 
+    generateQuizMutation.mutate({ 
       subject: selectedSubject, 
       topic: studyTopic 
     });
@@ -128,24 +147,46 @@ export default function StudentActivities() {
     setShowExplanation(true);
     
     const isCorrect = answerIndex === currentQuestion.correctAnswer;
-    const points = isCorrect ? 10 : -5;
+    const points = isCorrect ? 1 : -1; // +1 para acerto, -1 para erro
     
     setTotalScore(prev => prev + points);
     setQuestionsAnswered(prev => prev + 1);
     
     toast({
       title: isCorrect ? "Resposta Correta!" : "Resposta Incorreta",
-      description: isCorrect ? "+10 pontos" : "-5 pontos",
+      description: isCorrect ? "+1 ponto" : "-1 ponto",
       variant: isCorrect ? "default" : "destructive"
     });
   };
 
   const handleNextQuestion = () => {
-    setIsLoadingQuestion(true);
-    generateQuestionMutation.mutate({ 
-      subject: selectedSubject, 
-      topic: studyTopic 
-    });
+    const nextIndex = currentQuestionIndex + 1;
+    
+    if (nextIndex >= quizQuestions.length) {
+      // Quiz completo
+      setIsQuizComplete(true);
+      toast({
+        title: "Quiz completo!",
+        description: `Você respondeu ${quizQuestions.length} questões. Pontuação final: ${totalScore}`,
+        variant: "default"
+      });
+    } else {
+      // Próxima questão
+      setCurrentQuestionIndex(nextIndex);
+      setCurrentQuestion(quizQuestions[nextIndex]);
+      setSelectedAnswer(null);
+      setShowExplanation(false);
+    }
+  };
+
+  const handleNewQuiz = () => {
+    setCurrentView('topic-input');
+    setQuizQuestions([]);
+    setCurrentQuestionIndex(0);
+    setCurrentQuestion(null);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setIsQuizComplete(false);
   };
 
   const handleBackToSubjects = () => {
@@ -286,8 +327,10 @@ export default function StudentActivities() {
           
           <div className="flex items-center space-x-6">
             <div className="text-center">
-              <p className="text-sm text-gray-600">Questões</p>
-              <p className="text-xl font-bold text-gray-900">{questionsAnswered}</p>
+              <p className="text-sm text-gray-600">Progresso</p>
+              <p className="text-xl font-bold text-gray-900">
+                {currentQuestionIndex + 1}/{quizQuestions.length}
+              </p>
             </div>
             <div className="text-center">
               <p className="text-sm text-gray-600">Pontuação</p>
@@ -296,6 +339,14 @@ export default function StudentActivities() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Barra de progresso */}
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%` }}
+          />
         </div>
 
         {/* Cabeçalho da disciplina */}
@@ -381,21 +432,76 @@ export default function StudentActivities() {
               {showExplanation ? (
                 <Button 
                   onClick={handleNextQuestion}
-                  disabled={isLoadingQuestion}
                   className="px-8 py-3"
                 >
-                  {isLoadingQuestion ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Carregando...
-                    </>
-                  ) : (
-                    'Próxima questão'
-                  )}
+                  {currentQuestionIndex + 1 >= quizQuestions.length ? 'Finalizar Quiz' : 'Próxima questão'}
                 </Button>
               ) : (
                 <p className="text-gray-600">Selecione uma resposta para continuar</p>
               )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  // Renderização da tela de conclusão do quiz
+  const renderQuizComplete = () => {
+    const selectedSubjectData = subjects.find(s => s.id === selectedSubject);
+    const percentage = Math.round((totalScore / quizQuestions.length) * 100);
+    const isGoodScore = totalScore >= quizQuestions.length * 0.6;
+    
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <Card className="text-center">
+          <CardContent className="p-8 space-y-6">
+            <div className="flex justify-center">
+              {isGoodScore ? (
+                <Trophy className="h-16 w-16 text-yellow-500" />
+              ) : (
+                <Target className="h-16 w-16 text-blue-500" />
+              )}
+            </div>
+            
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Quiz Concluído!
+              </h2>
+              <p className="text-gray-600">
+                Você completou o quiz sobre {studyTopic} em {selectedSubjectData?.name}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <p className="text-sm text-blue-600 mb-1">Questões respondidas</p>
+                <p className="text-2xl font-bold text-blue-900">{quizQuestions.length}</p>
+              </div>
+              <div className={`rounded-lg p-4 ${totalScore >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                <p className={`text-sm mb-1 ${totalScore >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  Pontuação final
+                </p>
+                <p className={`text-2xl font-bold ${totalScore >= 0 ? 'text-green-900' : 'text-red-900'}`}>
+                  {totalScore} pontos
+                </p>
+              </div>
+            </div>
+
+            <div className="flex space-x-4">
+              <Button 
+                onClick={handleNewQuiz}
+                variant="outline"
+                className="flex-1"
+              >
+                Novo Quiz
+              </Button>
+              <Button 
+                onClick={handleBackToSubjects}
+                className="flex-1"
+              >
+                Escolher Matéria
+              </Button>
             </div>
           </CardContent>
         </Card>

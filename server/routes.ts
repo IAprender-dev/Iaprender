@@ -1345,13 +1345,43 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   // TRANSLATION ROUTES
   app.use("/api/translate", translateRoutes);
 
-  // AI Quiz Generation
+  // AI Quiz Generation with BNCC validation
   app.post('/api/ai/generate-quiz', authenticate, async (req: Request, res: Response) => {
     try {
-      const { subject, topic, grade, questionCount } = req.body;
+      const { subject, topic, grade, questionCount = 5, validateTopic } = req.body;
       
       if (!subject || !topic) {
         return res.status(400).json({ error: 'Subject and topic are required' });
+      }
+
+      // BNCC subject topics mapping for validation
+      const bnccTopics: { [key: string]: string[] } = {
+        'português': ['interpretação', 'gramática', 'ortografia', 'produção textual', 'literatura', 'leitura', 'escrita', 'oralidade', 'análise linguística'],
+        'matemática': ['números', 'álgebra', 'geometria', 'estatística', 'probabilidade', 'medidas', 'operações', 'frações', 'equações', 'funções'],
+        'ciências': ['matéria', 'energia', 'vida', 'evolução', 'terra', 'universo', 'corpo humano', 'ecologia', 'física', 'química', 'biologia'],
+        'história': ['brasil', 'colonização', 'independência', 'república', 'civilizações', 'idade média', 'moderna', 'contemporânea', 'cultura', 'sociedade'],
+        'geografia': ['espaço', 'território', 'lugar', 'região', 'paisagem', 'cartografia', 'clima', 'relevo', 'população', 'urbanização', 'globalização'],
+        'biologia': ['citologia', 'genética', 'evolução', 'ecologia', 'anatomia', 'fisiologia', 'botânica', 'zoologia', 'microbiologia', 'biotecnologia'],
+        'química': ['átomo', 'tabela periódica', 'ligações', 'reações', 'orgânica', 'inorgânica', 'físico-química', 'estequiometria', 'termoquímica'],
+        'física': ['mecânica', 'termologia', 'óptica', 'ondulatória', 'eletromagnetismo', 'movimento', 'força', 'energia', 'calor', 'luz'],
+        'inglês': ['gramática', 'vocabulário', 'reading', 'listening', 'speaking', 'writing', 'cultura', 'comunicação', 'texto', 'conversação'],
+        'filosofia': ['ética', 'moral', 'política', 'conhecimento', 'lógica', 'metafísica', 'existência', 'valores', 'razão', 'pensamento'],
+        'sociologia': ['sociedade', 'cultura', 'estratificação', 'movimentos sociais', 'globalização', 'desigualdade', 'instituições', 'mudança social'],
+        'literatura': ['gêneros', 'escolas literárias', 'análise', 'interpretação', 'autores', 'obras', 'contexto histórico', 'figuras de linguagem']
+      };
+
+      // Validate topic against BNCC if requested
+      if (validateTopic) {
+        const subjectTopics = bnccTopics[subject.toLowerCase()] || [];
+        const isValidTopic = subjectTopics.some(validTopic => 
+          topic.toLowerCase().includes(validTopic) || validTopic.includes(topic.toLowerCase())
+        );
+        
+        if (!isValidTopic) {
+          return res.status(400).json({ 
+            error: `O tema "${topic}" não está alinhado com a BNCC para ${subject}. Tente temas como: ${subjectTopics.slice(0, 5).join(', ')}, entre outros.`
+          });
+        }
       }
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1363,36 +1393,35 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 4000,
-          system: `Você é um especialista em educação que cria exercícios baseados na BNCC para estudantes brasileiros. 
-          
-          Crie ${questionCount || 10} questões de múltipla escolha sobre o tópico "${topic}" da matéria "${subject}" para alunos do ${grade || 6}º ano.
-          
-          Cada questão deve ter:
-          - Uma pergunta clara e educativa
-          - 4 alternativas
-          - Apenas uma resposta correta (índice 0-3)
-          - Uma explicação didática da resposta
-          - Nível de dificuldade apropriado para a série
-          
-          Retorne APENAS um JSON válido no formato:
-          {
-            "topic": "${topic}",
-            "questions": [
-              {
-                "id": "1",
-                "question": "Pergunta aqui?",
-                "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
-                "correctAnswer": 0,
-                "explanation": "Explicação detalhada da resposta correta",
-                "difficulty": "easy"
-              }
-            ]
-          }`,
+          max_tokens: 3000,
+          system: `Você é um especialista em educação brasileira que cria exercícios rigorosamente baseados na BNCC.
+
+IMPORTANTE: Crie exatamente ${questionCount} questões de múltipla escolha sobre "${topic}" em ${subject} para ${grade || '6º ano'}.
+
+DIRETRIZES BNCC:
+- Questões devem estar alinhadas às competências e habilidades da BNCC
+- Linguagem apropriada para a faixa etária
+- Contextualização adequada à realidade brasileira
+- Progressão pedagógica respeitada
+
+FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
+{
+  "topic": "${topic}",
+  "questions": [
+    {
+      "id": "1",
+      "question": "Pergunta clara e objetiva?",
+      "options": ["Alternativa A", "Alternativa B", "Alternativa C", "Alternativa D"],
+      "correctAnswer": 0,
+      "explanation": "Explicação pedagógica detalhada da resposta correta",
+      "difficulty": "easy"
+    }
+  ]
+}`,
           messages: [
             {
               role: 'user',
-              content: `Crie um quiz sobre ${topic} em ${subject} para o ${grade || 6}º ano.`
+              content: `Crie ${questionCount} questões sobre "${topic}" em ${subject} para ${grade || '6º ano'}, seguindo rigorosamente a BNCC brasileira.`
             }
           ]
         })
@@ -1406,7 +1435,15 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
       const content = data.content[0].text;
       
       try {
-        const quizData = JSON.parse(content);
+        // Clean JSON response
+        const cleanContent = content.replace(/```json\n?|```\n?/g, '').trim();
+        const quizData = JSON.parse(cleanContent);
+        
+        // Validate response structure
+        if (!quizData.questions || !Array.isArray(quizData.questions)) {
+          throw new Error('Invalid response structure');
+        }
+        
         res.json(quizData);
       } catch (parseError) {
         console.error('Erro ao fazer parse do JSON:', content);
