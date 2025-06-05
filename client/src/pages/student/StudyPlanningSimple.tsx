@@ -490,11 +490,11 @@ export default function StudyPlanning() {
                     <Button 
                       onClick={createNewPlan}
                       disabled={planForm.studyDays.length === 0}
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                      className="flex-1 bg-slate-800 text-white hover:bg-slate-700 shadow-sm"
                     >
                       Criar Plano Bimestral
                     </Button>
-                    <Button variant="outline" onClick={() => setShowPlanDialog(false)}>
+                    <Button variant="outline" onClick={() => setShowPlanDialog(false)} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
                       Cancelar
                     </Button>
                   </div>
@@ -576,21 +576,23 @@ export default function StudyPlanning() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <BookOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-700 mb-2">
-                Nenhum plano de estudos ativo
-              </h3>
-              <p className="text-slate-600 mb-6">
-                Crie seu primeiro plano de estudos personalizado baseado na BNCC para {schoolYear}
-              </p>
-              <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
-                <DialogTrigger asChild>
-                  <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
-                    <Plus className="h-4 w-4" />
-                    Criar Meu Primeiro Plano
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-12 max-w-2xl mx-auto">
+                <BookOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                  Nenhum plano de estudos ativo
+                </h3>
+                <p className="text-slate-600 mb-6">
+                  Crie seu primeiro plano de estudos personalizado baseado na BNCC para {schoolYear}
+                </p>
+                <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2 bg-slate-800 text-white hover:bg-slate-700 shadow-sm">
+                      <Plus className="h-4 w-4" />
+                      Criar Meu Primeiro Plano
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+              </div>
             </div>
           )}
         </div>
