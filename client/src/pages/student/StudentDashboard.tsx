@@ -33,6 +33,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import LibreTranslateWidget from "@/components/LibreTranslateWidget";
 import iaverseLogo from "@/assets/IAverse.png";
 
 interface StudySession {
@@ -301,38 +302,8 @@ export default function StudentDashboard() {
 
               {/* Quick Actions */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {/* Courses Card */}
-                <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 backdrop-blur-sm shadow-lg rounded-2xl">
-                  <CardContent className="p-0">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="flex-1 p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl">
-                            <BookOpen className="h-6 w-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-slate-800">Meus Cursos</h3>
-                            <p className="text-sm text-slate-600">Continue seus estudos</p>
-                          </div>
-                        </div>
-                        <p className="text-slate-700 mb-4 leading-relaxed">
-                          Acesse seus cursos ativos e continue aprendendo com conteúdo interativo e personalizado!
-                        </p>
-                        <Link href="/student/courses">
-                          <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-sm">
-                            <BookOpen className="h-4 w-4" />
-                            Ver Cursos
-                          </Button>
-                        </Link>
-                      </div>
-                      <div className="hidden md:block p-6">
-                        <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center border border-blue-200">
-                          <div className="text-6xl">📚</div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* LibreTranslate Card */}
+                <LibreTranslateWidget />
 
                 {/* Activities Card */}
                 <Card className="border-0 bg-gradient-to-br from-green-50 to-emerald-50 backdrop-blur-sm shadow-lg rounded-2xl">
