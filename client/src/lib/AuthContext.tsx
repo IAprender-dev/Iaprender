@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "./queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { z } from "zod";
 
 // Tipos básicos
@@ -50,6 +51,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   
   // Query para buscar o usuário atual
   const {
@@ -143,6 +145,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/me"], null);
+      // Redireciona para a landing page
+      setLocation("/");
       toast({
         title: "Logout bem-sucedido",
         description: "Você foi desconectado com sucesso.",
