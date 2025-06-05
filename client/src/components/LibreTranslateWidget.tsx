@@ -117,12 +117,9 @@ export default function LibreTranslateWidget() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-6">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-2xl">
-          <Languages className="h-8 w-8 text-blue-600" />
-        </div>
+      <div className="text-center space-y-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Tradutor Educacional</h1>
           <p className="text-gray-600 mt-2">Traduza textos e materiais educacionais com precisão</p>
