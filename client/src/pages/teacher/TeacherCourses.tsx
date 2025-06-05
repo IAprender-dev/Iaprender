@@ -47,7 +47,7 @@ export default function TeacherCourses() {
         </div>
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
-            <Badge variant="outline" className="bg-primary-50 text-primary border-0 mb-2">
+            <Badge variant="default" className="mb-2">
               {course.category}
             </Badge>
             <div className="flex items-center">

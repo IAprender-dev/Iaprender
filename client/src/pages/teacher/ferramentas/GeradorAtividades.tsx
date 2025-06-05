@@ -604,16 +604,16 @@ export default function GeradorAtividades() {
                         {atividadeGerada.titulo}
                       </CardTitle>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="outline" className="text-xs text-black border-slate-400">
+                        <Badge variant="default" className="text-xs">
                           {atividadeGerada.materia}
                         </Badge>
-                        <Badge variant="outline" className="text-xs text-black border-slate-400">
+                        <Badge variant="default" className="text-xs">
                           {atividadeGerada.serie}
                         </Badge>
-                        <Badge variant="outline" className="text-xs text-black border-slate-400">
+                        <Badge variant="default" className="text-xs">
                           {atividadeGerada.tipoAtividade}
                         </Badge>
-                        <Badge variant="outline" className="text-xs text-black border-slate-400">
+                        <Badge variant="default" className="text-xs">
                           {atividadeGerada.quantidadeQuestoes} questões
                         </Badge>
                       </div>

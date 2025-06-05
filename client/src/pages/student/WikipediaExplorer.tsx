@@ -415,7 +415,7 @@ export default function WikipediaExplorer() {
                         Selecione um artigo para ver os detalhes
                       </p>
                       <div className="space-y-2">
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="default" className="text-xs">
                           <Lightbulb className="h-3 w-3 mr-1" />
                           Dica: Busque por temas educacionais
                         </Badge>
