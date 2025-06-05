@@ -25,6 +25,7 @@ import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
 import StudyPlanning from "@/pages/student/StudyPlanning";
+import WikipediaExplorer from "@/pages/student/WikipediaExplorer";
 import NotFound from "@/pages/not-found";
 
 // Ferramentas IA
@@ -99,6 +100,7 @@ function Router() {
       <Route path="/student/dashboard" component={StudentDashboard} />
       <Route path="/student/courses" component={StudentCourses} />
       <Route path="/student/activities" component={StudentActivities} />
+      <Route path="/student/wikipedia" component={WikipediaExplorer} />
       <Route path="/aluno/dashboard" component={StudentDashboard} />
       <Route path="/aluno/cursos" component={StudentCourses} />
       <Route path="/aluno/atividades" component={StudentActivities} />
