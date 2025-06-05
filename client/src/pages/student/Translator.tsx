@@ -1,8 +1,9 @@
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Languages } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import LibreTranslateWidget from "@/components/LibreTranslateWidget";
+import aiverseLogo from "@assets/Design sem nome (5)_1749147884733.png";
 
 export default function Translator() {
   return (
@@ -23,9 +24,11 @@ export default function Translator() {
             </Link>
             
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Languages className="h-4 w-4 text-blue-600" />
-              </div>
+              <img 
+                src={aiverseLogo} 
+                alt="AIverse Logo" 
+                className="w-8 h-8"
+              />
               <span className="text-sm font-medium text-gray-600">AIverse Tradutor</span>
             </div>
           </div>
