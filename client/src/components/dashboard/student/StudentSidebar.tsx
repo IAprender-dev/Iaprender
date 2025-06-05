@@ -30,11 +30,10 @@ export default function StudentSidebar() {
       active: location === "/aluno/cursos"
     },
     {
-      name: "Atividades",
-      icon: <CheckSquare className="h-4 w-4" />,
+      name: "Exercícios com IA",
+      icon: <Bot className="h-4 w-4" />,
       href: "/aluno/atividades",
-      active: location === "/aluno/atividades",
-      badge: 4
+      active: location === "/aluno/atividades"
     },
     {
       name: "Planejamento de Estudos",
