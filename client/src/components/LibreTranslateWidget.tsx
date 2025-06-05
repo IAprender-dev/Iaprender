@@ -155,13 +155,12 @@ export default function LibreTranslateWidget() {
             
             <div className="flex flex-col items-center justify-end h-20">
               <Button
-                variant="outline"
                 size="icon"
                 onClick={handleSwapLanguages}
                 disabled={sourceLang === "auto"}
-                className="h-12 w-12 rounded-xl border-gray-200 hover:bg-gray-50 disabled:opacity-50"
+                className="h-12 w-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white border-0 disabled:opacity-50 disabled:bg-gray-300"
               >
-                <ArrowRightLeft className="h-5 w-5 text-gray-600" />
+                <ArrowRightLeft className="h-5 w-5" />
               </Button>
             </div>
             
@@ -281,7 +280,7 @@ export default function LibreTranslateWidget() {
       {/* Footer Info */}
       <div className="text-center">
         <p className="text-sm text-gray-500">
-          Powered by MyMemory API • Tradução educacional gratuita e confiável
+          Powered by MyMemory
         </p>
       </div>
     </div>
