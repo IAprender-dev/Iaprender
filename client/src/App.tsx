@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
+import { StudyPlanProvider } from "@/lib/StudyPlanContext";
 import { ThemeProvider } from "next-themes";
 
 // Pages
@@ -117,10 +118,12 @@ function App() {
     <ThemeProvider attribute="class" defaultTheme="dark">
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <StudyPlanProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </StudyPlanProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>

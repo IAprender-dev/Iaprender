@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
+import { useStudyPlan } from "@/lib/StudyPlanContext";
 import { 
   Calendar, 
   Clock, 
@@ -143,6 +144,7 @@ interface StudySession {
   isCompleted: boolean;
   pomodoroCount: number;
   notes?: string;
+  dayOfWeek: string;
 }
 
 interface Exam {
@@ -164,8 +166,8 @@ interface PomodoroTimer {
 
 export default function StudyPlanning() {
   const { user } = useAuth();
+  const { currentPlan, setCurrentPlan, getWeekSessions, completeSession: completeStudySession, getCompletionStats } = useStudyPlan();
   const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [studySessions, setStudySessions] = useState<StudySession[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [pomodoroTimer, setPomodoroTimer] = useState<PomodoroTimer>({
     minutes: 25,
@@ -212,9 +214,6 @@ export default function StudyPlanning() {
   // Gerar cronograma bimestral baseado na BNCC e preferências do usuário
   const generateBimesterSchedule = () => {
     if (!curriculum || planForm.studyDays.length === 0) return;
-
-    // Apagar plano anterior
-    setStudySessions([]);
 
     const sessions: StudySession[] = [];
     const startDate = new Date();
@@ -271,14 +270,28 @@ export default function StudyPlanning() {
           endTime: new Date(endTime),
           isCompleted: false,
           pomodoroCount: Math.max(1, pomodoroCount),
-          notes: ""
+          notes: "",
+          dayOfWeek: dayKey
         };
         
         sessions.push(session);
       });
     }
     
-    setStudySessions(sessions);
+    // Criar e salvar o plano completo
+    const newPlan = {
+      id: Date.now(),
+      name: `Plano de Estudos - ${schoolYear}`,
+      schoolYear,
+      dailyStudyTime: planForm.dailyStudyTime,
+      studyDays: planForm.studyDays,
+      schedules: planForm.schedules,
+      sessions,
+      createdAt: new Date(),
+      isActive: true
+    };
+    
+    setCurrentPlan(newPlan);
     setShowPlanDialog(false);
   };
 
@@ -367,13 +380,7 @@ export default function StudyPlanning() {
   };
 
   const completeSession = (sessionId: number) => {
-    setStudySessions(prev => 
-      prev.map(session => 
-        session.id === sessionId 
-          ? { ...session, isCompleted: true }
-          : session
-      )
-    );
+    completeStudySession(sessionId);
   };
 
   const addExam = () => {
