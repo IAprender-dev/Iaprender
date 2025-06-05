@@ -1,437 +1,613 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import StudentHeader from "@/components/dashboard/student/StudentHeader";
 import StudentSidebar from "@/components/dashboard/student/StudentSidebar";
-import { Activity } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Search, CheckSquare, FileText, Clock, Calendar, AlertCircle, CheckCircle, Filter } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { BackButton } from "@/components/ui/back-button";
+import { 
+  Brain, 
+  Trophy, 
+  Target, 
+  BookOpen, 
+  Calculator, 
+  Globe, 
+  Microscope, 
+  Palette,
+  Music,
+  Play,
+  RotateCcw,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  ChevronRight,
+  Star
+} from "lucide-react";
+
+interface Question {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+}
+
+interface QuizSession {
+  id: string;
+  subject: string;
+  topic: string;
+  questions: Question[];
+  currentQuestionIndex: number;
+  score: number;
+  answeredQuestions: number;
+  userAnswers: (number | null)[];
+  isCompleted: boolean;
+}
 
 export default function StudentActivities() {
   const { user } = useAuth();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState("pending");
+  const { toast } = useToast();
+  
+  // Quiz states
+  const [currentView, setCurrentView] = useState<'subjects' | 'topics' | 'quiz' | 'results'>('subjects');
+  const [selectedSubject, setSelectedSubject] = useState<string>('');
+  const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [customTopic, setCustomTopic] = useState<string>('');
+  const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
+  const [quizSession, setQuizSession] = useState<QuizSession | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [showExplanation, setShowExplanation] = useState<boolean>(false);
 
-  // Fetch student's activities
-  const { 
-    data: activities, 
-    isLoading, 
-    error 
-  } = useQuery({
-    queryKey: ['/api/student/activities'],
-    enabled: !!user,
-  });
-
-  // Mock data for demonstration
-  const mockActivities: Activity[] = [
-    {
-      id: 1,
-      title: "Redação - Argumentação",
-      description: "Escreva um texto argumentativo sobre o tema \"Educação digital no Brasil\".",
-      courseId: 4,
-      dueDate: "2023-05-20T23:59:59Z",
-      priority: "high",
-      category: "Português",
-      status: "pending",
-      icon: "file-text"
-    },
-    {
-      id: 2,
-      title: "Lista de Exercícios - Funções",
-      description: "Resolva os exercícios sobre funções de 1º e 2º grau.",
-      courseId: 1,
-      dueDate: "2023-05-22T23:59:59Z",
-      priority: "medium",
-      category: "Matemática",
-      status: "pending",
-      icon: "calculator"
-    },
-    {
-      id: 3,
-      title: "Relatório de Experimento",
-      description: "Elabore um relatório sobre o experimento de densidade realizado em laboratório.",
-      courseId: 6,
-      dueDate: "2023-05-25T23:59:59Z",
-      priority: "low",
-      category: "Ciências",
-      status: "pending",
-      icon: "flask"
-    },
-    {
-      id: 4,
-      title: "Apresentação - Revolução Industrial",
-      description: "Prepare uma apresentação sobre as consequências da Revolução Industrial.",
-      courseId: 2,
-      dueDate: "2023-05-10T23:59:59Z",
-      priority: "high",
-      category: "História",
-      status: "completed",
-      icon: "presentation"
-    },
-    {
-      id: 5,
-      title: "Quiz - Gramática",
-      description: "Responda ao quiz sobre regras gramaticais da língua portuguesa.",
-      courseId: 4,
-      dueDate: "2023-05-08T23:59:59Z",
-      priority: "medium",
-      category: "Português",
-      status: "completed",
-      icon: "check-square"
-    },
-    {
-      id: 6,
-      title: "Mapa Mental - Fotossíntese",
-      description: "Crie um mapa mental explicando o processo de fotossíntese.",
-      courseId: 6,
-      dueDate: "2023-05-05T23:59:59Z",
-      priority: "medium",
-      category: "Biologia",
-      status: "completed",
-      icon: "map"
-    },
-    {
-      id: 7,
-      title: "Debate - Inteligência Artificial",
-      description: "Prepare argumentos para o debate sobre ética na inteligência artificial.",
-      courseId: 3,
-      dueDate: "2023-04-30T23:59:59Z",
-      priority: "high",
-      category: "Tecnologia",
-      status: "overdue",
-      icon: "message-square"
-    },
-    {
-      id: 8,
-      title: "Resenha - Livro",
-      description: "Escreva uma resenha crítica do livro indicado.",
-      courseId: 4,
-      dueDate: "2023-05-01T23:59:59Z",
-      priority: "low",
-      category: "Literatura",
-      status: "overdue",
-      icon: "book-open"
-    }
+  // BNCC subjects based on grade level (assuming 6th grade for demo)
+  const subjects = [
+    { id: 'português', name: 'Português', icon: BookOpen, color: 'bg-blue-500' },
+    { id: 'matemática', name: 'Matemática', icon: Calculator, color: 'bg-green-500' },
+    { id: 'ciências', name: 'Ciências', icon: Microscope, color: 'bg-purple-500' },
+    { id: 'história', name: 'História', icon: Globe, color: 'bg-orange-500' },
+    { id: 'geografia', name: 'Geografia', icon: Globe, color: 'bg-teal-500' },
+    { id: 'arte', name: 'Arte', icon: Palette, color: 'bg-pink-500' },
+    { id: 'educação-física', name: 'Educação Física', icon: Target, color: 'bg-red-500' }
   ];
 
-  // Filter activities by search term, category and status
-  const filteredActivities = mockActivities.filter(activity => {
-    const matchesSearch = activity.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          activity.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === "all" || activity.category === filterCategory;
-    const matchesStatus = activeTab === "all" || activity.status === activeTab;
+  const getTopicsBySubject = (subject: string) => {
+    const topics: { [key: string]: string[] } = {
+      'português': [
+        'Interpretação de Texto',
+        'Gramática e Ortografia', 
+        'Produção Textual',
+        'Literatura Brasileira',
+        'Figuras de Linguagem'
+      ],
+      'matemática': [
+        'Números e Operações',
+        'Álgebra e Funções',
+        'Geometria',
+        'Estatística e Probabilidade',
+        'Proporcionalidade'
+      ],
+      'ciências': [
+        'Seres Vivos',
+        'Corpo Humano',
+        'Meio Ambiente',
+        'Física e Química',
+        'Sistema Solar'
+      ],
+      'história': [
+        'Brasil Colonial',
+        'Independência do Brasil',
+        'República Brasileira',
+        'História Antiga',
+        'História Medieval'
+      ],
+      'geografia': [
+        'Geografia do Brasil',
+        'Clima e Relevo',
+        'População e Urbanização',
+        'Recursos Naturais',
+        'Globalização'
+      ],
+      'arte': [
+        'História da Arte',
+        'Arte Brasileira',
+        'Técnicas Artísticas',
+        'Arte Contemporânea',
+        'Cultura Popular'
+      ],
+      'educação-física': [
+        'Esportes Coletivos',
+        'Ginástica',
+        'Dança',
+        'Jogos e Brincadeiras',
+        'Saúde e Bem-estar'
+      ]
+    };
     
-    return matchesSearch && matchesCategory && matchesStatus;
+    return topics[subject] || [];
+  };
+
+  // Generate quiz mutation
+  const generateQuizMutation = useMutation({
+    mutationFn: async ({ subject, topic }: { subject: string; topic: string }) => {
+      const response = await apiRequest('POST', '/api/ai/generate-quiz', {
+        subject,
+        topic,
+        grade: user?.grade || 6,
+        questionCount: 10
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      const newQuizSession: QuizSession = {
+        id: Date.now().toString(),
+        subject: selectedSubject,
+        topic: data.topic,
+        questions: data.questions,
+        currentQuestionIndex: 0,
+        score: 0,
+        answeredQuestions: 0,
+        userAnswers: new Array(data.questions.length).fill(null),
+        isCompleted: false
+      };
+      setQuizSession(newQuizSession);
+      setCurrentView('quiz');
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o quiz. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   });
 
-  // Get unique categories from activities
-  const categories = [...new Set(mockActivities.map(activity => activity.category))];
+  const handleSubjectSelect = (subject: string) => {
+    setSelectedSubject(subject);
+    setCurrentView('topics');
+  };
 
-  // Sort activities by due date and priority
-  const sortedActivities = [...filteredActivities].sort((a, b) => {
-    if (activeTab === 'pending') {
-      // For pending activities, sort by due date (closest first)
-      const dateA = new Date(a.dueDate).getTime();
-      const dateB = new Date(b.dueDate).getTime();
-      if (dateA !== dateB) return dateA - dateB;
+  const handleTopicSelect = (topic: string) => {
+    setSelectedTopic(topic);
+    generateQuizMutation.mutate({ subject: selectedSubject, topic });
+  };
+
+  const handleCustomTopicSubmit = () => {
+    if (customTopic.trim()) {
+      generateQuizMutation.mutate({ subject: selectedSubject, topic: customTopic });
+    }
+  };
+
+  const handleAnswerSelect = (answerIndex: number) => {
+    if (quizSession && !showExplanation) {
+      setSelectedAnswer(answerIndex);
+    }
+  };
+
+  const handleAnswerSubmit = () => {
+    if (quizSession && selectedAnswer !== null) {
+      const isCorrect = selectedAnswer === quizSession.questions[quizSession.currentQuestionIndex].correctAnswer;
       
-      // If dates are equal, sort by priority
-      const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    } else {
-      // For completed/overdue activities, sort by date (most recent first)
-      return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
-    }
-  });
-
-  const renderIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'file-text':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M14.5 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>;
-      case 'calculator':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#3563E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="8" y2="10"></line><line x1="12" y1="10" x2="12" y2="10"></line><line x1="16" y1="10" x2="16" y2="10"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="18" x2="12" y2="18"></line><line x1="16" y1="18" x2="16" y2="18"></line></svg>;
-      case 'flask':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#34C759" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M9 3l6 11h-3l-3-5.5L6 14H3l6-11z"></path><path d="M12 3v5.5M4 14h16a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 012-2z"></path></svg>;
-      case 'presentation':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M2 3h20M2 3v14a2 2 0 002 2h16a2 2 0 002-2V3M2 3v14a2 2 0 002 2h16a2 2 0 002-2V3M12 9v6M8 9h8"></path></svg>;
-      case 'check-square':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#3563E9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path></svg>;
-      case 'map':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#34C759" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>;
-      case 'message-square':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>;
-      case 'book-open':
-        return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"></path></svg>;
-      default:
-        return <CheckSquare className="h-4 w-4" />;
+      // Update quiz session
+      const updatedAnswers = [...quizSession.userAnswers];
+      updatedAnswers[quizSession.currentQuestionIndex] = selectedAnswer;
+      
+      const updatedSession = {
+        ...quizSession,
+        userAnswers: updatedAnswers,
+        score: isCorrect ? quizSession.score + 1 : quizSession.score,
+        answeredQuestions: quizSession.answeredQuestions + 1
+      };
+      
+      setQuizSession(updatedSession);
+      setShowExplanation(true);
     }
   };
 
-  // Format due date
-  const formatDueDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) {
-      return `Atrasado por ${Math.abs(diffDays)} dias`;
-    } else if (diffDays === 0) {
-      return "Hoje";
-    } else if (diffDays === 1) {
-      return "Amanhã";
-    } else if (diffDays < 7) {
-      return `Em ${diffDays} dias`;
-    } else {
-      return date.toLocaleDateString('pt-BR');
+  const handleNextQuestion = () => {
+    if (quizSession) {
+      const nextIndex = quizSession.currentQuestionIndex + 1;
+      
+      if (nextIndex >= quizSession.questions.length) {
+        // Quiz completed
+        setQuizSession({
+          ...quizSession,
+          isCompleted: true
+        });
+        setCurrentView('results');
+      } else {
+        // Next question
+        setQuizSession({
+          ...quizSession,
+          currentQuestionIndex: nextIndex
+        });
+        setSelectedAnswer(null);
+        setShowExplanation(false);
+      }
     }
   };
 
-  // Check if due date is close
-  const isDueDateClose = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays >= 0 && diffDays <= 2;
+  const handleRestartQuiz = () => {
+    setQuizSession(null);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setCurrentView('subjects');
+    setSelectedSubject('');
+    setSelectedTopic('');
+    setCustomTopic('');
+    setShowCustomInput(false);
   };
 
-  // Loading skeletons
-  const renderSkeletons = () => {
-    return Array(5).fill(0).map((_, i) => (
-      <Card key={i} className="mb-4">
-        <CardContent className="p-4">
-          <div className="flex items-start">
-            <Skeleton className="h-10 w-10 rounded-lg mr-4" />
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <Skeleton className="h-6 w-1/3" />
-                <Skeleton className="h-4 w-20" />
-              </div>
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4 mb-2" />
-              <div className="flex mt-2">
-                <Skeleton className="h-6 w-16 mr-2" />
-                <Skeleton className="h-6 w-16" />
-              </div>
+  const getScorePercentage = () => {
+    if (!quizSession) return 0;
+    return Math.round((quizSession.score / quizSession.questions.length) * 100);
+  };
+
+  const getScoreColor = (percentage: number) => {
+    if (percentage >= 80) return 'text-green-600';
+    if (percentage >= 60) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const renderSubjectSelection = () => (
+    <div className="space-y-6">
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mx-auto">
+          <Brain className="h-8 w-8 text-blue-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Exercícios com IA</h1>
+          <p className="text-gray-600 mt-2">Escolha uma matéria para praticar com exercícios personalizados</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {subjects.map((subject) => {
+          const IconComponent = subject.icon;
+          return (
+            <Card 
+              key={subject.id}
+              className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-200"
+              onClick={() => handleSubjectSelect(subject.id)}
+            >
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className={`w-12 h-12 ${subject.color} rounded-lg flex items-center justify-center`}>
+                    <IconComponent className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900">{subject.name}</h3>
+                    <p className="text-sm text-gray-500">Exercícios BNCC</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-400" />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const renderTopicSelection = () => {
+    const selectedSubjectData = subjects.find(s => s.id === selectedSubject);
+    const topics = getTopicsBySubject(selectedSubject);
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Button 
+            variant="outline" 
+            onClick={() => setCurrentView('subjects')}
+            className="gap-3 h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
+          >
+            <ChevronRight className="h-4 w-4 rotate-180" />
+            Voltar
+          </Button>
+          <div className="flex items-center space-x-3">
+            {selectedSubjectData && (
+              <>
+                <div className={`w-10 h-10 ${selectedSubjectData.color} rounded-lg flex items-center justify-center`}>
+                  <selectedSubjectData.icon className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">{selectedSubjectData.name}</h1>
+                  <p className="text-sm text-gray-600">Escolha um tópico para praticar</p>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {topics.map((topic, index) => (
+            <Card 
+              key={index}
+              className="cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-blue-200"
+              onClick={() => handleTopicSelect(topic)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900">{topic}</h3>
+                    <p className="text-sm text-gray-500">10 questões</p>
+                  </div>
+                  <Play className="h-5 w-5 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          
+          {/* Custom Topic Option */}
+          <Card className="border-2 border-dashed border-gray-300 hover:border-blue-300 transition-colors">
+            <CardContent className="p-4">
+              {!showCustomInput ? (
+                <div 
+                  className="flex items-center justify-center h-full cursor-pointer"
+                  onClick={() => setShowCustomInput(true)}
+                >
+                  <div className="text-center">
+                    <Target className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">Tópico específico</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Digite um tópico específico..."
+                    value={customTopic}
+                    onChange={(e) => setCustomTopic(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleCustomTopicSubmit()}
+                  />
+                  <div className="flex space-x-2">
+                    <Button size="sm" onClick={handleCustomTopicSubmit} disabled={!customTopic.trim()}>
+                      Iniciar
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setShowCustomInput(false)}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {generateQuizMutation.isPending && (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center space-x-3">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              <p className="text-gray-600">Gerando exercícios personalizados...</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-    ));
+        )}
+      </div>
+    );
+  };
+
+  const renderQuiz = () => {
+    if (!quizSession) return null;
+
+    const currentQuestion = quizSession.questions[quizSession.currentQuestionIndex];
+    const progress = ((quizSession.currentQuestionIndex + 1) / quizSession.questions.length) * 100;
+
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" onClick={handleRestartQuiz}>
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reiniciar
+            </Button>
+          </div>
+          <div className="text-center">
+            <h2 className="font-semibold text-gray-900">{quizSession.subject} - {quizSession.topic}</h2>
+            <p className="text-sm text-gray-500">
+              Questão {quizSession.currentQuestionIndex + 1} de {quizSession.questions.length}
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center space-x-2">
+              <Trophy className="h-4 w-4 text-yellow-500" />
+              <span className="font-medium">{quizSession.score} pts</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Progresso</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <Progress value={progress} className="h-2" />
+        </div>
+
+        {/* Question */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">{currentQuestion.question}</CardTitle>
+              <Badge variant={currentQuestion.difficulty === 'easy' ? 'secondary' : currentQuestion.difficulty === 'medium' ? 'default' : 'destructive'}>
+                {currentQuestion.difficulty === 'easy' ? 'Fácil' : currentQuestion.difficulty === 'medium' ? 'Médio' : 'Difícil'}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <RadioGroup value={selectedAnswer?.toString()} onValueChange={(value) => handleAnswerSelect(parseInt(value))}>
+              {currentQuestion.options.map((option, index) => {
+                let optionClass = "p-4 rounded-lg border-2 transition-colors cursor-pointer";
+                
+                if (showExplanation) {
+                  if (index === currentQuestion.correctAnswer) {
+                    optionClass += " border-green-500 bg-green-50";
+                  } else if (index === selectedAnswer) {
+                    optionClass += " border-red-500 bg-red-50";
+                  } else {
+                    optionClass += " border-gray-200 bg-gray-50";
+                  }
+                } else {
+                  optionClass += selectedAnswer === index ? " border-blue-500 bg-blue-50" : " border-gray-200 hover:border-gray-300";
+                }
+
+                return (
+                  <div key={index} className={optionClass} onClick={() => handleAnswerSelect(index)}>
+                    <div className="flex items-center space-x-3">
+                      <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+                      <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
+                        {option}
+                      </Label>
+                      {showExplanation && index === currentQuestion.correctAnswer && (
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                      )}
+                      {showExplanation && index === selectedAnswer && index !== currentQuestion.correctAnswer && (
+                        <XCircle className="h-5 w-5 text-red-600" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </RadioGroup>
+
+            {showExplanation && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-900 mb-2">Explicação:</h4>
+                <p className="text-blue-800">{currentQuestion.explanation}</p>
+              </div>
+            )}
+
+            <div className="flex justify-between pt-4">
+              <div />
+              {!showExplanation ? (
+                <Button 
+                  onClick={handleAnswerSubmit} 
+                  disabled={selectedAnswer === null}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Confirmar Resposta
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleNextQuestion}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {quizSession.currentQuestionIndex + 1 >= quizSession.questions.length ? 'Ver Resultado' : 'Próxima Questão'}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
+  const renderResults = () => {
+    if (!quizSession) return null;
+
+    const percentage = getScorePercentage();
+    const scoreColor = getScoreColor(percentage);
+
+    return (
+      <div className="max-w-2xl mx-auto space-y-6">
+        <Card>
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mx-auto mb-4">
+              <Trophy className="h-10 w-10 text-blue-600" />
+            </div>
+            <CardTitle className="text-2xl">Quiz Concluído!</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="text-center space-y-4">
+              <div className={`text-6xl font-bold ${scoreColor}`}>
+                {percentage}%
+              </div>
+              <div className="space-y-2">
+                <p className="text-lg text-gray-700">
+                  Você acertou <span className="font-semibold">{quizSession.score}</span> de{' '}
+                  <span className="font-semibold">{quizSession.questions.length}</span> questões
+                </p>
+                <div className="flex items-center justify-center space-x-1">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-6 w-6 ${
+                        i < Math.round(percentage / 20) ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-semibold text-gray-900">Resumo do Desempenho:</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Matéria:</span>
+                  <span className="font-medium capitalize">{quizSession.subject}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tópico:</span>
+                  <span className="font-medium">{quizSession.topic}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Acertos:</span>
+                  <span className="font-medium text-green-600">{quizSession.score}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Erros:</span>
+                  <span className="font-medium text-red-600">{quizSession.questions.length - quizSession.score}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <Button 
+                onClick={handleRestartQuiz}
+                className="flex-1 bg-blue-600 hover:bg-blue-700"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Novo Quiz
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setCurrentView('topics')}
+                className="flex-1"
+              >
+                Escolher Tópico
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   };
 
   return (
     <>
       <Helmet>
-        <title>Minhas Atividades | Aluno | iAula</title>
+        <title>Exercícios com IA - IAverse</title>
       </Helmet>
-
-      <div className="flex h-screen overflow-hidden bg-neutral-50">
+      
+      <div className="flex h-screen bg-gray-50">
         <StudentSidebar />
-        
         <div className="flex-1 flex flex-col overflow-hidden">
           <StudentHeader />
-          
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="container mx-auto">
-              {/* Page Header */}
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-                <div>
-                  <h1 className="text-2xl font-bold text-neutral-900 font-heading">Minhas Atividades</h1>
-                  <p className="text-neutral-600 mt-1">
-                    Gerencie tarefas, trabalhos e atividades dos seus cursos
-                  </p>
-                </div>
-                <div className="mt-4 md:mt-0">
-                  <Button className="gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Ver Calendário
-                  </Button>
-                </div>
-              </div>
-
-              {/* Search and Filters */}
-              <div className="bg-white rounded-lg border border-neutral-200 p-4 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 h-4 w-4" />
-                    <Input
-                      placeholder="Pesquisar atividades..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <div className="relative inline-block">
-                      <select 
-                        className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pr-8 appearance-none"
-                        value={filterCategory}
-                        onChange={(e) => setFilterCategory(e.target.value)}
-                      >
-                        <option value="all">Todas as disciplinas</option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>{category}</option>
-                        ))}
-                      </select>
-                      <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 h-4 w-4 pointer-events-none" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tabs */}
-              <Tabs 
-                defaultValue="pending" 
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="mb-6"
-              >
-                <TabsList>
-                  <TabsTrigger value="all">Todas</TabsTrigger>
-                  <TabsTrigger value="pending" className="relative">
-                    Pendentes
-                    {mockActivities.filter(a => a.status === "pending").length > 0 && (
-                      <Badge className="ml-2 bg-primary text-white">{mockActivities.filter(a => a.status === "pending").length}</Badge>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="completed">Concluídas</TabsTrigger>
-                  <TabsTrigger value="overdue" className="relative">
-                    Atrasadas
-                    {mockActivities.filter(a => a.status === "overdue").length > 0 && (
-                      <Badge className="ml-2 bg-red-500 text-white">{mockActivities.filter(a => a.status === "overdue").length}</Badge>
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-
-              {/* Activities List */}
-              {isLoading ? (
-                <div>
-                  {renderSkeletons()}
-                </div>
-              ) : error ? (
-                <Card className="p-8 text-center">
-                  <CardTitle className="text-lg text-red-500 mb-2">Erro ao carregar as atividades</CardTitle>
-                  <CardDescription>
-                    Ocorreu um erro ao tentar carregar suas atividades. Por favor, tente novamente mais tarde.
-                  </CardDescription>
-                  <Button onClick={() => window.location.reload()} className="mt-4">
-                    Tentar novamente
-                  </Button>
-                </Card>
-              ) : sortedActivities.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <CardTitle className="text-lg mb-2">Nenhuma atividade encontrada</CardTitle>
-                  <CardDescription>
-                    {searchTerm || filterCategory !== "all" 
-                      ? "Não encontramos atividades que correspondam aos seus filtros de busca."
-                      : activeTab === "pending" 
-                        ? "Você não tem atividades pendentes no momento."
-                        : activeTab === "completed"
-                          ? "Você ainda não concluiu nenhuma atividade."
-                          : activeTab === "overdue"
-                            ? "Você não tem atividades atrasadas."
-                            : "Você não tem nenhuma atividade."}
-                  </CardDescription>
-                  {(searchTerm || filterCategory !== "all") && (
-                    <Button 
-                      onClick={() => {
-                        setSearchTerm("");
-                        setFilterCategory("all");
-                      }} 
-                      className="mt-4"
-                    >
-                      Limpar filtros
-                    </Button>
-                  )}
-                </Card>
-              ) : (
-                <div>
-                  {sortedActivities.map((activity) => (
-                    <Card key={activity.id} className="mb-4">
-                      <CardContent className="p-4">
-                        <div className="flex items-start">
-                          <div className={`flex-shrink-0 ${
-                            activity.priority === 'high' ? 'bg-red-100' : 
-                            activity.priority === 'medium' ? 'bg-primary-100' : 
-                            'bg-[#34C759]/10'
-                          } p-2 rounded-lg mr-4`}>
-                            {renderIcon(activity.icon)}
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-start justify-between mb-1">
-                              <h3 className="font-medium text-neutral-900">{activity.title}</h3>
-                              <div className="flex items-center">
-                                {activity.status === 'pending' && isDueDateClose(activity.dueDate) ? (
-                                  <Badge variant="outline" className="bg-red-100 text-red-600 border-0">
-                                    {formatDueDate(activity.dueDate)}
-                                  </Badge>
-                                ) : activity.status === 'overdue' ? (
-                                  <Badge variant="outline" className="bg-red-100 text-red-600 border-0 flex items-center gap-1">
-                                    <AlertCircle className="h-3 w-3" />
-                                    {formatDueDate(activity.dueDate)}
-                                  </Badge>
-                                ) : activity.status === 'completed' ? (
-                                  <Badge variant="outline" className="bg-green-100 text-green-600 border-0 flex items-center gap-1">
-                                    <CheckCircle className="h-3 w-3" />
-                                    Concluída
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className="bg-neutral-100 text-neutral-600 border-0">
-                                    {formatDueDate(activity.dueDate)}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                            <p className="text-sm text-neutral-600 mb-2">{activity.description}</p>
-                            <div className="flex flex-wrap gap-2 mt-3">
-                              <Badge variant="default">
-                                {activity.category}
-                              </Badge>
-                              <Badge variant={
-                                activity.priority === 'high' ? 'destructive' : 
-                                activity.priority === 'medium' ? 'warning' : 
-                                'success'
-                              }>
-                                Prioridade {activity.priority === 'high' ? 'alta' : 
-                                          activity.priority === 'medium' ? 'média' : 'baixa'}
-                              </Badge>
-                            </div>
-                            <div className="flex mt-4">
-                              {activity.status === 'pending' && (
-                                <Button className="gap-2 mr-2">
-                                  <FileText className="h-4 w-4" />
-                                  Enviar Tarefa
-                                </Button>
-                              )}
-                              {activity.status === 'completed' && (
-                                <Button variant="outline" className="gap-2 mr-2">
-                                  <FileText className="h-4 w-4" />
-                                  Ver Feedback
-                                </Button>
-                              )}
-                              <Button variant={activity.status === 'pending' ? 'outline' : 'default'} className="gap-2">
-                                <Clock className="h-4 w-4" />
-                                {activity.status === 'completed' ? 'Reenviar' : 'Ver Detalhes'}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
+          <main className="flex-1 overflow-auto">
+            <div className="container mx-auto px-6 py-8">
+              {currentView === 'subjects' && renderSubjectSelection()}
+              {currentView === 'topics' && renderTopicSelection()}
+              {currentView === 'quiz' && renderQuiz()}
+              {currentView === 'results' && renderResults()}
             </div>
           </main>
         </div>

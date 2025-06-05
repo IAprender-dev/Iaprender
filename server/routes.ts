@@ -1345,6 +1345,80 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   // TRANSLATION ROUTES
   app.use("/api/translate", translateRoutes);
 
+  // AI Quiz Generation
+  app.post('/api/ai/generate-quiz', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { subject, topic, grade, questionCount } = req.body;
+      
+      if (!subject || !topic) {
+        return res.status(400).json({ error: 'Subject and topic are required' });
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          system: `Você é um especialista em educação que cria exercícios baseados na BNCC para estudantes brasileiros. 
+          
+          Crie ${questionCount || 10} questões de múltipla escolha sobre o tópico "${topic}" da matéria "${subject}" para alunos do ${grade || 6}º ano.
+          
+          Cada questão deve ter:
+          - Uma pergunta clara e educativa
+          - 4 alternativas
+          - Apenas uma resposta correta (índice 0-3)
+          - Uma explicação didática da resposta
+          - Nível de dificuldade apropriado para a série
+          
+          Retorne APENAS um JSON válido no formato:
+          {
+            "topic": "${topic}",
+            "questions": [
+              {
+                "id": "1",
+                "question": "Pergunta aqui?",
+                "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
+                "correctAnswer": 0,
+                "explanation": "Explicação detalhada da resposta correta",
+                "difficulty": "easy"
+              }
+            ]
+          }`,
+          messages: [
+            {
+              role: 'user',
+              content: `Crie um quiz sobre ${topic} em ${subject} para o ${grade || 6}º ano.`
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na API do Anthropic');
+      }
+
+      const data = await response.json();
+      const content = data.content[0].text;
+      
+      try {
+        const quizData = JSON.parse(content);
+        res.json(quizData);
+      } catch (parseError) {
+        console.error('Erro ao fazer parse do JSON:', content);
+        res.status(500).json({ error: 'Erro ao processar resposta da IA' });
+      }
+
+    } catch (error) {
+      console.error('Erro ao gerar quiz:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
