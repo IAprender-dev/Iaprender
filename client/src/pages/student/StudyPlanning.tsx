@@ -178,44 +178,138 @@ export default function StudyPlanning() {
   const [selectedSubject, setSelectedSubject] = useState<string>("");
   const [showPomodoroDialog, setShowPomodoroDialog] = useState(false);
   const [showExamDialog, setShowExamDialog] = useState(false);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [examForm, setExamForm] = useState({ subject: "", date: "", title: "" });
+  const [planForm, setPlanForm] = useState({
+    dailyStudyTime: 2, // horas por dia
+    studyDays: [] as string[],
+    schedules: {
+      monday: { start: "19:00", end: "21:00" },
+      tuesday: { start: "19:00", end: "21:00" },
+      wednesday: { start: "19:00", end: "21:00" },
+      thursday: { start: "19:00", end: "21:00" },
+      friday: { start: "19:00", end: "21:00" },
+      saturday: { start: "14:00", end: "16:00" },
+      sunday: { start: "14:00", end: "16:00" }
+    }
+  });
 
   // Obter ano escolar do usuário
   const schoolYear = (user as any)?.schoolYear || "1º ano";
   const curriculum = BNCC_CURRICULUM[schoolYear as keyof typeof BNCC_CURRICULUM];
 
-  // Gerar cronograma bimestral baseado na BNCC
+  // Dias da semana para mapeamento
+  const WEEK_DAYS = [
+    { key: "monday", label: "Segunda-feira", index: 1 },
+    { key: "tuesday", label: "Terça-feira", index: 2 },
+    { key: "wednesday", label: "Quarta-feira", index: 3 },
+    { key: "thursday", label: "Quinta-feira", index: 4 },
+    { key: "friday", label: "Sexta-feira", index: 5 },
+    { key: "saturday", label: "Sábado", index: 6 },
+    { key: "sunday", label: "Domingo", index: 0 }
+  ];
+
+  // Gerar cronograma bimestral baseado na BNCC e preferências do usuário
   const generateBimesterSchedule = () => {
-    if (!curriculum) return;
+    if (!curriculum || planForm.studyDays.length === 0) return;
+
+    // Apagar plano anterior
+    setStudySessions([]);
 
     const sessions: StudySession[] = [];
-    const startDate = new Date(currentWeek);
+    const startDate = new Date();
+    
+    // Calcular distribuição de matérias por prioridade
+    const highPrioritySubjects = curriculum.subjects.filter(s => s.priority === "high");
+    const mediumPrioritySubjects = curriculum.subjects.filter(s => s.priority === "medium");
+    const lowPrioritySubjects = curriculum.subjects.filter(s => s.priority === "low");
     
     // Gerar 8 semanas (2 meses = 1 bimestre)
     for (let week = 0; week < 8; week++) {
-      curriculum.subjects.forEach((subject, index) => {
-        const studyDaysPerWeek = Math.max(1, Math.floor(subject.weeklyHours / 2));
+      planForm.studyDays.forEach((dayKey, dayIndex) => {
+        const dayInfo = WEEK_DAYS.find(d => d.key === dayKey);
+        if (!dayInfo) return;
         
-        for (let day = 0; day < studyDaysPerWeek; day++) {
-          const sessionDate = new Date(startDate);
-          sessionDate.setDate(startDate.getDate() + (week * 7) + (day * 2) + 1); // Distribui ao longo da semana
-          
-          const session: StudySession = {
-            id: Date.now() + sessions.length,
-            subject: subject.name,
-            startTime: new Date(sessionDate),
-            endTime: new Date(sessionDate.getTime() + (50 * 60 * 1000)), // 50 minutos
-            isCompleted: false,
-            pomodoroCount: 2, // 2 pomodoros de 25min = 50min
-            notes: ""
-          };
-          
-          sessions.push(session);
+        const sessionDate = new Date(startDate);
+        sessionDate.setDate(startDate.getDate() + (week * 7) + (dayInfo.index - startDate.getDay()));
+        
+        // Ajustar para não criar sessões no passado
+        if (sessionDate < new Date()) {
+          sessionDate.setDate(sessionDate.getDate() + 7);
         }
+        
+        const schedule = planForm.schedules[dayKey as keyof typeof planForm.schedules];
+        const [startHour, startMinute] = schedule.start.split(':').map(Number);
+        const [endHour, endMinute] = schedule.end.split(':').map(Number);
+        
+        sessionDate.setHours(startHour, startMinute, 0, 0);
+        const endTime = new Date(sessionDate);
+        endTime.setHours(endHour, endMinute, 0, 0);
+        
+        // Calcular duração em minutos
+        const durationMinutes = (endTime.getTime() - sessionDate.getTime()) / (1000 * 60);
+        const pomodoroCount = Math.floor(durationMinutes / 25);
+        
+        // Selecionar matéria baseada na prioridade e rotatividade
+        let selectedSubject;
+        const sessionIndex = week * planForm.studyDays.length + dayIndex;
+        
+        if (sessionIndex % 3 === 0 && highPrioritySubjects.length > 0) {
+          selectedSubject = highPrioritySubjects[sessionIndex % highPrioritySubjects.length];
+        } else if (sessionIndex % 3 === 1 && mediumPrioritySubjects.length > 0) {
+          selectedSubject = mediumPrioritySubjects[sessionIndex % mediumPrioritySubjects.length];
+        } else if (lowPrioritySubjects.length > 0) {
+          selectedSubject = lowPrioritySubjects[sessionIndex % lowPrioritySubjects.length];
+        } else {
+          selectedSubject = curriculum.subjects[sessionIndex % curriculum.subjects.length];
+        }
+        
+        const session: StudySession = {
+          id: Date.now() + sessions.length + Math.random(),
+          subject: selectedSubject.name,
+          startTime: new Date(sessionDate),
+          endTime: new Date(endTime),
+          isCompleted: false,
+          pomodoroCount: Math.max(1, pomodoroCount),
+          notes: ""
+        };
+        
+        sessions.push(session);
       });
     }
     
     setStudySessions(sessions);
+    setShowPlanDialog(false);
+  };
+
+  const createNewPlan = () => {
+    if (planForm.studyDays.length === 0) {
+      alert("Selecione pelo menos um dia da semana para estudar.");
+      return;
+    }
+    generateBimesterSchedule();
+  };
+
+  const toggleStudyDay = (dayKey: string) => {
+    setPlanForm(prev => ({
+      ...prev,
+      studyDays: prev.studyDays.includes(dayKey)
+        ? prev.studyDays.filter(d => d !== dayKey)
+        : [...prev.studyDays, dayKey]
+    }));
+  };
+
+  const updateSchedule = (dayKey: string, field: 'start' | 'end', value: string) => {
+    setPlanForm(prev => ({
+      ...prev,
+      schedules: {
+        ...prev.schedules,
+        [dayKey]: {
+          ...prev.schedules[dayKey as keyof typeof prev.schedules],
+          [field]: value
+        }
+      }
+    }));
   };
 
   // Timer Pomodoro
@@ -346,13 +440,138 @@ export default function StudyPlanning() {
             </div>
             
             <div className="flex items-center gap-3">
-              <Button 
-                onClick={generateBimesterSchedule}
-                className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-              >
-                <Calendar className="h-4 w-4" />
-                Gerar Cronograma
-              </Button>
+              <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
+                    <Calendar className="h-4 w-4" />
+                    Criar Novo Plano
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Criar Novo Plano de Estudos</DialogTitle>
+                    <p className="text-sm text-slate-600">
+                      Configure seu plano bimestral baseado na BNCC para {schoolYear}
+                    </p>
+                  </DialogHeader>
+                  
+                  <div className="space-y-6">
+                    {/* Tempo de estudo diário */}
+                    <div>
+                      <Label className="text-base font-semibold">Quanto tempo você vai estudar por dia?</Label>
+                      <Select 
+                        value={planForm.dailyStudyTime.toString()} 
+                        onValueChange={(value) => setPlanForm({...planForm, dailyStudyTime: parseInt(value)})}
+                      >
+                        <SelectTrigger className="mt-2">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 hora por dia</SelectItem>
+                          <SelectItem value="2">2 horas por dia</SelectItem>
+                          <SelectItem value="3">3 horas por dia</SelectItem>
+                          <SelectItem value="4">4 horas por dia</SelectItem>
+                          <SelectItem value="5">5 horas por dia</SelectItem>
+                          <SelectItem value="6">6 horas por dia</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Dias da semana */}
+                    <div>
+                      <Label className="text-base font-semibold">Em quais dias da semana você vai estudar?</Label>
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                        {WEEK_DAYS.map((day) => (
+                          <label key={day.key} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={planForm.studyDays.includes(day.key)}
+                              onChange={() => toggleStudyDay(day.key)}
+                              className="h-4 w-4 text-blue-600"
+                            />
+                            <span className="font-medium">{day.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Horários para cada dia selecionado */}
+                    {planForm.studyDays.length > 0 && (
+                      <div>
+                        <Label className="text-base font-semibold">Defina os horários para cada dia</Label>
+                        <div className="space-y-4 mt-3">
+                          {planForm.studyDays.map((dayKey) => {
+                            const dayInfo = WEEK_DAYS.find(d => d.key === dayKey);
+                            const schedule = planForm.schedules[dayKey as keyof typeof planForm.schedules];
+                            
+                            return (
+                              <Card key={dayKey} className="p-4">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-semibold text-slate-800">{dayInfo?.label}</h4>
+                                  <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
+                                      <Label className="text-sm">Início:</Label>
+                                      <Input
+                                        type="time"
+                                        value={schedule.start}
+                                        onChange={(e) => updateSchedule(dayKey, 'start', e.target.value)}
+                                        className="w-24"
+                                      />
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <Label className="text-sm">Fim:</Label>
+                                      <Input
+                                        type="time"
+                                        value={schedule.end}
+                                        onChange={(e) => updateSchedule(dayKey, 'end', e.target.value)}
+                                        className="w-24"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              </Card>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Informações sobre a BNCC */}
+                    <Card className="bg-blue-50 border-blue-200">
+                      <CardContent className="p-4">
+                        <h4 className="font-semibold text-blue-800 mb-2">Matérias baseadas na BNCC para {schoolYear}</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {curriculum?.subjects.map((subject) => (
+                            <Badge 
+                              key={subject.name} 
+                              variant={subject.priority === 'high' ? 'default' : subject.priority === 'medium' ? 'secondary' : 'outline'}
+                              className="text-xs"
+                            >
+                              {subject.name} ({subject.weeklyHours}h/sem)
+                            </Badge>
+                          ))}
+                        </div>
+                        <p className="text-sm text-blue-700 mt-2">
+                          Seu plano será gerado priorizando as matérias principais e distribuindo o conteúdo ao longo do bimestre.
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <div className="flex gap-3 pt-4">
+                      <Button 
+                        onClick={createNewPlan}
+                        disabled={planForm.studyDays.length === 0}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+                      >
+                        Criar Plano Bimestral
+                      </Button>
+                      <Button variant="outline" onClick={() => setShowPlanDialog(false)}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Dialog open={showExamDialog} onOpenChange={setShowExamDialog}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="gap-2">
@@ -475,12 +694,25 @@ export default function StudyPlanning() {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-8">
-                          <Calendar className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                          <p className="text-slate-600">Nenhuma sessão programada para esta semana</p>
-                          <Button onClick={generateBimesterSchedule} className="mt-4">
-                            Gerar Cronograma Bimestral
-                          </Button>
+                        <div className="text-center py-12">
+                          <div className="max-w-md mx-auto">
+                            <BookOpen className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-slate-700 mb-2">
+                              Nenhum plano de estudos ativo
+                            </h3>
+                            <p className="text-slate-600 mb-6">
+                              Crie seu primeiro plano de estudos personalizado baseado na BNCC para {schoolYear}. 
+                              Configure seus horários e dias de estudo para começar sua jornada de aprendizado.
+                            </p>
+                            <Dialog open={showPlanDialog} onOpenChange={setShowPlanDialog}>
+                              <DialogTrigger asChild>
+                                <Button className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600">
+                                  <Plus className="h-4 w-4" />
+                                  Criar Meu Primeiro Plano
+                                </Button>
+                              </DialogTrigger>
+                            </Dialog>
+                          </div>
                         </div>
                       )}
                     </CardContent>
