@@ -163,7 +163,7 @@ export default function WikipediaExplorer() {
         <title>Explorador Wikipedia - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
@@ -175,10 +175,10 @@ export default function WikipediaExplorer() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
                   Explorador Wikipedia
                 </h1>
-                <p className="text-slate-600">Explore o conhecimento mundial</p>
+                <p className="text-slate-700">Explore o conhecimento mundial</p>
               </div>
             </div>
             
@@ -189,10 +189,10 @@ export default function WikipediaExplorer() {
           </div>
 
           {/* Search Section */}
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Search className="h-5 w-5" />
+          <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-md rounded-2xl mb-8 border border-blue-100">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <Search className="h-5 w-5 text-blue-600" />
                 Buscar Artigos
               </CardTitle>
             </CardHeader>
@@ -202,11 +202,11 @@ export default function WikipediaExplorer() {
                   placeholder="Digite um tópico para pesquisar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 border-slate-200"
+                  className="flex-1 border-blue-200 focus:border-blue-400 focus:ring-blue-100"
                 />
                 <Button 
                   type="submit"
-                  className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-sm"
                 >
                   <Search className="h-4 w-4" />
                   Buscar
@@ -218,9 +218,9 @@ export default function WikipediaExplorer() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Search Results */}
             <div className="lg:col-span-2">
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-900">
+              <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-md rounded-2xl border border-blue-100">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-bold text-slate-800">
                     {searchTerm ? `Resultados para "${searchTerm}"` : 'Artigos em Destaque'}
                   </CardTitle>
                 </CardHeader>
@@ -237,7 +237,7 @@ export default function WikipediaExplorer() {
                       {(searchTerm ? searchResults : featuredArticles)?.map((article: any, index: number) => (
                         <Card 
                           key={article.pageid || index}
-                          className="cursor-pointer hover:shadow-md transition-all duration-200 border-slate-200 hover:border-blue-300"
+                          className="cursor-pointer hover:shadow-md transition-all duration-200 border-blue-100 hover:border-blue-300 bg-white/95"
                           onClick={() => selectArticle(article.title)}
                         >
                           <CardContent className="p-4">
@@ -246,11 +246,11 @@ export default function WikipediaExplorer() {
                                 <img
                                   src={article.thumbnail.source}
                                   alt={article.title}
-                                  className="w-16 h-16 rounded-lg object-cover"
+                                  className="w-16 h-16 rounded-lg object-cover border border-blue-100"
                                 />
                               )}
                               <div className="flex-1">
-                                <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">
+                                <h3 className="font-semibold text-slate-800 mb-2 line-clamp-2">
                                   {article.title}
                                 </h3>
                                 <p className="text-sm text-slate-600 line-clamp-3">
@@ -259,13 +259,14 @@ export default function WikipediaExplorer() {
                                 <div className="flex items-center gap-4 mt-3">
                                   {article.timestamp && (
                                     <div className="flex items-center gap-1 text-xs text-slate-500">
-                                      <Clock className="h-3 w-3" />
+                                      <Clock className="h-3 w-3 text-blue-500" />
                                       {formatDate(article.timestamp)}
                                     </div>
                                   )}
                                   <Button
                                     variant="ghost"
                                     size="sm"
+                                    className="hover:bg-blue-50"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       if (article.pageid) {
@@ -277,7 +278,7 @@ export default function WikipediaExplorer() {
                                       className={`h-4 w-4 ${
                                         article.pageid && savedArticles.includes(article.pageid)
                                           ? "fill-blue-500 text-blue-500" 
-                                          : "text-slate-400"
+                                          : "text-slate-400 hover:text-blue-500"
                                       }`} 
                                     />
                                   </Button>
@@ -305,10 +306,10 @@ export default function WikipediaExplorer() {
 
             {/* Article Details */}
             <div className="lg:col-span-1">
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl sticky top-4">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <Eye className="h-5 w-5" />
+              <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-md rounded-2xl sticky top-4 border border-blue-100">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <Eye className="h-5 w-5 text-blue-600" />
                     Detalhes do Artigo
                   </CardTitle>
                 </CardHeader>
@@ -329,7 +330,7 @@ export default function WikipediaExplorer() {
                       
                       {/* Article Title */}
                       <div>
-                        <h2 className="text-xl font-bold text-slate-900 mb-2">
+                        <h2 className="text-xl font-bold text-slate-800 mb-2">
                           {articleDetails.title}
                         </h2>
                         {articleDetails.description && (
@@ -339,11 +340,11 @@ export default function WikipediaExplorer() {
                         )}
                       </div>
 
-                      <Separator />
+                      <Separator className="bg-blue-100" />
 
                       {/* Article Extract */}
                       <div>
-                        <h3 className="font-semibold text-slate-900 mb-3">Resumo</h3>
+                        <h3 className="font-semibold text-slate-800 mb-3">Resumo</h3>
                         <ScrollArea className="h-48">
                           <p className="text-sm text-slate-700 leading-relaxed">
                             {articleDetails.extract}
@@ -351,14 +352,14 @@ export default function WikipediaExplorer() {
                         </ScrollArea>
                       </div>
 
-                      <Separator />
+                      <Separator className="bg-blue-100" />
 
                       {/* Actions */}
                       <div className="space-y-3">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full gap-2"
+                          className="w-full gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
                           onClick={() => window.open(articleDetails.content_urls?.desktop?.page, '_blank')}
                         >
                           <ExternalLink className="h-4 w-4" />
@@ -368,7 +369,7 @@ export default function WikipediaExplorer() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full gap-2"
+                          className="w-full gap-2 border-blue-200 hover:bg-blue-50 hover:border-blue-300"
                           onClick={() => {
                             if (articleDetails.pageid) {
                               toggleSaveArticle(articleDetails.pageid);
@@ -379,7 +380,7 @@ export default function WikipediaExplorer() {
                             className={`h-4 w-4 ${
                               articleDetails.pageid && savedArticles.includes(articleDetails.pageid)
                                 ? "fill-blue-500 text-blue-500" 
-                                : "text-slate-400"
+                                : "text-slate-500"
                             }`} 
                           />
                           {articleDetails.pageid && savedArticles.includes(articleDetails.pageid) 
