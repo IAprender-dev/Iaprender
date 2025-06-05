@@ -554,7 +554,8 @@ export default function StudentActivities() {
         <main className="container mx-auto px-6 py-8">
           {currentView === 'subjects' && renderSubjectSelection()}
           {currentView === 'topic-input' && renderTopicInput()}
-          {currentView === 'quiz' && renderQuiz()}
+          {currentView === 'quiz' && !isQuizComplete && renderQuiz()}
+          {currentView === 'quiz' && isQuizComplete && renderQuizComplete()}
         </main>
       </div>
     </>
