@@ -16,9 +16,9 @@ export default function Translator() {
           {/* Navigation */}
           <div className="flex items-center justify-between mb-12">
             <Link href="/student/dashboard">
-              <Button variant="outline" className="gap-3 h-12 px-6 bg-white/80 backdrop-blur-sm border-gray-200 text-gray-700 hover:bg-white hover:shadow-md transition-all duration-200 rounded-xl">
+              <Button className="gap-3 h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
                 <ArrowLeft className="h-4 w-4" />
-                Voltar ao Dashboard
+                Voltar
               </Button>
             </Link>
             
@@ -26,7 +26,7 @@ export default function Translator() {
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Languages className="h-4 w-4 text-blue-600" />
               </div>
-              <span className="text-sm font-medium text-gray-600">IAverse Tradutor</span>
+              <span className="text-sm font-medium text-gray-600">AIverse Tradutor</span>
             </div>
           </div>
 
