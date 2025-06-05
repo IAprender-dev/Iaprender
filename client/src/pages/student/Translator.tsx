@@ -11,20 +11,20 @@ export default function Translator() {
         <title>Tradutor Educacional - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-blue-50">
+      <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-8">
             <Link href="/student/dashboard">
-              <Button variant="outline" size="sm" className="gap-2 bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
-                <ArrowLeft className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="gap-2 bg-white border-gray-200 text-black hover:bg-gray-100">
+                <ArrowLeft className="h-4 w-4 text-black" />
                 Voltar ao Dashboard
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-slate-800">
+              <h1 className="text-3xl font-bold text-black">
                 Tradutor Educacional
               </h1>
-              <p className="text-slate-600">
+              <p className="text-black">
                 Traduza textos e materiais educacionais em tempo real
               </p>
             </div>
