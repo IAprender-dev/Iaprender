@@ -31,6 +31,7 @@ import MemoryStore from "memorystore";
 import multer from "multer";
 import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
 import aiRouter from "./routes/ai-routes";
+import translateRoutes from "./routes/translate-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse-new";
@@ -1340,6 +1341,9 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   // AI ROUTES
   // Use the AI router with /api/ai prefix
   app.use("/api/ai", aiRouter);
+
+  // TRANSLATION ROUTES
+  app.use("/api/translate", translateRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

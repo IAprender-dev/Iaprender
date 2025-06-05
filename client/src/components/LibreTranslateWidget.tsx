@@ -41,17 +41,16 @@ export default function LibreTranslateWidget() {
 
     setIsTranslating(true);
     try {
-      // Usando LibreTranslate auto-hospedado
-      const response = await fetch('https://libretranslate.de/translate', {
+      // Usando nossa API interna que chama o LibreTranslate
+      const response = await fetch('/api/translate/translate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          q: sourceText,
-          source: sourceLang === "auto" ? "auto" : sourceLang,
-          target: targetLang,
-          format: "text"
+          text: sourceText,
+          sourceLang: sourceLang === "auto" ? "auto" : sourceLang,
+          targetLang: targetLang
         })
       });
 
