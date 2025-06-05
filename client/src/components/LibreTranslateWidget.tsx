@@ -117,15 +117,15 @@ export default function LibreTranslateWidget() {
   };
 
   return (
-    <Card className="border border-gray-200 bg-white shadow-sm rounded-2xl">
+    <Card className="border-0 bg-gradient-to-br from-blue-600 to-blue-800 shadow-lg rounded-2xl">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-gray-100 rounded-xl">
-            <Languages className="h-6 w-6 text-black" />
+          <div className="p-2 bg-blue-500 rounded-xl">
+            <Languages className="h-6 w-6 text-white" />
           </div>
           <div>
-            <CardTitle className="text-xl font-bold text-black">Tradutor Educacional</CardTitle>
-            <p className="text-sm text-black">Traduza textos educacionais instantaneamente</p>
+            <CardTitle className="text-xl font-bold text-white">Tradutor Educacional</CardTitle>
+            <p className="text-sm text-white">Traduza textos educacionais instantaneamente</p>
           </div>
         </div>
       </CardHeader>
@@ -134,13 +134,13 @@ export default function LibreTranslateWidget() {
         {/* Language Selection */}
         <div className="flex items-center gap-2">
           <Select value={sourceLang} onValueChange={setSourceLang}>
-            <SelectTrigger className="flex-1 border-gray-200 bg-white text-black focus:border-gray-400">
+            <SelectTrigger className="flex-1 border-blue-400 bg-blue-700 text-white focus:border-blue-300">
               <SelectValue placeholder="Idioma origem" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="auto">Detectar idioma</SelectItem>
+            <SelectContent className="bg-blue-700 border-blue-400">
+              <SelectItem value="auto" className="text-white hover:bg-blue-600">Detectar idioma</SelectItem>
               {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
+                <SelectItem key={lang.code} value={lang.code} className="text-white hover:bg-blue-600">
                   {lang.name}
                 </SelectItem>
               ))}
@@ -152,18 +152,18 @@ export default function LibreTranslateWidget() {
             size="sm"
             onClick={handleSwapLanguages}
             disabled={sourceLang === "auto"}
-            className="px-3 border-gray-200 hover:bg-gray-100 text-black"
+            className="px-3 border-blue-400 bg-blue-700 hover:bg-blue-600 text-white"
           >
             <ArrowRightLeft className="h-4 w-4" />
           </Button>
           
           <Select value={targetLang} onValueChange={setTargetLang}>
-            <SelectTrigger className="flex-1 border-gray-200 bg-white text-black focus:border-gray-400">
+            <SelectTrigger className="flex-1 border-blue-400 bg-blue-700 text-white focus:border-blue-300">
               <SelectValue placeholder="Idioma destino" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-blue-700 border-blue-400">
               {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
+                <SelectItem key={lang.code} value={lang.code} className="text-white hover:bg-blue-600">
                   {lang.name}
                 </SelectItem>
               ))}
@@ -175,13 +175,13 @@ export default function LibreTranslateWidget() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-black">Texto original</label>
+              <label className="text-sm font-medium text-white">Texto original</label>
               {sourceText && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleTextToSpeech(sourceText, sourceLang)}
-                  className="h-6 w-6 p-0 text-black hover:bg-gray-100"
+                  className="h-6 w-6 p-0 text-white hover:bg-blue-600"
                 >
                   <Volume2 className="h-3 w-3" />
                 </Button>
@@ -191,13 +191,13 @@ export default function LibreTranslateWidget() {
               placeholder="Digite o texto que deseja traduzir..."
               value={sourceText}
               onChange={(e) => setSourceText(e.target.value)}
-              className="min-h-[120px] resize-none border-gray-200 bg-white text-black focus:border-gray-400"
+              className="min-h-[120px] resize-none border-blue-400 bg-blue-700 text-white placeholder-blue-200 focus:border-blue-300"
             />
           </div>
           
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-black">Tradução</label>
+              <label className="text-sm font-medium text-white">Tradução</label>
               <div className="flex gap-1">
                 {translatedText && (
                   <>
@@ -205,7 +205,7 @@ export default function LibreTranslateWidget() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleTextToSpeech(translatedText, targetLang)}
-                      className="h-6 w-6 p-0 text-black hover:bg-gray-100"
+                      className="h-6 w-6 p-0 text-white hover:bg-blue-600"
                     >
                       <Volume2 className="h-3 w-3" />
                     </Button>
@@ -213,7 +213,7 @@ export default function LibreTranslateWidget() {
                       variant="ghost"
                       size="sm"
                       onClick={handleCopyToClipboard}
-                      className="h-6 w-6 p-0 text-black hover:bg-gray-100"
+                      className="h-6 w-6 p-0 text-white hover:bg-blue-600"
                     >
                       <Copy className="h-3 w-3" />
                     </Button>
@@ -225,7 +225,7 @@ export default function LibreTranslateWidget() {
               placeholder="A tradução aparecerá aqui..."
               value={translatedText}
               readOnly
-              className="min-h-[120px] resize-none bg-gray-50 border-gray-200 text-black"
+              className="min-h-[120px] resize-none bg-blue-800 border-blue-400 text-white placeholder-blue-200"
             />
           </div>
         </div>
@@ -234,7 +234,7 @@ export default function LibreTranslateWidget() {
         <Button
           onClick={handleTranslate}
           disabled={isTranslating || !sourceText.trim()}
-          className="w-full gap-2 bg-gray-200 hover:bg-gray-300 text-black shadow-sm border border-gray-300"
+          className="w-full gap-2 bg-blue-500 hover:bg-blue-400 text-white shadow-sm border border-blue-300"
         >
           {isTranslating ? (
             <>
@@ -250,7 +250,7 @@ export default function LibreTranslateWidget() {
         </Button>
 
         {/* Info */}
-        <p className="text-xs text-black text-center">
+        <p className="text-xs text-white text-center">
           Powered by MyMemory API - Tradução educacional gratuita
         </p>
       </CardContent>
