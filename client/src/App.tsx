@@ -27,6 +27,7 @@ import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
 import WikipediaExplorer from "@/pages/student/WikipediaExplorer";
+import Translator from "@/pages/student/Translator";
 import NotFound from "@/pages/not-found";
 
 // Ferramentas IA
@@ -102,6 +103,7 @@ function Router() {
       <Route path="/student/courses" component={StudentCourses} />
       <Route path="/student/activities" component={StudentActivities} />
       <Route path="/student/wikipedia" component={WikipediaExplorer} />
+      <Route path="/student/translator" component={Translator} />
       <Route path="/aluno/dashboard" component={StudentDashboard} />
       <Route path="/aluno/cursos" component={StudentCourses} />
       <Route path="/aluno/atividades" component={StudentActivities} />

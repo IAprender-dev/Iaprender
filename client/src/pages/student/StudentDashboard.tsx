@@ -25,7 +25,8 @@ import {
   Home,
   User,
   LogOut,
-  Plus
+  Plus,
+  Languages
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import LibreTranslateWidget from "@/components/LibreTranslateWidget";
+
 import iaverseLogo from "@/assets/IAverse.png";
 
 interface StudySession {
@@ -302,8 +303,36 @@ export default function StudentDashboard() {
 
               {/* Quick Actions */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {/* LibreTranslate Card */}
-                <LibreTranslateWidget />
+                {/* Translator Card */}
+                <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 backdrop-blur-sm shadow-lg rounded-2xl">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="flex-1 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl">
+                            <Languages className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-800">Tradutor Educacional</h3>
+                            <p className="text-sm text-slate-600">Traduza textos e materiais educacionais</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-600 mb-4">
+                          Acesse nossa ferramenta de tradução completa com suporte a múltiplos idiomas
+                        </p>
+                        <Link href="/student/translator">
+                          <Button className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white">
+                            Abrir Tradutor
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="md:w-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-r-2xl flex items-center justify-center p-4">
+                        <Languages className="h-16 w-16 text-blue-500/50" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Activities Card */}
                 <Card className="border-0 bg-gradient-to-br from-green-50 to-emerald-50 backdrop-blur-sm shadow-lg rounded-2xl">
