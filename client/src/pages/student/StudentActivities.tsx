@@ -363,7 +363,7 @@ export default function StudentActivities() {
         </Card>
 
         {/* Questão */}
-        <Card>
+        <Card className={`${selectedSubjectData?.bgColor} border-2 ${selectedSubjectData?.borderColor}`}>
           <CardContent className="p-6 space-y-6">
             <div>
               <div className="flex items-center space-x-2 mb-4">
@@ -378,7 +378,7 @@ export default function StudentActivities() {
               </h3>
               
               <RadioGroup
-                value={selectedAnswer?.toString()}
+                value={selectedAnswer?.toString() || ""}
                 onValueChange={(value) => handleAnswerSelect(parseInt(value))}
                 disabled={showExplanation}
                 className="space-y-3"
