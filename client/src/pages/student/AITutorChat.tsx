@@ -5,13 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot, User, BookOpen, Lightbulb, ArrowLeft, Mic, MicOff, Volume2, FileText, Download } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Loader2, Send, Bot, User, BookOpen, Lightbulb, ArrowLeft, Mic, MicOff, Volume2, FileText, Download, MessageCircle, Sparkles, Play, Pause, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from "@/hooks/use-toast";
 import { Link } from 'wouter';
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import aiverseLogo from "@assets/Design sem nome (5)_1749568909858.png";
 
 interface ChatMessage {
@@ -19,32 +22,56 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  type?: 'text' | 'question' | 'exercise';
+  options?: string[];
+  correctAnswer?: number;
+  explanation?: string;
 }
 
-const SUGGESTED_TOPICS = [
-  "Matemática do 9º ano",
-  "Português - verbos",
-  "História do Brasil",
-  "Ciências - fotossíntese",
-  "Geografia - relevo",
-  "Física - movimento",
-  "Química - átomos",
-  "Inglês - present tense"
-];
+interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  userAnswer?: number;
+  isCorrect?: boolean;
+}
+
+type InteractionMode = 'voice' | 'text';
+type TutorState = 'idle' | 'listening' | 'thinking' | 'speaking' | 'waiting_answer';
+
+const TUTOR_PERSONALITY = {
+  welcome: "Olá! Sou a Luna, sua tutora de IA! 🌟 Estou aqui para te ajudar a aprender de forma divertida e interativa. Sobre que matéria você gostaria de conversar hoje?",
+  encouragement: ["Muito bem!", "Excelente!", "Você está indo ótimo!", "Continue assim!", "Perfeito!"],
+  thinking: ["Deixe-me pensar...", "Hmm, interessante pergunta...", "Vou explicar isso para você...", "Ótima pergunta!"]
+};
 
 export default function AITutorChat() {
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Core state
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>('voice');
+  const [tutorState, setTutorState] = useState<TutorState>('idle');
   const [inputMessage, setInputMessage] = useState('');
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  
+  // Voice state
   const [isRecording, setIsRecording] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [waveAnimation, setWaveAnimation] = useState(0);
+  
+  // Refs
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,145 +81,84 @@ export default function AITutorChat() {
     scrollToBottom();
   }, [messages]);
 
+  // Animation effects
   useEffect(() => {
-    // Welcome message
+    if (isSpeaking) {
+      const animate = () => {
+        setWaveAnimation(prev => (prev + 0.1) % (Math.PI * 2));
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      animationRef.current = requestAnimationFrame(animate);
+    } else {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      setWaveAnimation(0);
+    }
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isSpeaking]);
+
+  // Initialize with welcome message
+  useEffect(() => {
     const welcomeMessage: ChatMessage = {
       id: 'welcome',
       role: 'assistant',
-      content: `Olá ${user?.firstName || 'estudante'}! 👋 Sou sua tutora de IA especializada em educação. Estou aqui para ajudar você com suas dúvidas sobre as matérias do seu ano escolar.\n\nPosso te ajudar com:\n• Explicações detalhadas sobre conceitos\n• Resolução de exercícios passo a passo\n• Dicas de estudo e memorização\n• Esclarecimento de dúvidas específicas\n\nSobre que matéria gostaria de conversar hoje?`,
-      timestamp: new Date()
+      content: TUTOR_PERSONALITY.welcome,
+      timestamp: new Date(),
+      type: 'text'
     };
     setMessages([welcomeMessage]);
-  }, [user]);
-
-  // Audio transcription mutation
-  const transcribeMutation = useMutation({
-    mutationFn: async (audioBlob: Blob) => {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.wav');
-      
-      const response = await fetch('/api/ai/transcribe-audio', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        throw new Error('Falha na transcrição');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      setInputMessage(data.text);
-      toast({
-        title: "Áudio transcrito",
-        description: "Sua mensagem foi convertida para texto.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Erro na transcrição",
-        description: "Não foi possível transcrever o áudio. Tente novamente.",
-        variant: "destructive",
-      });
+    
+    // Speak welcome message if voice mode
+    if (interactionMode === 'voice') {
+      setTimeout(() => speakText(TUTOR_PERSONALITY.welcome), 500);
     }
-  });
+  }, []);
 
-  const chatMutation = useMutation({
-    mutationFn: async (message: string) => {
-      const response = await apiRequest('POST', '/api/ai/tutor-chat', {
-        message,
-        studentGrade: (user as any)?.schoolYear || '9º ano', // Default grade if not available
-        chatHistory: messages.slice(-10) // Send last 10 messages for context
-      });
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      const assistantMessage: ChatMessage = {
-        id: Date.now().toString() + '_assistant',
-        role: 'assistant',
-        content: data.response,
-        timestamp: new Date()
+  // Voice functions
+  const speakText = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 0.9;
+      utterance.pitch = 1.1;
+      
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setTutorState('speaking');
       };
-      setMessages(prev => [...prev, assistantMessage]);
       
-      // Generate speech for the response
-      generateSpeech(data.response);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Erro na conversa",
-        description: "Não foi possível enviar sua mensagem. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  // Document generation mutation
-  const generateDocumentMutation = useMutation({
-    mutationFn: async (selectedMessageIds: string[]) => {
-      const selectedMsgs = messages.filter(msg => selectedMessageIds.includes(msg.id));
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setTutorState('idle');
+      };
       
-      const response = await apiRequest('POST', '/api/ai/generate-document', {
-        messages: selectedMsgs,
-        studentName: `${user?.firstName} ${user?.lastName}`,
-        studentGrade: (user as any)?.schoolYear || '9º ano'
-      });
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        setTutorState('idle');
+      };
       
-      return await response.blob();
-    },
-    onSuccess: (blob) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `material-estudo-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        title: "Documento gerado",
-        description: "Seu material de estudo foi baixado com sucesso.",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Erro na geração",
-        description: "Não foi possível gerar o documento. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-
-    const userMessage: ChatMessage = {
-      id: Date.now().toString() + '_user',
-      role: 'user',
-      content: inputMessage.trim(),
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    chatMutation.mutate(inputMessage.trim());
-    setInputMessage('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+      synthRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
     }
   };
 
-  const handleSuggestedTopic = (topic: string) => {
-    setInputMessage(`Me explique sobre ${topic}`);
+  const stopSpeaking = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setTutorState('idle');
+    }
   };
 
-  // Voice recording functions
+  // Recording functions
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -207,13 +173,12 @@ export default function AITutorChat() {
       mediaRecorder.onstop = () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         transcribeMutation.mutate(audioBlob);
-        
-        // Stop all tracks to release microphone
         stream.getTracks().forEach(track => track.stop());
       };
 
       mediaRecorder.start();
       setIsRecording(true);
+      setTutorState('listening');
     } catch (error) {
       toast({
         title: "Erro no microfone",
@@ -227,313 +192,453 @@ export default function AITutorChat() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setTutorState('thinking');
     }
   };
 
-  // Text-to-speech function
-  const generateSpeech = (text: string) => {
-    if (currentAudioRef.current) {
-      currentAudioRef.current.pause();
-    }
-
-    // Use Web Speech API for text-to-speech
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'pt-BR';
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
+  // Audio transcription mutation
+  const transcribeMutation = useMutation({
+    mutationFn: async (audioBlob: Blob) => {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.wav');
       
-      utterance.onstart = () => setIsPlaying(true);
-      utterance.onend = () => setIsPlaying(false);
-      utterance.onerror = () => setIsPlaying(false);
+      const response = await apiRequest('POST', '/api/ai/transcribe-audio', formData);
+      if (!response.ok) {
+        throw new Error('Failed to transcribe audio');
+      }
       
-      speechSynthesis.speak(utterance);
-    }
-  };
-
-  const stopSpeech = () => {
-    if ('speechSynthesis' in window) {
-      speechSynthesis.cancel();
-      setIsPlaying(false);
-    }
-  };
-
-  // Message selection functions
-  const toggleMessageSelection = (messageId: string) => {
-    const newSelection = new Set(selectedMessages);
-    if (newSelection.has(messageId)) {
-      newSelection.delete(messageId);
-    } else {
-      newSelection.add(messageId);
-    }
-    setSelectedMessages(newSelection);
-  };
-
-  const generateDocument = () => {
-    if (selectedMessages.size === 0) {
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      if (data.text) {
+        handleUserMessage(data.text);
+      }
+    },
+    onError: (error) => {
+      console.error('Transcription error:', error);
       toast({
-        title: "Nenhuma mensagem selecionada",
-        description: "Selecione ao menos uma mensagem para gerar o documento.",
+        title: "Erro na transcrição",
+        description: "Não foi possível processar o áudio. Tente novamente.",
         variant: "destructive",
       });
-      return;
+      setTutorState('idle');
     }
+  });
+
+  // AI tutor chat mutation
+  const chatMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest('POST', '/api/ai/tutor-chat', {
+        message,
+        conversationHistory: messages.slice(-10),
+        studentName: user?.firstName || 'Estudante',
+        studentGrade: (user as any)?.schoolYear || '9º ano'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+      
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      const assistantMessage: ChatMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: data.message,
+        timestamp: new Date(),
+        type: data.type || 'text',
+        options: data.options,
+        correctAnswer: data.correctAnswer,
+        explanation: data.explanation
+      };
+      
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Handle different response types
+      if (data.type === 'question' && data.options) {
+        setCurrentQuestion({
+          id: assistantMessage.id,
+          question: data.message,
+          options: data.options,
+          correctAnswer: data.correctAnswer,
+          explanation: data.explanation
+        });
+        setTutorState('waiting_answer');
+      } else {
+        setTutorState('idle');
+      }
+      
+      // Speak response if in voice mode
+      if (interactionMode === 'voice') {
+        speakText(data.message);
+      }
+    },
+    onError: (error) => {
+      console.error('Chat error:', error);
+      toast({
+        title: "Erro na conversa",
+        description: "Não foi possível processar sua mensagem. Tente novamente.",
+        variant: "destructive",
+      });
+      setTutorState('idle');
+    }
+  });
+
+  const handleUserMessage = (message: string) => {
+    if (!message.trim()) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: message,
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setTutorState('thinking');
+
+    // Process message with AI
+    chatMutation.mutate(message);
+  };
+
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputMessage.trim()) {
+      handleUserMessage(inputMessage);
+    }
+  };
+
+  const handleAnswerSubmit = (answerIndex: number) => {
+    if (!currentQuestion) return;
+
+    const isCorrect = answerIndex === currentQuestion.correctAnswer;
+    const updatedQuestion = {
+      ...currentQuestion,
+      userAnswer: answerIndex,
+      isCorrect
+    };
+
+    setCurrentQuestion(updatedQuestion);
+
+    const feedbackMessage = isCorrect 
+      ? `${TUTOR_PERSONALITY.encouragement[Math.floor(Math.random() * TUTOR_PERSONALITY.encouragement.length)]} Resposta correta! ${currentQuestion.explanation}`
+      : `Não foi dessa vez, mas não desanime! A resposta correta é: ${currentQuestion.options[currentQuestion.correctAnswer]}. ${currentQuestion.explanation}`;
+
+    const assistantMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: feedbackMessage,
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    setMessages(prev => [...prev, assistantMessage]);
     
-    generateDocumentMutation.mutate(Array.from(selectedMessages));
+    if (interactionMode === 'voice') {
+      speakText(feedbackMessage);
+    }
+
+    setCurrentQuestion(null);
+    setSelectedAnswer(null);
+    setTutorState('idle');
+  };
+
+  const handleVoiceAnswer = async () => {
+    if (currentQuestion && interactionMode === 'voice') {
+      await startRecording();
+    }
+  };
+
+  // Animated AI Avatar Component
+  const AIAvatar = () => {
+    const pulseScale = 1 + Math.sin(waveAnimation) * 0.1;
+    const glowIntensity = isSpeaking ? 0.5 + Math.sin(waveAnimation * 2) * 0.3 : 0.2;
+
+    return (
+      <div className="flex flex-col items-center justify-center space-y-4 p-8">
+        <div 
+          className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center transition-all duration-300"
+          style={{
+            transform: `scale(${pulseScale})`,
+            boxShadow: `0 0 ${20 + glowIntensity * 30}px rgba(59, 130, 246, ${glowIntensity})`
+          }}
+        >
+          <Bot className="w-16 h-16 text-white" />
+          {isSpeaking && (
+            <div className="absolute inset-0 rounded-full border-4 border-blue-300 animate-ping" />
+          )}
+        </div>
+        
+        <div className="text-center space-y-2">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Luna - Tutora IA
+          </h3>
+          <div className="flex items-center space-x-2">
+            <div className={`w-2 h-2 rounded-full ${
+              tutorState === 'idle' ? 'bg-green-500' :
+              tutorState === 'listening' ? 'bg-blue-500 animate-pulse' :
+              tutorState === 'thinking' ? 'bg-yellow-500 animate-pulse' :
+              tutorState === 'speaking' ? 'bg-red-500 animate-pulse' :
+              'bg-purple-500 animate-pulse'
+            }`} />
+            <span className="text-sm text-gray-600">
+              {tutorState === 'idle' ? 'Pronta para ajudar' :
+               tutorState === 'listening' ? 'Ouvindo...' :
+               tutorState === 'thinking' ? 'Pensando...' :
+               tutorState === 'speaking' ? 'Falando...' :
+               'Aguardando resposta...'}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Helmet>
         <title>Tutor IA - AIverse</title>
       </Helmet>
-
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50">
-        {/* Header */}
-        <div className="bg-white/90 backdrop-blur-sm border-b border-purple-100 p-4 sticky top-0 z-50">
-          <div className="container mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
               <Link href="/aluno/dashboard">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <ArrowLeft className="h-4 w-4" />
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar
                 </Button>
               </Link>
-              <div className="flex items-center gap-3">
-                <img src={aiverseLogo} alt="AIverse" className="h-8 w-8" />
-                <div>
-                  <h1 className="font-bold text-slate-800">Tutor IA</h1>
-                  <p className="text-xs text-slate-600">Tutoria personalizada</p>
-                </div>
+              <img src={aiverseLogo} alt="AIverse" className="h-8 w-auto" />
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Tutor IA</h1>
+                <p className="text-sm text-gray-500">Aprendizado interativo com inteligência artificial</p>
               </div>
             </div>
-            <Badge variant="secondary" className="gap-1">
-              <Bot className="h-3 w-3" />
-              Online
-            </Badge>
-          </div>
-        </div>
-
-        <div className="container mx-auto p-4 max-w-4xl">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-120px)]">
-            {/* Sidebar with suggestions and controls */}
-            <div className="lg:col-span-1 space-y-4">
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4" />
-                    Temas Sugeridos
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {SUGGESTED_TOPICS.map((topic, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start text-xs h-8"
-                      onClick={() => handleSuggestedTopic(topic)}
-                    >
-                      <BookOpen className="h-3 w-3 mr-2" />
-                      {topic}
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Voice Controls */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                    <Mic className="h-4 w-4" />
-                    Controles de Voz
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button
-                    onClick={isRecording ? stopRecording : startRecording}
-                    disabled={transcribeMutation.isPending}
-                    className={`w-full ${isRecording ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'}`}
-                  >
-                    {transcribeMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : isRecording ? (
-                      <MicOff className="h-4 w-4 mr-2" />
-                    ) : (
-                      <Mic className="h-4 w-4 mr-2" />
-                    )}
-                    {transcribeMutation.isPending ? 'Transcrevendo...' : isRecording ? 'Parar Gravação' : 'Gravar Voz'}
-                  </Button>
-                  
-                  <Button
-                    onClick={isPlaying ? stopSpeech : () => {}}
-                    disabled={!isPlaying}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Volume2 className="h-4 w-4 mr-2" />
-                    {isPlaying ? 'Pausar Áudio' : 'Aguardando...'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Document Generation */}
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Gerar Material
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xs text-slate-600 mb-2">
-                    {selectedMessages.size} mensagem(ns) selecionada(s)
-                  </div>
-                  <Button
-                    onClick={generateDocument}
-                    disabled={selectedMessages.size === 0 || generateDocumentMutation.isPending}
-                    className="w-full bg-green-500 hover:bg-green-600"
-                  >
-                    {generateDocumentMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Download className="h-4 w-4 mr-2" />
-                    )}
-                    Baixar PDF
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Main chat area */}
-            <div className="lg:col-span-3">
-              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg h-full flex flex-col">
-                <CardHeader className="border-b border-slate-100 pb-4">
-                  <CardTitle className="flex items-center gap-2 text-slate-800">
-                    <Bot className="h-5 w-5 text-purple-500" />
-                    Conversa com a Tutora IA
-                  </CardTitle>
-                </CardHeader>
-                
-                <CardContent className="flex-1 flex flex-col p-0">
-                  {/* Messages area */}
-                  <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-                    <div className="space-y-4">
-                      {messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`flex gap-3 ${
-                            message.role === 'user' ? 'justify-end' : 'justify-start'
-                          }`}
-                        >
-                          {message.role === 'assistant' && (
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                <Bot className="h-4 w-4 text-purple-600" />
-                              </div>
-                              <input
-                                type="checkbox"
-                                checked={selectedMessages.has(message.id)}
-                                onChange={() => toggleMessageSelection(message.id)}
-                                className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                              />
-                            </div>
-                          )}
-                          <div
-                            className={`max-w-xs lg:max-w-md rounded-2xl px-4 py-3 ${
-                              message.role === 'user'
-                                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white'
-                                : selectedMessages.has(message.id)
-                                  ? 'bg-purple-50 border-2 border-purple-200 text-slate-800'
-                                  : 'bg-slate-100 text-slate-800'
-                            }`}
-                          >
-                            <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                              {message.content}
-                            </p>
-                            <div className="flex items-center justify-between mt-2">
-                              <p className={`text-xs ${
-                                message.role === 'user' ? 'text-purple-100' : 'text-slate-500'
-                              }`}>
-                                {message.timestamp.toLocaleTimeString('pt-BR', {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
-                              {message.role === 'assistant' && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => generateSpeech(message.content)}
-                                  className="h-6 w-6 p-0"
-                                >
-                                  <Volume2 className="h-3 w-3" />
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                          {message.role === 'user' && (
-                            <div className="flex flex-col items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
-                                <User className="h-4 w-4 text-slate-600" />
-                              </div>
-                              <input
-                                type="checkbox"
-                                checked={selectedMessages.has(message.id)}
-                                onChange={() => toggleMessageSelection(message.id)}
-                                className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {chatMutation.isPending && (
-                        <div className="flex gap-3 justify-start">
-                          <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-                            <Bot className="h-4 w-4 text-purple-600" />
-                          </div>
-                          <div className="bg-slate-100 rounded-2xl px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
-                              <span className="text-sm text-slate-600">Pensando...</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  </ScrollArea>
-
-                  {/* Input area */}
-                  <div className="border-t border-slate-100 p-4">
-                    <div className="flex gap-2">
-                      <Input
-                        value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Digite sua dúvida sobre as matérias escolares..."
-                        className="flex-1"
-                        disabled={chatMutation.isPending}
-                      />
-                      <Button
-                        onClick={handleSendMessage}
-                        disabled={!inputMessage.trim() || chatMutation.isPending}
-                        className="px-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600"
-                      >
-                        {chatMutation.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Send className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            
+            {/* Mode Toggle */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+                <Button
+                  variant={interactionMode === 'voice' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setInteractionMode('voice')}
+                  className="flex items-center space-x-1"
+                >
+                  <Mic className="w-4 h-4" />
+                  <span>Voz</span>
+                </Button>
+                <Button
+                  variant={interactionMode === 'text' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setInteractionMode('text')}
+                  className="flex items-center space-x-1"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Texto</span>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* AI Avatar Section */}
+          <div className="lg:col-span-1">
+            <Card className="h-fit sticky top-24">
+              <CardContent className="p-0">
+                <AIAvatar />
+                
+                {/* Voice Controls */}
+                {interactionMode === 'voice' && (
+                  <div className="p-6 border-t space-y-4">
+                    <div className="text-center space-y-4">
+                      {!isRecording ? (
+                        <Button
+                          onClick={startRecording}
+                          disabled={tutorState === 'thinking' || chatMutation.isPending}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                        >
+                          <Mic className="w-5 h-5 mr-2" />
+                          Falar com a Luna
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={stopRecording}
+                          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 animate-pulse"
+                        >
+                          <MicOff className="w-5 h-5 mr-2" />
+                          Parar gravação
+                        </Button>
+                      )}
+                      
+                      {isSpeaking && (
+                        <Button
+                          onClick={stopSpeaking}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          <Pause className="w-4 h-4 mr-2" />
+                          Parar fala
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div className="text-xs text-gray-500 text-center">
+                      {isRecording ? (
+                        "🎤 Gravando... Fale sua pergunta ou resposta"
+                      ) : (
+                        "🎯 Clique no botão acima para começar a conversar"
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Chat Section */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card className="flex-1">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Sparkles className="w-5 h-5 text-blue-600" />
+                  <span>Conversa com a Tutora</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-96 pr-4" ref={scrollAreaRef}>
+                  <div className="space-y-4">
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex items-start space-x-3 ${
+                          message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                        }`}
+                      >
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                          message.role === 'user' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gradient-to-br from-purple-500 to-blue-500 text-white'
+                        }`}>
+                          {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                        </div>
+                        <div className={`flex-1 max-w-lg ${
+                          message.role === 'user' ? 'text-right' : 'text-left'
+                        }`}>
+                          <div className={`inline-block p-3 rounded-lg ${
+                            message.role === 'user'
+                              ? 'bg-blue-600 text-white ml-auto'
+                              : 'bg-white border border-gray-200 text-gray-900'
+                          }`}>
+                            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {message.timestamp.toLocaleTimeString('pt-BR', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Current Question */}
+                    {currentQuestion && (
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border border-blue-200">
+                        <h4 className="font-semibold text-gray-900 mb-3">Questão:</h4>
+                        <p className="text-gray-800 mb-4">{currentQuestion.question}</p>
+                        
+                        {interactionMode === 'text' ? (
+                          <RadioGroup 
+                            value={selectedAnswer?.toString()} 
+                            onValueChange={(value) => setSelectedAnswer(parseInt(value))}
+                            className="space-y-2"
+                          >
+                            {currentQuestion.options.map((option, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+                                <Label htmlFor={`option-${index}`} className="cursor-pointer">
+                                  {option}
+                                </Label>
+                              </div>
+                            ))}
+                          </RadioGroup>
+                        ) : (
+                          <div className="space-y-2">
+                            {currentQuestion.options.map((option, index) => (
+                              <div key={index} className="p-2 bg-white rounded border text-sm">
+                                <strong>{String.fromCharCode(65 + index)})</strong> {option}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <div className="mt-4 space-y-2">
+                          {interactionMode === 'text' ? (
+                            <Button
+                              onClick={() => selectedAnswer !== null && handleAnswerSubmit(selectedAnswer)}
+                              disabled={selectedAnswer === null}
+                              className="w-full"
+                            >
+                              <CheckCircle2 className="w-4 h-4 mr-2" />
+                              Confirmar Resposta
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={handleVoiceAnswer}
+                              disabled={isRecording || tutorState !== 'waiting_answer'}
+                              className="w-full"
+                            >
+                              <Mic className="w-4 h-4 mr-2" />
+                              Responder por Voz
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+                
+                {/* Text Input */}
+                {interactionMode === 'text' && (
+                  <form onSubmit={handleTextSubmit} className="mt-4">
+                    <div className="flex space-x-2">
+                      <Input
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        placeholder="Digite sua pergunta..."
+                        disabled={chatMutation.isPending || tutorState === 'thinking'}
+                        className="flex-1"
+                      />
+                      <Button 
+                        type="submit" 
+                        disabled={!inputMessage.trim() || chatMutation.isPending || tutorState === 'thinking'}
+                      >
+                        {chatMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Send className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
