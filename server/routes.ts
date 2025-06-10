@@ -1803,8 +1803,8 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
   wss.on('connection', (ws, req) => {
     console.log('Client connected to Realtime proxy');
 
-    // Connect to OpenAI Realtime API with correct model
-    const openaiWs = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01', {
+    // Connect to OpenAI Realtime API with correct model per documentation
+    const openaiWs = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17', {
       headers: {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'OpenAI-Beta': 'realtime=v1'
@@ -1846,7 +1846,8 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
                 prefix_padding_ms: 300,
                 silence_duration_ms: 500
               },
-              temperature: 0.8
+              temperature: 0.8,
+              max_response_output_tokens: 4096
             }
           };
           
