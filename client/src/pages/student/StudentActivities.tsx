@@ -58,7 +58,7 @@ export default function StudentActivities() {
   const topicExamples = [
     "Verbos no presente", "Frações", "Sistema solar", "Fotossíntese", 
     "História do Brasil", "Geometria básica", "Inglês básico", 
-    "Educação física", "Arte moderna", "Meio ambiente"
+    "A Terra", "Arte moderna", "Meio ambiente"
   ];
 
   const generateQuestionMutation = useMutation({
