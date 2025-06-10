@@ -8,6 +8,7 @@ export interface User {
   email: string;
   role: UserRole;
   profileImage?: string;
+  schoolYear?: string;
 }
 
 export interface Course {

@@ -28,6 +28,7 @@ import StudentActivities from "@/pages/student/StudentActivities";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
 import WikipediaExplorer from "@/pages/student/WikipediaExplorer";
 import Translator from "@/pages/student/Translator";
+import AITutorChat from "@/pages/student/AITutorChat";
 import NotFound from "@/pages/not-found";
 
 // Ferramentas IA
@@ -108,6 +109,7 @@ function Router() {
       <Route path="/aluno/cursos" component={StudentCourses} />
       <Route path="/aluno/atividades" component={StudentActivities} />
       <Route path="/aluno/planejamento" component={StudyPlanning} />
+      <Route path="/aluno/tutor-ia" component={AITutorChat} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

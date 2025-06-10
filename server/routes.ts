@@ -1474,6 +1474,84 @@ FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
     }
   });
 
+  // AI Tutor Chat endpoint
+  app.post('/api/ai/tutor-chat', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { message, studentGrade, chatHistory } = req.body;
+
+      if (!message || !message.trim()) {
+        return res.status(400).json({ error: 'Mensagem é obrigatória' });
+      }
+
+      // Build conversation history for context
+      let conversationContext = '';
+      if (chatHistory && chatHistory.length > 0) {
+        conversationContext = chatHistory
+          .slice(-5) // Last 5 messages for context
+          .map((msg: any) => `${msg.role === 'user' ? 'Estudante' : 'Tutora'}: ${msg.content}`)
+          .join('\n');
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514', // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
+          max_tokens: 2000,
+          system: `Você é uma tutora de IA especializada em educação brasileira para estudantes do ${studentGrade || '9º ano'}. Seu objetivo é ajudar o aluno com suas dúvidas sobre matérias escolares de forma didática e motivadora.
+
+DIRETRIZES IMPORTANTES:
+- Seja amigável, paciente e motivadora como a melhor tutora do mundo
+- Responda APENAS sobre matérias escolares relacionadas ao ${studentGrade || '9º ano'} do ensino fundamental/médio brasileiro
+- Use linguagem clara e adequada para a idade do estudante
+- Sempre explique conceitos de forma pedagógica, com exemplos práticos
+- Se o aluno perguntar sobre algo fora das matérias escolares, educadamente redirecione para temas de estudo
+- Incentive o aprendizado e destaque progressos
+- Quando apropriado, sugira exercícios práticos ou dicas de memorização
+- Use emojis ocasionalmente para tornar a conversa mais amigável
+
+MATÉRIAS QUE VOCÊ PODE AJUDAR:
+- Matemática (álgebra, geometria, aritmética)
+- Português (gramática, literatura, redação)
+- História (Brasil e mundial)
+- Geografia (física e humana)
+- Ciências (biologia, física, química básica)
+- Inglês (vocabulário, gramática básica)
+- Educação Física (conceitos teóricos)
+- Artes (história da arte, técnicas básicas)
+
+SE O ALUNO PERGUNTAR SOBRE OUTROS TEMAS:
+Responda: "Oi! Eu sou especializada em ajudar com suas matérias escolares do ${studentGrade || '9º ano'}. Que tal conversarmos sobre [sugerir um tópico escolar relevante]? Posso explicar de forma bem didática!"
+
+${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
+          messages: [
+            {
+              role: 'user',
+              content: message
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na API do Anthropic');
+      }
+
+      const data = await response.json();
+      const tutorResponse = data.content[0].text;
+
+      res.json({ response: tutorResponse });
+
+    } catch (error) {
+      console.error('Erro no chat da tutora IA:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
