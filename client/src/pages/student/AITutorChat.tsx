@@ -137,7 +137,7 @@ export default function AITutorChat() {
       const response = await apiRequest('POST', '/api/ai/generate-document', {
         messages: selectedMsgs,
         studentName: `${user?.firstName} ${user?.lastName}`,
-        studentGrade: user?.schoolYear || '9º ano'
+        studentGrade: (user as any)?.schoolYear || '9º ano'
       });
       
       return await response.blob();
