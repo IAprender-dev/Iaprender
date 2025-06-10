@@ -21,7 +21,9 @@ import {
   ArrowRight,
   CheckCircle2,
   Target,
-  Clock
+  Clock,
+  BarChart,
+  Bot
 } from "lucide-react";
 
 import aiverseLogo from "@assets/Design sem nome (5)_1749594709695.png";
@@ -179,14 +181,20 @@ export default function AIverseLanding() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Professores</h3>
                 <p className="text-gray-600 mb-6">
-                  Crie materiais didáticos, atividades e planejamentos de aula usando IA de última geração.
+                  Suite completa de ferramentas IA para transformar o ensino e otimizar o trabalho docente.
                 </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Geração de atividades</li>
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Materiais didáticos</li>
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Planejamento BNCC</li>
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Imagens educacionais</li>
-                </ul>
+                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Dashboard executivo</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Gerador de atividades</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Imagens educacionais</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Resumos didáticos IA</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Planejamento BNCC</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Modelos de aula</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Análise de documentos</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Central de IA</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Gestão de cursos</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Relatórios e métricas</div>
+                </div>
               </CardContent>
             </Card>
 
@@ -198,16 +206,145 @@ export default function AIverseLanding() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Alunos</h3>
                 <p className="text-gray-600 mb-6">
-                  Aprenda com tutores de IA personalizados, faça exercícios adaptativos e explore o conhecimento.
+                  Plataforma completa de aprendizado com IA personalizada e ferramentas adaptativas.
                 </p>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Tutor IA Pro Versa</li>
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Exercícios adaptativos</li>
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Tradutor integrado</li>
-                  <li className="flex items-center"><CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />Wikipedia Explorer</li>
-                </ul>
+                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Dashboard personalizado</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Tutor IA Pro Versa</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Tutoria por voz</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Exercícios adaptativos</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Cursos interativos</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Planejamento estudos</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Wikipedia Explorer</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Tradutor integrado</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Ranking e medalhas</div>
+                  <div className="flex items-center"><CheckCircle2 className="h-3 w-3 text-green-500 mr-1" />Progresso em tempo real</div>
+                </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Detailed Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Funcionalidades Completas por Perfil
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Cada usuário tem acesso a ferramentas especializadas para suas necessidades específicas
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Teacher Features */}
+            <div>
+              <div className="flex items-center mb-8">
+                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Dashboard do Professor</h3>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-blue-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <Sparkles className="h-5 w-5 text-blue-600 mr-2" />
+                    Ferramentas de IA Educacional
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Gerador de Atividades Personalizadas</li>
+                    <li>• Criação de Imagens Educacionais</li>
+                    <li>• Resumos Didáticos Automáticos</li>
+                    <li>• Planejamento de Aulas BNCC</li>
+                    <li>• Modelos de Planejamento</li>
+                    <li>• Análise de Documentos</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-green-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <BarChart className="h-5 w-5 text-green-600 mr-2" />
+                    Gestão e Analytics
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Dashboard com métricas de uso</li>
+                    <li>• Gestão completa de cursos</li>
+                    <li>• Relatórios de desempenho</li>
+                    <li>• Controle de tokens IA utilizados</li>
+                    <li>• Histórico de atividades criadas</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-purple-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <Bot className="h-5 w-5 text-purple-600 mr-2" />
+                    Central de IA
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Acesso a 25+ modelos de IA</li>
+                    <li>• ChatGPT, Claude, Gemini integrados</li>
+                    <li>• Geração de imagens com DALL-E, Stable Diffusion</li>
+                    <li>• Ferramentas de voz e transcrição</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            {/* Student Features */}
+            <div>
+              <div className="flex items-center mb-8">
+                <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mr-4">
+                  <BookOpen className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Dashboard do Aluno</h3>
+              </div>
+              
+              <div className="space-y-6">
+                <div className="bg-purple-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <Mic className="h-5 w-5 text-purple-600 mr-2" />
+                    Tutoria com IA
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Pro Versa - Tutora baseada em IA</li>
+                    <li>• Conversas por voz em tempo real</li>
+                    <li>• Adaptação ao ano escolar</li>
+                    <li>• Chat inteligente personalizado</li>
+                    <li>• Explicações em múltiplos formatos</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-green-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <Target className="h-5 w-5 text-green-600 mr-2" />
+                    Aprendizado Adaptativo
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Exercícios inteligentes por IA</li>
+                    <li>• Sistema de ranking e medalhas</li>
+                    <li>• Planejamento de estudos personalizado</li>
+                    <li>• Progresso em tempo real</li>
+                    <li>• Cursos interativos</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-blue-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+                    <Globe className="h-5 w-5 text-blue-600 mr-2" />
+                    Ferramentas de Pesquisa
+                  </h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>• Wikipedia Explorer integrado</li>
+                    <li>• Tradutor multilíngue avançado</li>
+                    <li>• Busca contextualizada</li>
+                    <li>• Recursos de estudo expandidos</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
