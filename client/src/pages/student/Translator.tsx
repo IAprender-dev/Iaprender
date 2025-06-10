@@ -7,7 +7,7 @@ export default function Translator() {
   return (
     <>
       <Helmet>
-        <title>Tradutor Educacional - IAverse</title>
+        <title>Tradutor Educacional - AIverse</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
