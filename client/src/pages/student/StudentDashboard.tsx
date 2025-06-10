@@ -402,32 +402,36 @@ export default function StudentDashboard() {
                 </Card>
 
                 {/* Voice AI Tutor Chat */}
-                <Card className="border-0 bg-gradient-to-br from-blue-50 to-cyan-50 backdrop-blur-sm shadow-lg rounded-2xl">
+                <Card className="border-0 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 backdrop-blur-sm shadow-lg rounded-2xl border border-pink-100">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row">
                       <div className="flex-1 p-6">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
-                            <Mic className="h-6 w-6 text-white" />
+                          <div className="p-2 bg-gradient-to-br from-pink-500 to-indigo-500 rounded-xl">
+                            <GraduationCap className="h-6 w-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-bold text-slate-800">Tutor IA por Voz</h3>
-                            <p className="text-sm text-slate-600">Conversa natural por voz</p>
+                            <h3 className="text-xl font-bold text-slate-800">Professora Ana</h3>
+                            <p className="text-sm text-slate-600">Sua tutora pessoal por voz</p>
                           </div>
+                          <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs">NOVO</Badge>
                         </div>
                         <p className="text-slate-700 mb-4 leading-relaxed">
-                          Converse com a IA usando apenas sua voz! Fale naturalmente e receba respostas faladas, como uma conversa com um professor.
+                          Conheça a Professora Ana, sua tutora virtual que ensina qualquer matéria do seu ano escolar. Fale naturalmente e aprenda no seu ritmo!
                         </p>
                         <Link href="/aluno/tutor-voz">
-                          <Button className="gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-sm">
+                          <Button className="gap-2 bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-600 hover:to-indigo-600 text-white shadow-sm">
                             <Mic className="h-4 w-4" />
-                            Conversar por Voz
+                            Conversar com Ana
                           </Button>
                         </Link>
                       </div>
                       <div className="hidden md:block p-6">
-                        <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center border border-blue-200">
-                          <div className="text-6xl">🎤</div>
+                        <div className="w-32 h-32 bg-gradient-to-br from-pink-100 to-indigo-100 rounded-2xl flex items-center justify-center border border-pink-200 relative">
+                          <div className="text-6xl">👩‍🏫</div>
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <Mic className="h-3 w-3 text-white" />
+                          </div>
                         </div>
                       </div>
                     </div>
