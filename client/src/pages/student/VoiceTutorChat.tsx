@@ -186,17 +186,22 @@ export default function VoiceTutorChat() {
   };
 
   const handleRealtimeMessage = (message: any) => {
-    console.log('Realtime message:', message.type, message);
+    console.log('Frontend received message:', message.type, message);
     
     switch (message.type) {
       case 'session.created':
-        console.log('Session created, setting up connection');
+        console.log('Session created - updating UI state');
         setConnectionState('connected');
         setIsConnected(true);
         setConversationState('listening');
         
-        // Start audio immediately without complex session update
+        console.log('Audio context available:', !!audioContextRef.current);
+        console.log('Stream available:', !!streamRef.current);
+        console.log('WebSocket available:', !!wsRef.current);
+        
+        // Start audio immediately
         if (wsRef.current && audioContextRef.current && streamRef.current) {
+          console.log('Starting audio processing...');
           setupAudioProcessing(audioContextRef.current, streamRef.current, wsRef.current);
           
           toast({
@@ -204,6 +209,8 @@ export default function VoiceTutorChat() {
             description: "Conversa por voz iniciada. Fale naturalmente.",
             variant: "default",
           });
+        } else {
+          console.error('Missing required objects for audio setup');
         }
         break;
         
