@@ -35,6 +35,10 @@ import translateRoutes from "./routes/translate-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse-new";
+import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
+import os from "os";
 
 // Define login schema
 const loginSchema = z.object({
@@ -1502,27 +1506,41 @@ FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514', // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
           max_tokens: 2000,
-          system: `Você é uma tutora de IA especializada em educação brasileira para estudantes do ${studentGrade || '9º ano'}. Seu objetivo é ajudar o aluno com suas dúvidas sobre matérias escolares de forma didática e motivadora.
+          system: `Você é Luna, uma tutora de IA especializada em educação brasileira para estudantes do ${studentGrade || '9º ano'}. Seu objetivo é criar uma conversa natural e envolvente, como se estivesse conversando pessoalmente com o aluno.
 
-DIRETRIZES IMPORTANTES:
-- Seja amigável, paciente e motivadora como a melhor tutora do mundo
-- Responda APENAS sobre matérias escolares relacionadas ao ${studentGrade || '9º ano'} do ensino fundamental/médio brasileiro
-- Use linguagem clara e adequada para a idade do estudante
-- Sempre explique conceitos de forma pedagógica, com exemplos práticos
-- Se o aluno perguntar sobre algo fora das matérias escolares, educadamente redirecione para temas de estudo
-- Incentive o aprendizado e destaque progressos
-- Quando apropriado, sugira exercícios práticos ou dicas de memorização
-- Use emojis ocasionalmente para tornar a conversa mais amigável
+PERSONALIDADE E ESTILO:
+- Seja carismática, empolgada e motivadora - você AMA ensinar!
+- Converse de forma natural e fluida, como uma amiga mais velha que sabe muito
+- Use linguagem coloquial adequada para a idade, mas sempre respeitosa
+- Demonstre empolgação genuína quando o aluno entende algo novo
+- Seja paciente e encorajadora quando ele tiver dificuldades
+- Faça perguntas para manter o aluno engajado e verificar seu entendimento
+- Use exemplos do dia a dia que o aluno pode relacionar
 
-MATÉRIAS QUE VOCÊ PODE AJUDAR:
-- Matemática (álgebra, geometria, aritmética)
-- Português (gramática, literatura, redação)
-- História (Brasil e mundial)
-- Geografia (física e humana)
-- Ciências (biologia, física, química básica)
-- Inglês (vocabulário, gramática básica)
-- Educação Física (conceitos teóricos)
-- Artes (história da arte, técnicas básicas)
+ESTRATÉGIAS PEDAGÓGICAS:
+- Sempre explique "o porquê" por trás dos conceitos, não apenas "o como"
+- Use analogias criativas e exemplos práticos
+- Quebre conceitos complexos em partes menores e digestíveis
+- Conecte novos conhecimentos com o que o aluno já sabe
+- Sugira exercícios interativos e práticos
+- Quando apropriado, crie pequenos questionários de múltipla escolha para fixar o aprendizado
+
+INTERAÇÃO EM TEMPO REAL:
+- Responda de forma conversacional, como se estivesse falando ao vivo
+- Reconheça e responda às emoções do aluno (frustração, empolgação, confusão)
+- Faça pausas estratégicas com perguntas como "Está acompanhando até aqui?"
+- Celebre pequenas vitórias e progressos
+- Adapte sua explicação baseada no feedback do aluno
+
+MATÉRIAS DE ESPECIALIDADE:
+- Matemática (álgebra, geometria, estatística básica)
+- Português (gramática, literatura brasileira, redação)
+- História (Brasil colonial, império, república)
+- Geografia (regiões brasileiras, clima, economia)
+- Ciências (biologia humana, física básica, química introdutória)
+- Inglês (conversação básica, gramática fundamental)
+
+IMPORTANTE: Se o aluno perguntar sobre algo fora do escopo escolar, gentilmente redirecione com entusiasmo para temas relacionados aos estudos.
 
 SE O ALUNO PERGUNTAR SOBRE OUTROS TEMAS:
 Responda: "Oi! Eu sou especializada em ajudar com suas matérias escolares do ${studentGrade || '9º ano'}. Que tal conversarmos sobre [sugerir um tópico escolar relevante]? Posso explicar de forma bem didática!"
@@ -1552,40 +1570,41 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
     }
   });
 
-  // Audio transcription endpoint
-  app.post('/api/ai/transcribe-audio', authenticate, async (req: Request, res: Response) => {
+  // Audio transcription endpoint using OpenAI Whisper
+  app.post('/api/ai/transcribe-audio', upload.single('audio'), authenticate, async (req: Request, res: Response) => {
     try {
-      const multer = require('multer');
-      const upload = multer({ storage: multer.memoryStorage() });
+      if (!req.file) {
+        return res.status(400).json({ error: 'Nenhum arquivo de áudio fornecido' });
+      }
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      // Create a temporary file for OpenAI API
+      const tempDir = os.tmpdir();
+      const tempFilePath = path.join(tempDir, `audio_${Date.now()}.wav`);
       
-      upload.single('audio')(req, res, async (err: any) => {
-        if (err) {
-          return res.status(400).json({ error: 'Erro no upload do áudio' });
-        }
+      // Write buffer to temporary file
+      fs.writeFileSync(tempFilePath, req.file.buffer);
+      
+      // Create readable stream for OpenAI
+      const audioStream = fs.createReadStream(tempFilePath);
+      
+      const transcription = await openai.audio.transcriptions.create({
+        file: audioStream,
+        model: 'whisper-1',
+        language: 'pt',
+        response_format: 'json',
+        temperature: 0.0,
+      });
 
-        if (!req.file) {
-          return res.status(400).json({ error: 'Nenhum arquivo de áudio fornecido' });
-        }
+      // Clean up temporary file
+      fs.unlinkSync(tempFilePath);
 
-        const formData = new FormData();
-        const audioBlob = new Blob([req.file.buffer], { type: 'audio/wav' });
-        formData.append('file', audioBlob, 'audio.wav');
-        formData.append('model', 'whisper-1');
-
-        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-          },
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error('Falha na transcrição do áudio');
-        }
-
-        const data = await response.json();
-        res.json({ text: data.text });
+      res.json({ 
+        text: transcription.text,
+        confidence: 1.0 
       });
 
     } catch (error) {

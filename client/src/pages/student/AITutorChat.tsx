@@ -125,10 +125,14 @@ export default function AITutorChat() {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       
-      const utterance = new SpeechSynthesisUtterance(text);
+      // Clean text for better speech synthesis
+      const cleanText = text.replace(/[🌟✨💫⭐🎯📚💡🔥]/g, '').trim();
+      
+      const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.lang = 'pt-BR';
-      utterance.rate = 0.9;
-      utterance.pitch = 1.1;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.2;
+      utterance.volume = 0.9;
       
       utterance.onstart = () => {
         setIsSpeaking(true);
@@ -158,27 +162,67 @@ export default function AITutorChat() {
     }
   };
 
-  // Recording functions
+  // Recording functions with audio level detection
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+      
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
+      // Audio level detection for visual feedback
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      
+      microphone.connect(analyser);
+      analyser.fftSize = 256;
+
+      const updateAudioLevel = () => {
+        if (isRecording) {
+          analyser.getByteFrequencyData(dataArray);
+          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          setAudioLevel(average / 255);
+          requestAnimationFrame(updateAudioLevel);
+        }
+      };
+
       mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
       };
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         transcribeMutation.mutate(audioBlob);
         stream.getTracks().forEach(track => track.stop());
+        audioContext.close();
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(100); // Collect data every 100ms for smoother experience
       setIsRecording(true);
       setTutorState('listening');
+      updateAudioLevel();
+      
+      // Auto-stop after 10 seconds for natural conversation flow
+      setTimeout(() => {
+        if (isRecording && mediaRecorderRef.current?.state === 'recording') {
+          stopRecording();
+        }
+      }, 10000);
+      
     } catch (error) {
       toast({
         title: "Erro no microfone",
@@ -192,6 +236,7 @@ export default function AITutorChat() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setAudioLevel(0);
       setTutorState('thinking');
     }
   };
@@ -352,46 +397,95 @@ export default function AITutorChat() {
     }
   };
 
-  // Animated AI Avatar Component
+  // Animated AI Avatar Component with Audio Visualization
   const AIAvatar = () => {
     const pulseScale = 1 + Math.sin(waveAnimation) * 0.1;
     const glowIntensity = isSpeaking ? 0.5 + Math.sin(waveAnimation * 2) * 0.3 : 0.2;
+    const audioVisualization = isRecording ? 1 + audioLevel * 0.3 : 1;
 
     return (
       <div className="flex flex-col items-center justify-center space-y-4 p-8">
-        <div 
-          className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center transition-all duration-300"
-          style={{
-            transform: `scale(${pulseScale})`,
-            boxShadow: `0 0 ${20 + glowIntensity * 30}px rgba(59, 130, 246, ${glowIntensity})`
-          }}
-        >
-          <Bot className="w-16 h-16 text-white" />
-          {isSpeaking && (
-            <div className="absolute inset-0 rounded-full border-4 border-blue-300 animate-ping" />
+        {/* Main Avatar */}
+        <div className="relative">
+          <div 
+            className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center transition-all duration-300"
+            style={{
+              transform: `scale(${pulseScale * audioVisualization})`,
+              boxShadow: `0 0 ${20 + glowIntensity * 30}px rgba(59, 130, 246, ${glowIntensity})`
+            }}
+          >
+            <Bot className="w-16 h-16 text-white" />
+            
+            {/* Speaking Animation */}
+            {isSpeaking && (
+              <>
+                <div className="absolute inset-0 rounded-full border-4 border-blue-300 animate-ping opacity-75" />
+                <div className="absolute inset-0 rounded-full border-2 border-purple-300 animate-pulse" />
+              </>
+            )}
+            
+            {/* Listening Visualization */}
+            {isRecording && (
+              <div className="absolute inset-0 rounded-full">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping"
+                    style={{
+                      animationDelay: `${i * 0.2}s`,
+                      opacity: audioLevel * (1 - i * 0.2)
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Audio Level Indicator */}
+          {isRecording && (
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+              <div className="flex space-x-1">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 bg-blue-500 rounded-full transition-all duration-100 ${
+                      audioLevel * 5 > i ? 'h-6' : 'h-2'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
           )}
         </div>
         
+        {/* Status Display */}
         <div className="text-center space-y-2">
           <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Luna - Tutora IA
           </h3>
-          <div className="flex items-center space-x-2">
-            <div className={`w-2 h-2 rounded-full ${
+          <div className="flex items-center justify-center space-x-2">
+            <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
               tutorState === 'idle' ? 'bg-green-500' :
               tutorState === 'listening' ? 'bg-blue-500 animate-pulse' :
               tutorState === 'thinking' ? 'bg-yellow-500 animate-pulse' :
               tutorState === 'speaking' ? 'bg-red-500 animate-pulse' :
               'bg-purple-500 animate-pulse'
             }`} />
-            <span className="text-sm text-gray-600">
-              {tutorState === 'idle' ? 'Pronta para ajudar' :
-               tutorState === 'listening' ? 'Ouvindo...' :
-               tutorState === 'thinking' ? 'Pensando...' :
-               tutorState === 'speaking' ? 'Falando...' :
-               'Aguardando resposta...'}
+            <span className="text-sm text-gray-600 font-medium">
+              {tutorState === 'idle' ? 'Pronta para conversar!' :
+               tutorState === 'listening' ? 'Te ouvindo...' :
+               tutorState === 'thinking' ? 'Pensando na resposta...' :
+               tutorState === 'speaking' ? 'Explicando para você...' :
+               'Aguardando sua resposta...'}
             </span>
           </div>
+          
+          {/* Recording Timer */}
+          {isRecording && (
+            <div className="text-xs text-blue-600 font-mono">
+              🎤 Gravando... (máx. 10s)
+            </div>
+          )}
         </div>
       </div>
     );
@@ -461,44 +555,99 @@ export default function AITutorChat() {
                 {interactionMode === 'voice' && (
                   <div className="p-6 border-t space-y-4">
                     <div className="text-center space-y-4">
-                      {!isRecording ? (
+                      {!isRecording && !isSpeaking ? (
                         <Button
                           onClick={startRecording}
                           disabled={tutorState === 'thinking' || chatMutation.isPending}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
+                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
                         >
-                          <Mic className="w-5 h-5 mr-2" />
-                          Falar com a Luna
+                          <Mic className="w-6 h-6 mr-3" />
+                          Conversar com Luna
                         </Button>
+                      ) : isRecording ? (
+                        <div className="space-y-3">
+                          <Button
+                            onClick={stopRecording}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white py-4 text-lg font-semibold rounded-xl animate-pulse"
+                          >
+                            <MicOff className="w-6 h-6 mr-3" />
+                            Finalizar gravação
+                          </Button>
+                          <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+                            🎤 Estou te ouvindo! Fale naturalmente sobre sua dúvida
+                          </div>
+                        </div>
                       ) : (
-                        <Button
-                          onClick={stopRecording}
-                          className="w-full bg-red-600 hover:bg-red-700 text-white py-3 animate-pulse"
-                        >
-                          <MicOff className="w-5 h-5 mr-2" />
-                          Parar gravação
-                        </Button>
-                      )}
-                      
-                      {isSpeaking && (
                         <Button
                           onClick={stopSpeaking}
                           variant="outline"
-                          className="w-full"
+                          className="w-full border-2 border-purple-500 text-purple-600 hover:bg-purple-50 py-3 rounded-xl"
                         >
-                          <Pause className="w-4 h-4 mr-2" />
-                          Parar fala
+                          <Pause className="w-5 h-5 mr-2" />
+                          Parar explicação
                         </Button>
                       )}
                     </div>
                     
-                    <div className="text-xs text-gray-500 text-center">
-                      {isRecording ? (
-                        "🎤 Gravando... Fale sua pergunta ou resposta"
-                      ) : (
-                        "🎯 Clique no botão acima para começar a conversar"
+                    {/* Dynamic Status Messages */}
+                    <div className="text-center">
+                      {tutorState === 'idle' && !isRecording && !isSpeaking && (
+                        <div className="text-sm text-gray-600 bg-green-50 p-3 rounded-lg">
+                          ✨ Pronta para uma nova conversa! Que matéria vamos estudar?
+                        </div>
+                      )}
+                      
+                      {tutorState === 'thinking' && (
+                        <div className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded-lg flex items-center justify-center space-x-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Processando sua pergunta...</span>
+                        </div>
+                      )}
+                      
+                      {currentQuestion && tutorState === 'waiting_answer' && (
+                        <div className="text-sm text-purple-600 bg-purple-50 p-3 rounded-lg">
+                          📝 Responda a questão acima por voz ou escolha uma alternativa
+                        </div>
                       )}
                     </div>
+                    
+                    {/* Quick Actions */}
+                    {tutorState === 'idle' && !isRecording && !currentQuestion && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          onClick={() => handleUserMessage("Me explique matemática básica")}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          📊 Matemática
+                        </Button>
+                        <Button
+                          onClick={() => handleUserMessage("Me ajude com português")}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          📚 Português
+                        </Button>
+                        <Button
+                          onClick={() => handleUserMessage("Quero aprender ciências")}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          🔬 Ciências
+                        </Button>
+                        <Button
+                          onClick={() => handleUserMessage("Me conte sobre história")}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          🏛️ História
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
