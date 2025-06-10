@@ -1797,109 +1797,45 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
   const httpServer = createServer(app);
   
-  // WebSocket server for OpenAI Realtime API proxy
-  const wss = new WebSocketServer({ server: httpServer, path: '/realtime' });
+  // Endpoint for generating ephemeral tokens as per OpenAI documentation
+  app.post('/api/realtime/session', async (req: Request, res: Response) => {
+    try {
+      const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-realtime-preview-2024-12-17',
+          voice: 'alloy',
+          instructions: 'Você é um tutor educacional brasileiro. Fale sempre em português brasileiro. Seja amigável, claro e educativo. Mantenha respostas concisas.',
+          input_audio_format: 'pcm16',
+          output_audio_format: 'pcm16',
+          input_audio_transcription: {
+            model: 'whisper-1'
+          },
+          turn_detection: {
+            type: 'server_vad',
+            threshold: 0.5,
+            prefix_padding_ms: 300,
+            silence_duration_ms: 500
+          },
+          temperature: 0.8,
+          max_response_output_tokens: 4096
+        }),
+      });
 
-  wss.on('connection', (ws, req) => {
-    console.log('Client connected to Realtime proxy');
-
-    // Connect to OpenAI Realtime API with correct model per documentation
-    const openaiWs = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17', {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'OpenAI-Beta': 'realtime=v1'
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
       }
-    });
 
-    let sessionConfigured = false;
-
-    // Handle OpenAI connection
-    openaiWs.on('open', () => {
-      console.log('Connected to OpenAI Realtime API');
-    });
-
-    // Handle messages from OpenAI
-    openaiWs.on('message', (data) => {
-      try {
-        const message = JSON.parse(data.toString());
-        console.log('OpenAI message:', message.type);
-        
-        // Auto-configure session when created
-        if (message.type === 'session.created' && !sessionConfigured) {
-          sessionConfigured = true;
-          console.log('Auto-configuring session for Portuguese');
-          
-          const sessionUpdate = {
-            type: 'session.update',
-            session: {
-              modalities: ['text', 'audio'],
-              instructions: 'Você é um tutor educacional brasileiro. Fale sempre em português brasileiro. Seja amigável, claro e educativo. Mantenha respostas concisas.',
-              voice: 'alloy',
-              input_audio_format: 'pcm16',
-              output_audio_format: 'pcm16',
-              input_audio_transcription: {
-                model: 'whisper-1'
-              },
-              turn_detection: {
-                type: 'server_vad',
-                threshold: 0.5,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 500
-              },
-              temperature: 0.8,
-              max_response_output_tokens: 4096
-            }
-          };
-          
-          openaiWs.send(JSON.stringify(sessionUpdate));
-        }
-        
-        // Forward all messages to client
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(data);
-        }
-      } catch (error) {
-        console.error('Error parsing OpenAI message:', error);
-      }
-    });
-
-    // Handle messages from client
-    ws.on('message', (data) => {
-      if (openaiWs.readyState === WebSocket.OPEN) {
-        openaiWs.send(data);
-      }
-    });
-
-    // Handle OpenAI connection close
-    openaiWs.on('close', (code, reason) => {
-      console.log('OpenAI connection closed:', code, reason?.toString());
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close(1000, 'OpenAI connection closed');
-      }
-    });
-
-    // Handle OpenAI errors
-    openaiWs.on('error', (error) => {
-      console.error('OpenAI WebSocket error:', error);
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close(1011, 'OpenAI connection error');
-      }
-    });
-
-    // Handle client disconnect
-    ws.on('close', () => {
-      console.log('Client disconnected');
-      if (openaiWs.readyState === WebSocket.OPEN) {
-        openaiWs.close();
-      }
-    });
-
-    ws.on('error', (error) => {
-      console.error('Client WebSocket error:', error);
-      if (openaiWs.readyState === WebSocket.OPEN) {
-        openaiWs.close();
-      }
-    });
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Error creating ephemeral token:', error);
+      res.status(500).json({ error: 'Failed to create session' });
+    }
   });
 
   return httpServer;
