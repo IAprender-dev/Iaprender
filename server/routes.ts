@@ -1824,11 +1824,15 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
           console.log('Forwarding to OpenAI:', message.type);
           openaiWs.send(data);
         } else {
-          console.log('Queuing message:', message.type);
+          console.log('Queuing message:', message.type, 'OpenAI ready:', openaiWs.readyState === WebSocket.OPEN, 'Connected:', isConnected);
           messageQueue.push(data);
         }
       } catch (error) {
         console.error('Failed to parse client message:', error);
+        // Still try to forward binary data
+        if (openaiWs.readyState === WebSocket.OPEN && isConnected) {
+          openaiWs.send(data);
+        }
       }
     });
 
@@ -1869,6 +1873,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
     openaiWs.on('close', (code, reason) => {
       console.log('OpenAI Realtime API connection closed:', code, reason?.toString());
+      console.log('Close codes: 1000=normal, 1001=going away, 1002=protocol error, 1003=unsupported, 1005=no status, 1006=abnormal');
       isConnected = false;
       if (ws.readyState === WebSocket.OPEN) {
         ws.close(code, reason);

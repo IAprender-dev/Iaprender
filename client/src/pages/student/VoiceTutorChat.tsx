@@ -192,25 +192,15 @@ export default function VoiceTutorChat() {
       case 'session.created':
         console.log('Session created, configuring for Portuguese tutor');
         
-        // Send session configuration first
+        // Send minimal session configuration to test
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          console.log('Sending session update...');
           wsRef.current.send(JSON.stringify({
             type: 'session.update',
             session: {
               modalities: ['text', 'audio'],
-              instructions: 'Você é um tutor educacional brasileiro. Fale em português, seja amigável e mantenha respostas concisas.',
-              voice: 'alloy',
-              input_audio_format: 'pcm16',
-              output_audio_format: 'pcm16',
-              input_audio_transcription: {
-                model: 'whisper-1'
-              },
-              turn_detection: {
-                type: 'server_vad',
-                threshold: 0.5,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 500
-              }
+              instructions: 'You are a helpful assistant.',
+              voice: 'alloy'
             }
           }));
         }
