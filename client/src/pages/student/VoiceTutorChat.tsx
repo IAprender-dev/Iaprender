@@ -1,17 +1,13 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Helmet } from "react-helmet";
-import { useAuth } from "@/lib/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Clock, History, RefreshCw, Play, Pause } from 'lucide-react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useAuth } from '@/lib/AuthContext';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { useToast } from "@/hooks/use-toast";
-import { Link } from 'wouter';
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import aiverseLogo from "@assets/Design sem nome (5)_1749568909858.png";
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Bot, Mic, MicOff, Play, Pause, RotateCcw, TestTube, ArrowLeft } from 'lucide-react';
+import { useLocation } from 'wouter';
 
 interface VoiceMessage {
   id: string;
@@ -19,7 +15,6 @@ interface VoiceMessage {
   content: string;
   timestamp: Date;
   duration?: number;
-  isTranscribing?: boolean;
 }
 
 type VoiceTutorState = 'idle' | 'listening' | 'processing' | 'speaking' | 'paused';
@@ -27,36 +22,30 @@ type VoiceTutorState = 'idle' | 'listening' | 'processing' | 'speaking' | 'pause
 export default function VoiceTutorChat() {
   const { user } = useAuth();
   const { toast } = useToast();
-  
-  // Core state
+  const [, setLocation] = useLocation();
+
+  // Core states
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [tutorState, setTutorState] = useState<VoiceTutorState>('idle');
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [conversationTime, setConversationTime] = useState(0);
   const [currentTranscription, setCurrentTranscription] = useState('');
-  const [audioLevel, setAudioLevel] = useState(0);
-  const [isInterrupted, setIsInterrupted] = useState(false);
-  
-  // Refs
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const conversationTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const [conversationTime, setConversationTime] = useState(0);
+
+  // Audio refs
   const streamRef = useRef<MediaStream | null>(null);
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const animationRef = useRef<number | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const voiceDetectionRef = useRef<{
-    silenceCount: number;
-    speechCount: number;
-    isRecording: boolean;
-    isListeningActive: boolean;
-    aiSpeechEndTime: number;
-  }>({ silenceCount: 0, speechCount: 0, isRecording: false, isListeningActive: false, aiSpeechEndTime: 0 });
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Recording state
+  const recordingRef = useRef({
+    isActive: false,
+    chunks: [] as Blob[],
+    startTime: 0
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -66,368 +55,165 @@ export default function VoiceTutorChat() {
     scrollToBottom();
   }, [messages]);
 
-  // Conversation timer
   useEffect(() => {
-    conversationTimerRef.current = setInterval(() => {
-      setConversationTime(prev => prev + 1);
-    }, 1000);
+    if (!isPaused) {
+      const timer = setInterval(() => {
+        setConversationTime(prev => prev + 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [isPaused]);
 
-    return () => {
-      if (conversationTimerRef.current) {
-        clearInterval(conversationTimerRef.current);
-      }
-    };
-  }, []);
-
-  // Initialize welcome message and auto-start
   useEffect(() => {
-    const welcomeMessage: VoiceMessage = {
+    setMessages([{
       id: 'welcome',
       role: 'assistant',
-      content: "Olá! Sou seu Tutor IA de conversa por voz. Clique em permitir quando o navegador pedir acesso ao microfone. Depois pode falar comigo normalmente!",
+      content: `Olá! Sou seu tutor de conversas por voz. Vou começar a escutar automaticamente. Fale naturalmente comigo.`,
       timestamp: new Date()
+    }]);
+
+    initializeVoiceChat();
+
+    return () => {
+      cleanup();
     };
-    setMessages([welcomeMessage]);
-    
-    // Auto-speak welcome and start listening
-    setTimeout(() => {
-      speakText(welcomeMessage.content);
-      setTimeout(() => initializeMicrophone(), 2000);
-    }, 1000);
   }, []);
 
-  // Initialize microphone for continuous monitoring
-  const initializeMicrophone = useCallback(async () => {
-    if (streamRef.current || isPaused) return;
+  const cleanup = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    if (utteranceRef.current) {
+      window.speechSynthesis.cancel();
+    }
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+    }
+  };
+
+  const initializeVoiceChat = async () => {
+    if (isPaused) return;
 
     try {
-      console.log('🎤 Initializing microphone...');
+      console.log('Initializing voice chat...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000
+          autoGainControl: true
         }
       });
       
       streamRef.current = stream;
-      console.log('✅ Microphone access granted');
+      console.log('Microphone access granted');
       
-      // Setup audio context for voice detection
-      const audioContext = new AudioContext();
-      audioContextRef.current = audioContext;
-      const analyser = audioContext.createAnalyser();
-      const microphone = audioContext.createMediaStreamSource(stream);
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      
-      microphone.connect(analyser);
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.8;
-
-      // More sensitive thresholds based on observed levels (0.02-0.12)
-      const SILENCE_THRESHOLD = 0.015; // Below observed noise floor
-      const SPEECH_THRESHOLD = 0.05; // Above normal background levels
-      const INTERRUPTION_THRESHOLD = 0.08; // Clear speech signal
-      const SILENCE_DURATION = 30; // ~3 seconds of silence
-      const SPEECH_DETECTION = 3; // ~0.3 seconds of speech to interrupt
-      const MIN_SPEECH_DURATION = 8; // ~0.8 seconds minimum speech to process
-
-      console.log('🔧 Audio thresholds set:', {
-        silence: SILENCE_THRESHOLD,
-        speech: SPEECH_THRESHOLD,
-        interruption: INTERRUPTION_THRESHOLD
-      });
-
-      const monitorVoice = () => {
-        if (!analyser || isPaused) return;
-        
-        analyser.getByteFrequencyData(dataArray);
-        const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-        const level = Math.min(1, average / 128);
-        setAudioLevel(level);
-
-        const detection = voiceDetectionRef.current;
-
-        // Log when speech threshold is exceeded
-        if (level > SPEECH_THRESHOLD && !isSpeaking) {
-          console.log('🗣️ Speech detected! Level:', level.toFixed(3), 'Threshold:', SPEECH_THRESHOLD);
-        }
-
-        // Debug logging for audio levels and speech detection
-        if (Math.random() < 0.05) { // Log 5% of the time for better debugging
-          console.log('🎵 Audio level:', level.toFixed(3), 
-                     'Speaking:', isSpeaking, 
-                     'Listening:', isListening,
-                     'ListeningActive:', detection.isListeningActive,
-                     'Recording:', detection.isRecording,
-                     'SpeechCount:', detection.speechCount,
-                     'SilenceCount:', detection.silenceCount);
-        }
-
-        // If AI is speaking and user speaks, interrupt immediately
-        if (isSpeaking && level > INTERRUPTION_THRESHOLD) {
-          detection.speechCount++;
-          if (detection.speechCount >= SPEECH_DETECTION) {
-            console.log('🔴 User interrupting AI speech, level:', level.toFixed(3));
-            stopSpeaking();
-            startListening();
-            detection.speechCount = 0;
-            detection.silenceCount = 0;
-          }
-        } else if (isSpeaking) {
-          detection.speechCount = 0;
-        }
-
-        const currentTime = Date.now();
-        const timeSinceAiSpeech = currentTime - detection.aiSpeechEndTime;
-        const AI_SPEECH_COOLDOWN = 3000; // 3 seconds cooldown after AI stops speaking
-        
-        // ONLY detect speech when AI is not speaking AND enough time has passed since AI stopped
-        if ((isListening || detection.isListeningActive) && !isSpeaking && timeSinceAiSpeech > AI_SPEECH_COOLDOWN) {
-          if (level > SPEECH_THRESHOLD) {
-            detection.speechCount++;
-            detection.silenceCount = 0;
-            
-            // Start recording if we detect sustained speech
-            if (!detection.isRecording && detection.speechCount >= MIN_SPEECH_DURATION) {
-              console.log('🎤 Starting recording - user speech detected, level:', level.toFixed(3));
-              startRecording();
-            }
-          } else if (level < SILENCE_THRESHOLD) {
-            detection.silenceCount++;
-            detection.speechCount = 0;
-            
-            // Stop recording if silence is detected while recording
-            if (detection.isRecording && detection.silenceCount >= SILENCE_DURATION) {
-              console.log('🔇 Stopping recording - silence detected, level:', level.toFixed(3));
-              stopRecording();
-            }
-          }
-        } else if (isSpeaking || timeSinceAiSpeech <= AI_SPEECH_COOLDOWN) {
-          // When AI is speaking OR within cooldown period, prevent any recording
-          detection.speechCount = 0;
-          detection.silenceCount = 0;
-          if (detection.isRecording) {
-            console.log('🛑 Stopping recording - AI feedback prevention (speaking or cooldown)');
-            stopRecording();
-          }
-          
-          // Update AI speech end time when AI stops speaking
-          if (!isSpeaking && timeSinceAiSpeech <= AI_SPEECH_COOLDOWN) {
-            // We're in cooldown period
-          } else if (isSpeaking) {
-            // AI is currently speaking, don't update end time yet
-          }
-        }
-
-        // Continue monitoring if not paused
-        if (!isPaused) {
-          animationRef.current = requestAnimationFrame(monitorVoice);
-        }
-      };
-
-      // Force listening state with delayed update
-      console.log('🔊 Setting listening state to true');
       setTutorState('listening');
       setIsListening(true);
       
-      // Reset detection state and force listening
-      voiceDetectionRef.current = {
-        silenceCount: 0,
-        speechCount: 0,
-        isRecording: false,
-        isListeningActive: true,
-        aiSpeechEndTime: 0
-      };
-      
-      monitorVoice();
-      
-      // Force state update after a brief delay
-      setTimeout(() => {
-        console.log('🔄 Force updating listening state');
-        setIsListening(true);
-        setTutorState('listening');
-      }, 100);
+      // Start continuous recording with automatic chunking
+      startContinuousRecording();
       
     } catch (error) {
-      console.error('Microphone access error:', error);
-      setTutorState('idle');
+      console.error('Voice initialization failed:', error);
       toast({
         title: "Erro no microfone",
-        description: "Clique em 'Permitir' quando o navegador pedir acesso ao microfone ou verifique as configurações de privacidade.",
+        description: "Não foi possível acessar o microfone. Verifique as permissões do navegador.",
         variant: "destructive",
       });
     }
-  }, [isPaused]);
+  };
 
-  // Start recording audio
-  const startRecording = useCallback(() => {
-    if (!streamRef.current || voiceDetectionRef.current.isRecording) return;
+  const startContinuousRecording = () => {
+    if (!streamRef.current || recordingRef.current.isActive || isSpeaking) return;
 
     try {
-      // Use wav format which is better supported by OpenAI Whisper
-      const mimeType = MediaRecorder.isTypeSupported('audio/wav') 
-        ? 'audio/wav'
-        : MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
-      
-      const mediaRecorder = new MediaRecorder(streamRef.current, { mimeType });
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        if (audioChunksRef.current.length > 0) {
-          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-          if (audioBlob.size > 1000) {
-            transcribeAudio(audioBlob, mimeType);
-          }
-        }
-        audioChunksRef.current = [];
-        voiceDetectionRef.current.isRecording = false;
-      };
-
-      mediaRecorder.start(100);
-      voiceDetectionRef.current.isRecording = true;
-      setTutorState('listening');
-      
-    } catch (error) {
-      console.error('Recording error:', error);
-    }
-  }, []);
-
-  // Stop recording audio
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && voiceDetectionRef.current.isRecording) {
-      mediaRecorderRef.current.stop();
-      setTutorState('processing');
-    }
-  }, []);
-
-  // Start listening mode
-  const startListening = useCallback(() => {
-    if (!isListening) {
-      setIsListening(true);
-      setTutorState('listening');
-    }
-  }, [isListening]);
-
-  // Enhanced text-to-speech with interruption capability
-  const speakText = useCallback((text: string) => {
-    if ('speechSynthesis' in window && text.trim()) {
-      window.speechSynthesis.cancel();
-      
-      const cleanText = text.replace(/[🌟✨💫⭐🎯📚💡🔥]/g, '').trim();
-      
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'pt-BR';
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      utterance.volume = 0.9;
-      
-      utterance.onstart = () => {
-        setIsSpeaking(true);
-        setTutorState('speaking');
-        setIsInterrupted(false);
-      };
-      
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        
-        // Set AI speech end time for cooldown prevention
-        voiceDetectionRef.current.aiSpeechEndTime = Date.now();
-        console.log('⏰ AI speech cooldown started - no recording for 3 seconds');
-        
-        if (!isInterrupted && !isPaused) {
-          setTutorState('listening');
-          // Continue listening after speaking with delay for cooldown
-          setTimeout(() => {
-            if (!isPaused) {
-              startListening();
-            }
-          }, 3500); // Extended delay to ensure cooldown works
-        }
-      };
-      
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-        setTutorState('idle');
-      };
-      
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-    }
-  }, [isPaused, isInterrupted]);
-
-  const stopSpeaking = useCallback(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-      setIsInterrupted(true);
-      setTutorState('listening');
-    }
-  }, []);
-
-  // Audio transcription using OpenAI Whisper
-  const transcribeAudio = useCallback(async (audioBlob: Blob, mimeType: string) => {
-    try {
-      const formData = new FormData();
-      
-      // Determine appropriate file extension based on mime type
-      const fileExtension = mimeType.includes('wav') ? 'wav' : 
-                           mimeType.includes('webm') ? 'webm' :
-                           mimeType.includes('mp3') ? 'mp3' : 'wav';
-      
-      const fileName = `voice_${Date.now()}.${fileExtension}`;
-      formData.append('audio', audioBlob, fileName);
-      
-      console.log('Sending audio for transcription:', {
-        size: audioBlob.size,
-        type: audioBlob.type,
-        fileName
+      const recorder = new MediaRecorder(streamRef.current, {
+        mimeType: 'audio/webm;codecs=opus'
       });
       
+      recordingRef.current.chunks = [];
+      recordingRef.current.isActive = true;
+      recordingRef.current.startTime = Date.now();
+      
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordingRef.current.chunks.push(event.data);
+        }
+      };
+      
+      recorder.onstop = () => {
+        if (recordingRef.current.chunks.length > 0) {
+          const audioBlob = new Blob(recordingRef.current.chunks, { type: 'audio/webm;codecs=opus' });
+          const duration = (Date.now() - recordingRef.current.startTime) / 1000;
+          
+          // Only process if recording was long enough and we're not speaking
+          if (duration > 1 && !isSpeaking) {
+            transcribeAudio(audioBlob);
+          }
+        }
+        recordingRef.current.isActive = false;
+        
+        // Restart recording after a brief pause (if not speaking)
+        if (!isSpeaking && !isPaused) {
+          setTimeout(() => {
+            startContinuousRecording();
+          }, 1000);
+        }
+      };
+      
+      recorderRef.current = recorder;
+      recorder.start();
+      
+      // Auto-stop recording after 5 seconds to create chunks for Whisper
+      recordingTimeoutRef.current = setTimeout(() => {
+        if (recorder.state === 'recording') {
+          recorder.stop();
+        }
+      }, 5000);
+      
+    } catch (error) {
+      console.error('Recording start failed:', error);
+      recordingRef.current.isActive = false;
+    }
+  };
+
+  const transcribeAudio = useCallback(async (audioBlob: Blob) => {
+    try {
+      setTutorState('processing');
+      
+      const formData = new FormData();
+      const fileName = `voice_${Date.now()}.webm`;
+      formData.append('audio', audioBlob, fileName);
+
+      console.log('Sending audio for transcription:', { size: audioBlob.size, fileName });
+
       const response = await fetch('/api/ai/transcribe-audio', {
         method: 'POST',
         body: formData,
         credentials: 'include'
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Transcription failed: ${response.status} - ${errorData.error}`);
+        throw new Error(`Transcription failed: ${response.status}`);
       }
       
       const data = await response.json();
       console.log('Transcription response:', data);
       
-      if (data.text && data.text.trim()) {
+      // Only process if we got actual speech content
+      if (data.text && data.text.trim() && data.text.length > 3) {
         setCurrentTranscription(data.text);
         handleUserMessage(data.text, data.duration);
       } else {
-        // No speech detected, continue listening
-        console.log('No speech detected in audio');
+        // No meaningful speech detected, continue listening
         setTutorState('listening');
       }
     } catch (error) {
       console.error('Transcription error:', error);
-      toast({
-        title: "Erro na transcrição",
-        description: "Não foi possível transcrever o áudio. Tente falar mais claramente.",
-        variant: "destructive",
-      });
       setTutorState('listening');
     }
-  }, [toast]);
+  }, []);
 
-  // AI conversation
   const chatMutation = useMutation({
     mutationFn: async (message: string) => {
       const response = await apiRequest('POST', '/api/ai/tutor-chat', {
@@ -455,7 +241,7 @@ export default function VoiceTutorChat() {
       setMessages(prev => [...prev, assistantMessage]);
       setCurrentTranscription('');
       
-      // Auto-speak response
+      // Speak the response
       setTimeout(() => speakText(assistantMessage.content), 300);
     },
     onError: (error) => {
@@ -480,26 +266,74 @@ export default function VoiceTutorChat() {
     chatMutation.mutate(message);
   }, [chatMutation]);
 
+  const speakText = useCallback((text: string) => {
+    if ('speechSynthesis' in window && text.trim()) {
+      // Stop any current recording while AI speaks
+      if (recorderRef.current && recordingRef.current.isActive) {
+        recorderRef.current.stop();
+      }
+      
+      window.speechSynthesis.cancel();
+      
+      const cleanText = text.replace(/[🌟✨💫⭐🎯📚💡🔥😊]/g, '').trim();
+      
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 0.8;
+      
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setTutorState('speaking');
+      };
+      
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        setTutorState('listening');
+        
+        // Resume recording after AI finishes speaking
+        if (!isPaused) {
+          setTimeout(() => {
+            startContinuousRecording();
+          }, 1500); // Wait 1.5 seconds to avoid feedback
+        }
+      };
+      
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        setTutorState('listening');
+        if (!isPaused) {
+          setTimeout(() => startContinuousRecording(), 1000);
+        }
+      };
+      
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    }
+  }, [isPaused]);
+
+  const stopSpeaking = useCallback(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  }, []);
+
   const togglePause = () => {
     if (isPaused) {
       setIsPaused(false);
       setTutorState('idle');
-      setTimeout(() => initializeMicrophone(), 500);
+      setTimeout(() => initializeVoiceChat(), 500);
     } else {
       setIsPaused(true);
       if (isSpeaking) {
         stopSpeaking();
       }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
+      if (recorderRef.current && recordingRef.current.isActive) {
+        recorderRef.current.stop();
       }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      cleanup();
       setIsListening(false);
       setTutorState('paused');
     }
@@ -518,7 +352,6 @@ export default function VoiceTutorChat() {
     }
   };
 
-  // Manual microphone test
   const testMicrophone = async () => {
     try {
       console.log('Testing microphone access...');
@@ -526,17 +359,12 @@ export default function VoiceTutorChat() {
       
       toast({
         title: "Microfone funcionando!",
-        description: "O microfone está acessível. Fale normalmente que o tutor irá detectar sua voz.",
+        description: "O microfone está acessível e funcionando corretamente.",
         variant: "default",
       });
 
-      // Stop the test stream
       stream.getTracks().forEach(track => track.stop());
       
-      // Restart the voice system if it wasn't working
-      if (!isListening && !isPaused) {
-        setTimeout(() => initializeMicrophone(), 1000);
-      }
     } catch (error) {
       console.error('Microphone test failed:', error);
       toast({
@@ -547,25 +375,41 @@ export default function VoiceTutorChat() {
     }
   };
 
-  // Format time
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Enhanced AI Avatar with real-time voice visualization
+  const getStateDescription = () => {
+    switch (tutorState) {
+      case 'idle': return 'Aguardando...';
+      case 'listening': return 'Escutando você...';
+      case 'processing': return 'Processando...';
+      case 'speaking': return 'Falando...';
+      case 'paused': return 'Pausado';
+      default: return 'Inicializando...';
+    }
+  };
+
+  const getStateColor = () => {
+    switch (tutorState) {
+      case 'listening': return 'bg-green-500';
+      case 'processing': return 'bg-yellow-500';
+      case 'speaking': return 'bg-blue-500';
+      case 'paused': return 'bg-gray-500';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  // Simple Voice Avatar
   const VoiceAvatar = () => {
-    const baseScale = 1;
-    const pulseScale = isSpeaking ? baseScale + Math.sin(Date.now() * 0.008) * 0.1 : baseScale;
-    const glowIntensity = isSpeaking ? 0.8 : isListening ? 0.6 : tutorState === 'processing' ? 0.4 : 0.3;
-    const audioVisualization = isListening ? baseScale + audioLevel * 0.3 : baseScale;
+    const pulseScale = isSpeaking ? 1.1 : 1;
+    const glowIntensity = isSpeaking ? 0.8 : isListening ? 0.6 : 0.3;
 
     return (
       <div className="flex flex-col items-center justify-center space-y-8 p-12">
-        {/* Main Avatar Container */}
         <div className="relative">
-          {/* Outer glow rings */}
           <div 
             className="absolute inset-0 rounded-full transition-all duration-500"
             style={{
@@ -575,376 +419,195 @@ export default function VoiceTutorChat() {
             }}
           />
           
-          {/* Avatar */}
           <div 
             className="relative w-56 h-56 rounded-full bg-gradient-to-br from-blue-600 via-purple-700 to-indigo-800 flex items-center justify-center transition-all duration-300 shadow-2xl"
             style={{
-              transform: `scale(${pulseScale * audioVisualization})`,
+              transform: `scale(${pulseScale})`,
               boxShadow: `0 0 ${40 + glowIntensity * 60}px rgba(59, 130, 246, ${glowIntensity})`
             }}
           >
             <Bot className="w-28 h-28 text-white drop-shadow-xl" />
             
-            {/* Speaking Animation Rings */}
             {isSpeaking && (
               <>
                 <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping opacity-50" />
                 <div className="absolute inset-0 rounded-full border-3 border-orange-300 animate-pulse opacity-70" />
-                <div className="absolute inset-0 rounded-full border-2 border-white animate-ping opacity-30" 
-                     style={{ animationDelay: '0.5s' }} />
               </>
             )}
             
-            {/* Listening Visualization */}
             {isListening && !isSpeaking && (
               <div className="absolute inset-0 rounded-full">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(3)].map((_, i) => (
                   <div
                     key={i}
-                    className="absolute inset-0 rounded-full border-3 border-green-400 animate-ping"
-                    style={{
-                      animationDelay: `${i * 0.2}s`,
-                      opacity: audioLevel * (1 - i * 0.12),
-                      borderWidth: `${3 + audioLevel * 5}px`,
-                      animationDuration: '1.8s'
+                    className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-30"
+                    style={{ 
+                      animationDelay: `${i * 0.5}s`,
+                      animationDuration: '2s'
                     }}
                   />
                 ))}
               </div>
-            )}
-            
-            {/* Processing Animation */}
-            {tutorState === 'processing' && (
-              <>
-                <div className="absolute inset-0 rounded-full border-4 border-yellow-400 animate-spin opacity-70" 
-                     style={{ animationDuration: '2s' }} />
-                <div className="absolute inset-0 rounded-full border-2 border-orange-400 animate-spin opacity-50" 
-                     style={{ animationDuration: '3s', animationDirection: 'reverse' }} />
-              </>
-            )}
-
-            {/* Paused State */}
-            {isPaused && (
-              <div className="absolute inset-0 rounded-full border-4 border-gray-400 opacity-50" />
             )}
           </div>
-          
-          {/* Enhanced Audio Level Visualization */}
-          {(isListening || isSpeaking) && (
-            <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
-              <div className="flex space-x-2">
-                {[...Array(11)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-2 rounded-full transition-all duration-100 shadow-lg ${
-                      isSpeaking ? 'bg-gradient-to-t from-red-500 via-orange-500 to-yellow-500' 
-                                : 'bg-gradient-to-t from-green-500 via-blue-500 to-purple-500'
-                    }`}
-                    style={{
-                      height: audioLevel * 11 > i ? `${20 + audioLevel * 40 + Math.sin(Date.now() * 0.01 + i) * 6}px` : '10px',
-                      opacity: audioLevel * 11 > i ? 1 : 0.3
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
-        
-        {/* Enhanced Status Display */}
-        <div className="text-center space-y-4 max-w-md">
-          <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            Tutor IA - Conversa por Voz
-          </h3>
-          
+
+        <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3">
-            <div className={`w-4 h-4 rounded-full transition-all duration-300 ${
-              tutorState === 'idle' ? 'bg-green-500 shadow-lg shadow-green-500/50 animate-pulse' :
-              tutorState === 'listening' ? 'bg-blue-500 shadow-lg shadow-blue-500/50 animate-pulse' :
-              tutorState === 'processing' ? 'bg-yellow-500 shadow-lg shadow-yellow-500/50 animate-pulse' :
-              tutorState === 'speaking' ? 'bg-red-500 shadow-lg shadow-red-500/50 animate-pulse' :
-              'bg-gray-500 shadow-lg shadow-gray-500/50'
-            }`} />
-            <span className="text-lg text-gray-800 font-semibold">
-              {tutorState === 'idle' ? 'Pronto para conversar' :
-               tutorState === 'listening' ? 'Te escutando... (fale a qualquer momento!)' :
-               tutorState === 'processing' ? 'Processando sua pergunta...' :
-               tutorState === 'speaking' ? 'Explicando (me interrompa se quiser!)' :
-               'Conversa pausada'}
-            </span>
+            <div className={`w-3 h-3 rounded-full ${getStateColor()} animate-pulse`} />
+            <span className="text-xl font-semibold text-gray-700">{getStateDescription()}</span>
           </div>
           
-          {/* Current Transcription Preview */}
-          {currentTranscription && (
-            <div className="text-sm text-green-700 bg-green-50 px-4 py-3 rounded-xl border border-green-200 max-w-md">
-              <div className="font-semibold mb-1">Você disse:</div>
-              "{currentTranscription}"
-            </div>
+          {tutorState === 'listening' && (
+            <p className="text-sm text-green-600 font-medium">Fale naturalmente que eu escuto</p>
           )}
-          
-          {/* Conversation Stats and Audio Level */}
-          <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
-            <div className="flex items-center space-x-1">
-              <Clock className="w-4 h-4" />
-              <span className="font-medium">{formatTime(conversationTime)}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <MessageSquare className="w-4 h-4" />
-              <span className="font-medium">{messages.filter(m => m.role === 'user').length} perguntas</span>
-            </div>
-            {/* Audio Level Debug Display */}
-            <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-full">
-              <Mic className="w-3 h-3" />
-              <div className="flex space-x-1">
-                {[...Array(10)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-1 h-4 rounded-full transition-all duration-100 ${
-                      audioLevel * 10 > i ? 'bg-green-500' : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs font-mono">
-                {(audioLevel * 100).toFixed(0)}%
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <Helmet>
-        <title>Tutor IA - Conversa por Voz Contínua - AIverse</title>
-      </Helmet>
-      
-      {/* Enhanced Header */}
-      <div className="bg-white backdrop-blur-sm border-b border-gray-300 sticky top-0 z-10 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/aluno/dashboard">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors duration-200">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-0">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocation('/student/dashboard')}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar
                 </Button>
-              </Link>
-              <img src={aiverseLogo} alt="AIverse" className="h-8 w-auto" />
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Tutor IA - Conversa por Voz</h1>
-                <p className="text-sm text-gray-700 font-medium">Conversa contínua com interrupção</p>
-              </div>
-            </div>
-            
-            {/* Voice Controls & Stats */}
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-700 bg-gray-100 px-3 py-1 rounded-full font-medium">
-                <Clock className="w-4 h-4 text-gray-600" />
-                <span>{formatTime(conversationTime)}</span>
-              </div>
-              
-              <Button
-                onClick={togglePause}
-                variant={isPaused ? "default" : "outline"}
-                size="sm"
-                className={isPaused 
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-white hover:bg-gray-50 text-gray-700 border-gray-300"
-                }
-              >
-                {isPaused ? <Play className="w-4 h-4 mr-2" /> : <Pause className="w-4 h-4 mr-2" />}
-                {isPaused ? 'Retomar' : 'Pausar'}
-              </Button>
-              
-              <Button
-                onClick={clearConversation}
-                variant="outline"
-                size="sm"
-                className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 font-medium"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Nova conversa
-              </Button>
-              
-              <Button
-                onClick={testMicrophone}
-                variant="outline"
-                size="sm"
-                className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 font-medium"
-              >
-                <Mic className="w-4 h-4 mr-2" />
-                Testar Microfone
-              </Button>
-              
-              <Dialog open={showHistory} onOpenChange={setShowHistory}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 font-medium">
-                    <History className="w-4 h-4 mr-2" />
-                    Histórico ({messages.filter(m => m.role === 'user').length})
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[80vh]">
-                  <DialogHeader>
-                    <DialogTitle className="text-gray-900 font-semibold">Histórico da Conversa por Voz</DialogTitle>
-                  </DialogHeader>
-                  <ScrollArea className="h-96 pr-4">
-                    <div className="space-y-6">
-                      {messages.map((message) => (
-                        <div key={message.id} className="border-b border-gray-200 pb-4 last:border-b-0">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              message.role === 'user' 
-                                ? 'bg-blue-100 text-blue-700' 
-                                : 'bg-purple-100 text-purple-700'
-                            }`}>
-                              {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Badge variant={message.role === 'user' ? 'default' : 'secondary'} className="font-medium">
-                                {message.role === 'user' ? 'Você' : 'Tutor IA'}
-                              </Badge>
-                              <Badge variant="outline" className="text-xs">
-                                <Volume2 className="w-3 h-3 mr-1" />
-                                Voz
-                              </Badge>
-                              <span className="text-xs text-gray-600 font-medium">
-                                {message.timestamp.toLocaleTimeString('pt-BR')}
-                              </span>
-                              {message.duration && (
-                                <span className="text-xs text-gray-500">
-                                  ({message.duration.toFixed(1)}s)
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="ml-11">
-                            <p className="text-sm leading-relaxed text-gray-800">{message.content}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          
-          {/* AI Avatar Section - Takes more space */}
-          <div className="lg:col-span-3">
-            <Card className="h-fit shadow-xl bg-white border border-gray-200">
-              <CardContent className="p-0">
-                <VoiceAvatar />
-                
-                {/* Voice Instructions */}
-                <div className="p-8 border-t border-gray-200 bg-gray-50">
-                  <div className="text-center space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Como funciona</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <Mic className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                        <p className="font-medium text-gray-800">Fale naturalmente</p>
-                        <p className="text-gray-600">Sem necessidade de apertar botões</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <Volume2 className="w-8 h-8 text-red-600 mx-auto mb-2" />
-                        <p className="font-medium text-gray-800">Interrupção inteligente</p>
-                        <p className="text-gray-600">Fale durante a resposta para interromper</p>
-                      </div>
-                      <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <Bot className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                        <p className="font-medium text-gray-800">Conversa fluida</p>
-                        <p className="text-gray-600">Como falar com um professor</p>
-                      </div>
-                    </div>
-                    
-                    {isPaused && (
-                      <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-                        <p className="text-yellow-800 font-medium">Conversa pausada</p>
-                        <p className="text-yellow-700 text-sm">Clique em "Retomar" para continuar a conversa</p>
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <CardTitle className="text-2xl font-bold text-gray-800">Tutor de Voz IA</CardTitle>
+                  <p className="text-gray-600 mt-1">Conversação contínua com inteligência artificial</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  {formatTime(conversationTime)}
+                </Badge>
+                <Badge variant="outline" className="bg-gray-50 text-gray-700">
+                  {messages.length - 1} mensagens
+                </Badge>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
 
-          {/* Conversation Flow - Compact side panel */}
-          <div className="lg:col-span-2">
-            <Card className="shadow-xl bg-white border border-gray-200">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
-                <CardTitle className="flex items-center space-x-2">
-                  <MessageSquare className="w-5 h-5 text-blue-700" />
-                  <span className="text-gray-900 font-semibold">Conversa em Andamento</span>
-                  <Badge variant="secondary" className="ml-auto font-medium text-gray-700">
-                    {messages.filter(m => m.role === 'user').length} falas
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <ScrollArea className="h-96 pr-4">
-                  <div className="space-y-4">
-                    {messages.slice(-8).map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex items-start space-x-3 ${
-                          message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                        }`}
-                      >
-                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md ${
-                          message.role === 'user' 
-                            ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' 
-                            : 'bg-gradient-to-br from-purple-600 to-indigo-700 text-white'
-                        }`}>
-                          {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                        </div>
-                        <div className={`flex-1 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                          <div className={`inline-block p-3 rounded-lg shadow-sm max-w-xs ${
-                            message.role === 'user'
-                              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white ml-auto'
-                              : 'bg-white border border-gray-300 text-gray-900'
-                          }`}>
-                            <p className="text-sm leading-relaxed">{message.content}</p>
-                            <div className="mt-1 flex items-center space-x-1 opacity-70">
-                              <Volume2 className="w-3 h-3" />
-                              <span className="text-xs">
-                                {message.timestamp.toLocaleTimeString('pt-BR', { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
-                                })}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Voice Interface */}
+          <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-0">
+            <CardContent className="p-8">
+              <VoiceAvatar />
+              
+              {/* Controls */}
+              <div className="flex justify-center space-x-4 mt-8">
+                <Button
+                  onClick={togglePause}
+                  variant={isPaused ? "default" : "outline"}
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  {isPaused ? (
+                    <>
+                      <Play className="w-5 h-5" />
+                      <span>Iniciar</span>
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="w-5 h-5" />
+                      <span>Pausar</span>
+                    </>
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={clearConversation}
+                  variant="outline"
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  <span>Reiniciar</span>
+                </Button>
+                
+                <Button
+                  onClick={testMicrophone}
+                  variant="outline"
+                  size="lg"
+                  className="flex items-center space-x-2"
+                >
+                  <TestTube className="w-5 h-5" />
+                  <span>Testar Mic</span>
+                </Button>
+              </div>
+
+              {currentTranscription && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-600 font-medium mb-1">Transcrevendo:</p>
+                  <p className="text-blue-800">{currentTranscription}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Conversation History */}
+          <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-0">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-800">Conversa</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-96 overflow-y-auto space-y-4 mb-4 pr-2">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
+                        message.role === 'user'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      <div className="flex items-start space-x-2">
+                        {message.role === 'assistant' && (
+                          <Bot className="w-4 h-4 mt-0.5 text-blue-600" />
+                        )}
+                        {message.role === 'user' && (
+                          <Mic className="w-4 h-4 mt-0.5 text-blue-100" />
+                        )}
+                        <div className="flex-1">
+                          <p className="text-sm leading-relaxed">{message.content}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-xs opacity-70">
+                              {message.timestamp.toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                            {message.duration && (
+                              <span className="text-xs opacity-70">
+                                {message.duration.toFixed(1)}s
                               </span>
-                            </div>
+                            )}
                           </div>
                         </div>
                       </div>
-                    ))}
-                    <div ref={messagesEndRef} />
+                    </div>
                   </div>
-                </ScrollArea>
-                
-                {messages.length > 8 && (
-                  <div className="mt-4 text-center">
-                    <Button
-                      onClick={() => setShowHistory(true)}
-                      variant="outline"
-                      size="sm"
-                      className="text-gray-600"
-                    >
-                      Ver conversa completa ({messages.length} mensagens)
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
