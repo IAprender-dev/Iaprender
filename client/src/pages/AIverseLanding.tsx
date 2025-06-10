@@ -159,53 +159,53 @@ export default function AIverseLanding() {
               Modelos de Linguagem
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-emerald-100 hover:border-emerald-200">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Brain className="h-6 w-6 text-emerald-600" />
+                  <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Brain className="h-6 w-6 text-emerald-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">OpenAI</h4>
-                  <p className="text-sm text-gray-600">GPT-4o, GPT-4o mini</p>
+                  <p className="text-sm text-emerald-700 font-medium">GPT-4o, GPT-4o mini</p>
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-blue-100 hover:border-blue-200">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="h-6 w-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="h-6 w-6 text-blue-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Google Gemini</h4>
-                  <p className="text-sm text-gray-600">1.5 Pro, 1.5 Flash, 2.0</p>
+                  <p className="text-sm text-blue-700 font-medium">1.5 Pro, 1.5 Flash, 2.0</p>
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-orange-100 hover:border-orange-200">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Bot className="h-6 w-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Bot className="h-6 w-6 text-orange-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Claude</h4>
-                  <p className="text-sm text-gray-600">3 Haiku, 3 Opus, 3.5 Sonnet</p>
+                  <p className="text-sm text-orange-700 font-medium">3 Haiku, 3 Opus, 3.5 Sonnet</p>
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-purple-100 hover:border-purple-200">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Zap className="h-6 w-6 text-purple-600" />
+                  <div className="w-12 h-12 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Zap className="h-6 w-6 text-purple-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Llama 3</h4>
-                  <p className="text-sm text-gray-600">Meta AI</p>
+                  <p className="text-sm text-purple-700 font-medium">Meta AI</p>
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-indigo-100 hover:border-indigo-200">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Star className="h-6 w-6 text-indigo-600" />
+                  <div className="w-12 h-12 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Star className="h-6 w-6 text-indigo-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Mistral & Command R</h4>
-                  <p className="text-sm text-gray-600">R Plus Models</p>
+                  <p className="text-sm text-indigo-700 font-medium">R Plus Models</p>
                 </CardContent>
               </Card>
             </div>
@@ -217,41 +217,59 @@ export default function AIverseLanding() {
               <Image className="mr-3 h-6 w-6 text-purple-600" />
               Geração de Imagens
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-              <Card className="hover:shadow-lg transition-shadow">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+              <Card className="hover:shadow-lg transition-shadow border-pink-100 hover:border-pink-200 bg-gradient-to-br from-pink-50 to-rose-50">
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-semibold text-gray-900 mb-1">Stable Diffusion</h4>
-                  <p className="text-xs text-gray-600">3.0, 3.5</p>
+                  <div className="w-8 h-8 bg-pink-100 border border-pink-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Image className="h-4 w-4 text-pink-700" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Stable Diffusion</h4>
+                  <p className="text-xs text-pink-700 font-medium">3.0, 3.5</p>
                 </CardContent>
               </Card>
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-violet-100 hover:border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50">
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-semibold text-gray-900 mb-1">Flux</h4>
-                  <p className="text-xs text-gray-600">1.0 Dev, Pro, Ultra</p>
+                  <div className="w-8 h-8 bg-violet-100 border border-violet-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Sparkles className="h-4 w-4 text-violet-700" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Flux</h4>
+                  <p className="text-xs text-violet-700 font-medium">1.0 Dev, Pro, Ultra</p>
                 </CardContent>
               </Card>
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-cyan-100 hover:border-cyan-200 bg-gradient-to-br from-cyan-50 to-teal-50">
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-semibold text-gray-900 mb-1">Ideogram</h4>
-                  <p className="text-xs text-gray-600">2, 2-Turbo</p>
+                  <div className="w-8 h-8 bg-cyan-100 border border-cyan-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Star className="h-4 w-4 text-cyan-700" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Ideogram</h4>
+                  <p className="text-xs text-cyan-700 font-medium">2, 2-Turbo</p>
                 </CardContent>
               </Card>
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-emerald-100 hover:border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50">
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-semibold text-gray-900 mb-1">Google Imagen</h4>
-                  <p className="text-xs text-gray-600">3, 3-fast</p>
+                  <div className="w-8 h-8 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Brain className="h-4 w-4 text-emerald-700" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Google Imagen</h4>
+                  <p className="text-xs text-emerald-700 font-medium">3, 3-fast</p>
                 </CardContent>
               </Card>
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-amber-100 hover:border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50">
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-semibold text-gray-900 mb-1">DALL-E 3</h4>
-                  <p className="text-xs text-gray-600">OpenAI</p>
+                  <div className="w-8 h-8 bg-amber-100 border border-amber-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Zap className="h-4 w-4 text-amber-700" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">DALL-E 3</h4>
+                  <p className="text-xs text-amber-700 font-medium">OpenAI</p>
                 </CardContent>
               </Card>
-              <Card className="hover:shadow-lg transition-shadow">
+              <Card className="hover:shadow-lg transition-shadow border-indigo-100 hover:border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50">
                 <CardContent className="p-4 text-center">
-                  <h4 className="font-semibold text-gray-900 mb-1">Recraft AI</h4>
-                  <p className="text-xs text-gray-600">Design profissional</p>
+                  <div className="w-8 h-8 bg-indigo-100 border border-indigo-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                    <Target className="h-4 w-4 text-indigo-700" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Recraft AI</h4>
+                  <p className="text-xs text-indigo-700 font-medium">Design profissional</p>
                 </CardContent>
               </Card>
             </div>
@@ -265,16 +283,22 @@ export default function AIverseLanding() {
                 Criação de Vídeos
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-red-100 hover:border-red-200 bg-gradient-to-br from-red-50 to-rose-50">
                   <CardContent className="p-4 text-center">
-                    <h4 className="font-semibold text-gray-900 mb-1">Runway</h4>
-                    <p className="text-xs text-gray-600">Video Gen-3 Alpha</p>
+                    <div className="w-8 h-8 bg-red-100 border border-red-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <Video className="h-4 w-4 text-red-700" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Runway</h4>
+                    <p className="text-xs text-red-700 font-medium">Video Gen-3 Alpha</p>
                   </CardContent>
                 </Card>
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-orange-100 hover:border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
                   <CardContent className="p-4 text-center">
-                    <h4 className="font-semibold text-gray-900 mb-1">Luma AI</h4>
-                    <p className="text-xs text-gray-600">Alta qualidade</p>
+                    <div className="w-8 h-8 bg-orange-100 border border-orange-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <Play className="h-4 w-4 text-orange-700" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Luma AI</h4>
+                    <p className="text-xs text-orange-700 font-medium">Alta qualidade</p>
                   </CardContent>
                 </Card>
               </div>
@@ -286,28 +310,40 @@ export default function AIverseLanding() {
                 Áudio e Narração
               </h3>
               <div className="grid grid-cols-2 gap-4">
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-green-100 hover:border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
                   <CardContent className="p-4 text-center">
-                    <h4 className="font-semibold text-gray-900 mb-1">ElevenLabs</h4>
-                    <p className="text-xs text-gray-600">Vozes realistas</p>
+                    <div className="w-8 h-8 bg-green-100 border border-green-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <Mic className="h-4 w-4 text-green-700" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">ElevenLabs</h4>
+                    <p className="text-xs text-green-700 font-medium">Vozes realistas</p>
                   </CardContent>
                 </Card>
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-teal-100 hover:border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-50">
                   <CardContent className="p-4 text-center">
-                    <h4 className="font-semibold text-gray-900 mb-1">OpenAI Voice</h4>
-                    <p className="text-xs text-gray-600">Síntese natural</p>
+                    <div className="w-8 h-8 bg-teal-100 border border-teal-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <Bot className="h-4 w-4 text-teal-700" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">OpenAI Voice</h4>
+                    <p className="text-xs text-teal-700 font-medium">Síntese natural</p>
                   </CardContent>
                 </Card>
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-blue-100 hover:border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
                   <CardContent className="p-4 text-center">
-                    <h4 className="font-semibold text-gray-900 mb-1">Deepgram AI</h4>
-                    <p className="text-xs text-gray-600">Transcrição</p>
+                    <div className="w-8 h-8 bg-blue-100 border border-blue-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <FileText className="h-4 w-4 text-blue-700" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Deepgram AI</h4>
+                    <p className="text-xs text-blue-700 font-medium">Transcrição</p>
                   </CardContent>
                 </Card>
-                <Card className="hover:shadow-lg transition-shadow">
+                <Card className="hover:shadow-lg transition-shadow border-purple-100 hover:border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50">
                   <CardContent className="p-4 text-center">
-                    <h4 className="font-semibold text-gray-900 mb-1">Assembly AI</h4>
-                    <p className="text-xs text-gray-600">Análise áudio</p>
+                    <div className="w-8 h-8 bg-purple-100 border border-purple-200 rounded-lg flex items-center justify-center mx-auto mb-2">
+                      <BarChart className="h-4 w-4 text-purple-700" />
+                    </div>
+                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Assembly AI</h4>
+                    <p className="text-xs text-purple-700 font-medium">Análise áudio</p>
                   </CardContent>
                 </Card>
               </div>
