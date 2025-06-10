@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-import iaverseLogo from "@/assets/IAverse.png";
+import aiverseLogo from "@assets/Design sem nome (5)_1749568909858.png";
 
 interface StudySession {
   id: number;
@@ -141,15 +141,15 @@ export default function StudentDashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard do Aluno - IAverse</title>
+        <title>Dashboard do Aluno - AIverse</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         {/* Mobile Header */}
         <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-blue-100 p-4 flex items-center justify-between sticky top-0 z-50">
           <div className="flex items-center gap-3">
-            <img src={iaverseLogo} alt="IAverse" className="h-8 w-8" />
-            <span className="font-bold text-slate-800">IAverse</span>
+            <img src={aiverseLogo} alt="AIverse" className="h-8 w-8" />
+            <span className="font-bold text-slate-800">AIverse</span>
           </div>
           <Button 
             variant="ghost" 
@@ -172,9 +172,9 @@ export default function StudentDashboard() {
               {/* Logo */}
               <div className="p-6 border-b border-blue-100">
                 <div className="flex items-center gap-3">
-                  <img src={iaverseLogo} alt="IAverse" className="h-8 w-8" />
+                  <img src={aiverseLogo} alt="AIverse" className="h-8 w-8" />
                   <div>
-                    <h1 className="font-bold text-slate-800">IAverse</h1>
+                    <h1 className="font-bold text-slate-800">AIverse</h1>
                     <p className="text-xs text-slate-600">Portal do Aluno</p>
                   </div>
                 </div>

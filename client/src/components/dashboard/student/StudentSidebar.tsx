@@ -11,7 +11,7 @@ import {
   Bot,
   Users
 } from "lucide-react";
-import iaverseLogo from "@/assets/IAverse.png";
+import aiverseLogo from "@assets/Design sem nome (5)_1749568909858.png";
 
 export default function StudentSidebar() {
   const [location] = useLocation();
@@ -77,8 +77,8 @@ export default function StudentSidebar() {
     <aside className="hidden md:block w-64 bg-white border-r border-neutral-200 h-screen overflow-y-auto">
       <div className="sticky top-0 z-10 bg-white p-4 border-b border-neutral-200">
         <Link href="/" className="flex items-center space-x-3">
-          <img src={iaverseLogo} alt="IAverse" className="w-8 h-8" />
-          <span className="text-2xl font-bold text-gray-900">IAverse</span>
+          <img src={aiverseLogo} alt="AIverse" className="w-8 h-8" />
+          <span className="text-2xl font-bold text-gray-900">AIverse</span>
         </Link>
       </div>
       <nav className="p-4">
