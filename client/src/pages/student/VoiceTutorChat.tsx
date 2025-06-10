@@ -186,47 +186,24 @@ export default function VoiceTutorChat() {
   };
 
   const handleRealtimeMessage = (message: any) => {
-    console.log('Frontend received message:', message.type, message);
+    console.log('Received message:', message.type);
     
     switch (message.type) {
       case 'session.created':
-        console.log('Session created - updating UI state');
-        setConnectionState('connected');
-        setIsConnected(true);
-        setConversationState('listening');
-        
-        console.log('Audio context available:', !!audioContextRef.current);
-        console.log('Stream available:', !!streamRef.current);
-        console.log('WebSocket available:', !!wsRef.current);
-        
-        // Start audio immediately
-        if (wsRef.current && audioContextRef.current && streamRef.current) {
-          console.log('Starting audio processing...');
-          setupAudioProcessing(audioContextRef.current, streamRef.current, wsRef.current);
-          
-          toast({
-            title: "Conectado!",
-            description: "Conversa por voz iniciada. Fale naturalmente.",
-            variant: "default",
-          });
-        } else {
-          console.error('Missing required objects for audio setup');
-        }
+        console.log('Session created');
         break;
         
       case 'session.updated':
-        console.log('Session updated successfully - now activating connection');
+        console.log('Session configured - activating voice chat');
         setConnectionState('connected');
         setIsConnected(true);
         setConversationState('listening');
         
-        // Now start audio processing after session is fully configured
         if (wsRef.current && audioContextRef.current && streamRef.current) {
           setupAudioProcessing(audioContextRef.current, streamRef.current, wsRef.current);
-          
           toast({
             title: "Conectado!",
-            description: "Conversa por voz iniciada. Fale naturalmente.",
+            description: "Conversa por voz ativa. Fale naturalmente.",
             variant: "default",
           });
         }
