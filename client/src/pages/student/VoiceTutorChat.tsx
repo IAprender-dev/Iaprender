@@ -180,15 +180,18 @@ export default function VoiceTutorChat() {
     
     switch (message.type) {
       case 'session.created':
-        console.log('Session created, now sending configuration');
+        console.log('Session created, configuring for Portuguese tutor');
+        setConnectionState('connected');
+        setIsConnected(true);
+        setConversationState('listening');
         
-        // Send session configuration
+        // Send session configuration immediately
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({
             type: 'session.update',
             session: {
               modalities: ['text', 'audio'],
-              instructions: `Você é um tutor educacional brasileiro. Mantenha respostas concisas e seja amigável. Nome do estudante: ${user?.firstName || 'Estudante'}`,
+              instructions: 'Você é um tutor educacional brasileiro. Fale em português, seja amigável e mantenha respostas concisas.',
               voice: 'alloy',
               input_audio_format: 'pcm16',
               output_audio_format: 'pcm16',
@@ -200,23 +203,12 @@ export default function VoiceTutorChat() {
                 threshold: 0.5,
                 prefix_padding_ms: 300,
                 silence_duration_ms: 500
-              },
-              temperature: 0.8,
-              max_response_output_tokens: 4096
+              }
             }
           }));
-        }
-        break;
-        
-      case 'session.updated':
-        console.log('Session configured successfully - now starting audio');
-        setConnectionState('connected');
-        setIsConnected(true);
-        setConversationState('listening');
-        
-        // Only now start audio processing after session is fully configured
-        if (wsRef.current && audioContextRef.current && streamRef.current) {
-          setupAudioProcessing(audioContextRef.current, streamRef.current, wsRef.current);
+          
+          // Start audio processing immediately
+          setupAudioProcessing(audioContextRef.current!, streamRef.current!, wsRef.current);
           
           toast({
             title: "Conectado!",
@@ -224,6 +216,10 @@ export default function VoiceTutorChat() {
             variant: "default",
           });
         }
+        break;
+        
+      case 'session.updated':
+        console.log('Session updated successfully');
         break;
         
       case 'conversation.item.input_audio_transcription.completed':

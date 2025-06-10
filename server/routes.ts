@@ -1804,7 +1804,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     console.log('Client connected to Realtime proxy');
 
     // Connect to OpenAI Realtime API
-    const openaiWs = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01', {
+    const openaiWs = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2025-06-03', {
       headers: {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'OpenAI-Beta': 'realtime=v1'
@@ -1812,22 +1812,51 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     });
 
     let isConnected = false;
+    let messageQueue: any[] = [];
 
     // Proxy messages from client to OpenAI
     ws.on('message', (data) => {
-      if (openaiWs.readyState === WebSocket.OPEN && isConnected) {
-        console.log('Forwarding message to OpenAI:', data.toString().substring(0, 100) + '...');
-        openaiWs.send(data);
-      } else {
-        console.log('OpenAI not ready, queuing message');
+      try {
+        const message = JSON.parse(data.toString());
+        console.log('Client message type:', message.type);
+        
+        if (openaiWs.readyState === WebSocket.OPEN && isConnected) {
+          console.log('Forwarding to OpenAI:', message.type);
+          openaiWs.send(data);
+        } else {
+          console.log('Queuing message:', message.type);
+          messageQueue.push(data);
+        }
+      } catch (error) {
+        console.error('Failed to parse client message:', error);
       }
     });
 
+    // Process queued messages when connected
+    const processQueue = () => {
+      if (openaiWs.readyState === WebSocket.OPEN && isConnected) {
+        while (messageQueue.length > 0) {
+          const queuedMessage = messageQueue.shift();
+          console.log('Processing queued message');
+          openaiWs.send(queuedMessage);
+        }
+      }
+    };
+
     // Proxy messages from OpenAI to client
     openaiWs.on('message', (data) => {
-      if (ws.readyState === WebSocket.OPEN) {
-        console.log('Forwarding message from OpenAI:', data.toString().substring(0, 100) + '...');
-        ws.send(data);
+      try {
+        const message = JSON.parse(data.toString());
+        console.log('OpenAI message type:', message.type);
+        
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(data);
+        }
+      } catch (error) {
+        console.error('Failed to parse OpenAI message:', error);
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(data); // Forward raw data if parsing fails
+        }
       }
     });
 
@@ -1835,21 +1864,11 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     openaiWs.on('open', () => {
       console.log('Connected to OpenAI Realtime API');
       isConnected = true;
-      
-      // Send connection confirmation to client
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'session.created',
-          session: {
-            id: 'proxy-session',
-            object: 'realtime.session'
-          }
-        }));
-      }
+      processQueue();
     });
 
     openaiWs.on('close', (code, reason) => {
-      console.log('OpenAI Realtime API connection closed:', code, reason.toString());
+      console.log('OpenAI Realtime API connection closed:', code, reason?.toString());
       isConnected = false;
       if (ws.readyState === WebSocket.OPEN) {
         ws.close(code, reason);
@@ -1868,6 +1887,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     ws.on('close', (code, reason) => {
       console.log('Client disconnected from Realtime proxy:', code, reason?.toString());
       isConnected = false;
+      messageQueue = [];
       if (openaiWs.readyState === WebSocket.OPEN) {
         openaiWs.close();
       }
