@@ -52,17 +52,32 @@ const answerSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Multer configuration for file uploads
+  // Multer configuration for file uploads with enhanced audio support
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-      fileSize: 25 * 1024 * 1024, // 25MB limit
+      fileSize: 25 * 1024 * 1024, // 25MB limit for audio files
     },
     fileFilter: (req, file, cb) => {
-      if (file.mimetype.startsWith('audio/') || file.mimetype === 'application/octet-stream') {
+      console.log('File filter check:', { mimetype: file.mimetype, originalname: file.originalname });
+      
+      // Accept various audio formats including webm
+      const allowedTypes = [
+        'audio/webm',
+        'audio/wav', 
+        'audio/mp3',
+        'audio/m4a',
+        'audio/ogg',
+        'audio/mpeg',
+        'video/webm', // Some browsers send webm as video
+        'application/octet-stream' // Fallback for some browsers
+      ];
+      
+      if (allowedTypes.includes(file.mimetype) || file.originalname.endsWith('.webm')) {
         cb(null, true);
       } else {
-        cb(new Error('Only audio files are allowed'));
+        console.log('File type rejected:', file.mimetype);
+        cb(new Error(`File type not allowed: ${file.mimetype}`) as any);
       }
     }
   });
@@ -1586,7 +1601,7 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
   });
 
   // Real-time audio transcription endpoint using OpenAI Whisper
-  app.post('/api/ai/transcribe-audio', upload.single('audio'), authenticate, async (req: Request, res: Response) => {
+  app.post('/api/ai/transcribe-audio', authenticate, upload.single('audio'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         console.log('No file received in request');
@@ -1603,9 +1618,13 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
         apiKey: process.env.OPENAI_API_KEY,
       });
 
-      // Create a temporary file for OpenAI API
+      // Create a temporary file for OpenAI API with proper extension
       const tempDir = os.tmpdir();
-      const tempFilePath = path.join(tempDir, `audio_${Date.now()}_${req.session.user?.id}.webm`);
+      const fileExtension = req.file.mimetype.includes('webm') ? 'webm' : 
+                           req.file.mimetype.includes('wav') ? 'wav' :
+                           req.file.mimetype.includes('mp3') ? 'mp3' :
+                           req.file.mimetype.includes('m4a') ? 'm4a' : 'webm';
+      const tempFilePath = path.join(tempDir, `audio_${Date.now()}_${req.session.user?.id || 'user'}.${fileExtension}`);
       
       try {
         // Write buffer to temporary file
