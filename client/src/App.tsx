@@ -8,7 +8,7 @@ import { StudyPlanProvider } from "@/lib/StudyPlanContext";
 import { ThemeProvider } from "next-themes";
 
 // Pages
-import Home from "@/pages/Home";
+import AIverseLanding from "@/pages/AIverseLanding";
 import Auth from "@/pages/Auth";
 import Courses from "@/pages/Courses";
 import CourseDetails from "@/pages/CourseDetails";
@@ -70,7 +70,7 @@ function Router() {
   return (
     <Switch>
       {/* Public routes */}
-      <Route path="/" component={Home} />
+      <Route path="/" component={AIverseLanding} />
       <Route path="/auth" component={Auth} />
       <Route path="/cursos" component={Courses} />
       <Route path="/curso/:id" component={CourseDetails} />
