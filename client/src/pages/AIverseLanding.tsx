@@ -366,42 +366,7 @@ export default function AIverseLanding() {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Director Dashboard */}
-            <Card className="border-2 border-amber-200 bg-amber-50/30 hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-amber-600 rounded-xl flex items-center justify-center mb-6">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Diretores</h3>
-                <p className="text-gray-600 mb-6">
-                  Gestão estratégica da instituição com insights avançados e relatórios executivos.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Dashboard executivo completo
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Analytics institucional
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Gestão de equipes
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Relatórios de performance
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Controle de custos IA
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Teacher Dashboard */}
             <Card className="border-2 border-blue-200 bg-blue-50/30 hover:shadow-xl transition-all duration-300">
               <CardContent className="p-8">
