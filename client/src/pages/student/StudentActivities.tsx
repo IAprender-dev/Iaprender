@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Loader2, BookOpen, Trophy, Target, CheckCircle2, XCircle, RotateCcw, Lightbulb, Star, Award, Flame, Brain, Sparkles, ArrowRight } from 'lucide-react';
+import { Loader2, BookOpen, Trophy, Target, CheckCircle2, XCircle, RotateCcw, Lightbulb, Star, Award, Flame, Brain, Sparkles, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from "@/hooks/use-toast";
@@ -180,6 +180,18 @@ export default function StudentActivities() {
   if (!currentTopic || (!currentQuestion && !generateQuestionMutation.isPending)) {
     return (
       <div className="max-w-4xl mx-auto space-y-6 bg-white min-h-screen p-6">
+        {/* Botão Voltar */}
+        <div className="mb-6">
+          <Button
+            onClick={() => window.history.back()}
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            size="sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </div>
+
         {/* Header com AIverse */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3">
@@ -300,6 +312,18 @@ export default function StudentActivities() {
   if (currentQuestion) {
     return (
       <div className="max-w-4xl mx-auto space-y-6 bg-white min-h-screen p-6">
+        {/* Botão Voltar */}
+        <div className="mb-6">
+          <Button
+            onClick={() => window.history.back()}
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            size="sm"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+        </div>
+
         {/* Header com estatísticas */}
         <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
           <CardContent className="p-4">
