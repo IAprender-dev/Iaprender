@@ -10,6 +10,7 @@ import { Loader2, BookOpen, Trophy, Target, CheckCircle2, XCircle, RotateCcw, Li
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from 'wouter';
 
 interface Question {
   question: string;
@@ -36,6 +37,7 @@ interface GameStats {
 }
 
 export default function StudentActivities() {
+  const [, navigate] = useLocation();
   const [currentTopic, setCurrentTopic] = useState('');
   const [inputTopic, setInputTopic] = useState('');
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -54,6 +56,10 @@ export default function StudentActivities() {
   const [questionHistory, setQuestionHistory] = useState<string[]>([]);
 
   const { toast } = useToast();
+
+  const handleGoBack = () => {
+    navigate('/student');
+  };
 
   // Exemplos de temas para ajudar o aluno
   const topicExamples = [
@@ -183,7 +189,7 @@ export default function StudentActivities() {
         {/* Botão Voltar */}
         <div className="mb-6">
           <Button
-            onClick={() => window.history.back()}
+            onClick={handleGoBack}
             className="bg-blue-600 text-white hover:bg-blue-700"
             size="sm"
           >
@@ -315,7 +321,7 @@ export default function StudentActivities() {
         {/* Botão Voltar */}
         <div className="mb-6">
           <Button
-            onClick={() => window.history.back()}
+            onClick={handleGoBack}
             className="bg-blue-600 text-white hover:bg-blue-700"
             size="sm"
           >
