@@ -232,7 +232,7 @@ export default function StudentActivities() {
           <CardContent className="space-y-6">
             {/* Input do tema */}
             <div className="space-y-2">
-              <Label htmlFor="topic" className="text-base font-medium">
+              <Label htmlFor="topic" className="text-base font-medium text-gray-800">
                 Digite seu tema de estudo:
               </Label>
               <Input
@@ -240,7 +240,7 @@ export default function StudentActivities() {
                 value={inputTopic}
                 onChange={(e) => setInputTopic(e.target.value)}
                 placeholder="Ex: Verbos no presente, Frações, Sistema solar..."
-                className="text-lg p-4 border-2 border-gray-300 focus:border-blue-500"
+                className="text-lg p-4 border-2 border-gray-300 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
                 onKeyPress={(e) => e.key === 'Enter' && handleTopicSubmit()}
               />
             </div>
@@ -276,7 +276,7 @@ export default function StudentActivities() {
                     variant="outline"
                     size="sm"
                     onClick={() => setInputTopic(example)}
-                    className="text-xs hover:bg-blue-50 hover:border-blue-300"
+                    className="text-xs hover:bg-blue-50 hover:border-blue-300 text-gray-700 border-gray-300"
                   >
                     {example}
                   </Button>
@@ -368,7 +368,7 @@ export default function StudentActivities() {
                       ${!shouldHighlight ? 'border-gray-200' : ''}
                     `}>
                       <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-                      <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-base">
+                      <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-base text-gray-800">
                         {option}
                       </Label>
                       {showExplanation && isCorrect && (
@@ -397,7 +397,7 @@ export default function StudentActivities() {
                       <h4 className={`font-semibold mb-2 ${lastAnswerCorrect ? 'text-green-800' : 'text-orange-800'}`}>
                         {lastAnswerCorrect ? '🎉 Parabéns! Resposta correta!' : '📚 Vamos aprender juntos!'}
                       </h4>
-                      <p className="text-gray-700 leading-relaxed">
+                      <p className="text-gray-800 leading-relaxed font-medium">
                         {currentQuestion.explanation}
                       </p>
                     </div>
