@@ -56,10 +56,12 @@ export default function AIverseLanding() {
             
             <div className="flex items-center space-x-4">
               <Link href="/auth">
-                <Button variant="ghost" size="sm">Login</Button>
+                <Button variant="ghost" size="sm" className="text-gray-700 hover:text-indigo-700 hover:bg-indigo-50">
+                  Login
+                </Button>
               </Link>
               <Link href="/auth">
-                <Button size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white border-0">
                   Explorar AIverse
                 </Button>
               </Link>
@@ -98,7 +100,7 @@ export default function AIverseLanding() {
                   <Rocket className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 px-8 py-3">
+              <Button size="lg" variant="outline" className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-800 px-8 py-3">
                 Explorar Ferramentas
                 <Play className="ml-2 h-5 w-5" />
               </Button>
@@ -159,9 +161,9 @@ export default function AIverseLanding() {
               Modelos de Linguagem
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-              <Card className="hover:shadow-lg transition-shadow border-emerald-100 hover:border-emerald-200">
+              <Card className="hover:shadow-lg transition-shadow border-emerald-100 hover:border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-emerald-100 border border-emerald-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Brain className="h-6 w-6 text-emerald-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">OpenAI</h4>
@@ -169,9 +171,9 @@ export default function AIverseLanding() {
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow border-blue-100 hover:border-blue-200">
+              <Card className="hover:shadow-lg transition-shadow border-blue-100 hover:border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-blue-100 border border-blue-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Sparkles className="h-6 w-6 text-blue-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Google Gemini</h4>
@@ -179,9 +181,9 @@ export default function AIverseLanding() {
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow border-orange-100 hover:border-orange-200">
+              <Card className="hover:shadow-lg transition-shadow border-orange-100 hover:border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-orange-100 border border-orange-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Bot className="h-6 w-6 text-orange-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Claude</h4>
@@ -189,9 +191,9 @@ export default function AIverseLanding() {
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow border-purple-100 hover:border-purple-200">
+              <Card className="hover:shadow-lg transition-shadow border-purple-100 hover:border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-purple-100 border border-purple-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Zap className="h-6 w-6 text-purple-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Llama 3</h4>
@@ -199,9 +201,9 @@ export default function AIverseLanding() {
                 </CardContent>
               </Card>
               
-              <Card className="hover:shadow-lg transition-shadow border-indigo-100 hover:border-indigo-200">
+              <Card className="hover:shadow-lg transition-shadow border-indigo-100 hover:border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50">
                 <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-indigo-100 border border-indigo-200 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Star className="h-6 w-6 text-indigo-700" />
                   </div>
                   <h4 className="font-semibold text-gray-900 mb-2">Mistral & Command R</h4>
