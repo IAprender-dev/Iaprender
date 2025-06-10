@@ -155,16 +155,16 @@ export default function AITutorChat() {
   // Enhanced typing animation
   const TypingIndicator = () => (
     <div className="flex items-start space-x-3">
-      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-md">
+      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-indigo-700 text-white flex items-center justify-center shadow-md">
         <Bot className="w-5 h-5" />
       </div>
-      <div className="bg-white border border-gray-200 text-gray-900 p-4 rounded-lg shadow-sm max-w-xs">
+      <div className="bg-white border border-gray-300 text-gray-900 p-4 rounded-lg shadow-sm max-w-xs">
         <div className="flex space-x-1">
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">Preparando explicação didática...</p>
+        <p className="text-xs text-gray-700 mt-2 font-medium">Preparando explicação didática...</p>
       </div>
     </div>
   );
@@ -176,12 +176,12 @@ export default function AITutorChat() {
       </Helmet>
       
       {/* Enhanced Header */}
-      <div className="bg-white/90 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-10 shadow-sm">
+      <div className="bg-white backdrop-blur-sm border-b border-gray-300 sticky top-0 z-10 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link href="/aluno/dashboard">
-                <Button variant="ghost" size="sm" className="hover:bg-blue-50 text-gray-700">
+                <Button variant="ghost" size="sm" className="hover:bg-blue-50 text-gray-800 font-medium">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Dashboard
                 </Button>
@@ -189,14 +189,14 @@ export default function AITutorChat() {
               <img src={aiverseLogo} alt="AIverse" className="h-8 w-auto" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Tutor IA</h1>
-                <p className="text-sm text-gray-500">Assistente educacional inteligente</p>
+                <p className="text-sm text-gray-700 font-medium">Assistente educacional inteligente</p>
               </div>
             </div>
             
             {/* Session Stats & Actions */}
             <div className="flex items-center space-x-4">
-              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                <Clock className="w-4 h-4" />
+              <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-700 bg-gray-100 px-3 py-1 rounded-full font-medium">
+                <Clock className="w-4 h-4 text-gray-600" />
                 <span>{formatTime(conversationTime)}</span>
               </div>
               
@@ -204,7 +204,7 @@ export default function AITutorChat() {
                 onClick={clearConversation}
                 variant="outline"
                 size="sm"
-                className="bg-white/50 hover:bg-white"
+                className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 font-medium"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Nova conversa
@@ -212,38 +212,38 @@ export default function AITutorChat() {
               
               <Dialog open={showHistory} onOpenChange={setShowHistory}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-white/50 hover:bg-white">
+                  <Button variant="outline" size="sm" className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 font-medium">
                     <History className="w-4 h-4 mr-2" />
                     Histórico ({messages.filter(m => m.role === 'user').length})
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[80vh]">
                   <DialogHeader>
-                    <DialogTitle>Histórico da Conversa Educacional</DialogTitle>
+                    <DialogTitle className="text-gray-900 font-semibold">Histórico da Conversa Educacional</DialogTitle>
                   </DialogHeader>
                   <ScrollArea className="h-96 pr-4">
                     <div className="space-y-6">
                       {messages.map((message) => (
-                        <div key={message.id} className="border-b pb-4 last:border-b-0">
+                        <div key={message.id} className="border-b border-gray-200 pb-4 last:border-b-0">
                           <div className="flex items-center space-x-3 mb-2">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                               message.role === 'user' 
-                                ? 'bg-blue-100 text-blue-600' 
-                                : 'bg-purple-100 text-purple-600'
+                                ? 'bg-blue-100 text-blue-700' 
+                                : 'bg-purple-100 text-purple-700'
                             }`}>
                               {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                             </div>
                             <div className="flex items-center space-x-2">
-                              <Badge variant={message.role === 'user' ? 'default' : 'secondary'}>
+                              <Badge variant={message.role === 'user' ? 'default' : 'secondary'} className="font-medium">
                                 {message.role === 'user' ? 'Você' : 'Tutor IA'}
                               </Badge>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-600 font-medium">
                                 {message.timestamp.toLocaleTimeString('pt-BR')}
                               </span>
                             </div>
                           </div>
                           <div className="ml-11 prose prose-sm max-w-none">
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-800">{message.content}</p>
                           </div>
                         </div>
                       ))}
@@ -258,12 +258,12 @@ export default function AITutorChat() {
 
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card className="shadow-xl bg-white/80 backdrop-blur-sm border-0">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+        <Card className="shadow-xl bg-white border border-gray-200">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
             <CardTitle className="flex items-center space-x-2">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
-              <span>Conversa com o Tutor IA</span>
-              <Badge variant="secondary" className="ml-auto">
+              <MessageSquare className="w-5 h-5 text-blue-700" />
+              <span className="text-gray-900 font-semibold">Conversa com o Tutor IA</span>
+              <Badge variant="secondary" className="ml-auto font-medium text-gray-700">
                 {messages.filter(m => m.role === 'user').length} perguntas feitas
               </Badge>
             </CardTitle>
@@ -281,22 +281,22 @@ export default function AITutorChat() {
                   >
                     <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
                       message.role === 'user' 
-                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white' 
-                        : 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
+                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white' 
+                        : 'bg-gradient-to-br from-purple-600 to-indigo-700 text-white'
                     }`}>
                       {message.role === 'user' ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
                     </div>
                     <div className={`flex-1 max-w-3xl ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
                       <div className={`inline-block p-4 rounded-lg shadow-sm ${
                         message.role === 'user'
-                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white ml-auto'
-                          : 'bg-white border border-gray-200 text-gray-900'
+                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white ml-auto'
+                          : 'bg-white border border-gray-300 text-gray-900'
                       }`}>
                         <div className="prose prose-sm max-w-none">
-                          <p className="text-sm leading-relaxed whitespace-pre-wrap m-0">{message.content}</p>
+                          <p className="text-base leading-relaxed whitespace-pre-wrap m-0 font-medium">{message.content}</p>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-600 mt-2 font-medium">
                         {message.timestamp.toLocaleTimeString('pt-BR', { 
                           hour: '2-digit', 
                           minute: '2-digit' 
@@ -314,7 +314,7 @@ export default function AITutorChat() {
             </ScrollArea>
             
             {/* Enhanced Input Area */}
-            <div className="p-6 border-t bg-gray-50/50">
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex space-x-4">
                   <div className="flex-1">
@@ -324,7 +324,7 @@ export default function AITutorChat() {
                       onChange={(e) => setInputMessage(e.target.value)}
                       placeholder="Digite sua dúvida ou pergunta sobre estudos... (Pressione Ctrl+Enter para enviar)"
                       disabled={isTyping}
-                      className="min-h-[80px] text-base resize-none bg-white border-2 border-gray-200 focus:border-blue-400 rounded-xl"
+                      className="min-h-[80px] text-base resize-none bg-white border-2 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-xl text-gray-900 placeholder-gray-600"
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                           e.preventDefault();
@@ -333,10 +333,10 @@ export default function AITutorChat() {
                       }}
                     />
                     <div className="flex items-center justify-between mt-2">
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-700 font-medium">
                         Pressione Ctrl+Enter para enviar rapidamente
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-600 font-medium">
                         {inputMessage.length}/500 caracteres
                       </div>
                     </div>
@@ -358,14 +358,14 @@ export default function AITutorChat() {
                 
                 {/* Quick Questions */}
                 {messages.length <= 1 && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4 border-t">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4 border-t border-gray-200">
                     <Button
                       onClick={() => handleQuickQuestion("Como posso melhorar minhas notas?")}
                       variant="outline"
                       size="sm"
-                      className="justify-start h-auto p-3 bg-white hover:bg-blue-50"
+                      className="justify-start h-auto p-3 bg-white hover:bg-blue-50 border-gray-300 text-gray-800 font-medium"
                     >
-                      <Sparkles className="w-4 h-4 mr-2 text-blue-500" />
+                      <Sparkles className="w-4 h-4 mr-2 text-blue-600" />
                       <span className="text-sm">Como melhorar minhas notas?</span>
                     </Button>
                     
@@ -373,9 +373,9 @@ export default function AITutorChat() {
                       onClick={() => handleQuickQuestion("Qual a melhor forma de estudar?")}
                       variant="outline"
                       size="sm"
-                      className="justify-start h-auto p-3 bg-white hover:bg-green-50"
+                      className="justify-start h-auto p-3 bg-white hover:bg-green-50 border-gray-300 text-gray-800 font-medium"
                     >
-                      <Brain className="w-4 h-4 mr-2 text-green-500" />
+                      <Brain className="w-4 h-4 mr-2 text-green-600" />
                       <span className="text-sm">Como estudar de forma eficaz?</span>
                     </Button>
                     
@@ -383,9 +383,9 @@ export default function AITutorChat() {
                       onClick={() => handleQuickQuestion("Me ajude a organizar meus estudos")}
                       variant="outline"
                       size="sm"
-                      className="justify-start h-auto p-3 bg-white hover:bg-purple-50"
+                      className="justify-start h-auto p-3 bg-white hover:bg-purple-50 border-gray-300 text-gray-800 font-medium"
                     >
-                      <Target className="w-4 h-4 mr-2 text-purple-500" />
+                      <Target className="w-4 h-4 mr-2 text-purple-600" />
                       <span className="text-sm">Organizar cronograma</span>
                     </Button>
                     
@@ -393,9 +393,9 @@ export default function AITutorChat() {
                       onClick={() => handleQuickQuestion("Como me preparar para provas?")}
                       variant="outline"
                       size="sm"
-                      className="justify-start h-auto p-3 bg-white hover:bg-orange-50"
+                      className="justify-start h-auto p-3 bg-white hover:bg-orange-50 border-gray-300 text-gray-800 font-medium"
                     >
-                      <HelpCircle className="w-4 h-4 mr-2 text-orange-500" />
+                      <HelpCircle className="w-4 h-4 mr-2 text-orange-600" />
                       <span className="text-sm">Preparação para provas</span>
                     </Button>
                   </div>
