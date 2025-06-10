@@ -1853,6 +1853,11 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
         const message = JSON.parse(data.toString());
         console.log('OpenAI message type:', message.type);
         
+        // Log important events
+        if (message.type === 'error') {
+          console.error('OpenAI error:', message);
+        }
+        
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(data);
         }

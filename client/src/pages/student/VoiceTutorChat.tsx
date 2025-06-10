@@ -190,19 +190,20 @@ export default function VoiceTutorChat() {
     
     switch (message.type) {
       case 'session.created':
-        console.log('Session created, configuring for Portuguese tutor');
+        console.log('Session created, setting up connection');
+        setConnectionState('connected');
+        setIsConnected(true);
+        setConversationState('listening');
         
-        // Send minimal session configuration to test
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-          console.log('Sending session update...');
-          wsRef.current.send(JSON.stringify({
-            type: 'session.update',
-            session: {
-              modalities: ['text', 'audio'],
-              instructions: 'You are a helpful assistant.',
-              voice: 'alloy'
-            }
-          }));
+        // Start audio immediately without complex session update
+        if (wsRef.current && audioContextRef.current && streamRef.current) {
+          setupAudioProcessing(audioContextRef.current, streamRef.current, wsRef.current);
+          
+          toast({
+            title: "Conectado!",
+            description: "Conversa por voz iniciada. Fale naturalmente.",
+            variant: "default",
+          });
         }
         break;
         
