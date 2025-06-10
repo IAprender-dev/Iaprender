@@ -82,7 +82,7 @@ export default function VoiceTutorChat() {
     const welcomeMessage: VoiceMessage = {
       id: 'welcome',
       role: 'assistant',
-      content: "Olá! Sou seu Tutor IA de conversa por voz. Vou começar a te escutar automaticamente. Pode falar comigo a qualquer momento e eu vou parar de falar para te ouvir!",
+      content: "Olá! Sou seu Tutor IA de conversa por voz. Clique em permitir quando o navegador pedir acesso ao microfone. Depois pode falar comigo normalmente!",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
@@ -90,7 +90,7 @@ export default function VoiceTutorChat() {
     // Auto-speak welcome and start listening
     setTimeout(() => {
       speakText(welcomeMessage.content);
-      setTimeout(() => initializeMicrophone(), 3000);
+      setTimeout(() => initializeMicrophone(), 2000);
     }, 1000);
   }, []);
 
@@ -121,12 +121,12 @@ export default function VoiceTutorChat() {
       analyser.fftSize = 512;
       analyser.smoothingTimeConstant = 0.8;
 
-      const SILENCE_THRESHOLD = 0.015;
-      const SPEECH_THRESHOLD = 0.08; // Threshold for detecting user speech
-      const INTERRUPTION_THRESHOLD = 0.12; // Higher threshold for interrupting AI
-      const SILENCE_DURATION = 100; // ~10 seconds of silence
-      const SPEECH_DETECTION = 5; // ~0.5 seconds of speech to interrupt
-      const MIN_SPEECH_DURATION = 15; // ~1.5 seconds minimum speech to process
+      const SILENCE_THRESHOLD = 0.005; // Lower threshold for better detection
+      const SPEECH_THRESHOLD = 0.02; // Lower threshold for detecting user speech
+      const INTERRUPTION_THRESHOLD = 0.04; // Lower threshold for interrupting AI
+      const SILENCE_DURATION = 30; // ~3 seconds of silence
+      const SPEECH_DETECTION = 3; // ~0.3 seconds of speech to interrupt
+      const MIN_SPEECH_DURATION = 8; // ~0.8 seconds minimum speech to process
 
       const monitorVoice = () => {
         if (!analyser || isPaused) return;
@@ -136,13 +136,21 @@ export default function VoiceTutorChat() {
         const level = Math.min(1, average / 128);
         setAudioLevel(level);
 
+        // Debug logging for audio levels
+        if (Math.random() < 0.01) { // Log 1% of the time to avoid spam
+          console.log('🎵 Audio level:', level.toFixed(3), 
+                     'Speaking:', isSpeaking, 
+                     'Listening:', isListening,
+                     'Recording:', voiceDetectionRef.current.isRecording);
+        }
+
         const detection = voiceDetectionRef.current;
 
         // If AI is speaking and user speaks, interrupt immediately
         if (isSpeaking && level > INTERRUPTION_THRESHOLD) {
           detection.speechCount++;
           if (detection.speechCount >= SPEECH_DETECTION) {
-            console.log('🔴 User interrupting AI speech');
+            console.log('🔴 User interrupting AI speech, level:', level.toFixed(3));
             stopSpeaking();
             startListening();
             detection.speechCount = 0;
@@ -160,7 +168,7 @@ export default function VoiceTutorChat() {
             
             // Start recording if we detect sustained speech
             if (!detection.isRecording && detection.speechCount >= MIN_SPEECH_DURATION) {
-              console.log('🎤 Starting recording - speech detected');
+              console.log('🎤 Starting recording - speech detected, level:', level.toFixed(3));
               startRecording();
             }
           } else if (level < SILENCE_THRESHOLD) {
@@ -169,7 +177,7 @@ export default function VoiceTutorChat() {
             
             // Stop recording if silence is detected while recording
             if (detection.isRecording && detection.silenceCount >= SILENCE_DURATION) {
-              console.log('🔇 Stopping recording - silence detected');
+              console.log('🔇 Stopping recording - silence detected, level:', level.toFixed(3));
               stopRecording();
             }
           }
@@ -187,9 +195,10 @@ export default function VoiceTutorChat() {
       
     } catch (error) {
       console.error('Microphone access error:', error);
+      setTutorState('idle');
       toast({
         title: "Erro no microfone",
-        description: "Não foi possível acessar o microfone. Verifique as permissões.",
+        description: "Clique em 'Permitir' quando o navegador pedir acesso ao microfone ou verifique as configurações de privacidade.",
         variant: "destructive",
       });
     }
@@ -447,6 +456,35 @@ export default function VoiceTutorChat() {
     }
   };
 
+  // Manual microphone test
+  const testMicrophone = async () => {
+    try {
+      console.log('Testing microphone access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      toast({
+        title: "Microfone funcionando!",
+        description: "O microfone está acessível. Fale normalmente que o tutor irá detectar sua voz.",
+        variant: "default",
+      });
+
+      // Stop the test stream
+      stream.getTracks().forEach(track => track.stop());
+      
+      // Restart the voice system if it wasn't working
+      if (!isListening && !isPaused) {
+        setTimeout(() => initializeMicrophone(), 1000);
+      }
+    } catch (error) {
+      console.error('Microphone test failed:', error);
+      toast({
+        title: "Erro no microfone",
+        description: "Não foi possível acessar o microfone. Verifique as permissões do navegador.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Format time
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -582,7 +620,7 @@ export default function VoiceTutorChat() {
             </div>
           )}
           
-          {/* Conversation Stats */}
+          {/* Conversation Stats and Audio Level */}
           <div className="flex items-center justify-center space-x-6 text-sm text-gray-600">
             <div className="flex items-center space-x-1">
               <Clock className="w-4 h-4" />
@@ -591,6 +629,23 @@ export default function VoiceTutorChat() {
             <div className="flex items-center space-x-1">
               <MessageSquare className="w-4 h-4" />
               <span className="font-medium">{messages.filter(m => m.role === 'user').length} perguntas</span>
+            </div>
+            {/* Audio Level Debug Display */}
+            <div className="flex items-center space-x-2 px-3 py-1 bg-gray-100 rounded-full">
+              <Mic className="w-3 h-3" />
+              <div className="flex space-x-1">
+                {[...Array(10)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 h-4 rounded-full transition-all duration-100 ${
+                      audioLevel * 10 > i ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-mono">
+                {(audioLevel * 100).toFixed(0)}%
+              </span>
             </div>
           </div>
         </div>
@@ -649,6 +704,16 @@ export default function VoiceTutorChat() {
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Nova conversa
+              </Button>
+              
+              <Button
+                onClick={testMicrophone}
+                variant="outline"
+                size="sm"
+                className="bg-white hover:bg-gray-50 text-gray-700 border-gray-300 font-medium"
+              >
+                <Mic className="w-4 h-4 mr-2" />
+                Testar Microfone
               </Button>
               
               <Dialog open={showHistory} onOpenChange={setShowHistory}>
