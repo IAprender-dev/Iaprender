@@ -26,7 +26,8 @@ import {
   User,
   LogOut,
   Plus,
-  Languages
+  Languages,
+  Mic
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -377,7 +378,7 @@ export default function StudentDashboard() {
                             <Bot className="h-6 w-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-bold text-slate-800">Tire suas dúvidas com a IA</h3>
+                            <h3 className="text-xl font-bold text-slate-800">Tutor IA por Texto</h3>
                             <p className="text-sm text-slate-600">Tutoria personalizada com IA</p>
                           </div>
                         </div>
@@ -387,13 +388,46 @@ export default function StudentDashboard() {
                         <Link href="/aluno/tutor-ia">
                           <Button className="gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-sm">
                             <Bot className="h-4 w-4" />
-                            Conversar com IA
+                            Conversar por Texto
                           </Button>
                         </Link>
                       </div>
                       <div className="hidden md:block p-6">
                         <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center border border-purple-200">
-                          <div className="text-6xl">🤖</div>
+                          <div className="text-6xl">💬</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Voice AI Tutor Chat */}
+                <Card className="border-0 bg-gradient-to-br from-blue-50 to-cyan-50 backdrop-blur-sm shadow-lg rounded-2xl">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="flex-1 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
+                            <Mic className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-800">Tutor IA por Voz</h3>
+                            <p className="text-sm text-slate-600">Conversa natural por voz</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-700 mb-4 leading-relaxed">
+                          Converse com a IA usando apenas sua voz! Fale naturalmente e receba respostas faladas, como uma conversa com um professor.
+                        </p>
+                        <Link href="/aluno/tutor-voz">
+                          <Button className="gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-sm">
+                            <Mic className="h-4 w-4" />
+                            Conversar por Voz
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="hidden md:block p-6">
+                        <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center border border-blue-200">
+                          <div className="text-6xl">🎤</div>
                         </div>
                       </div>
                     </div>
