@@ -344,23 +344,56 @@ export default function StudentDashboard() {
                             <CheckSquare className="h-6 w-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-bold text-slate-800">Atividades</h3>
-                            <p className="text-sm text-slate-600">Exercícios e avaliações</p>
+                            <h3 className="text-xl font-bold text-slate-800">Exercícios Inteligentes</h3>
+                            <p className="text-sm text-slate-600">Questões e Respostas Geradas por IA</p>
                           </div>
                         </div>
                         <p className="text-slate-700 mb-4 leading-relaxed">
-                          Complete atividades interativas e acompanhe seu progresso em tempo real!
+                          Estude praticando com a IA e fique entre os melhores do Ranking!
                         </p>
                         <Link href="/student/activities">
                           <Button className="gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-sm">
                             <CheckSquare className="h-4 w-4" />
-                            Ver Atividades
+                            Fazer Exercícios
                           </Button>
                         </Link>
                       </div>
                       <div className="hidden md:block p-6">
                         <div className="w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-2xl flex items-center justify-center border border-green-200">
                           <div className="text-6xl">✅</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* AI Tutor Chat */}
+                <Card className="border-0 bg-gradient-to-br from-purple-50 to-indigo-50 backdrop-blur-sm shadow-lg rounded-2xl">
+                  <CardContent className="p-0">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="flex-1 p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl">
+                            <Bot className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-800">Tire suas dúvidas com a IA</h3>
+                            <p className="text-sm text-slate-600">Tutoria personalizada com IA</p>
+                          </div>
+                        </div>
+                        <p className="text-slate-700 mb-4 leading-relaxed">
+                          Converse com nossa IA especializada em ensino e tire todas as suas dúvidas sobre as matérias do seu ano escolar!
+                        </p>
+                        <Link href="/aluno/tutor-ia">
+                          <Button className="gap-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-sm">
+                            <Bot className="h-4 w-4" />
+                            Conversar com IA
+                          </Button>
+                        </Link>
+                      </div>
+                      <div className="hidden md:block p-6">
+                        <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center border border-purple-200">
+                          <div className="text-6xl">🤖</div>
                         </div>
                       </div>
                     </div>

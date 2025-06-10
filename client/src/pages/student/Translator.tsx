@@ -14,7 +14,7 @@ export default function Translator() {
         <div className="container mx-auto px-4 py-6">
           {/* Navigation */}
           <div className="flex items-center justify-between mb-8">
-            <BackButton href="/student/dashboard" />
+            <BackButton href="/aluno/dashboard" />
             
             <div className="flex items-center gap-3">
               <img 

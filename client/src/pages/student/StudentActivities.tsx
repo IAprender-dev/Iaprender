@@ -58,7 +58,7 @@ export default function StudentActivities() {
   const { toast } = useToast();
 
   const handleGoBack = () => {
-    navigate('/student');
+    navigate('/aluno/dashboard');
   };
 
   // Exemplos de temas para ajudar o aluno
