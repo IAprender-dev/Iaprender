@@ -55,7 +55,8 @@ export default function VoiceTutorChat() {
     speechCount: number;
     isRecording: boolean;
     isListeningActive: boolean;
-  }>({ silenceCount: 0, speechCount: 0, isRecording: false, isListeningActive: false });
+    aiSpeechEndTime: number;
+  }>({ silenceCount: 0, speechCount: 0, isRecording: false, isListeningActive: false, aiSpeechEndTime: 0 });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -178,15 +179,19 @@ export default function VoiceTutorChat() {
           detection.speechCount = 0;
         }
 
-        // If in listening mode, detect speech/silence using ref state
-        if ((isListening || detection.isListeningActive) && !isSpeaking) {
+        const currentTime = Date.now();
+        const timeSinceAiSpeech = currentTime - detection.aiSpeechEndTime;
+        const AI_SPEECH_COOLDOWN = 3000; // 3 seconds cooldown after AI stops speaking
+        
+        // ONLY detect speech when AI is not speaking AND enough time has passed since AI stopped
+        if ((isListening || detection.isListeningActive) && !isSpeaking && timeSinceAiSpeech > AI_SPEECH_COOLDOWN) {
           if (level > SPEECH_THRESHOLD) {
             detection.speechCount++;
             detection.silenceCount = 0;
             
             // Start recording if we detect sustained speech
             if (!detection.isRecording && detection.speechCount >= MIN_SPEECH_DURATION) {
-              console.log('🎤 Starting recording - speech detected, level:', level.toFixed(3));
+              console.log('🎤 Starting recording - user speech detected, level:', level.toFixed(3));
               startRecording();
             }
           } else if (level < SILENCE_THRESHOLD) {
@@ -198,6 +203,21 @@ export default function VoiceTutorChat() {
               console.log('🔇 Stopping recording - silence detected, level:', level.toFixed(3));
               stopRecording();
             }
+          }
+        } else if (isSpeaking || timeSinceAiSpeech <= AI_SPEECH_COOLDOWN) {
+          // When AI is speaking OR within cooldown period, prevent any recording
+          detection.speechCount = 0;
+          detection.silenceCount = 0;
+          if (detection.isRecording) {
+            console.log('🛑 Stopping recording - AI feedback prevention (speaking or cooldown)');
+            stopRecording();
+          }
+          
+          // Update AI speech end time when AI stops speaking
+          if (!isSpeaking && timeSinceAiSpeech <= AI_SPEECH_COOLDOWN) {
+            // We're in cooldown period
+          } else if (isSpeaking) {
+            // AI is currently speaking, don't update end time yet
           }
         }
 
@@ -217,7 +237,8 @@ export default function VoiceTutorChat() {
         silenceCount: 0,
         speechCount: 0,
         isRecording: false,
-        isListeningActive: true
+        isListeningActive: true,
+        aiSpeechEndTime: 0
       };
       
       monitorVoice();
@@ -319,14 +340,19 @@ export default function VoiceTutorChat() {
       
       utterance.onend = () => {
         setIsSpeaking(false);
+        
+        // Set AI speech end time for cooldown prevention
+        voiceDetectionRef.current.aiSpeechEndTime = Date.now();
+        console.log('⏰ AI speech cooldown started - no recording for 3 seconds');
+        
         if (!isInterrupted && !isPaused) {
           setTutorState('listening');
-          // Continue listening after speaking
+          // Continue listening after speaking with delay for cooldown
           setTimeout(() => {
             if (!isPaused) {
               startListening();
             }
-          }, 500);
+          }, 3500); // Extended delay to ensure cooldown works
         }
       };
       
