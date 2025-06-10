@@ -172,7 +172,7 @@ export default function StudentActivities() {
   // Tela inicial - escolha do tema
   if (!currentTopic || (!currentQuestion && !generateQuestionMutation.isPending)) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6 bg-white min-h-screen p-6">
         {/* Header com AIverse */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3">
@@ -292,7 +292,7 @@ export default function StudentActivities() {
   // Tela da pergunta
   if (currentQuestion) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6 bg-white min-h-screen p-6">
         {/* Header com estatísticas */}
         <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
           <CardContent className="p-4">
@@ -455,7 +455,7 @@ export default function StudentActivities() {
 
   // Loading state
   return (
-    <div className="max-w-4xl mx-auto flex items-center justify-center h-64">
+    <div className="max-w-4xl mx-auto flex items-center justify-center h-64 bg-white min-h-screen p-6">
       <div className="text-center">
         <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
         <p className="text-gray-600">Preparando sua experiência de aprendizado...</p>
