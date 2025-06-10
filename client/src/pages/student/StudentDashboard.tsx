@@ -417,12 +417,12 @@ export default function StudentDashboard() {
                           <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs">NOVO</Badge>
                         </div>
                         <p className="text-slate-700 mb-4 leading-relaxed">
-                          Conheça a Professora Ana, sua tutora virtual que ensina qualquer matéria do seu ano escolar. Fale naturalmente e aprenda no seu ritmo!
+                          Conheça a Pro Versa, sua tutora virtual que ensina qualquer matéria do seu ano escolar. Fale naturalmente e aprenda no seu ritmo!
                         </p>
                         <Link href="/aluno/tutor-voz">
                           <Button className="gap-2 bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-600 hover:to-indigo-600 text-white shadow-sm">
                             <Mic className="h-4 w-4" />
-                            Conversar com Ana
+                            Conversar com Pro Versa
                           </Button>
                         </Link>
                       </div>
