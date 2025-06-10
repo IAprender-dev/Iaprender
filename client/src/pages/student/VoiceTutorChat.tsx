@@ -113,41 +113,7 @@ export default function VoiceTutorChat() {
       
       ws.onopen = () => {
         console.log('Connected to Realtime API proxy');
-        setConnectionState('connected');
-        setIsConnected(true);
-        setConversationState('listening');
-        
-        // Send session configuration
-        ws.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            modalities: ['text', 'audio'],
-            instructions: `Você é um tutor educacional brasileiro especializado em conversas em português. 
-                          Mantenha respostas concisas (máximo 3 frases), seja amigável e educativo. 
-                          Adapte-se ao nível do estudante e incentive o aprendizado através de perguntas reflexivas.
-                          Nome do estudante: ${user?.firstName || 'Estudante'}`,
-            voice: 'alloy',
-            input_audio_format: 'pcm16',
-            output_audio_format: 'pcm16',
-            input_audio_transcription: {
-              model: 'whisper-1'
-            },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 500
-            }
-          }
-        }));
-        
-        setupAudioProcessing(audioContext, stream, ws);
-        
-        toast({
-          title: "Conectado!",
-          description: "Conversa por voz iniciada. Fale naturalmente.",
-          variant: "default",
-        });
+        // Don't set connected state yet - wait for session.created
       };
       
       ws.onmessage = (event) => {
@@ -213,6 +179,51 @@ export default function VoiceTutorChat() {
     console.log('Realtime message:', message.type, message);
     
     switch (message.type) {
+      case 'session.created':
+        console.log('Session created, now sending configuration');
+        setConnectionState('connected');
+        setIsConnected(true);
+        setConversationState('listening');
+        
+        // Now send session configuration
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({
+            type: 'session.update',
+            session: {
+              modalities: ['text', 'audio'],
+              instructions: `Você é um tutor educacional brasileiro especializado em conversas em português. 
+                            Mantenha respostas concisas (máximo 3 frases), seja amigável e educativo. 
+                            Adapte-se ao nível do estudante e incentive o aprendizado através de perguntas reflexivas.
+                            Nome do estudante: ${user?.firstName || 'Estudante'}`,
+              voice: 'alloy',
+              input_audio_format: 'pcm16',
+              output_audio_format: 'pcm16',
+              input_audio_transcription: {
+                model: 'whisper-1'
+              },
+              turn_detection: {
+                type: 'server_vad',
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 500
+              }
+            }
+          }));
+          
+          setupAudioProcessing(audioContextRef.current!, streamRef.current!, wsRef.current);
+          
+          toast({
+            title: "Conectado!",
+            description: "Conversa por voz iniciada. Fale naturalmente.",
+            variant: "default",
+          });
+        }
+        break;
+        
+      case 'session.updated':
+        console.log('Session configured successfully');
+        break;
+        
       case 'conversation.item.input_audio_transcription.completed':
         if (message.transcript && message.transcript.trim()) {
           setCurrentTranscript('');

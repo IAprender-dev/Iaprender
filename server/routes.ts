@@ -1811,16 +1811,22 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
       }
     });
 
+    let isConnected = false;
+
     // Proxy messages from client to OpenAI
     ws.on('message', (data) => {
-      if (openaiWs.readyState === WebSocket.OPEN) {
+      if (openaiWs.readyState === WebSocket.OPEN && isConnected) {
+        console.log('Forwarding message to OpenAI:', data.toString().substring(0, 100) + '...');
         openaiWs.send(data);
+      } else {
+        console.log('OpenAI not ready, queuing message');
       }
     });
 
     // Proxy messages from OpenAI to client
     openaiWs.on('message', (data) => {
       if (ws.readyState === WebSocket.OPEN) {
+        console.log('Forwarding message from OpenAI:', data.toString().substring(0, 100) + '...');
         ws.send(data);
       }
     });
@@ -1828,10 +1834,23 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     // Handle OpenAI connection events
     openaiWs.on('open', () => {
       console.log('Connected to OpenAI Realtime API');
+      isConnected = true;
+      
+      // Send connection confirmation to client
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'session.created',
+          session: {
+            id: 'proxy-session',
+            object: 'realtime.session'
+          }
+        }));
+      }
     });
 
     openaiWs.on('close', (code, reason) => {
       console.log('OpenAI Realtime API connection closed:', code, reason.toString());
+      isConnected = false;
       if (ws.readyState === WebSocket.OPEN) {
         ws.close(code, reason);
       }
@@ -1839,14 +1858,16 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
     openaiWs.on('error', (error) => {
       console.error('OpenAI Realtime API error:', error);
+      isConnected = false;
       if (ws.readyState === WebSocket.OPEN) {
         ws.close(1011, 'OpenAI API error');
       }
     });
 
     // Handle client disconnect
-    ws.on('close', () => {
-      console.log('Client disconnected from Realtime proxy');
+    ws.on('close', (code, reason) => {
+      console.log('Client disconnected from Realtime proxy:', code, reason?.toString());
+      isConnected = false;
       if (openaiWs.readyState === WebSocket.OPEN) {
         openaiWs.close();
       }
@@ -1854,6 +1875,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
     ws.on('error', (error) => {
       console.error('Client WebSocket error:', error);
+      isConnected = false;
       if (openaiWs.readyState === WebSocket.OPEN) {
         openaiWs.close();
       }
