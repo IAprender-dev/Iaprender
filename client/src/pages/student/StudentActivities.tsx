@@ -219,20 +219,20 @@ export default function StudentActivities() {
         )}
 
         {/* Formulário de tema */}
-        <Card className="border-2 border-blue-200">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl text-gray-900 flex items-center justify-center space-x-2">
-              <Lightbulb className="h-6 w-6 text-yellow-500" />
+        <Card className="border-2 border-blue-200 bg-white shadow-lg">
+          <CardHeader className="text-center pb-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <CardTitle className="text-2xl text-slate-900 flex items-center justify-center space-x-2 font-bold">
+              <Lightbulb className="h-6 w-6 text-amber-500" />
               <span>O que você quer estudar hoje?</span>
             </CardTitle>
-            <p className="text-gray-600">
+            <p className="text-slate-700 font-medium">
               Digite um tema e nossa IA criará perguntas personalizadas para você!
             </p>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 bg-white">
             {/* Input do tema */}
-            <div className="space-y-2">
-              <Label htmlFor="topic" className="text-base font-medium text-gray-800">
+            <div className="space-y-3">
+              <Label htmlFor="topic" className="text-lg font-semibold text-slate-900">
                 Digite seu tema de estudo:
               </Label>
               <Input
@@ -240,7 +240,7 @@ export default function StudentActivities() {
                 value={inputTopic}
                 onChange={(e) => setInputTopic(e.target.value)}
                 placeholder="Ex: Verbos no presente, Frações, Sistema solar..."
-                className="text-lg p-4 border-2 border-gray-300 focus:border-blue-500 text-gray-900 placeholder:text-gray-500"
+                className="text-lg p-4 border-2 border-slate-300 focus:border-blue-600 text-slate-900 placeholder:text-slate-500 bg-white font-medium"
                 onKeyPress={(e) => e.key === 'Enter' && handleTopicSubmit()}
               />
             </div>
@@ -265,18 +265,18 @@ export default function StudentActivities() {
             </Button>
 
             {/* Exemplos de temas */}
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-gray-700">
+            <div className="space-y-4">
+              <p className="text-base font-bold text-slate-900">
                 💡 Exemplos de temas:
               </p>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {topicExamples.map((example, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     size="sm"
                     onClick={() => setInputTopic(example)}
-                    className="text-xs hover:bg-blue-50 hover:border-blue-300 text-gray-700 border-gray-300"
+                    className="text-sm font-semibold hover:bg-blue-50 hover:border-blue-500 text-slate-800 border-slate-400 bg-slate-50 px-4 py-2"
                   >
                     {example}
                   </Button>
@@ -321,29 +321,29 @@ export default function StudentActivities() {
         </Card>
 
         {/* Pergunta */}
-        <Card className="border-2 border-blue-200">
-          <CardContent className="p-8 space-y-6">
+        <Card className="border-2 border-blue-200 bg-white shadow-lg">
+          <CardContent className="p-8 space-y-6 bg-white">
             {/* Celebração */}
             {showCelebration && (
               <div className="text-center py-4 animate-bounce">
                 <div className="text-4xl mb-2">🎉</div>
-                <div className="text-lg font-bold text-green-600">Parabéns! Resposta correta!</div>
+                <div className="text-lg font-bold text-green-700">Parabéns! Resposta correta!</div>
               </div>
             )}
 
             {/* Título da pergunta */}
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <Badge variant="outline" className="capitalize">
+              <div className="flex items-center space-x-3 mb-6">
+                <Badge variant="outline" className="capitalize text-slate-800 border-slate-400 bg-slate-50 font-semibold">
                   {currentQuestion.difficulty === 'easy' ? 'Fácil' : 
                    currentQuestion.difficulty === 'medium' ? 'Médio' : 'Difícil'}
                 </Badge>
-                <Badge variant="outline">
+                <Badge variant="outline" className="text-slate-800 border-slate-400 bg-slate-50 font-semibold">
                   Pergunta {gameStats.totalQuestions + 1}
                 </Badge>
               </div>
               
-              <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              <h3 className="text-2xl font-bold text-slate-900 mb-8 leading-relaxed">
                 {currentQuestion.question}
               </h3>
               
@@ -361,14 +361,14 @@ export default function StudentActivities() {
                   
                   return (
                     <div key={index} className={`
-                      flex items-center space-x-3 p-4 rounded-lg border-2 transition-all
-                      ${!showExplanation ? 'hover:bg-gray-50 cursor-pointer' : ''}
-                      ${shouldHighlight && isCorrect ? 'bg-green-50 border-green-300' : ''}
-                      ${shouldHighlight && !isCorrect && isSelected ? 'bg-red-50 border-red-300' : ''}
-                      ${!shouldHighlight ? 'border-gray-200' : ''}
+                      flex items-center space-x-4 p-5 rounded-lg border-2 transition-all bg-white
+                      ${!showExplanation ? 'hover:bg-slate-50 cursor-pointer border-slate-300' : ''}
+                      ${shouldHighlight && isCorrect ? 'bg-green-50 border-green-400' : ''}
+                      ${shouldHighlight && !isCorrect && isSelected ? 'bg-red-50 border-red-400' : ''}
+                      ${!shouldHighlight ? 'border-slate-300' : ''}
                     `}>
                       <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-                      <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-base text-gray-800">
+                      <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-lg font-semibold text-slate-900 leading-relaxed">
                         {option}
                       </Label>
                       {showExplanation && isCorrect && (
@@ -385,19 +385,19 @@ export default function StudentActivities() {
 
             {/* Explicação */}
             {showExplanation && (
-              <Card className={`border-2 ${lastAnswerCorrect ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-3">
+              <Card className={`border-2 shadow-md ${lastAnswerCorrect ? 'border-green-400 bg-green-50' : 'border-amber-400 bg-amber-50'}`}>
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
                     {lastAnswerCorrect ? (
-                      <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5" />
+                      <CheckCircle2 className="h-7 w-7 text-green-700 mt-1" />
                     ) : (
-                      <Lightbulb className="h-6 w-6 text-orange-600 mt-0.5" />
+                      <Lightbulb className="h-7 w-7 text-amber-700 mt-1" />
                     )}
                     <div>
-                      <h4 className={`font-semibold mb-2 ${lastAnswerCorrect ? 'text-green-800' : 'text-orange-800'}`}>
+                      <h4 className={`font-bold mb-3 text-lg ${lastAnswerCorrect ? 'text-green-900' : 'text-amber-900'}`}>
                         {lastAnswerCorrect ? '🎉 Parabéns! Resposta correta!' : '📚 Vamos aprender juntos!'}
                       </h4>
-                      <p className="text-gray-800 leading-relaxed font-medium">
+                      <p className="text-slate-900 leading-relaxed font-semibold text-base">
                         {currentQuestion.explanation}
                       </p>
                     </div>
