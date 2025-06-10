@@ -54,7 +54,8 @@ export default function VoiceTutorChat() {
     silenceCount: number;
     speechCount: number;
     isRecording: boolean;
-  }>({ silenceCount: 0, speechCount: 0, isRecording: false });
+    isListeningActive: boolean;
+  }>({ silenceCount: 0, speechCount: 0, isRecording: false, isListeningActive: false });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -99,6 +100,7 @@ export default function VoiceTutorChat() {
     if (streamRef.current || isPaused) return;
 
     try {
+      console.log('🎤 Initializing microphone...');
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -109,6 +111,7 @@ export default function VoiceTutorChat() {
       });
       
       streamRef.current = stream;
+      console.log('✅ Microphone access granted');
       
       // Setup audio context for voice detection
       const audioContext = new AudioContext();
@@ -121,12 +124,19 @@ export default function VoiceTutorChat() {
       analyser.fftSize = 512;
       analyser.smoothingTimeConstant = 0.8;
 
-      const SILENCE_THRESHOLD = 0.005; // Lower threshold for better detection
-      const SPEECH_THRESHOLD = 0.02; // Lower threshold for detecting user speech
-      const INTERRUPTION_THRESHOLD = 0.04; // Lower threshold for interrupting AI
+      // More sensitive thresholds based on observed levels (0.02-0.12)
+      const SILENCE_THRESHOLD = 0.015; // Below observed noise floor
+      const SPEECH_THRESHOLD = 0.05; // Above normal background levels
+      const INTERRUPTION_THRESHOLD = 0.08; // Clear speech signal
       const SILENCE_DURATION = 30; // ~3 seconds of silence
       const SPEECH_DETECTION = 3; // ~0.3 seconds of speech to interrupt
       const MIN_SPEECH_DURATION = 8; // ~0.8 seconds minimum speech to process
+
+      console.log('🔧 Audio thresholds set:', {
+        silence: SILENCE_THRESHOLD,
+        speech: SPEECH_THRESHOLD,
+        interruption: INTERRUPTION_THRESHOLD
+      });
 
       const monitorVoice = () => {
         if (!analyser || isPaused) return;
@@ -136,12 +146,20 @@ export default function VoiceTutorChat() {
         const level = Math.min(1, average / 128);
         setAudioLevel(level);
 
-        // Debug logging for audio levels
-        if (Math.random() < 0.01) { // Log 1% of the time to avoid spam
+        // Debug logging for audio levels and speech detection
+        if (Math.random() < 0.03) { // Log 3% of the time for better debugging
           console.log('🎵 Audio level:', level.toFixed(3), 
                      'Speaking:', isSpeaking, 
                      'Listening:', isListening,
-                     'Recording:', voiceDetectionRef.current.isRecording);
+                     'ListeningActive:', detection.isListeningActive,
+                     'Recording:', detection.isRecording,
+                     'SpeechCount:', detection.speechCount,
+                     'SilenceCount:', detection.silenceCount);
+        }
+        
+        // Log when speech threshold is exceeded
+        if (level > SPEECH_THRESHOLD && !isSpeaking) {
+          console.log('🗣️ Speech detected! Level:', level.toFixed(3), 'Threshold:', SPEECH_THRESHOLD);
         }
 
         const detection = voiceDetectionRef.current;
@@ -160,8 +178,8 @@ export default function VoiceTutorChat() {
           detection.speechCount = 0;
         }
 
-        // If in listening mode, detect speech/silence
-        if (isListening && !isSpeaking) {
+        // If in listening mode, detect speech/silence using ref state
+        if ((isListening || detection.isListeningActive) && !isSpeaking) {
           if (level > SPEECH_THRESHOLD) {
             detection.speechCount++;
             detection.silenceCount = 0;
@@ -189,9 +207,27 @@ export default function VoiceTutorChat() {
         }
       };
 
+      // Force listening state with delayed update
+      console.log('🔊 Setting listening state to true');
       setTutorState('listening');
       setIsListening(true);
+      
+      // Reset detection state and force listening
+      voiceDetectionRef.current = {
+        silenceCount: 0,
+        speechCount: 0,
+        isRecording: false,
+        isListeningActive: true
+      };
+      
       monitorVoice();
+      
+      // Force state update after a brief delay
+      setTimeout(() => {
+        console.log('🔄 Force updating listening state');
+        setIsListening(true);
+        setTutorState('listening');
+      }, 100);
       
     } catch (error) {
       console.error('Microphone access error:', error);
@@ -202,7 +238,7 @@ export default function VoiceTutorChat() {
         variant: "destructive",
       });
     }
-  }, [isPaused, isSpeaking, isListening]);
+  }, [isPaused]);
 
   // Start recording audio
   const startRecording = useCallback(() => {
