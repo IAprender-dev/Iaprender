@@ -1552,6 +1552,145 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
     }
   });
 
+  // Audio transcription endpoint
+  app.post('/api/ai/transcribe-audio', authenticate, async (req: Request, res: Response) => {
+    try {
+      const multer = require('multer');
+      const upload = multer({ storage: multer.memoryStorage() });
+      
+      upload.single('audio')(req, res, async (err: any) => {
+        if (err) {
+          return res.status(400).json({ error: 'Erro no upload do áudio' });
+        }
+
+        if (!req.file) {
+          return res.status(400).json({ error: 'Nenhum arquivo de áudio fornecido' });
+        }
+
+        const formData = new FormData();
+        const audioBlob = new Blob([req.file.buffer], { type: 'audio/wav' });
+        formData.append('file', audioBlob, 'audio.wav');
+        formData.append('model', 'whisper-1');
+
+        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Falha na transcrição do áudio');
+        }
+
+        const data = await response.json();
+        res.json({ text: data.text });
+      });
+
+    } catch (error) {
+      console.error('Erro na transcrição de áudio:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  // Document generation endpoint
+  app.post('/api/ai/generate-document', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { messages, studentName, studentGrade } = req.body;
+
+      if (!messages || messages.length === 0) {
+        return res.status(400).json({ error: 'Nenhuma mensagem fornecida' });
+      }
+
+      // Generate study material content using AI
+      const contentPrompt = `Crie um material de estudo completo em formato de documento para ${studentName}, estudante do ${studentGrade}, baseado na seguinte conversa educacional:
+
+${messages.map((msg: any) => `${msg.role === 'user' ? 'Pergunta do Aluno' : 'Resposta da Tutora'}: ${msg.content}`).join('\n\n')}
+
+FORMATO DO DOCUMENTO:
+1. Título principal relacionado ao tema estudado
+2. Resumo dos conceitos principais abordados
+3. Explicações detalhadas organizadas por tópicos
+4. Exercícios práticos para fixação
+5. Dicas de estudo e memorização
+6. Bibliografia sugerida
+
+O documento deve ser educativo, bem estruturado e adequado para impressão. Use linguagem clara e didática apropriada para o ${studentGrade}.`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          messages: [
+            {
+              role: 'user',
+              content: contentPrompt
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na geração do conteúdo');
+      }
+
+      const aiData = await response.json();
+      const documentContent = aiData.content[0].text;
+
+      // Generate PDF using a simple HTML to PDF approach
+      const PDFDocument = require('pdfkit');
+      const doc = new PDFDocument({ margin: 50 });
+      
+      let pdfBuffer = Buffer.alloc(0);
+      doc.on('data', (chunk: Buffer) => {
+        pdfBuffer = Buffer.concat([pdfBuffer, chunk]);
+      });
+
+      // Add content to PDF
+      doc.fontSize(20).text('Material de Estudo - AIverse', { align: 'center' });
+      doc.moveDown();
+      doc.fontSize(14).text(`Aluno: ${studentName}`);
+      doc.text(`Série: ${studentGrade}`);
+      doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`);
+      doc.moveDown();
+      
+      // Split content into lines and add to PDF
+      const lines = documentContent.split('\n');
+      lines.forEach((line: string) => {
+        if (line.trim()) {
+          if (line.startsWith('#') || line.includes('**')) {
+            doc.fontSize(16).text(line.replace(/[#*]/g, ''), { continued: false });
+          } else {
+            doc.fontSize(12).text(line, { continued: false });
+          }
+          doc.moveDown(0.5);
+        }
+      });
+
+      doc.end();
+
+      // Wait for PDF generation to complete
+      await new Promise((resolve) => {
+        doc.on('end', resolve);
+      });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="material-estudo.pdf"');
+      res.send(pdfBuffer);
+
+    } catch (error) {
+      console.error('Erro na geração do documento:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
