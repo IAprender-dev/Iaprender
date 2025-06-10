@@ -1618,20 +1618,35 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
         apiKey: process.env.OPENAI_API_KEY,
       });
 
-      // Create a temporary file for OpenAI API with proper extension
+      // Create a temporary file for OpenAI API with supported extension
       const tempDir = os.tmpdir();
-      const fileExtension = req.file.mimetype.includes('webm') ? 'webm' : 
-                           req.file.mimetype.includes('wav') ? 'wav' :
-                           req.file.mimetype.includes('mp3') ? 'mp3' :
-                           req.file.mimetype.includes('m4a') ? 'm4a' : 'webm';
+      
+      // Use supported formats - convert webm to wav for better compatibility
+      let fileExtension = 'wav';
+      if (req.file.mimetype.includes('mp3')) fileExtension = 'mp3';
+      else if (req.file.mimetype.includes('m4a')) fileExtension = 'm4a';
+      else if (req.file.mimetype.includes('ogg')) fileExtension = 'ogg';
+      else if (req.file.mimetype.includes('flac')) fileExtension = 'flac';
+      else if (req.file.mimetype.includes('webm')) fileExtension = 'webm';
+      
       const tempFilePath = path.join(tempDir, `audio_${Date.now()}_${req.session.user?.id || 'user'}.${fileExtension}`);
       
       try {
         // Write buffer to temporary file
         fs.writeFileSync(tempFilePath, req.file.buffer);
         
-        // Create readable stream for OpenAI
+        console.log('Created temp file for Whisper:', {
+          path: tempFilePath,
+          extension: fileExtension,
+          size: req.file.buffer.length
+        });
+        
+        // Create file stream for OpenAI Whisper API
         const audioStream = fs.createReadStream(tempFilePath);
+        // Ensure the filename is set correctly for OpenAI
+        (audioStream as any).path = tempFilePath;
+        
+        console.log('Sending to OpenAI Whisper API...');
         
         const transcription = await openai.audio.transcriptions.create({
           file: audioStream,
@@ -1639,18 +1654,26 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
           language: 'pt',
           response_format: 'verbose_json',
           temperature: 0.0,
-          prompt: 'Esta é uma conversa sobre matérias escolares entre um estudante brasileiro e uma tutora de IA.'
+          prompt: 'Esta é uma conversa educacional em português brasileiro entre um estudante e um tutor de IA sobre matérias escolares.'
         });
 
         // Clean up temporary file
-        fs.unlinkSync(tempFilePath);
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+        }
 
-        console.log('Transcription successful:', transcription.text);
+        console.log('Whisper transcription successful:', {
+          text: transcription.text,
+          duration: transcription.duration,
+          language: transcription.language
+        });
 
         res.json({ 
           text: transcription.text,
-          confidence: transcription.segments?.[0]?.no_speech_prob ? 1 - transcription.segments[0].no_speech_prob : 0.95,
-          duration: transcription.duration
+          duration: transcription.duration,
+          language: transcription.language,
+          confidence: 1.0,
+          service: 'OpenAI Whisper'
         });
 
       } catch (fileError) {

@@ -38,6 +38,7 @@ export default function VoiceTutorChat() {
   const [conversationTime, setConversationTime] = useState(0);
   const [currentTranscription, setCurrentTranscription] = useState('');
   const [audioLevel, setAudioLevel] = useState(0);
+  const [isInterrupted, setIsInterrupted] = useState(false);
   
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,6 +50,11 @@ export default function VoiceTutorChat() {
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const animationRef = useRef<number | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const voiceDetectionRef = useRef<{
+    silenceCount: number;
+    speechCount: number;
+    isRecording: boolean;
+  }>({ silenceCount: 0, speechCount: 0, isRecording: false });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,7 +82,7 @@ export default function VoiceTutorChat() {
     const welcomeMessage: VoiceMessage = {
       id: 'welcome',
       role: 'assistant',
-      content: "Olá! Sou seu Tutor IA de conversa por voz. Vou começar a te escutar automaticamente. Pode falar naturalmente comigo sobre qualquer dúvida escolar que você tenha!",
+      content: "Olá! Sou seu Tutor IA de conversa por voz. Vou começar a te escutar automaticamente. Pode falar comigo a qualquer momento e eu vou parar de falar para te ouvir!",
       timestamp: new Date()
     };
     setMessages([welcomeMessage]);
@@ -84,11 +90,170 @@ export default function VoiceTutorChat() {
     // Auto-speak welcome and start listening
     setTimeout(() => {
       speakText(welcomeMessage.content);
-      setTimeout(() => startContinuousListening(), 3000);
+      setTimeout(() => initializeMicrophone(), 3000);
     }, 1000);
   }, []);
 
-  // Enhanced text-to-speech
+  // Initialize microphone for continuous monitoring
+  const initializeMicrophone = useCallback(async () => {
+    if (streamRef.current || isPaused) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000
+        }
+      });
+      
+      streamRef.current = stream;
+      
+      // Setup audio context for voice detection
+      const audioContext = new AudioContext();
+      audioContextRef.current = audioContext;
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      
+      microphone.connect(analyser);
+      analyser.fftSize = 512;
+      analyser.smoothingTimeConstant = 0.8;
+
+      const SILENCE_THRESHOLD = 0.015;
+      const SPEECH_THRESHOLD = 0.08; // Threshold for detecting user speech
+      const INTERRUPTION_THRESHOLD = 0.12; // Higher threshold for interrupting AI
+      const SILENCE_DURATION = 100; // ~10 seconds of silence
+      const SPEECH_DETECTION = 5; // ~0.5 seconds of speech to interrupt
+      const MIN_SPEECH_DURATION = 15; // ~1.5 seconds minimum speech to process
+
+      const monitorVoice = () => {
+        if (!analyser || isPaused) return;
+        
+        analyser.getByteFrequencyData(dataArray);
+        const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+        const level = Math.min(1, average / 128);
+        setAudioLevel(level);
+
+        const detection = voiceDetectionRef.current;
+
+        // If AI is speaking and user speaks, interrupt immediately
+        if (isSpeaking && level > INTERRUPTION_THRESHOLD) {
+          detection.speechCount++;
+          if (detection.speechCount >= SPEECH_DETECTION) {
+            console.log('🔴 User interrupting AI speech');
+            stopSpeaking();
+            startListening();
+            detection.speechCount = 0;
+            detection.silenceCount = 0;
+          }
+        } else if (isSpeaking) {
+          detection.speechCount = 0;
+        }
+
+        // If in listening mode, detect speech/silence
+        if (isListening && !isSpeaking) {
+          if (level > SPEECH_THRESHOLD) {
+            detection.speechCount++;
+            detection.silenceCount = 0;
+            
+            // Start recording if we detect sustained speech
+            if (!detection.isRecording && detection.speechCount >= MIN_SPEECH_DURATION) {
+              console.log('🎤 Starting recording - speech detected');
+              startRecording();
+            }
+          } else if (level < SILENCE_THRESHOLD) {
+            detection.silenceCount++;
+            detection.speechCount = 0;
+            
+            // Stop recording if silence is detected while recording
+            if (detection.isRecording && detection.silenceCount >= SILENCE_DURATION) {
+              console.log('🔇 Stopping recording - silence detected');
+              stopRecording();
+            }
+          }
+        }
+
+        // Continue monitoring if not paused
+        if (!isPaused) {
+          animationRef.current = requestAnimationFrame(monitorVoice);
+        }
+      };
+
+      setTutorState('listening');
+      setIsListening(true);
+      monitorVoice();
+      
+    } catch (error) {
+      console.error('Microphone access error:', error);
+      toast({
+        title: "Erro no microfone",
+        description: "Não foi possível acessar o microfone. Verifique as permissões.",
+        variant: "destructive",
+      });
+    }
+  }, [isPaused, isSpeaking, isListening]);
+
+  // Start recording audio
+  const startRecording = useCallback(() => {
+    if (!streamRef.current || voiceDetectionRef.current.isRecording) return;
+
+    try {
+      // Use wav format which is better supported by OpenAI Whisper
+      const mimeType = MediaRecorder.isTypeSupported('audio/wav') 
+        ? 'audio/wav'
+        : MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+      
+      const mediaRecorder = new MediaRecorder(streamRef.current, { mimeType });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        if (audioChunksRef.current.length > 0) {
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+          if (audioBlob.size > 1000) {
+            transcribeAudio(audioBlob, mimeType);
+          }
+        }
+        audioChunksRef.current = [];
+        voiceDetectionRef.current.isRecording = false;
+      };
+
+      mediaRecorder.start(100);
+      voiceDetectionRef.current.isRecording = true;
+      setTutorState('listening');
+      
+    } catch (error) {
+      console.error('Recording error:', error);
+    }
+  }, []);
+
+  // Stop recording audio
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && voiceDetectionRef.current.isRecording) {
+      mediaRecorderRef.current.stop();
+      setTutorState('processing');
+    }
+  }, []);
+
+  // Start listening mode
+  const startListening = useCallback(() => {
+    if (!isListening) {
+      setIsListening(true);
+      setTutorState('listening');
+    }
+  }, [isListening]);
+
+  // Enhanced text-to-speech with interruption capability
   const speakText = useCallback((text: string) => {
     if ('speechSynthesis' in window && text.trim()) {
       window.speechSynthesis.cancel();
@@ -104,14 +269,19 @@ export default function VoiceTutorChat() {
       utterance.onstart = () => {
         setIsSpeaking(true);
         setTutorState('speaking');
+        setIsInterrupted(false);
       };
       
       utterance.onend = () => {
         setIsSpeaking(false);
-        setTutorState('idle');
-        // Resume listening after speaking
-        if (!isPaused) {
-          setTimeout(() => startContinuousListening(), 1000);
+        if (!isInterrupted && !isPaused) {
+          setTutorState('listening');
+          // Continue listening after speaking
+          setTimeout(() => {
+            if (!isPaused) {
+              startListening();
+            }
+          }, 500);
         }
       };
       
@@ -123,140 +293,35 @@ export default function VoiceTutorChat() {
       utteranceRef.current = utterance;
       window.speechSynthesis.speak(utterance);
     }
-  }, [isPaused]);
+  }, [isPaused, isInterrupted]);
 
-  const stopSpeaking = () => {
+  const stopSpeaking = useCallback(() => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
-      setTutorState('idle');
-    }
-  };
-
-  // Continuous voice listening with silence detection
-  const startContinuousListening = useCallback(async () => {
-    if (isListening || isSpeaking || isPaused) return;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 48000
-        }
-      });
-      
-      streamRef.current = stream;
-      
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') 
-        ? 'audio/webm;codecs=opus'
-        : 'audio/webm';
-      
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      // Enhanced audio level detection
-      const audioContext = new AudioContext();
-      audioContextRef.current = audioContext;
-      const analyser = audioContext.createAnalyser();
-      const microphone = audioContext.createMediaStreamSource(stream);
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      
-      microphone.connect(analyser);
-      analyser.fftSize = 512;
-      analyser.smoothingTimeConstant = 0.8;
-
-      let silenceCount = 0;
-      const SILENCE_THRESHOLD = 0.01;
-      const SILENCE_DURATION = 150; // 150 * 100ms = 15 seconds of silence
-
-      const updateAudioLevel = () => {
-        if (isListening && analyser) {
-          analyser.getByteFrequencyData(dataArray);
-          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-          const level = Math.min(1, average / 128);
-          setAudioLevel(level);
-
-          // Silence detection
-          if (level < SILENCE_THRESHOLD) {
-            silenceCount++;
-            if (silenceCount >= SILENCE_DURATION) {
-              // Extended silence detected, process what we have
-              if (audioChunksRef.current.length > 0) {
-                stopListeningAndProcess();
-              }
-              return;
-            }
-          } else {
-            silenceCount = 0; // Reset silence counter on sound detection
-          }
-
-          animationRef.current = requestAnimationFrame(updateAudioLevel);
-        }
-      };
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        if (audioChunksRef.current.length > 0) {
-          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-          if (audioBlob.size > 1000) {
-            transcribeAudio(audioBlob);
-          }
-        }
-        audioChunksRef.current = [];
-      };
-
-      // Start recording in chunks
-      mediaRecorder.start(100); // Collect data every 100ms for real-time processing
-      setIsListening(true);
+      setIsInterrupted(true);
       setTutorState('listening');
-      updateAudioLevel();
-      
-    } catch (error) {
-      console.error('Microphone access error:', error);
-      toast({
-        title: "Erro no microfone",
-        description: "Não foi possível acessar o microfone. Verifique as permissões.",
-        variant: "destructive",
-      });
     }
-  }, [isListening, isSpeaking, isPaused]);
+  }, []);
 
-  const stopListeningAndProcess = useCallback(() => {
-    if (mediaRecorderRef.current && isListening) {
-      mediaRecorderRef.current.stop();
-      setIsListening(false);
-      setAudioLevel(0);
-      setTutorState('processing');
-      
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-      
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-      }
-      
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    }
-  }, [isListening]);
-
-  // Audio transcription
-  const transcribeAudio = useCallback(async (audioBlob: Blob) => {
+  // Audio transcription using OpenAI Whisper
+  const transcribeAudio = useCallback(async (audioBlob: Blob, mimeType: string) => {
     try {
       const formData = new FormData();
-      const fileName = `voice_${Date.now()}.webm`;
+      
+      // Determine appropriate file extension based on mime type
+      const fileExtension = mimeType.includes('wav') ? 'wav' : 
+                           mimeType.includes('webm') ? 'webm' :
+                           mimeType.includes('mp3') ? 'mp3' : 'wav';
+      
+      const fileName = `voice_${Date.now()}.${fileExtension}`;
       formData.append('audio', audioBlob, fileName);
+      
+      console.log('Sending audio for transcription:', {
+        size: audioBlob.size,
+        type: audioBlob.type,
+        fileName
+      });
       
       const response = await fetch('/api/ai/transcribe-audio', {
         method: 'POST',
@@ -265,28 +330,31 @@ export default function VoiceTutorChat() {
       });
       
       if (!response.ok) {
-        throw new Error(`Transcription failed: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(`Transcription failed: ${response.status} - ${errorData.error}`);
       }
       
       const data = await response.json();
+      console.log('Transcription response:', data);
       
       if (data.text && data.text.trim()) {
         setCurrentTranscription(data.text);
         handleUserMessage(data.text, data.duration);
       } else {
-        // No speech detected, resume listening
-        if (!isPaused && !isSpeaking) {
-          setTimeout(() => startContinuousListening(), 500);
-        }
+        // No speech detected, continue listening
+        console.log('No speech detected in audio');
+        setTutorState('listening');
       }
     } catch (error) {
       console.error('Transcription error:', error);
-      setTutorState('idle');
-      if (!isPaused && !isSpeaking) {
-        setTimeout(() => startContinuousListening(), 1000);
-      }
+      toast({
+        title: "Erro na transcrição",
+        description: "Não foi possível transcrever o áudio. Tente falar mais claramente.",
+        variant: "destructive",
+      });
+      setTutorState('listening');
     }
-  }, [isPaused, isSpeaking]);
+  }, [toast]);
 
   // AI conversation
   const chatMutation = useMutation({
@@ -315,17 +383,13 @@ export default function VoiceTutorChat() {
       
       setMessages(prev => [...prev, assistantMessage]);
       setCurrentTranscription('');
-      setTutorState('idle');
       
       // Auto-speak response
-      setTimeout(() => speakText(assistantMessage.content), 500);
+      setTimeout(() => speakText(assistantMessage.content), 300);
     },
     onError: (error) => {
       console.error('Chat error:', error);
-      setTutorState('idle');
-      if (!isPaused && !isSpeaking) {
-        setTimeout(() => startContinuousListening(), 1000);
-      }
+      setTutorState('listening');
     }
   });
 
@@ -349,17 +413,23 @@ export default function VoiceTutorChat() {
     if (isPaused) {
       setIsPaused(false);
       setTutorState('idle');
-      if (!isSpeaking) {
-        setTimeout(() => startContinuousListening(), 1000);
-      }
+      setTimeout(() => initializeMicrophone(), 500);
     } else {
       setIsPaused(true);
-      if (isListening) {
-        stopListeningAndProcess();
-      }
       if (isSpeaking) {
         stopSpeaking();
       }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      setIsListening(false);
       setTutorState('paused');
     }
   };
@@ -418,15 +488,15 @@ export default function VoiceTutorChat() {
             {/* Speaking Animation Rings */}
             {isSpeaking && (
               <>
-                <div className="absolute inset-0 rounded-full border-4 border-blue-300 animate-ping opacity-50" />
-                <div className="absolute inset-0 rounded-full border-3 border-purple-300 animate-pulse opacity-70" />
+                <div className="absolute inset-0 rounded-full border-4 border-red-300 animate-ping opacity-50" />
+                <div className="absolute inset-0 rounded-full border-3 border-orange-300 animate-pulse opacity-70" />
                 <div className="absolute inset-0 rounded-full border-2 border-white animate-ping opacity-30" 
                      style={{ animationDelay: '0.5s' }} />
               </>
             )}
             
             {/* Listening Visualization */}
-            {isListening && (
+            {isListening && !isSpeaking && (
               <div className="absolute inset-0 rounded-full">
                 {[...Array(5)].map((_, i) => (
                   <div
@@ -460,13 +530,16 @@ export default function VoiceTutorChat() {
           </div>
           
           {/* Enhanced Audio Level Visualization */}
-          {isListening && (
+          {(isListening || isSpeaking) && (
             <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
               <div className="flex space-x-2">
                 {[...Array(11)].map((_, i) => (
                   <div
                     key={i}
-                    className="w-2 bg-gradient-to-t from-green-500 via-blue-500 to-purple-500 rounded-full transition-all duration-100 shadow-lg"
+                    className={`w-2 rounded-full transition-all duration-100 shadow-lg ${
+                      isSpeaking ? 'bg-gradient-to-t from-red-500 via-orange-500 to-yellow-500' 
+                                : 'bg-gradient-to-t from-green-500 via-blue-500 to-purple-500'
+                    }`}
                     style={{
                       height: audioLevel * 11 > i ? `${20 + audioLevel * 40 + Math.sin(Date.now() * 0.01 + i) * 6}px` : '10px',
                       opacity: audioLevel * 11 > i ? 1 : 0.3
@@ -494,9 +567,9 @@ export default function VoiceTutorChat() {
             }`} />
             <span className="text-lg text-gray-800 font-semibold">
               {tutorState === 'idle' ? 'Pronto para conversar' :
-               tutorState === 'listening' ? 'Te escutando...' :
+               tutorState === 'listening' ? 'Te escutando... (fale a qualquer momento!)' :
                tutorState === 'processing' ? 'Processando sua pergunta...' :
-               tutorState === 'speaking' ? 'Explicando para você...' :
+               tutorState === 'speaking' ? 'Explicando (me interrompa se quiser!)' :
                'Conversa pausada'}
             </span>
           </div>
@@ -544,7 +617,7 @@ export default function VoiceTutorChat() {
               <img src={aiverseLogo} alt="AIverse" className="h-8 w-auto" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Tutor IA - Conversa por Voz</h1>
-                <p className="text-sm text-gray-700 font-medium">Conversa contínua e natural</p>
+                <p className="text-sm text-gray-700 font-medium">Conversa contínua com interrupção</p>
               </div>
             </div>
             
@@ -654,14 +727,14 @@ export default function VoiceTutorChat() {
                         <p className="text-gray-600">Sem necessidade de apertar botões</p>
                       </div>
                       <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <Bot className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                        <p className="font-medium text-gray-800">Resposta automática</p>
-                        <p className="text-gray-600">O tutor responde por voz</p>
+                        <Volume2 className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                        <p className="font-medium text-gray-800">Interrupção inteligente</p>
+                        <p className="text-gray-600">Fale durante a resposta para interromper</p>
                       </div>
                       <div className="bg-white p-4 rounded-lg border border-gray-200">
-                        <Volume2 className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                        <Bot className="w-8 h-8 text-green-600 mx-auto mb-2" />
                         <p className="font-medium text-gray-800">Conversa fluida</p>
-                        <p className="text-gray-600">Como falar com um humano</p>
+                        <p className="text-gray-600">Como falar com um professor</p>
                       </div>
                     </div>
                     
