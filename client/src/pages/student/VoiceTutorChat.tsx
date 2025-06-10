@@ -117,7 +117,17 @@ export default function VoiceTutorChat() {
       };
       
       ws.onmessage = (event) => {
-        handleRealtimeMessage(JSON.parse(event.data));
+        try {
+          if (typeof event.data === 'string') {
+            const message = JSON.parse(event.data);
+            handleRealtimeMessage(message);
+          } else {
+            // Handle binary audio data
+            console.log('Received binary audio data');
+          }
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error, event.data);
+        }
       };
       
       ws.onerror = (error) => {
@@ -181,11 +191,8 @@ export default function VoiceTutorChat() {
     switch (message.type) {
       case 'session.created':
         console.log('Session created, configuring for Portuguese tutor');
-        setConnectionState('connected');
-        setIsConnected(true);
-        setConversationState('listening');
         
-        // Send session configuration immediately
+        // Send session configuration first
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
           wsRef.current.send(JSON.stringify({
             type: 'session.update',
@@ -206,9 +213,18 @@ export default function VoiceTutorChat() {
               }
             }
           }));
-          
-          // Start audio processing immediately
-          setupAudioProcessing(audioContextRef.current!, streamRef.current!, wsRef.current);
+        }
+        break;
+        
+      case 'session.updated':
+        console.log('Session updated successfully - now activating connection');
+        setConnectionState('connected');
+        setIsConnected(true);
+        setConversationState('listening');
+        
+        // Now start audio processing after session is fully configured
+        if (wsRef.current && audioContextRef.current && streamRef.current) {
+          setupAudioProcessing(audioContextRef.current, streamRef.current, wsRef.current);
           
           toast({
             title: "Conectado!",
@@ -216,10 +232,6 @@ export default function VoiceTutorChat() {
             variant: "default",
           });
         }
-        break;
-        
-      case 'session.updated':
-        console.log('Session updated successfully');
         break;
         
       case 'conversation.item.input_audio_transcription.completed':
