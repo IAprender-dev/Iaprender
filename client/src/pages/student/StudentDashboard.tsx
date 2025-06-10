@@ -411,8 +411,8 @@ export default function StudentDashboard() {
                             <GraduationCap className="h-6 w-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-bold text-slate-800">Professora Ana</h3>
-                            <p className="text-sm text-slate-600">Sua tutora pessoal por voz</p>
+                            <h3 className="text-xl font-bold text-slate-800">Pro Versa</h3>
+                            <p className="text-sm text-slate-600">Sua tutora baseada em IA</p>
                           </div>
                           <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs">NOVO</Badge>
                         </div>

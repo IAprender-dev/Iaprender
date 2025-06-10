@@ -98,7 +98,7 @@ export default function VoiceTutorTeacher() {
         setConversationState('listening');
         
         toast({
-          title: "Professora Ana conectada!",
+          title: "Pro Versa conectada!",
           description: "Pronta para ensinar. Fale naturalmente!",
           variant: "default",
         });
@@ -145,7 +145,7 @@ export default function VoiceTutorTeacher() {
       setConnectionState('error');
       toast({
         title: "Erro de conexão",
-        description: "Não foi possível conectar com a Professora Ana.",
+        description: "Não foi possível conectar com a Pro Versa.",
         variant: "destructive",
       });
     }
@@ -313,8 +313,8 @@ export default function VoiceTutorTeacher() {
             </Link>
             
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-800">Professora Ana</h1>
-              <p className="text-sm text-gray-600">Sua tutora pessoal de IA</p>
+              <h1 className="text-2xl font-bold text-gray-800">Pro Versa</h1>
+              <p className="text-sm text-gray-600">Sua tutora baseada em IA</p>
             </div>
             
             <div className="flex items-center gap-2">
@@ -347,7 +347,7 @@ export default function VoiceTutorTeacher() {
                 </div>
                 
                 <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                  Professora Ana
+                  Pro Versa
                 </h2>
                 <p className="text-gray-600 mb-6">
                   {!isConnected && "Clique em conectar para começar a conversa"}
@@ -372,7 +372,7 @@ export default function VoiceTutorTeacher() {
                     ) : (
                       <>
                         <Mic className="h-5 w-5 mr-2" />
-                        Conectar com Ana
+                        Conectar com Pro Versa
                       </>
                     )}
                   </Button>
@@ -486,7 +486,7 @@ export default function VoiceTutorTeacher() {
                             <p className={`text-xs mt-2 ${
                               message.type === 'user' ? 'text-indigo-100' : 'text-gray-500'
                             }`}>
-                              {message.type === 'user' ? 'Você' : 'Professora Ana'} • {formatTime(message.timestamp)}
+                              {message.type === 'user' ? 'Você' : 'Pro Versa'} • {formatTime(message.timestamp)}
                             </p>
                           </div>
                         </div>
@@ -514,7 +514,7 @@ export default function VoiceTutorTeacher() {
                             <p className="text-sm text-gray-700 leading-relaxed">{currentTranscript}</p>
                             <p className="text-xs text-gray-500 mt-2 flex items-center">
                               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2" />
-                              Professora Ana está falando...
+                              Pro Versa está falando...
                             </p>
                           </div>
                         </div>
