@@ -39,6 +39,7 @@ import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import WebSocket from "ws";
 
 // Define login schema
 const loginSchema = z.object({
