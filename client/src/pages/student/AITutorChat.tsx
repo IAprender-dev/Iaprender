@@ -181,9 +181,8 @@ export default function AITutorChat() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link href="/aluno/dashboard">
-                <Button variant="ghost" size="sm" className="hover:bg-blue-50 text-gray-800 font-medium">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Dashboard
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors duration-200">
+                  Voltar
                 </Button>
               </Link>
               <img src={aiverseLogo} alt="AIverse" className="h-8 w-auto" />
