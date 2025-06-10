@@ -39,7 +39,7 @@ import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import WebSocket from "ws";
+import WebSocket, { WebSocketServer } from "ws";
 
 // Define login schema
 const loginSchema = z.object({
@@ -1796,5 +1796,69 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
   });
 
   const httpServer = createServer(app);
+  
+  // WebSocket server for OpenAI Realtime API proxy
+  const wss = new WebSocketServer({ server: httpServer, path: '/realtime' });
+
+  wss.on('connection', (ws, req) => {
+    console.log('Client connected to Realtime proxy');
+
+    // Connect to OpenAI Realtime API
+    const openaiWs = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01', {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'OpenAI-Beta': 'realtime=v1'
+      }
+    });
+
+    // Proxy messages from client to OpenAI
+    ws.on('message', (data) => {
+      if (openaiWs.readyState === WebSocket.OPEN) {
+        openaiWs.send(data);
+      }
+    });
+
+    // Proxy messages from OpenAI to client
+    openaiWs.on('message', (data) => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(data);
+      }
+    });
+
+    // Handle OpenAI connection events
+    openaiWs.on('open', () => {
+      console.log('Connected to OpenAI Realtime API');
+    });
+
+    openaiWs.on('close', (code, reason) => {
+      console.log('OpenAI Realtime API connection closed:', code, reason.toString());
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close(code, reason);
+      }
+    });
+
+    openaiWs.on('error', (error) => {
+      console.error('OpenAI Realtime API error:', error);
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close(1011, 'OpenAI API error');
+      }
+    });
+
+    // Handle client disconnect
+    ws.on('close', () => {
+      console.log('Client disconnected from Realtime proxy');
+      if (openaiWs.readyState === WebSocket.OPEN) {
+        openaiWs.close();
+      }
+    });
+
+    ws.on('error', (error) => {
+      console.error('Client WebSocket error:', error);
+      if (openaiWs.readyState === WebSocket.OPEN) {
+        openaiWs.close();
+      }
+    });
+  });
+
   return httpServer;
 }

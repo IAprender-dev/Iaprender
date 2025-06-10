@@ -1,12 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
-import { useMutation } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Mic, MicOff, Play, Pause, RotateCcw, ArrowLeft, Phone, PhoneOff } from 'lucide-react';
+import { Bot, Mic, Play, Pause, RotateCcw, ArrowLeft, Phone, PhoneOff } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 interface VoiceMessage {
@@ -14,10 +12,11 @@ interface VoiceMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  duration?: number;
+  type: 'text' | 'audio';
 }
 
-type VoiceTutorState = 'idle' | 'listening' | 'processing' | 'speaking' | 'paused';
+type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
+type ConversationState = 'idle' | 'listening' | 'thinking' | 'speaking';
 
 export default function VoiceTutorChat() {
   const { user } = useAuth();
@@ -26,30 +25,20 @@ export default function VoiceTutorChat() {
 
   // Core states
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
-  const [tutorState, setTutorState] = useState<VoiceTutorState>('idle');
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [audioLevel, setAudioLevel] = useState(0);
-  const [currentTranscription, setCurrentTranscription] = useState('');
+  const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected');
+  const [conversationState, setConversationState] = useState<ConversationState>('idle');
+  const [isConnected, setIsConnected] = useState(false);
   const [conversationTime, setConversationTime] = useState(0);
+  const [currentTranscript, setCurrentTranscript] = useState('');
 
-  // Audio processing refs
-  const streamRef = useRef<MediaStream | null>(null);
+  // WebSocket and audio refs
+  const wsRef = useRef<WebSocket | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number | null>(null);
-  const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Recording state  
-  const recordingRef = useRef({
-    isActive: false,
-    chunks: [] as Blob[],
-    startTime: 0
-  });
+  const audioQueueRef = useRef<string[]>([]);
+  const isPlayingRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,20 +49,21 @@ export default function VoiceTutorChat() {
   }, [messages]);
 
   useEffect(() => {
-    if (!isPaused) {
+    if (isConnected) {
       const timer = setInterval(() => {
         setConversationTime(prev => prev + 1);
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [isPaused]);
+  }, [isConnected]);
 
   useEffect(() => {
     setMessages([{
       id: 'welcome',
       role: 'assistant',
-      content: `Olá! Sou seu tutor de conversas por voz. Vou usar o Whisper para entender sua fala e responder por voz. Clique em "Iniciar" para começar.`,
-      timestamp: new Date()
+      content: `Olá! Sou seu tutor de conversas por voz usando a OpenAI Realtime API. Clique em "Conectar" para iniciar nossa conversa em tempo real.`,
+      timestamp: new Date(),
+      type: 'text'
     }]);
 
     return () => {
@@ -82,312 +72,268 @@ export default function VoiceTutorChat() {
   }, []);
 
   const cleanup = () => {
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
     if (audioContextRef.current) {
       audioContextRef.current.close();
     }
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
-    if (utteranceRef.current) {
-      window.speechSynthesis.cancel();
-    }
-    if (recordingTimeoutRef.current) {
-      clearTimeout(recordingTimeoutRef.current);
-    }
   };
 
-  const initializeVoiceChat = async () => {
-    if (isPaused) return;
-
+  const connectToRealtimeAPI = useCallback(async () => {
     try {
-      console.log('Initializing voice chat...');
+      setConnectionState('connecting');
       
-      // Test microphone access with simplified settings
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      // Get microphone access first
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
+          autoGainControl: true,
+          sampleRate: 24000,
+          channelCount: 1
         }
       });
       
       streamRef.current = stream;
-      console.log('Microphone access granted');
       
-      // Setup audio context for level monitoring
-      const audioContext = new AudioContext();
-      const analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaStreamSource(stream);
-      
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.8;
-      source.connect(analyser);
-      
+      // Setup audio context for processing
+      const audioContext = new AudioContext({ sampleRate: 24000 });
       audioContextRef.current = audioContext;
-      analyserRef.current = analyser;
       
-      setTutorState('listening');
-      setIsListening(true);
+      // Connect to our WebSocket proxy
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/realtime`;
+      const ws = new WebSocket(wsUrl);
       
-      // Start audio level monitoring
-      monitorAudioLevel();
+      wsRef.current = ws;
       
-      // Start continuous recording cycle
-      startRecordingCycle();
+      ws.onopen = () => {
+        console.log('Connected to Realtime API proxy');
+        setConnectionState('connected');
+        setIsConnected(true);
+        setConversationState('listening');
+        
+        // Send session configuration
+        ws.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            modalities: ['text', 'audio'],
+            instructions: `Você é um tutor educacional brasileiro especializado em conversas em português. 
+                          Mantenha respostas concisas (máximo 3 frases), seja amigável e educativo. 
+                          Adapte-se ao nível do estudante e incentive o aprendizado através de perguntas reflexivas.
+                          Nome do estudante: ${user?.firstName || 'Estudante'}`,
+            voice: 'alloy',
+            input_audio_format: 'pcm16',
+            output_audio_format: 'pcm16',
+            input_audio_transcription: {
+              model: 'whisper-1'
+            },
+            turn_detection: {
+              type: 'server_vad',
+              threshold: 0.5,
+              prefix_padding_ms: 300,
+              silence_duration_ms: 500
+            }
+          }
+        }));
+        
+        setupAudioProcessing(audioContext, stream, ws);
+        
+        toast({
+          title: "Conectado!",
+          description: "Conversa por voz iniciada. Fale naturalmente.",
+          variant: "default",
+        });
+      };
       
-      toast({
-        title: "Conversa iniciada!",
-        description: "Fale naturalmente que eu escuto e respondo.",
-        variant: "default",
-      });
+      ws.onmessage = (event) => {
+        handleRealtimeMessage(JSON.parse(event.data));
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        setConnectionState('error');
+        toast({
+          title: "Erro de conexão",
+          description: "Não foi possível conectar com o servidor de voz.",
+          variant: "destructive",
+        });
+      };
+      
+      ws.onclose = () => {
+        console.log('Disconnected from Realtime API');
+        setConnectionState('disconnected');
+        setIsConnected(false);
+        setConversationState('idle');
+      };
       
     } catch (error) {
-      console.error('Voice initialization failed:', error);
+      console.error('Failed to connect:', error);
+      setConnectionState('error');
       toast({
         title: "Erro no microfone",
-        description: "Não foi possível acessar o microfone. Verifique as permissões do navegador.",
+        description: "Não foi possível acessar o microfone. Verifique as permissões.",
         variant: "destructive",
       });
     }
+  }, [user?.firstName, toast]);
+
+  const setupAudioProcessing = (audioContext: AudioContext, stream: MediaStream, ws: WebSocket) => {
+    const source = audioContext.createMediaStreamSource(stream);
+    const processor = audioContext.createScriptProcessor(4096, 1, 1);
+    
+    processor.onaudioprocess = (event) => {
+      if (ws.readyState === WebSocket.OPEN && conversationState !== 'speaking') {
+        const inputData = event.inputBuffer.getChannelData(0);
+        
+        // Convert float32 to int16 PCM
+        const pcmData = new Int16Array(inputData.length);
+        for (let i = 0; i < inputData.length; i++) {
+          pcmData[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
+        }
+        
+        // Send audio data to Realtime API
+        ws.send(JSON.stringify({
+          type: 'input_audio_buffer.append',
+          audio: arrayBufferToBase64(pcmData.buffer)
+        }));
+      }
+    };
+    
+    source.connect(processor);
+    processor.connect(audioContext.destination);
+    processorRef.current = processor;
   };
 
-  const monitorAudioLevel = useCallback(() => {
-    if (!analyserRef.current || isPaused) return;
-
-    try {
-      const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-      analyserRef.current.getByteFrequencyData(dataArray);
-      
-      const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-      const level = Math.min(1, average / 128);
-      setAudioLevel(level);
-
-      if (!isPaused) {
-        animationRef.current = requestAnimationFrame(monitorAudioLevel);
-      }
-    } catch (error) {
-      console.error('Audio monitoring error:', error);
-    }
-  }, [isPaused]);
-
-  const startRecordingCycle = () => {
-    if (!streamRef.current || recordingRef.current.isActive || isSpeaking || isPaused) return;
-
-    try {
-      const recorder = new MediaRecorder(streamRef.current, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
-      
-      recordingRef.current.chunks = [];
-      recordingRef.current.isActive = true;
-      recordingRef.current.startTime = Date.now();
-      
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          recordingRef.current.chunks.push(event.data);
+  const handleRealtimeMessage = (message: any) => {
+    console.log('Realtime message:', message.type, message);
+    
+    switch (message.type) {
+      case 'conversation.item.input_audio_transcription.completed':
+        if (message.transcript && message.transcript.trim()) {
+          setCurrentTranscript('');
+          addMessage('user', message.transcript, 'text');
         }
-      };
-      
-      recorder.onstop = () => {
-        if (recordingRef.current.chunks.length > 0) {
-          const audioBlob = new Blob(recordingRef.current.chunks, { type: 'audio/webm;codecs=opus' });
-          const duration = (Date.now() - recordingRef.current.startTime) / 1000;
-          
-          // Only process if recording was long enough and we're not speaking
-          if (duration > 1.5 && !isSpeaking) {
-            transcribeAudio(audioBlob);
+        break;
+        
+      case 'response.audio_transcript.delta':
+        setCurrentTranscript(prev => prev + (message.delta || ''));
+        break;
+        
+      case 'response.audio_transcript.done':
+        if (message.transcript && message.transcript.trim()) {
+          addMessage('assistant', message.transcript, 'text');
+          setCurrentTranscript('');
+        }
+        break;
+        
+      case 'response.audio.delta':
+        if (message.delta) {
+          audioQueueRef.current.push(message.delta);
+          if (!isPlayingRef.current) {
+            playNextAudioChunk();
           }
         }
-        recordingRef.current.isActive = false;
+        break;
         
-        // Restart recording cycle after a brief pause (if not speaking and not paused)
-        if (!isSpeaking && !isPaused) {
-          setTimeout(() => {
-            startRecordingCycle();
-          }, 1000);
-        }
-      };
-      
-      recorderRef.current = recorder;
-      recorder.start();
-      
-      // Auto-stop recording after 4 seconds to create manageable chunks
-      recordingTimeoutRef.current = setTimeout(() => {
-        if (recorder.state === 'recording') {
-          recorder.stop();
-        }
-      }, 4000);
-      
-    } catch (error) {
-      console.error('Recording start failed:', error);
-      recordingRef.current.isActive = false;
+      case 'input_audio_buffer.speech_started':
+        setConversationState('listening');
+        break;
+        
+      case 'input_audio_buffer.speech_stopped':
+        setConversationState('thinking');
+        break;
+        
+      case 'response.created':
+        setConversationState('thinking');
+        break;
+        
+      case 'response.audio.done':
+        setConversationState('listening');
+        isPlayingRef.current = false;
+        break;
+        
+      case 'error':
+        console.error('Realtime API error:', message);
+        toast({
+          title: "Erro na conversa",
+          description: message.error?.message || "Erro desconhecido",
+          variant: "destructive",
+        });
+        break;
     }
   };
 
-  const transcribeAudio = useCallback(async (audioBlob: Blob) => {
-    try {
-      setTutorState('processing');
+  const playNextAudioChunk = async () => {
+    if (!audioContextRef.current || audioQueueRef.current.length === 0) return;
+    
+    isPlayingRef.current = true;
+    setConversationState('speaking');
+    
+    while (audioQueueRef.current.length > 0) {
+      const audioData = audioQueueRef.current.shift()!;
       
-      const formData = new FormData();
-      const fileName = `voice_${Date.now()}.webm`;
-      formData.append('audio', audioBlob, fileName);
-
-      console.log('Sending audio for transcription:', { size: audioBlob.size, fileName });
-
-      const response = await fetch('/api/ai/transcribe-audio', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Transcription failed: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Transcription response:', data);
-      
-      // Only process if we got meaningful speech content
-      if (data.text && data.text.trim() && data.text.length > 3) {
-        setCurrentTranscription(data.text);
-        handleUserMessage(data.text, data.duration);
-      } else {
-        // No meaningful speech detected, continue listening
-        setTutorState('listening');
-      }
-    } catch (error) {
-      console.error('Transcription error:', error);
-      setTutorState('listening');
-    }
-  }, []);
-
-  const chatMutation = useMutation({
-    mutationFn: async (message: string) => {
-      const response = await apiRequest('POST', '/api/ai/tutor-chat', {
-        message,
-        conversationHistory: messages.slice(-8),
-        studentName: user?.firstName || 'Estudante',
-        context: 'voice_continuous_tutor',
-        isVoiceConversation: true
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
-      }
-      
-      return await response.json();
-    },
-    onSuccess: (data) => {
-      const assistantMessage: VoiceMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: data.response || data.message,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-      setCurrentTranscription('');
-      
-      // Speak the response after a brief delay
-      setTimeout(() => speakText(assistantMessage.content), 200);
-    },
-    onError: (error) => {
-      console.error('Chat error:', error);
-      setTutorState('listening');
-    }
-  });
-
-  const handleUserMessage = useCallback((message: string, duration?: number) => {
-    if (!message.trim()) return;
-
-    const userMessage: VoiceMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: message,
-      timestamp: new Date(),
-      duration
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setTutorState('processing');
-    chatMutation.mutate(message);
-  }, [chatMutation]);
-
-  const speakText = useCallback((text: string) => {
-    if ('speechSynthesis' in window && text.trim()) {
-      // Stop any current recording while AI speaks
-      if (recorderRef.current && recordingRef.current.isActive) {
-        recorderRef.current.stop();
-      }
-      
-      window.speechSynthesis.cancel();
-      
-      // Clean text for speech
-      const cleanText = text.replace(/[🌟✨💫⭐🎯📚💡🔥😊]/g, '').trim();
-      
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.lang = 'pt-BR';
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      utterance.volume = 0.8;
-      
-      utterance.onstart = () => {
-        setIsSpeaking(true);
-        setTutorState('speaking');
-      };
-      
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        setTutorState('listening');
+      try {
+        const binaryData = base64ToArrayBuffer(audioData);
+        const audioBuffer = new Int16Array(binaryData);
         
-        // Resume recording cycle after AI finishes speaking
-        if (!isPaused) {
-          setTimeout(() => {
-            startRecordingCycle();
-          }, 1500); // Wait 1.5 seconds to avoid feedback
+        // Convert int16 to float32
+        const floatData = new Float32Array(audioBuffer.length);
+        for (let i = 0; i < audioBuffer.length; i++) {
+          floatData[i] = audioBuffer[i] / 32768;
         }
-      };
-      
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-        setTutorState('listening');
-        if (!isPaused) {
-          setTimeout(() => startRecordingCycle(), 1000);
-        }
-      };
-      
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-    }
-  }, [isPaused]);
-
-  const stopSpeaking = useCallback(() => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-  }, []);
-
-  const togglePause = () => {
-    if (isPaused) {
-      setIsPaused(false);
-      setTutorState('idle');
-      setTimeout(() => initializeVoiceChat(), 500);
-    } else {
-      setIsPaused(true);
-      if (isSpeaking) {
-        stopSpeaking();
+        
+        const buffer = audioContextRef.current.createBuffer(1, floatData.length, 24000);
+        buffer.copyToChannel(floatData, 0);
+        
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = buffer;
+        source.connect(audioContextRef.current.destination);
+        
+        await new Promise<void>((resolve) => {
+          source.onended = () => resolve();
+          source.start();
+        });
+        
+      } catch (error) {
+        console.error('Error playing audio chunk:', error);
       }
-      if (recorderRef.current && recordingRef.current.isActive) {
-        recorderRef.current.stop();
-      }
-      cleanup();
-      setIsListening(false);
-      setTutorState('paused');
     }
+    
+    isPlayingRef.current = false;
+    setConversationState('listening');
+  };
+
+  const addMessage = (role: 'user' | 'assistant', content: string, type: 'text' | 'audio') => {
+    const message: VoiceMessage = {
+      id: Date.now().toString(),
+      role,
+      content,
+      timestamp: new Date(),
+      type
+    };
+    
+    setMessages(prev => [...prev, message]);
+  };
+
+  const disconnect = () => {
+    cleanup();
+    setConnectionState('disconnected');
+    setIsConnected(false);
+    setConversationState('idle');
+    setConversationTime(0);
+    audioQueueRef.current = [];
+    isPlayingRef.current = false;
+    
+    toast({
+      title: "Desconectado",
+      description: "Conversa por voz finalizada.",
+      variant: "default",
+    });
   };
 
   const clearConversation = () => {
@@ -395,35 +341,30 @@ export default function VoiceTutorChat() {
       id: 'welcome-new',
       role: 'assistant',
       content: `Conversa reiniciada! Estou pronto para uma nova sessão de estudos por voz.`,
-      timestamp: new Date()
+      timestamp: new Date(),
+      type: 'text'
     }]);
     setConversationTime(0);
-    if (!isPaused && !isSpeaking) {
-      setTimeout(() => speakText("Conversa reiniciada! Estou pronto para uma nova sessão de estudos por voz."), 500);
-    }
   };
 
-  const testMicrophone = async () => {
-    try {
-      console.log('Testing microphone access...');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      toast({
-        title: "Microfone funcionando!",
-        description: "O microfone está acessível e funcionando corretamente.",
-        variant: "default",
-      });
-
-      stream.getTracks().forEach(track => track.stop());
-      
-    } catch (error) {
-      console.error('Microphone test failed:', error);
-      toast({
-        title: "Erro no microfone",
-        description: "Não foi possível acessar o microfone. Verifique as permissões do navegador.",
-        variant: "destructive",
-      });
+  // Utility functions
+  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
     }
+    return btoa(binary);
+  };
+
+  const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
+    const binary = atob(base64);
+    const buffer = new ArrayBuffer(binary.length);
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return buffer;
   };
 
   const formatTime = (seconds: number) => {
@@ -433,99 +374,101 @@ export default function VoiceTutorChat() {
   };
 
   const getStateDescription = () => {
-    switch (tutorState) {
+    if (!isConnected) return 'Desconectado';
+    
+    switch (conversationState) {
       case 'idle': return 'Aguardando...';
       case 'listening': return 'Escutando você...';
-      case 'processing': return 'Processando...';
+      case 'thinking': return 'Processando...';
       case 'speaking': return 'Falando...';
-      case 'paused': return 'Pausado';
-      default: return 'Inicializando...';
+      default: return 'Ativo';
     }
   };
 
   const getStateColor = () => {
-    switch (tutorState) {
+    if (!isConnected) return 'bg-gray-500';
+    
+    switch (conversationState) {
       case 'listening': return 'bg-green-500';
-      case 'processing': return 'bg-yellow-500';
+      case 'thinking': return 'bg-yellow-500';
       case 'speaking': return 'bg-blue-500';
-      case 'paused': return 'bg-gray-500';
       default: return 'bg-gray-400';
     }
   };
 
   // Voice Avatar Component
   const VoiceAvatar = () => {
-    const pulseScale = isSpeaking ? 1.1 : isListening ? 1 + audioLevel * 0.2 : 1;
-    const glowIntensity = isSpeaking ? 0.9 : isListening ? 0.6 + audioLevel * 0.3 : 0.3;
+    const pulseScale = conversationState === 'speaking' ? 1.15 : conversationState === 'listening' ? 1.05 : 1;
+    const glowIntensity = conversationState === 'speaking' ? 0.9 : 
+                         conversationState === 'listening' ? 0.7 : 
+                         conversationState === 'thinking' ? 0.5 : 0.3;
 
     return (
       <div className="flex flex-col items-center justify-center space-y-8 p-12">
         <div className="relative">
           <div 
-            className="absolute inset-0 rounded-full transition-all duration-300"
+            className="absolute inset-0 rounded-full transition-all duration-500"
             style={{
               transform: `scale(${1.5})`,
-              background: `radial-gradient(circle, rgba(59, 130, 246, ${glowIntensity * 0.15}) 0%, transparent 70%)`,
-              filter: `blur(25px)`
+              background: `radial-gradient(circle, rgba(59, 130, 246, ${glowIntensity * 0.2}) 0%, transparent 70%)`,
+              filter: `blur(30px)`
             }}
           />
           
           <div 
-            className="relative w-56 h-56 rounded-full bg-gradient-to-br from-blue-600 via-purple-700 to-indigo-800 flex items-center justify-center transition-all duration-300 shadow-2xl"
+            className="relative w-64 h-64 rounded-full bg-gradient-to-br from-blue-600 via-purple-700 to-indigo-800 flex items-center justify-center transition-all duration-300 shadow-2xl"
             style={{
               transform: `scale(${pulseScale})`,
-              boxShadow: `0 0 ${40 + glowIntensity * 60}px rgba(59, 130, 246, ${glowIntensity})`
+              boxShadow: `0 0 ${50 + glowIntensity * 80}px rgba(59, 130, 246, ${glowIntensity})`
             }}
           >
-            <Bot className="w-28 h-28 text-white drop-shadow-xl" />
+            <Bot className="w-32 h-32 text-white drop-shadow-xl" />
             
-            {isSpeaking && (
+            {conversationState === 'speaking' && (
               <>
-                <div className="absolute inset-0 rounded-full border-4 border-blue-300 animate-ping opacity-50" />
-                <div className="absolute inset-0 rounded-full border-2 border-purple-300 animate-pulse opacity-70" />
+                <div className="absolute inset-0 rounded-full border-4 border-blue-300 animate-ping opacity-60" />
+                <div className="absolute inset-0 rounded-full border-2 border-purple-300 animate-pulse opacity-80" />
               </>
             )}
             
-            {isListening && !isSpeaking && (
+            {conversationState === 'listening' && (
               <div className="absolute inset-0 rounded-full">
                 {[...Array(3)].map((_, i) => (
                   <div
                     key={i}
-                    className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-30"
+                    className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-40"
                     style={{ 
-                      animationDelay: `${i * 0.5}s`,
-                      animationDuration: '2s'
+                      animationDelay: `${i * 0.6}s`,
+                      animationDuration: '2.5s'
                     }}
                   />
                 ))}
               </div>
+            )}
+            
+            {conversationState === 'thinking' && (
+              <div className="absolute inset-0 rounded-full border-3 border-yellow-400 animate-spin opacity-70" 
+                   style={{ animationDuration: '2s' }} />
             )}
           </div>
         </div>
 
         <div className="text-center space-y-4">
           <div className="flex items-center justify-center space-x-3">
-            <div className={`w-3 h-3 rounded-full ${getStateColor()} animate-pulse`} />
+            <div className={`w-4 h-4 rounded-full ${getStateColor()} animate-pulse`} />
             <span className="text-xl font-semibold text-gray-700">{getStateDescription()}</span>
           </div>
           
-          {isListening && (
-            <div className="flex items-center justify-center space-x-2">
-              <div className="flex space-x-1">
-                {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-1 bg-green-500 rounded-full"
-                    style={{
-                      height: `${Math.max(4, audioLevel * 40 + Math.random() * 8)}px`,
-                      animationDelay: `${i * 0.1}s`
-                    }}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-green-600 font-medium">
-                {(audioLevel * 100).toFixed(0)}%
-              </span>
+          {isConnected && (
+            <div className="space-y-2">
+              <p className="text-sm text-blue-600 font-medium">
+                OpenAI Realtime API - Conversa contínua ativa
+              </p>
+              {currentTranscript && (
+                <p className="text-xs text-gray-600 italic max-w-md">
+                  "{currentTranscript}"
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -551,15 +494,21 @@ export default function VoiceTutorChat() {
                   Voltar
                 </Button>
                 <div>
-                  <CardTitle className="text-2xl font-bold text-gray-800">Tutor de Voz IA</CardTitle>
-                  <p className="text-gray-600 mt-1">Conversa contínua com Whisper + Síntese de Voz</p>
+                  <CardTitle className="text-2xl font-bold text-gray-800">
+                    Tutor de Voz IA - Realtime
+                  </CardTitle>
+                  <p className="text-gray-600 mt-1">
+                    Conversa em tempo real com OpenAI Realtime API
+                  </p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                  {formatTime(conversationTime)}
-                </Badge>
+                {isConnected && (
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    {formatTime(conversationTime)}
+                  </Badge>
+                )}
                 <Badge variant="outline" className="bg-gray-50 text-gray-700">
                   {messages.length - 1} mensagens
                 </Badge>
@@ -574,31 +523,38 @@ export default function VoiceTutorChat() {
             <CardContent className="p-8">
               <VoiceAvatar />
               
-              {/* Controls */}
+              {/* Connection Controls */}
               <div className="flex justify-center space-x-4 mt-8">
-                <Button
-                  onClick={!isListening ? initializeVoiceChat : togglePause}
-                  variant={isPaused ? "default" : isListening ? "outline" : "default"}
-                  size="lg"
-                  className="flex items-center space-x-2"
-                >
-                  {!isListening ? (
-                    <>
-                      <Play className="w-5 h-5" />
-                      <span>Iniciar</span>
-                    </>
-                  ) : isPaused ? (
-                    <>
-                      <Play className="w-5 h-5" />
-                      <span>Retomar</span>
-                    </>
-                  ) : (
-                    <>
-                      <Pause className="w-5 h-5" />
-                      <span>Pausar</span>
-                    </>
-                  )}
-                </Button>
+                {!isConnected ? (
+                  <Button
+                    onClick={connectToRealtimeAPI}
+                    disabled={connectionState === 'connecting'}
+                    size="lg"
+                    className="flex items-center space-x-2 bg-green-600 hover:bg-green-700"
+                  >
+                    {connectionState === 'connecting' ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Conectando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Phone className="w-5 h-5" />
+                        <span>Conectar</span>
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={disconnect}
+                    size="lg"
+                    variant="destructive"
+                    className="flex items-center space-x-2"
+                  >
+                    <PhoneOff className="w-5 h-5" />
+                    <span>Desconectar</span>
+                  </Button>
+                )}
                 
                 <Button
                   onClick={clearConversation}
@@ -609,22 +565,13 @@ export default function VoiceTutorChat() {
                   <RotateCcw className="w-5 h-5" />
                   <span>Limpar</span>
                 </Button>
-                
-                <Button
-                  onClick={testMicrophone}
-                  variant="outline"
-                  size="lg"
-                  className="flex items-center space-x-2"
-                >
-                  <Mic className="w-5 h-5" />
-                  <span>Testar</span>
-                </Button>
               </div>
 
-              {currentTranscription && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-600 font-medium mb-1">Transcrevendo:</p>
-                  <p className="text-blue-800">{currentTranscription}</p>
+              {connectionState === 'error' && (
+                <div className="mt-6 p-4 bg-red-50 rounded-lg border border-red-200">
+                  <p className="text-sm text-red-600 font-medium">
+                    Erro de conexão. Verifique sua internet e tente novamente.
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -633,7 +580,10 @@ export default function VoiceTutorChat() {
           {/* Conversation History */}
           <Card className="bg-white/90 backdrop-blur-sm shadow-xl border-0">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-800">Conversa</CardTitle>
+              <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <Bot className="w-5 h-5" />
+                Conversa em Tempo Real
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-96 overflow-y-auto space-y-4 mb-4 pr-2">
@@ -665,9 +615,9 @@ export default function VoiceTutorChat() {
                                 minute: '2-digit' 
                               })}
                             </span>
-                            {message.duration && (
-                              <span className="text-xs opacity-70">
-                                {message.duration.toFixed(1)}s
+                            {message.type === 'audio' && (
+                              <span className="text-xs opacity-70 bg-black/10 px-1 rounded">
+                                voz
                               </span>
                             )}
                           </div>
