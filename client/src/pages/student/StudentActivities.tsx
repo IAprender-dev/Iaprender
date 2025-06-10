@@ -51,6 +51,7 @@ export default function StudentActivities() {
   });
   const [showCelebration, setShowCelebration] = useState(false);
   const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
+  const [questionHistory, setQuestionHistory] = useState<string[]>([]);
 
   const { toast } = useToast();
 
@@ -66,16 +67,21 @@ export default function StudentActivities() {
       const response = await apiRequest('POST', '/api/ai/generate-quiz', {
         topic,
         questionCount: 1,
-        validateTopic: true
+        validateTopic: true,
+        previousQuestions: questionHistory
       });
       return await response.json();
     },
     onSuccess: (data: QuizResponse) => {
       if (data.questions && data.questions.length > 0) {
-        setCurrentQuestion(data.questions[0]);
+        const newQuestion = data.questions[0];
+        setCurrentQuestion(newQuestion);
         setCurrentTopic(data.validatedTopic || data.topic);
         setSelectedAnswer(null);
         setShowExplanation(false);
+        
+        // Add question to history to avoid repetition
+        setQuestionHistory(prev => [...prev, newQuestion.question].slice(-10)); // Keep last 10 questions
       }
     },
     onError: (error: any) => {
@@ -153,6 +159,7 @@ export default function StudentActivities() {
     setInputTopic('');
     setSelectedAnswer(null);
     setShowExplanation(false);
+    setQuestionHistory([]); // Clear question history when changing topic
   };
 
   const getLevelBadge = (level: number) => {

@@ -1348,7 +1348,7 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   // AI Quiz Generation with BNCC validation
   app.post('/api/ai/generate-quiz', async (req: Request, res: Response) => {
     try {
-      const { subject, topic, grade, questionCount = 1, validateTopic } = req.body;
+      const { subject, topic, grade, questionCount = 1, validateTopic, previousQuestions = [] } = req.body;
       
       if (!topic) {
         return res.status(400).json({ error: 'Topic is required' });
@@ -1412,6 +1412,14 @@ DIRETRIZES:
 - Linguagem clara e adequada para a faixa etária
 - Contextualização com a realidade brasileira quando possível
 - Conteúdo preciso e pedagogicamente correto
+- EVITE REPETIR perguntas já feitas anteriormente
+- Explore diferentes aspectos e níveis de complexidade do tema
+- Varie o tipo de pergunta: conceitual, aplicação, análise, comparação
+
+${previousQuestions.length > 0 ? `PERGUNTAS JÁ FEITAS (NÃO REPETIR):
+${previousQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
+
+CRIE PERGUNTAS COMPLETAMENTE DIFERENTES das listadas acima.` : ''}
 
 FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
 {
@@ -1431,7 +1439,7 @@ FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
           messages: [
             {
               role: 'user',
-              content: `Crie ${questionCount} questão(ões) educacional(is) sobre "${topic}" para estudantes brasileiros, seguindo as diretrizes da BNCC quando aplicável.`
+              content: `Crie ${questionCount} questão(ões) educacional(is) ÚNICA(S) e ORIGINAL(IS) sobre "${topic}" para estudantes brasileiros, seguindo as diretrizes da BNCC quando aplicável. ${previousQuestions.length > 0 ? 'IMPORTANTE: Não repita nenhuma das perguntas já feitas anteriormente. Explore aspectos diferentes do tema.' : ''}`
             }
           ]
         })
