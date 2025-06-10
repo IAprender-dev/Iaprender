@@ -1348,10 +1348,10 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   // AI Quiz Generation with BNCC validation
   app.post('/api/ai/generate-quiz', async (req: Request, res: Response) => {
     try {
-      const { subject, topic, grade, questionCount = 5, validateTopic } = req.body;
+      const { subject, topic, grade, questionCount = 1, validateTopic } = req.body;
       
-      if (!subject || !topic) {
-        return res.status(400).json({ error: 'Subject and topic are required' });
+      if (!topic) {
+        return res.status(400).json({ error: 'Topic is required' });
       }
 
       // BNCC subject topics mapping for validation
@@ -1370,17 +1370,26 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
         'literatura': ['gêneros', 'escolas literárias', 'análise', 'interpretação', 'autores', 'obras', 'contexto histórico', 'figuras de linguagem']
       };
 
-      // Validate topic against BNCC if requested
+      // Smart BNCC validation for any topic
+      let detectedSubject = subject || 'geral';
+      let bnccAlignment = '';
+      
       if (validateTopic) {
-        const subjectTopics = bnccTopics[subject.toLowerCase()] || [];
-        const isValidTopic = subjectTopics.some(validTopic => 
-          topic.toLowerCase().includes(validTopic) || validTopic.includes(topic.toLowerCase())
-        );
+        // Try to detect subject from topic
+        for (const [subjectKey, topics] of Object.entries(bnccTopics)) {
+          const isRelated = topics.some(validTopic => 
+            topic.toLowerCase().includes(validTopic) || validTopic.includes(topic.toLowerCase())
+          );
+          if (isRelated) {
+            detectedSubject = subjectKey;
+            bnccAlignment = `Alinhado com BNCC - ${subjectKey}`;
+            break;
+          }
+        }
         
-        if (!isValidTopic) {
-          return res.status(400).json({ 
-            error: `O tema "${topic}" não está alinhado com a BNCC para ${subject}. Tente temas como: ${subjectTopics.slice(0, 5).join(', ')}, entre outros.`
-          });
+        // If no specific subject detected, it's still valid as general knowledge
+        if (!bnccAlignment) {
+          bnccAlignment = 'Tema educacional válido para aprendizado geral';
         }
       }
 
@@ -1394,23 +1403,24 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 3000,
-          system: `Você é um especialista em educação brasileira que cria exercícios rigorosamente baseados na BNCC.
+          system: `Você é um especialista em educação brasileira que cria exercícios educacionais baseados na BNCC.
 
-IMPORTANTE: Crie exatamente ${questionCount} questões de múltipla escolha sobre "${topic}" em ${subject} para ${grade || '6º ano'}.
+IMPORTANTE: Crie exatamente ${questionCount} questão(ões) de múltipla escolha sobre "${topic}" para estudantes do ensino fundamental/médio.
 
-DIRETRIZES BNCC:
-- Questões devem estar alinhadas às competências e habilidades da BNCC
-- Linguagem apropriada para a faixa etária
-- Contextualização adequada à realidade brasileira
-- Progressão pedagógica respeitada
+DIRETRIZES:
+- Questões devem ser educativas e apropriadas para estudantes brasileiros
+- Linguagem clara e adequada para a faixa etária
+- Contextualização com a realidade brasileira quando possível
+- Conteúdo preciso e pedagogicamente correto
 
 FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
 {
   "topic": "${topic}",
+  "validatedTopic": "${topic}",
+  "bnccAlignment": "${bnccAlignment || 'Conteúdo educacional'}",
   "questions": [
     {
-      "id": "1",
-      "question": "Pergunta clara e objetiva?",
+      "question": "Pergunta clara e objetiva sobre ${topic}?",
       "options": ["Alternativa A", "Alternativa B", "Alternativa C", "Alternativa D"],
       "correctAnswer": 0,
       "explanation": "Explicação pedagógica detalhada da resposta correta",
@@ -1421,7 +1431,7 @@ FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
           messages: [
             {
               role: 'user',
-              content: `Crie ${questionCount} questões sobre "${topic}" em ${subject} para ${grade || '6º ano'}, seguindo rigorosamente a BNCC brasileira.`
+              content: `Crie ${questionCount} questão(ões) educacional(is) sobre "${topic}" para estudantes brasileiros, seguindo as diretrizes da BNCC quando aplicável.`
             }
           ]
         })
