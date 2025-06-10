@@ -146,8 +146,15 @@ export default function VoiceTutorChat() {
         const level = Math.min(1, average / 128);
         setAudioLevel(level);
 
+        const detection = voiceDetectionRef.current;
+
+        // Log when speech threshold is exceeded
+        if (level > SPEECH_THRESHOLD && !isSpeaking) {
+          console.log('🗣️ Speech detected! Level:', level.toFixed(3), 'Threshold:', SPEECH_THRESHOLD);
+        }
+
         // Debug logging for audio levels and speech detection
-        if (Math.random() < 0.03) { // Log 3% of the time for better debugging
+        if (Math.random() < 0.05) { // Log 5% of the time for better debugging
           console.log('🎵 Audio level:', level.toFixed(3), 
                      'Speaking:', isSpeaking, 
                      'Listening:', isListening,
@@ -156,13 +163,6 @@ export default function VoiceTutorChat() {
                      'SpeechCount:', detection.speechCount,
                      'SilenceCount:', detection.silenceCount);
         }
-        
-        // Log when speech threshold is exceeded
-        if (level > SPEECH_THRESHOLD && !isSpeaking) {
-          console.log('🗣️ Speech detected! Level:', level.toFixed(3), 'Threshold:', SPEECH_THRESHOLD);
-        }
-
-        const detection = voiceDetectionRef.current;
 
         // If AI is speaking and user speaks, interrupt immediately
         if (isSpeaking && level > INTERRUPTION_THRESHOLD) {
