@@ -52,6 +52,21 @@ const answerSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Multer configuration for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 25 * 1024 * 1024, // 25MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('audio/') || file.mimetype === 'application/octet-stream') {
+        cb(null, true);
+      } else {
+        cb(new Error('Only audio files are allowed'));
+      }
+    }
+  });
+
   // Session setup
   const SessionStore = MemoryStore(session);
   app.use(
@@ -733,8 +748,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // USER IMPORT ROUTES
-  // Configure multer for file uploads
-  const upload = multer({
+  // Configure multer for CSV uploads
+  const csvUpload = multer({
     storage: multer.memoryStorage(),
     limits: {
       fileSize: 5 * 1024 * 1024, // 5MB limit
@@ -753,7 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     "/api/contracts/:id/import-users",
     authenticate,
     authorize(["admin"]),
-    upload.single('csvFile'),
+    csvUpload.single('csvFile'),
     async (req, res) => {
       try {
         if (!req.file) {
@@ -1570,12 +1585,19 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
     }
   });
 
-  // Audio transcription endpoint using OpenAI Whisper
+  // Real-time audio transcription endpoint using OpenAI Whisper
   app.post('/api/ai/transcribe-audio', upload.single('audio'), authenticate, async (req: Request, res: Response) => {
     try {
       if (!req.file) {
+        console.log('No file received in request');
         return res.status(400).json({ error: 'Nenhum arquivo de áudio fornecido' });
       }
+
+      console.log('Received audio file:', {
+        mimetype: req.file.mimetype,
+        size: req.file.buffer.length,
+        originalname: req.file.originalname
+      });
 
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
@@ -1583,33 +1605,53 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
 
       // Create a temporary file for OpenAI API
       const tempDir = os.tmpdir();
-      const tempFilePath = path.join(tempDir, `audio_${Date.now()}.wav`);
+      const tempFilePath = path.join(tempDir, `audio_${Date.now()}_${req.session.user?.id}.webm`);
       
-      // Write buffer to temporary file
-      fs.writeFileSync(tempFilePath, req.file.buffer);
-      
-      // Create readable stream for OpenAI
-      const audioStream = fs.createReadStream(tempFilePath);
-      
-      const transcription = await openai.audio.transcriptions.create({
-        file: audioStream,
-        model: 'whisper-1',
-        language: 'pt',
-        response_format: 'json',
-        temperature: 0.0,
-      });
+      try {
+        // Write buffer to temporary file
+        fs.writeFileSync(tempFilePath, req.file.buffer);
+        
+        // Create readable stream for OpenAI
+        const audioStream = fs.createReadStream(tempFilePath);
+        
+        const transcription = await openai.audio.transcriptions.create({
+          file: audioStream,
+          model: 'whisper-1',
+          language: 'pt',
+          response_format: 'verbose_json',
+          temperature: 0.0,
+          prompt: 'Esta é uma conversa sobre matérias escolares entre um estudante brasileiro e uma tutora de IA.'
+        });
 
-      // Clean up temporary file
-      fs.unlinkSync(tempFilePath);
+        // Clean up temporary file
+        fs.unlinkSync(tempFilePath);
 
-      res.json({ 
-        text: transcription.text,
-        confidence: 1.0 
-      });
+        console.log('Transcription successful:', transcription.text);
+
+        res.json({ 
+          text: transcription.text,
+          confidence: transcription.segments?.[0]?.no_speech_prob ? 1 - transcription.segments[0].no_speech_prob : 0.95,
+          duration: transcription.duration
+        });
+
+      } catch (fileError) {
+        // Clean up temp file if it exists
+        try {
+          if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+          }
+        } catch (cleanupError) {
+          console.error('Error cleaning up temp file:', cleanupError);
+        }
+        throw fileError;
+      }
 
     } catch (error) {
       console.error('Erro na transcrição de áudio:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
