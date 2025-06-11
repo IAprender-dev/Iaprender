@@ -330,21 +330,21 @@ export default function StudyPlanGenerator() {
               {/* Step Content */}
               {currentStep === 1 && (
                 <Card className="border border-gray-200 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 rounded-t-lg">
+                  <CardHeader className="bg-white border-b border-gray-200 rounded-t-lg">
                     <CardTitle className="flex items-center gap-3 text-gray-900">
-                      <BookOpen className="w-6 h-6 text-blue-600" />
+                      <BookOpen className="w-6 h-6 text-indigo-600" />
                       Selecione suas Matérias - {(user as any)?.schoolYear}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="planName">Nome do Plano</Label>
+                      <Label htmlFor="planName" className="text-gray-900 font-medium">Nome do Plano</Label>
                       <Input
                         id="planName"
                         value={planName}
                         onChange={(e) => setPlanName(e.target.value)}
                         placeholder={`Plano de Estudos - ${(user as any)?.schoolYear}`}
-                        className="rounded-xl"
+                        className="rounded-xl border-gray-300 focus:border-indigo-500"
                       />
                     </div>
 
@@ -353,7 +353,7 @@ export default function StudyPlanGenerator() {
                         <h3 className="text-lg font-semibold text-gray-900">
                           Matérias Disponíveis
                         </h3>
-                        <Badge variant="outline" className="text-blue-600 border-blue-200">
+                        <Badge variant="outline" className="text-indigo-600 border-indigo-200">
                           {subjects.filter(s => s.enabled).length} selecionadas
                         </Badge>
                       </div>
@@ -364,8 +364,8 @@ export default function StudyPlanGenerator() {
                             key={subject.id} 
                             className={`p-4 transition-all cursor-pointer bg-white ${
                               subject.enabled 
-                                ? 'border-blue-400 border-2 shadow-md ring-2 ring-blue-100' 
-                                : 'border-gray-300 hover:border-blue-300 hover:shadow-sm'
+                                ? 'border-indigo-400 border-2 shadow-md ring-2 ring-indigo-100' 
+                                : 'border-gray-300 hover:border-indigo-300 hover:shadow-sm'
                             }`}
                             onClick={() => updateSubject(subject.id, 'enabled', !subject.enabled)}
                           >
@@ -373,7 +373,7 @@ export default function StudyPlanGenerator() {
                               <div className="flex items-center space-x-3">
                                 <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
                                   subject.enabled 
-                                    ? 'bg-blue-600 border-blue-600' 
+                                    ? 'bg-indigo-600 border-indigo-600' 
                                     : 'border-gray-300'
                                 }`}>
                                   {subject.enabled && (
@@ -438,7 +438,7 @@ export default function StudyPlanGenerator() {
 
                     <Button 
                       onClick={() => setCurrentStep(2)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl"
                       disabled={subjects.filter(s => s.enabled).length === 0}
                     >
                       Próximo: Definir Horários
@@ -449,7 +449,7 @@ export default function StudyPlanGenerator() {
 
               {currentStep === 2 && (
                 <Card className="border border-gray-200 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 rounded-t-lg">
+                  <CardHeader className="bg-white border-b border-gray-200 rounded-t-lg">
                     <CardTitle className="flex items-center gap-3 text-gray-900">
                       <Calendar className="w-6 h-6 text-indigo-600" />
                       Configure seus Horários de Estudo
@@ -475,24 +475,24 @@ export default function StudyPlanGenerator() {
                             {day.enabled && (
                               <div className="flex items-center space-x-3">
                                 <div className="flex items-center space-x-2">
-                                  <Label className="text-sm">Das:</Label>
+                                  <Label className="text-sm text-gray-900 font-medium">Das:</Label>
                                   <Input
                                     type="time"
                                     value={day.startTime}
                                     onChange={(e) => updateSchedule(day.day, 'startTime', e.target.value)}
-                                    className="w-24 h-8"
+                                    className="w-24 h-8 border-gray-300 focus:border-indigo-500"
                                   />
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <Label className="text-sm">Às:</Label>
+                                  <Label className="text-sm text-gray-900 font-medium">Às:</Label>
                                   <Input
                                     type="time"
                                     value={day.endTime}
                                     onChange={(e) => updateSchedule(day.day, 'endTime', e.target.value)}
-                                    className="w-24 h-8"
+                                    className="w-24 h-8 border-gray-300 focus:border-indigo-500"
                                   />
                                 </div>
-                                <Badge variant="outline" className="text-blue-600">
+                                <Badge variant="outline" className="text-indigo-600 border-indigo-200">
                                   {(() => {
                                     const start = new Date(`2000-01-01 ${day.startTime}`);
                                     const end = new Date(`2000-01-01 ${day.endTime}`);
