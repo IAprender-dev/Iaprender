@@ -143,7 +143,7 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
 
   if (!studyPlan) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
+      <Card className="border border-gray-200 bg-white shadow-sm">
         <CardHeader className="text-center py-8">
           <Calendar className="w-12 h-12 text-blue-500 mx-auto mb-4" />
           <CardTitle className="text-xl text-gray-900">Nenhum plano ativo</CardTitle>
@@ -155,7 +155,7 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
 
   if (todaySessions.length === 0) {
     return (
-      <Card className="border-0 bg-gradient-to-br from-green-50 to-emerald-50">
+      <Card className="border border-gray-200 bg-white shadow-sm">
         <CardHeader className="text-center py-8">
           <Coffee className="w-12 h-12 text-green-500 mx-auto mb-4" />
           <CardTitle className="text-xl text-gray-900">Dia livre!</CardTitle>
@@ -168,12 +168,12 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
   return (
     <div className="space-y-6">
       {/* Progress Overview */}
-      <Card className="border-0 bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+      <Card className="border border-gray-200 bg-white shadow-sm">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-2xl font-bold">Hoje</h3>
-              <p className="text-blue-100">
+              <h3 className="text-2xl font-bold text-gray-900">Hoje</h3>
+              <p className="text-gray-600">
                 {new Date().toLocaleDateString('pt-BR', { 
                   weekday: 'long', 
                   day: 'numeric', 
@@ -182,21 +182,21 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
               </p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-blue-600">
                 {getCompletedSessions()}/{todaySessions.length}
               </div>
-              <p className="text-blue-100 text-sm">sessões</p>
+              <p className="text-gray-500 text-sm">sessões</p>
             </div>
           </div>
           
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-sm text-gray-700">
               <span>Progresso do dia</span>
               <span>{getCompletedTime()}min / {getTotalStudyTime()}min</span>
             </div>
             <Progress 
               value={(getCompletedSessions() / todaySessions.length) * 100} 
-              className="h-2 bg-blue-400"
+              className="h-3 bg-gray-200"
             />
           </div>
         </CardContent>
@@ -207,10 +207,10 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
         {todaySessions.map((session) => (
           <Card 
             key={session.id} 
-            className={`border transition-all ${
+            className={`border transition-all shadow-sm ${
               session.isCompleted 
-                ? 'bg-green-50 border-green-200' 
-                : 'bg-white border-gray-200 hover:border-blue-300'
+                ? 'bg-green-50 border-green-300 shadow-green-100' 
+                : 'bg-white border-gray-300 hover:border-blue-400 hover:shadow-md'
             }`}
           >
             <CardContent className="p-4">

@@ -189,18 +189,23 @@ export default function PomodoroTimer({
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden">
-      <div className={`bg-gradient-to-br ${getSessionColor()} p-6 text-white`}>
+    <Card className="w-full max-w-md mx-auto shadow-lg border border-gray-200 bg-white overflow-hidden">
+      <div className="bg-white p-6 border-b border-gray-200">
         <CardHeader className="p-0 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              {getSessionIcon()}
-              <CardTitle className="text-xl font-bold">{getSessionTitle()}</CardTitle>
+              <div className={`p-2 rounded-lg ${
+                currentSessionType === 'study' ? 'bg-blue-100' : 
+                currentSessionType === 'shortBreak' ? 'bg-green-100' : 'bg-purple-100'
+              }`}>
+                {getSessionIcon()}
+              </div>
+              <CardTitle className="text-xl font-bold text-gray-900">{getSessionTitle()}</CardTitle>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-white/20"
+              className="text-gray-600 hover:bg-gray-100"
               onClick={() => setSoundEnabled(!soundEnabled)}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -209,20 +214,23 @@ export default function PomodoroTimer({
         </CardHeader>
         
         <div className="text-center space-y-4">
-          <div className="text-6xl font-mono font-bold tracking-wider">
+          <div className={`text-6xl font-mono font-bold tracking-wider ${
+            currentSessionType === 'study' ? 'text-blue-600' : 
+            currentSessionType === 'shortBreak' ? 'text-green-600' : 'text-purple-600'
+          }`}>
             {formatTime(timeLeft)}
           </div>
           
           <Progress 
             value={getProgressPercentage()} 
-            className="h-2 bg-white/20"
+            className="h-3 bg-gray-200"
           />
           
           <div className="flex items-center justify-center space-x-2">
-            <Badge variant="secondary" className="bg-white/20 text-white border-0">
+            <Badge variant="secondary" className="bg-gray-100 text-gray-700 border border-gray-300">
               Sessão {completedSessions + 1}
             </Badge>
-            <Badge variant="secondary" className="bg-white/20 text-white border-0">
+            <Badge variant="secondary" className="bg-gray-100 text-gray-700 border border-gray-300">
               {completedSessions} completas
             </Badge>
           </div>
@@ -271,18 +279,18 @@ export default function PomodoroTimer({
           Pular Sessão
         </Button>
         
-        <div className="mt-6 grid grid-cols-3 gap-4 text-center text-sm text-gray-600">
-          <div>
-            <div className="font-semibold text-blue-600">{studyDuration}min</div>
-            <div>Estudo</div>
+        <div className="mt-6 grid grid-cols-3 gap-4 text-center text-sm">
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="font-semibold text-blue-700">{studyDuration}min</div>
+            <div className="text-gray-600">Estudo</div>
           </div>
-          <div>
-            <div className="font-semibold text-green-600">{shortBreakDuration}min</div>
-            <div>Pausa</div>
+          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+            <div className="font-semibold text-green-700">{shortBreakDuration}min</div>
+            <div className="text-gray-600">Pausa</div>
           </div>
-          <div>
-            <div className="font-semibold text-purple-600">{longBreakDuration}min</div>
-            <div>Pausa Longa</div>
+          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="font-semibold text-purple-700">{longBreakDuration}min</div>
+            <div className="text-gray-600">Pausa Longa</div>
           </div>
         </div>
       </CardContent>
