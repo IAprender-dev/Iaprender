@@ -23,7 +23,8 @@ import {
   CheckCircle,
   Layers,
   Package,
-  ClipboardCheck
+  ClipboardCheck,
+  User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -629,38 +630,50 @@ export default function PlanejamentoAula() {
 
                     {/* 3. Tema da Aula */}
                     {planoGerado.temaDaAula && (
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                          <BookOpen className="h-4 w-4 text-purple-600" />
-                          3. Tema da Aula
-                        </h3>
-                        <div className="bg-purple-50 p-3 rounded-lg space-y-2 text-sm">
-                          {Object.entries(planoGerado.temaDaAula).map(([key, value]) => (
-                            <div key={key}>
-                              <span className="font-medium text-purple-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                              <p className="text-purple-600 ml-2">{String(value)}</p>
+                      <div className="bg-white border border-purple-200 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-purple-50 px-8 py-6 border-b border-purple-200">
+                          <h3 className="flex items-center gap-4 font-bold text-gray-900 text-xl">
+                            <div className="p-3 bg-purple-600 rounded-xl shadow-md">
+                              <BookOpen className="h-6 w-6 text-white" />
                             </div>
-                          ))}
+                            <span className="bg-gradient-to-r from-purple-700 to-indigo-800 bg-clip-text text-transparent">3. Tema da Aula</span>
+                          </h3>
+                        </div>
+                        <div className="p-8">
+                          <div className="space-y-6">
+                            {Object.entries(planoGerado.temaDaAula).map(([key, value]) => (
+                              <div key={key} className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-xl border border-purple-200">
+                                <span className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2 block">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
+                                <p className="text-purple-900 text-base leading-relaxed">{String(value)}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
 
                     {/* 4. Objetivos de Aprendizagem */}
                     {planoGerado.objetivosAprendizagem && (
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                          <Target className="h-4 w-4 text-blue-600" />
-                          4. Objetivos de Aprendizagem
-                        </h3>
-                        <div className="bg-blue-50 p-3 rounded-lg space-y-2 text-sm">
-                          {Object.entries(planoGerado.objetivosAprendizagem).map(([key, value]) => (
-                            <div key={key}>
-                              <span className="font-medium text-blue-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                              <div className="text-blue-600 ml-2">
-                                {renderValue(value)}
-                              </div>
+                      <div className="bg-white border border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-50 via-sky-50 to-blue-50 px-8 py-6 border-b border-blue-200">
+                          <h3 className="flex items-center gap-4 font-bold text-gray-900 text-xl">
+                            <div className="p-3 bg-blue-600 rounded-xl shadow-md">
+                              <Target className="h-6 w-6 text-white" />
                             </div>
-                          ))}
+                            <span className="bg-gradient-to-r from-blue-700 to-sky-800 bg-clip-text text-transparent">4. Objetivos de Aprendizagem</span>
+                          </h3>
+                        </div>
+                        <div className="p-8">
+                          <div className="space-y-6">
+                            {Object.entries(planoGerado.objetivosAprendizagem).map(([key, value]) => (
+                              <div key={key} className="bg-gradient-to-br from-blue-50 to-sky-50 p-6 rounded-xl border border-blue-200">
+                                <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-3 block">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
+                                <div className="text-blue-900">
+                                  {renderValue(value)}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -777,36 +790,53 @@ export default function PlanejamentoAula() {
                       </div>
                     )}
 
-                    {/* Seções adicionais (10-15) de forma similar */}
+                    {/* Seções adicionais (10-15) com design moderno */}
                     {planoGerado && Object.entries(planoGerado).map(([secao, conteudo]) => {
                       if (['identificacao', 'alinhamentoBNCC', 'temaDaAula', 'objetivosAprendizagem', 'conteudos', 'metodologia', 'sequenciaDidatica', 'recursosDidaticos', 'avaliacao'].includes(secao)) {
                         return null;
                       }
                       
+                      const sectionColors = {
+                        inclusaoAcessibilidade: { bg: 'orange', icon: 'bg-orange-600', border: 'border-orange-200' },
+                        interdisciplinaridade: { bg: 'cyan', icon: 'bg-cyan-600', border: 'border-cyan-200' },
+                        contextualizacao: { bg: 'rose', icon: 'bg-rose-600', border: 'border-rose-200' },
+                        extensaoAprofundamento: { bg: 'yellow', icon: 'bg-yellow-600', border: 'border-yellow-200' },
+                        reflexaoDocente: { bg: 'pink', icon: 'bg-pink-600', border: 'border-pink-200' },
+                        referencias: { bg: 'gray', icon: 'bg-gray-600', border: 'border-gray-200' }
+                      };
+                      
+                      const colors = sectionColors[secao as keyof typeof sectionColors] || { bg: 'slate', icon: 'bg-slate-600', border: 'border-slate-200' };
+                      
                       return (
-                        <div key={secao}>
-                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                            <FileText className="h-4 w-4 text-slate-600" />
-                            {secao.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                          </h3>
-                          <div className="bg-slate-50 p-3 rounded-lg text-sm">
+                        <div key={secao} className={`bg-white border ${colors.border} rounded-2xl shadow-lg overflow-hidden`}>
+                          <div className={`bg-gradient-to-r from-${colors.bg}-50 via-${colors.bg}-50 to-${colors.bg}-50 px-8 py-6 border-b ${colors.border}`}>
+                            <h3 className="flex items-center gap-4 font-bold text-gray-900 text-xl">
+                              <div className={`p-3 ${colors.icon} rounded-xl shadow-md`}>
+                                <FileText className="h-6 w-6 text-white" />
+                              </div>
+                              <span className={`bg-gradient-to-r from-${colors.bg}-700 to-${colors.bg}-800 bg-clip-text text-transparent`}>
+                                {secao.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                              </span>
+                            </h3>
+                          </div>
+                          <div className="p-8">
                             {typeof conteudo === 'object' && conteudo !== null ? (
-                              Object.entries(conteudo as Record<string, any>).map(([key, value]) => (
-                                <div key={key} className="mb-2">
-                                  <span className="font-medium text-slate-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                                  <div className="text-slate-600 ml-2">
-                                    {Array.isArray(value) ? (
-                                      <ul className="list-disc list-inside">
-                                        {value.map((item: any, index: number) => <li key={index}>{String(item)}</li>)}
-                                      </ul>
-                                    ) : (
-                                      <p>{String(value)}</p>
-                                    )}
+                              <div className="space-y-6">
+                                {Object.entries(conteudo as Record<string, any>).map(([key, value]) => (
+                                  <div key={key} className={`bg-gradient-to-br from-${colors.bg}-50 to-${colors.bg}-50 p-6 rounded-xl border ${colors.border}`}>
+                                    <span className={`text-xs font-semibold text-${colors.bg}-600 uppercase tracking-wider mb-3 block`}>
+                                      {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                                    </span>
+                                    <div className={`text-${colors.bg}-900`}>
+                                      {renderValue(value)}
+                                    </div>
                                   </div>
-                                </div>
-                              ))
+                                ))}
+                              </div>
                             ) : (
-                              <p className="text-slate-600">{String(conteudo)}</p>
+                              <div className={`bg-gradient-to-br from-${colors.bg}-50 to-${colors.bg}-50 p-6 rounded-xl border ${colors.border}`}>
+                                <p className={`text-${colors.bg}-900 text-base leading-relaxed`}>{String(conteudo)}</p>
+                              </div>
                             )}
                           </div>
                         </div>
