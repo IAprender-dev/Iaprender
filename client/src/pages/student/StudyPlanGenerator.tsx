@@ -772,15 +772,15 @@ export default function StudyPlanGenerator() {
                       <p className="text-gray-700">Priorize matérias com maior dificuldade nos horários em que você tem mais energia</p>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <div className="w-3 h-3 bg-indigo-500 rounded-full mt-1 flex-shrink-0"></div>
                       <p className="text-gray-700">Use o timer Pomodoro para manter o foco e evitar esgotamento mental</p>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <div className="w-3 h-3 bg-purple-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <div className="w-3 h-3 bg-indigo-500 rounded-full mt-1 flex-shrink-0"></div>
                       <p className="text-gray-700">Reserve pelo menos um dia da semana para revisão geral</p>
                     </div>
                     <div className="flex items-start space-x-3">
-                      <div className="w-3 h-3 bg-orange-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <div className="w-3 h-3 bg-indigo-500 rounded-full mt-1 flex-shrink-0"></div>
                       <p className="text-gray-700">Ajuste o plano semanalmente conforme seu progresso</p>
                     </div>
                   </div>
