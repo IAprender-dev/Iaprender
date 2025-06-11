@@ -644,13 +644,7 @@ export default function PlanejamentoAula() {
                             <div key={key}>
                               <span className="font-medium text-amber-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                               <div className="text-amber-600 ml-2">
-                                {Array.isArray(value) ? (
-                                  <ul className="list-disc list-inside space-y-1">
-                                    {value.map((item, index) => <li key={index}>{item}</li>)}
-                                  </ul>
-                                ) : (
-                                  <p>{value}</p>
-                                )}
+                                {renderValue(value)}
                               </div>
                             </div>
                           ))}
@@ -671,18 +665,12 @@ export default function PlanejamentoAula() {
                               <div key={key} className="mb-2">
                                 <span className="font-medium text-indigo-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                                 <div className="text-indigo-600 ml-2">
-                                  {Array.isArray(value) ? (
-                                    <ul className="list-disc list-inside space-y-1">
-                                      {value.map((item, index) => <li key={index}>{item}</li>)}
-                                    </ul>
-                                  ) : (
-                                    <p>{value}</p>
-                                  )}
+                                  {renderValue(value)}
                                 </div>
                               </div>
                             ))
                           ) : (
-                            <p className="text-indigo-600">{planoGerado.metodologia}</p>
+                            <p className="text-indigo-600">{String(planoGerado.metodologia)}</p>
                           )}
                         </div>
                       </div>
@@ -700,13 +688,7 @@ export default function PlanejamentoAula() {
                             <div key={fase} className="bg-rose-50 p-3 rounded-lg border-l-4 border-rose-500">
                               <h4 className="font-medium text-rose-700 capitalize mb-2">{fase.replace(/([A-Z])/g, ' $1').toLowerCase()}</h4>
                               <div className="text-rose-600 text-sm">
-                                {Array.isArray(conteudo) ? (
-                                  <ul className="list-disc list-inside space-y-1">
-                                    {conteudo.map((item, index) => <li key={index}>{item}</li>)}
-                                  </ul>
-                                ) : (
-                                  <p>{conteudo}</p>
-                                )}
+                                {renderValue(conteudo)}
                               </div>
                             </div>
                           ))}
@@ -727,18 +709,12 @@ export default function PlanejamentoAula() {
                               <div key={key} className="mb-2">
                                 <span className="font-medium text-emerald-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                                 <div className="text-emerald-600 ml-2">
-                                  {Array.isArray(value) ? (
-                                    <ul className="list-disc list-inside">
-                                      {value.map((item, index) => <li key={index}>{item}</li>)}
-                                    </ul>
-                                  ) : (
-                                    <p>{value}</p>
-                                  )}
+                                  {renderValue(value)}
                                 </div>
                               </div>
                             ))
                           ) : (
-                            <p className="text-emerald-600">{planoGerado.recursosDidaticos}</p>
+                            <p className="text-emerald-600">{String(planoGerado.recursosDidaticos)}</p>
                           )}
                         </div>
                       </div>
@@ -757,18 +733,12 @@ export default function PlanejamentoAula() {
                               <div key={key} className="mb-2">
                                 <span className="font-medium text-teal-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                                 <div className="text-teal-600 ml-2">
-                                  {Array.isArray(value) ? (
-                                    <ul className="list-disc list-inside">
-                                      {value.map((item, index) => <li key={index}>{item}</li>)}
-                                    </ul>
-                                  ) : (
-                                    <p>{value}</p>
-                                  )}
+                                  {renderValue(value)}
                                 </div>
                               </div>
                             ))
                           ) : (
-                            <p className="text-teal-600">{planoGerado.avaliacao}</p>
+                            <p className="text-teal-600">{String(planoGerado.avaliacao)}</p>
                           )}
                         </div>
                       </div>
