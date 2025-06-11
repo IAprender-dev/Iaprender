@@ -553,9 +553,9 @@ export default function StudyPlanGenerator() {
 
               {currentStep === 3 && (
                 <Card className="border border-gray-200 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200 rounded-t-lg">
+                  <CardHeader className="bg-white border-b border-gray-200 rounded-t-lg">
                     <CardTitle className="flex items-center gap-3 text-gray-900">
-                      <Timer className="w-6 h-6 text-purple-600" />
+                      <Timer className="w-6 h-6 text-indigo-600" />
                       Configurações da Técnica Pomodoro
                     </CardTitle>
                   </CardHeader>
@@ -636,8 +636,8 @@ export default function StudyPlanGenerator() {
                       />
                     </div>
 
-                    <div className="bg-purple-50 border border-purple-300 rounded-xl p-4">
-                      <h4 className="font-semibold text-purple-900 mb-2">
+                    <div className="bg-indigo-50 border border-indigo-300 rounded-xl p-4">
+                      <h4 className="font-semibold text-indigo-900 mb-2">
                         <Timer className="w-4 h-4 inline mr-2" />
                         Como Funciona a Técnica Pomodoro
                       </h4>
@@ -659,7 +659,7 @@ export default function StudyPlanGenerator() {
                       </Button>
                       <Button 
                         onClick={generateStudyPlan}
-                        className="flex-1 bg-purple-600 hover:bg-purple-700"
+                        className="flex-1 bg-indigo-600 hover:bg-indigo-700"
                       >
                         <Sparkles className="w-4 h-4 mr-2" />
                         Gerar Plano de Estudos
@@ -671,7 +671,7 @@ export default function StudyPlanGenerator() {
 
               {currentStep === 4 && generatedPlan && (
                 <Card className="border border-gray-200 shadow-lg bg-white">
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-200 rounded-t-lg">
+                  <CardHeader className="bg-white border-b border-gray-200 rounded-t-lg">
                     <CardTitle className="flex items-center gap-3 text-gray-900">
                       <CheckCircle2 className="w-6 h-6 text-green-600" />
                       Plano de Estudos Gerado com Sucesso!
@@ -759,16 +759,16 @@ export default function StudyPlanGenerator() {
 
               {/* Tips */}
               <Card className="border border-gray-200 shadow-lg bg-white">
-                <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-gray-200 rounded-t-lg">
+                <CardHeader className="bg-white border-b border-gray-200 rounded-t-lg">
                   <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
-                    <Sparkles className="w-5 h-5 text-amber-600" />
+                    <Sparkles className="w-5 h-5 text-indigo-600" />
                     Dicas do AIverse
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3">
                   <div className="space-y-3 text-sm">
                     <div className="flex items-start space-x-3">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <div className="w-3 h-3 bg-indigo-500 rounded-full mt-1 flex-shrink-0"></div>
                       <p className="text-gray-700">Priorize matérias com maior dificuldade nos horários em que você tem mais energia</p>
                     </div>
                     <div className="flex items-start space-x-3">
