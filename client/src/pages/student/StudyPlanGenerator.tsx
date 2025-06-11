@@ -54,57 +54,62 @@ interface PomodoroSettings {
 
 const schoolYearSubjects: Record<string, Subject[]> = {
   "6º ano": [
-    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 4, difficulty: 3, enabled: true },
-    { id: "portugues", name: "Português", priority: "alta", hoursPerWeek: 4, difficulty: 3, enabled: true },
-    { id: "ciencias", name: "Ciências", priority: "média", hoursPerWeek: 3, difficulty: 2, enabled: true },
+    { id: "lingua_portuguesa", name: "Língua Portuguesa", priority: "alta", hoursPerWeek: 5, difficulty: 3, enabled: true },
+    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 5, difficulty: 3, enabled: true },
+    { id: "ciencias", name: "Ciências da Natureza", priority: "alta", hoursPerWeek: 3, difficulty: 2, enabled: true },
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
+    { id: "lingua_inglesa", name: "Língua Inglesa", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
+    { id: "ensino_religioso", name: "Ensino Religioso", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "7º ano": [
-    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
-    { id: "portugues", name: "Português", priority: "alta", hoursPerWeek: 4, difficulty: 3, enabled: true },
-    { id: "ciencias", name: "Ciências", priority: "média", hoursPerWeek: 3, difficulty: 3, enabled: true },
+    { id: "lingua_portuguesa", name: "Língua Portuguesa", priority: "alta", hoursPerWeek: 5, difficulty: 3, enabled: true },
+    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 5, difficulty: 4, enabled: true },
+    { id: "ciencias", name: "Ciências da Natureza", priority: "alta", hoursPerWeek: 3, difficulty: 3, enabled: true },
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
-    { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
+    { id: "lingua_inglesa", name: "Língua Inglesa", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
+    { id: "ensino_religioso", name: "Ensino Religioso", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "8º ano": [
-    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
-    { id: "portugues", name: "Português", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
-    { id: "ciencias", name: "Ciências", priority: "alta", hoursPerWeek: 3, difficulty: 4, enabled: true },
+    { id: "lingua_portuguesa", name: "Língua Portuguesa", priority: "alta", hoursPerWeek: 5, difficulty: 4, enabled: true },
+    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 5, difficulty: 4, enabled: true },
+    { id: "ciencias", name: "Ciências da Natureza", priority: "alta", hoursPerWeek: 3, difficulty: 4, enabled: true },
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
-    { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
+    { id: "lingua_inglesa", name: "Língua Inglesa", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
+    { id: "ensino_religioso", name: "Ensino Religioso", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "9º ano": [
-    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 4, difficulty: 5, enabled: true },
-    { id: "portugues", name: "Português", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
-    { id: "ciencias", name: "Ciências", priority: "alta", hoursPerWeek: 3, difficulty: 4, enabled: true },
+    { id: "lingua_portuguesa", name: "Língua Portuguesa", priority: "alta", hoursPerWeek: 5, difficulty: 4, enabled: true },
+    { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 5, difficulty: 5, enabled: true },
+    { id: "ciencias", name: "Ciências da Natureza", priority: "alta", hoursPerWeek: 3, difficulty: 4, enabled: true },
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
-    { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 4, enabled: true },
+    { id: "lingua_inglesa", name: "Língua Inglesa", priority: "média", hoursPerWeek: 2, difficulty: 4, enabled: true },
+    { id: "ensino_religioso", name: "Ensino Religioso", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "1º ano": [
+    { id: "lingua_portuguesa", name: "Língua Portuguesa", priority: "alta", hoursPerWeek: 5, difficulty: 4, enabled: true },
     { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 5, difficulty: 5, enabled: true },
-    { id: "portugues", name: "Português", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
     { id: "fisica", name: "Física", priority: "alta", hoursPerWeek: 3, difficulty: 5, enabled: true },
     { id: "quimica", name: "Química", priority: "alta", hoursPerWeek: 3, difficulty: 5, enabled: true },
     { id: "biologia", name: "Biologia", priority: "alta", hoursPerWeek: 3, difficulty: 4, enabled: true },
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
-    { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
+    { id: "lingua_inglesa", name: "Língua Inglesa", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "filosofia", name: "Filosofia", priority: "baixa", hoursPerWeek: 1, difficulty: 2, enabled: false },
     { id: "sociologia", name: "Sociologia", priority: "baixa", hoursPerWeek: 1, difficulty: 2, enabled: false },
   ],
   "2º ano": [
+    { id: "lingua_portuguesa", name: "Língua Portuguesa", priority: "alta", hoursPerWeek: 5, difficulty: 5, enabled: true },
     { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 5, difficulty: 5, enabled: true },
-    { id: "portugues", name: "Português", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
     { id: "fisica", name: "Física", priority: "alta", hoursPerWeek: 3, difficulty: 5, enabled: true },
     { id: "quimica", name: "Química", priority: "alta", hoursPerWeek: 3, difficulty: 5, enabled: true },
     { id: "biologia", name: "Biologia", priority: "alta", hoursPerWeek: 3, difficulty: 4, enabled: true },
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 4, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 4, enabled: true },
-    { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 4, enabled: true },
+    { id: "lingua_inglesa", name: "Língua Inglesa", priority: "média", hoursPerWeek: 2, difficulty: 4, enabled: true },
     { id: "filosofia", name: "Filosofia", priority: "baixa", hoursPerWeek: 1, difficulty: 3, enabled: false },
     { id: "sociologia", name: "Sociologia", priority: "baixa", hoursPerWeek: 1, difficulty: 3, enabled: false },
   ],
@@ -151,8 +156,15 @@ export default function StudyPlanGenerator() {
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
 
   useEffect(() => {
-    if ((user as any)?.schoolYear && schoolYearSubjects[(user as any).schoolYear]) {
-      setSubjects([...schoolYearSubjects[(user as any).schoolYear]]);
+    // Load subjects based on user's school year or default to 6º ano
+    const schoolYear = (user as any)?.schoolYear || "6º ano";
+    console.log("Loading subjects for:", schoolYear);
+    
+    if (schoolYearSubjects[schoolYear]) {
+      setSubjects([...schoolYearSubjects[schoolYear]]);
+    } else {
+      // Fallback to 6º ano if school year not found
+      setSubjects([...schoolYearSubjects["6º ano"]]);
     }
   }, [user]);
 
