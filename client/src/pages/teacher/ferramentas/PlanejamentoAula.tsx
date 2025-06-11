@@ -20,7 +20,10 @@ import {
   Plus,
   Settings,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Layers,
+  Package,
+  ClipboardCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,6 +33,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+
+interface LessonPlanData {
+  identificacao?: Record<string, any>;
+  alinhamentoBNCC?: Record<string, any>;
+  temaDaAula?: Record<string, any>;
+  objetivosAprendizagem?: Record<string, any>;
+  conteudos?: Record<string, any>;
+  metodologia?: Record<string, any>;
+  sequenciaDidatica?: Record<string, any>;
+  recursosDidaticos?: Record<string, any>;
+  avaliacao?: Record<string, any>;
+  [key: string]: any;
+}
+
+const renderValue = (value: any): React.ReactNode => {
+  if (Array.isArray(value)) {
+    return (
+      <ul className="list-disc list-inside space-y-1">
+        {value.map((item, index) => <li key={index}>{String(item)}</li>)}
+      </ul>
+    );
+  }
+  return <p>{String(value)}</p>;
+};
 
 export default function PlanejamentoAula() {
   const { toast } = useToast();
@@ -52,7 +79,7 @@ export default function PlanejamentoAula() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [temaAnalysis, setTemaAnalysis] = useState<any>(null);
-  const [planoGerado, setPlanoGerado] = useState<any>(null);
+  const [planoGerado, setPlanoGerado] = useState<LessonPlanData | null>(null);
 
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
@@ -542,7 +569,7 @@ export default function PlanejamentoAula() {
                           {Object.entries(planoGerado.identificacao).map(([key, value]) => (
                             <div key={key}>
                               <span className="font-semibold text-slate-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                              <p className="text-slate-600">{value}</p>
+                              <p className="text-slate-600">{String(value)}</p>
                             </div>
                           ))}
                         </div>
@@ -578,7 +605,7 @@ export default function PlanejamentoAula() {
                           {Object.entries(planoGerado.temaDaAula).map(([key, value]) => (
                             <div key={key}>
                               <span className="font-medium text-purple-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                              <p className="text-purple-600 ml-2">{value}</p>
+                              <p className="text-purple-600 ml-2">{String(value)}</p>
                             </div>
                           ))}
                         </div>
@@ -597,13 +624,7 @@ export default function PlanejamentoAula() {
                             <div key={key}>
                               <span className="font-medium text-blue-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                               <div className="text-blue-600 ml-2">
-                                {Array.isArray(value) ? (
-                                  <ul className="list-disc list-inside space-y-1">
-                                    {value.map((item, index) => <li key={index}>{item}</li>)}
-                                  </ul>
-                                ) : (
-                                  <p>{value}</p>
-                                )}
+                                {renderValue(value)}
                               </div>
                             </div>
                           ))}
@@ -754,7 +775,7 @@ export default function PlanejamentoAula() {
                     )}
 
                     {/* Seções adicionais (10-15) de forma similar */}
-                    {Object.entries(planoGerado).map(([secao, conteudo]) => {
+                    {planoGerado && Object.entries(planoGerado).map(([secao, conteudo]) => {
                       if (['identificacao', 'alinhamentoBNCC', 'temaDaAula', 'objetivosAprendizagem', 'conteudos', 'metodologia', 'sequenciaDidatica', 'recursosDidaticos', 'avaliacao'].includes(secao)) {
                         return null;
                       }
@@ -766,23 +787,23 @@ export default function PlanejamentoAula() {
                             {secao.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                           </h3>
                           <div className="bg-slate-50 p-3 rounded-lg text-sm">
-                            {typeof conteudo === 'object' ? (
-                              Object.entries(conteudo).map(([key, value]) => (
+                            {typeof conteudo === 'object' && conteudo !== null ? (
+                              Object.entries(conteudo as Record<string, any>).map(([key, value]) => (
                                 <div key={key} className="mb-2">
                                   <span className="font-medium text-slate-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
                                   <div className="text-slate-600 ml-2">
                                     {Array.isArray(value) ? (
                                       <ul className="list-disc list-inside">
-                                        {value.map((item, index) => <li key={index}>{item}</li>)}
+                                        {value.map((item: any, index: number) => <li key={index}>{String(item)}</li>)}
                                       </ul>
                                     ) : (
-                                      <p>{value}</p>
+                                      <p>{String(value)}</p>
                                     )}
                                   </div>
                                 </div>
                               ))
                             ) : (
-                              <p className="text-slate-600">{conteudo}</p>
+                              <p className="text-slate-600">{String(conteudo)}</p>
                             )}
                           </div>
                         </div>
