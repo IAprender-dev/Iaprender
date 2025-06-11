@@ -271,6 +271,10 @@ export const studySchedule = pgTable("study_schedule", {
   startTime: text("start_time").notNull(),
   endTime: text("end_time").notNull(),
   description: text("description"),
+  pomodoroSessions: integer("pomodoro_sessions").default(1).notNull(), // número de pomodoros
+  sessionDuration: integer("session_duration").default(25).notNull(), // duração em minutos
+  breakDuration: integer("break_duration").default(5).notNull(), // pausa em minutos
+  longBreakDuration: integer("long_break_duration").default(15).notNull(), // pausa longa em minutos
   isCompleted: boolean("is_completed").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

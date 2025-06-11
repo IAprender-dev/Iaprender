@@ -485,12 +485,20 @@ export default function StudentDashboard() {
                         <p className="text-sm text-slate-600">Organize seus estudos da semana</p>
                       </div>
                     </div>
-                    <Link href="/aluno/planejamento">
-                      <Button className="gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                        <Target className="h-4 w-4" />
-                        Criar Plano
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link href="/aluno/gerador-plano">
+                        <Button className="gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
+                          <Target className="h-4 w-4" />
+                          Novo Plano
+                        </Button>
+                      </Link>
+                      <Link href="/aluno/planejamento">
+                        <Button variant="outline" className="gap-2">
+                          <Calendar className="h-4 w-4" />
+                          Ver Planos
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
