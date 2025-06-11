@@ -832,25 +832,98 @@ export default function PlanejamentoAula() {
                         return null;
                       }
                       
-                      const sectionColors = {
-                        inclusaoAcessibilidade: { bg: 'orange', icon: 'bg-orange-600', border: 'border-orange-200' },
-                        interdisciplinaridade: { bg: 'cyan', icon: 'bg-cyan-600', border: 'border-cyan-200' },
-                        contextualizacao: { bg: 'rose', icon: 'bg-rose-600', border: 'border-rose-200' },
-                        extensaoAprofundamento: { bg: 'yellow', icon: 'bg-yellow-600', border: 'border-yellow-200' },
-                        reflexaoDocente: { bg: 'pink', icon: 'bg-pink-600', border: 'border-pink-200' },
-                        referencias: { bg: 'gray', icon: 'bg-gray-600', border: 'border-gray-200' }
+                      const getSectionColors = (secao: string) => {
+                        switch (secao) {
+                          case 'inclusaoAcessibilidade':
+                            return {
+                              headerBg: 'bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50',
+                              headerBorder: 'border-orange-200',
+                              iconBg: 'bg-orange-600',
+                              titleText: 'text-orange-800',
+                              contentBg: 'bg-gradient-to-br from-orange-50 to-amber-50',
+                              contentBorder: 'border-orange-200',
+                              labelText: 'text-orange-700',
+                              bodyText: 'text-orange-900'
+                            };
+                          case 'interdisciplinaridade':
+                            return {
+                              headerBg: 'bg-gradient-to-r from-cyan-50 via-blue-50 to-cyan-50',
+                              headerBorder: 'border-cyan-200',
+                              iconBg: 'bg-cyan-600',
+                              titleText: 'text-cyan-800',
+                              contentBg: 'bg-gradient-to-br from-cyan-50 to-blue-50',
+                              contentBorder: 'border-cyan-200',
+                              labelText: 'text-cyan-700',
+                              bodyText: 'text-cyan-900'
+                            };
+                          case 'contextualizacao':
+                            return {
+                              headerBg: 'bg-gradient-to-r from-rose-50 via-pink-50 to-rose-50',
+                              headerBorder: 'border-rose-200',
+                              iconBg: 'bg-rose-600',
+                              titleText: 'text-rose-800',
+                              contentBg: 'bg-gradient-to-br from-rose-50 to-pink-50',
+                              contentBorder: 'border-rose-200',
+                              labelText: 'text-rose-700',
+                              bodyText: 'text-rose-900'
+                            };
+                          case 'extensaoAprofundamento':
+                            return {
+                              headerBg: 'bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50',
+                              headerBorder: 'border-yellow-200',
+                              iconBg: 'bg-yellow-600',
+                              titleText: 'text-yellow-800',
+                              contentBg: 'bg-gradient-to-br from-yellow-50 to-amber-50',
+                              contentBorder: 'border-yellow-200',
+                              labelText: 'text-yellow-700',
+                              bodyText: 'text-yellow-900'
+                            };
+                          case 'reflexaoDocente':
+                            return {
+                              headerBg: 'bg-gradient-to-r from-pink-50 via-rose-50 to-pink-50',
+                              headerBorder: 'border-pink-200',
+                              iconBg: 'bg-pink-600',
+                              titleText: 'text-pink-800',
+                              contentBg: 'bg-gradient-to-br from-pink-50 to-rose-50',
+                              contentBorder: 'border-pink-200',
+                              labelText: 'text-pink-700',
+                              bodyText: 'text-pink-900'
+                            };
+                          case 'referencias':
+                            return {
+                              headerBg: 'bg-gradient-to-r from-gray-50 via-slate-50 to-gray-50',
+                              headerBorder: 'border-gray-200',
+                              iconBg: 'bg-gray-600',
+                              titleText: 'text-gray-800',
+                              contentBg: 'bg-gradient-to-br from-gray-50 to-slate-50',
+                              contentBorder: 'border-gray-200',
+                              labelText: 'text-gray-700',
+                              bodyText: 'text-gray-900'
+                            };
+                          default:
+                            return {
+                              headerBg: 'bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50',
+                              headerBorder: 'border-slate-200',
+                              iconBg: 'bg-slate-600',
+                              titleText: 'text-slate-800',
+                              contentBg: 'bg-gradient-to-br from-slate-50 to-gray-50',
+                              contentBorder: 'border-slate-200',
+                              labelText: 'text-slate-700',
+                              bodyText: 'text-slate-900'
+                            };
+                        }
                       };
                       
-                      const colors = sectionColors[secao as keyof typeof sectionColors] || { bg: 'slate', icon: 'bg-slate-600', border: 'border-slate-200' };
+                      const colors = getSectionColors(secao);
                       
                       return (
-                        <div key={secao} className={`bg-white border ${colors.border} rounded-2xl shadow-lg overflow-hidden`}>
-                          <div className={`bg-gradient-to-r from-${colors.bg}-50 via-${colors.bg}-50 to-${colors.bg}-50 px-8 py-6 border-b ${colors.border}`}>
-                            <h3 className="flex items-center gap-4 font-bold text-gray-900 text-xl">
-                              <div className={`p-3 ${colors.icon} rounded-xl shadow-md`}>
+                        <div key={secao} className={`bg-white border ${colors.headerBorder} rounded-2xl shadow-lg overflow-hidden`}>
+                          <div className={`${colors.headerBg} px-8 py-6 border-b ${colors.headerBorder}`}>
+                            <h3 className="flex items-center gap-4 font-bold text-xl">
+                              <div className={`p-3 ${colors.iconBg} rounded-xl shadow-md`}>
                                 <FileText className="h-6 w-6 text-white" />
                               </div>
-                              <span className={`bg-gradient-to-r from-${colors.bg}-700 to-${colors.bg}-800 bg-clip-text text-transparent`}>
+                              <span className={colors.titleText}>
                                 {secao.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                               </span>
                             </h3>
@@ -859,19 +932,19 @@ export default function PlanejamentoAula() {
                             {typeof conteudo === 'object' && conteudo !== null ? (
                               <div className="space-y-6">
                                 {Object.entries(conteudo as Record<string, any>).map(([key, value]) => (
-                                  <div key={key} className={`bg-gradient-to-br from-${colors.bg}-50 to-${colors.bg}-50 p-6 rounded-xl border ${colors.border}`}>
-                                    <span className={`text-xs font-semibold text-${colors.bg}-600 uppercase tracking-wider mb-3 block`}>
+                                  <div key={key} className={`${colors.contentBg} p-6 rounded-xl border ${colors.contentBorder}`}>
+                                    <span className={`text-xs font-semibold ${colors.labelText} uppercase tracking-wider mb-3 block`}>
                                       {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
                                     </span>
-                                    <div className={`text-${colors.bg}-900`}>
+                                    <div className={colors.bodyText}>
                                       {renderValue(value)}
                                     </div>
                                   </div>
                                 ))}
                               </div>
                             ) : (
-                              <div className={`bg-gradient-to-br from-${colors.bg}-50 to-${colors.bg}-50 p-6 rounded-xl border ${colors.border}`}>
-                                <p className={`text-${colors.bg}-900 text-base leading-relaxed`}>{String(conteudo)}</p>
+                              <div className={`${colors.contentBg} p-6 rounded-xl border ${colors.contentBorder}`}>
+                                <p className={`${colors.bodyText} text-base leading-relaxed`}>{String(conteudo)}</p>
                               </div>
                             )}
                           </div>
