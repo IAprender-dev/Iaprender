@@ -100,7 +100,7 @@ export default function AIverseLanding() {
                   <Rocket className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-800 px-8 py-3">
+              <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-50 border border-indigo-200 hover:border-indigo-300 px-8 py-3">
                 Explorar Ferramentas
                 <Play className="ml-2 h-5 w-5" />
               </Button>
