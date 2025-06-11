@@ -329,7 +329,7 @@ export default function StudyPlanGenerator() {
                   <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg">
                     <CardTitle className="flex items-center gap-3">
                       <BookOpen className="w-6 h-6" />
-                      Selecione suas Matérias - {user?.schoolYear}
+                      Selecione suas Matérias - {(user as any)?.schoolYear}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
@@ -339,7 +339,7 @@ export default function StudyPlanGenerator() {
                         id="planName"
                         value={planName}
                         onChange={(e) => setPlanName(e.target.value)}
-                        placeholder={`Plano de Estudos - ${user?.schoolYear}`}
+                        placeholder={`Plano de Estudos - ${(user as any)?.schoolYear}`}
                         className="rounded-xl"
                       />
                     </div>

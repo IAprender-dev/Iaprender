@@ -570,7 +570,7 @@ export default function StudentDashboard() {
                       <p className="text-sm text-slate-600 mb-4">
                         Crie seu plano de estudos personalizado baseado na BNCC
                       </p>
-                      <Link href="/aluno/planejamento">
+                      <Link href="/aluno/gerador-plano">
                         <Button className="gap-2">
                           <Plus className="h-4 w-4" />
                           Criar Plano de Estudos
