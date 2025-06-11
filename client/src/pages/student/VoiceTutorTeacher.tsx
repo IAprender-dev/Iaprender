@@ -455,7 +455,7 @@ export default function VoiceTutorTeacher() {
                           <Heart className="h-8 w-8 text-white" />
                         </div>
                         <h4 className="font-medium text-gray-800 mb-2">Olá, {user?.firstName}!</h4>
-                        <p className="text-gray-600">Conecte-se com a Professora Ana para começar a aprender</p>
+                        <p className="text-gray-600">Conecte-se com a Pro Versa para começar a aprender!</p>
                       </div>
                     )}
                     
