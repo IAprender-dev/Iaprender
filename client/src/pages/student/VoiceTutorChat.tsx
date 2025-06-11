@@ -31,8 +31,9 @@ export default function VoiceTutorChat() {
   const [conversationTime, setConversationTime] = useState(0);
   const [currentTranscript, setCurrentTranscript] = useState('');
 
-  // WebSocket and audio refs
-  const wsRef = useRef<WebSocket | null>(null);
+  // WebRTC and audio refs
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
@@ -87,34 +88,94 @@ export default function VoiceTutorChat() {
     try {
       setConnectionState('connecting');
       
-      // Get microphone access first
+      // Get ephemeral token from our backend
+      const sessionResponse = await fetch('/api/realtime/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!sessionResponse.ok) {
+        throw new Error('Failed to create session');
+      }
+      
+      const sessionData = await sessionResponse.json();
+      
+      // Create peer connection for WebRTC
+      const pc = new RTCPeerConnection();
+      peerConnectionRef.current = pc;
+      
+      // Get microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 24000,
-          channelCount: 1
         }
       });
       
       streamRef.current = stream;
+      stream.getTracks().forEach(track => pc.addTrack(track, stream));
       
-      // Setup audio context for processing
-      const audioContext = new AudioContext({ sampleRate: 24000 });
-      audioContextRef.current = audioContext;
+      // Create data channel for messages
+      const dc = pc.createDataChannel('oai-events');
+      dataChannelRef.current = dc;
       
-      // Connect to our WebSocket proxy
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/realtime`;
-      const ws = new WebSocket(wsUrl);
+      dc.addEventListener('open', () => {
+        console.log('Data channel opened');
+        setConnectionState('connected');
+        setIsConnected(true);
+        setConversationState('listening');
+        
+        toast({
+          title: "Conectado!",
+          description: "Conversa por voz ativa. Fale naturalmente.",
+          variant: "default",
+        });
+      });
       
-      wsRef.current = ws;
+      dc.addEventListener('message', (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          handleRealtimeMessage(message);
+        } catch (error) {
+          console.error('Failed to parse data channel message:', error);
+        }
+      });
       
-      ws.onopen = () => {
-        console.log('Connected to Realtime API proxy');
-        // Don't set connected state yet - wait for session.created
+      dc.addEventListener('error', (error) => {
+        console.error('Data channel error:', error);
+      });
+      
+      // Create offer and set local description
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      
+      // Send offer to OpenAI
+      const baseUrl = 'https://api.openai.com/v1/realtime';
+      const model = 'gpt-4o-realtime-preview-2024-12-17';
+      
+      const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+        method: 'POST',
+        body: offer.sdp,
+        headers: {
+          'Authorization': `Bearer ${sessionData.client_secret.value}`,
+          'Content-Type': 'application/sdp'
+        },
+      });
+      
+      if (!sdpResponse.ok) {
+        throw new Error(`SDP exchange failed: ${sdpResponse.status}`);
+      }
+      
+      const answerSdp = await sdpResponse.text();
+      const answer = {
+        type: 'answer' as RTCSdpType,
+        sdp: answerSdp,
       };
+      
+      await pc.setRemoteDescription(answer);
       
       ws.onmessage = (event) => {
         try {
