@@ -40,11 +40,25 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
   const [showTimer, setShowTimer] = useState(false);
 
   useEffect(() => {
-    generateTodaySessions();
+    if (!studyPlan) {
+      // Try to load from localStorage if no prop provided
+      const savedPlan = localStorage.getItem('iaulaStudyPlan');
+      if (savedPlan) {
+        try {
+          const plan = JSON.parse(savedPlan);
+          generateTodaySessions(plan);
+        } catch (error) {
+          console.error('Erro ao carregar plano de estudos:', error);
+        }
+      }
+    } else {
+      generateTodaySessions(studyPlan);
+    }
   }, [studyPlan]);
 
-  const generateTodaySessions = () => {
-    if (!studyPlan) return;
+  const generateTodaySessions = (plan?: any) => {
+    const activePlan = plan || studyPlan;
+    if (!activePlan) return;
 
     const today = new Date();
     const dayName = today.toLocaleDateString('pt-BR', { weekday: 'long' });
@@ -58,7 +72,7 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
       'domingo': 'Domingo'
     };
 
-    const todaySchedule = studyPlan.schedule?.find((s: any) => 
+    const todaySchedule = activePlan.schedule?.find((s: any) => 
       s.day === dayMap[dayName] && s.enabled
     );
 
@@ -68,8 +82,8 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
     }
 
     // Gerar sessões Pomodoro baseadas nas matérias do plano
-    const enabledSubjects = studyPlan.subjects?.filter((s: any) => s.enabled) || [];
-    const pomodoroSettings = studyPlan.pomodoroSettings || {
+    const enabledSubjects = activePlan.subjects?.filter((s: any) => s.enabled) || [];
+    const pomodoroSettings = activePlan.pomodoroSettings || {
       studyDuration: 25,
       shortBreak: 5,
       longBreak: 15,
@@ -152,7 +166,10 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
       .reduce((total, session) => total + (session.cycles * session.studyTime), 0);
   };
 
-  if (!studyPlan) {
+  // Check if we have a study plan (from prop or localStorage)
+  const hasActivePlan = studyPlan || localStorage.getItem('iaulaStudyPlan');
+  
+  if (!hasActivePlan) {
     return (
       <Card className="border border-gray-200 bg-white shadow-sm">
         <CardHeader className="text-center py-8">

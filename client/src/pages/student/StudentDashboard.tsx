@@ -503,7 +503,7 @@ export default function StudentDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <TodayStudySchedule />
+                  <TodayStudySchedule studyPlan={studyPlan} />
                   
                   <div className="mt-4 flex gap-3">
                     <Link href="/aluno/gerador-plano">
