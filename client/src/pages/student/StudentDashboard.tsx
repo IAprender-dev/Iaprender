@@ -521,6 +521,8 @@ export default function StudentDashboard() {
                   </div>
                 </CardContent>
               </Card>
+              
+              <TodayStudySchedule />
             </div>
           </main>
         </div>
