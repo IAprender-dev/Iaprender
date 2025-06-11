@@ -22,11 +22,12 @@ interface StudySession {
   subject: string;
   startTime: string;
   endTime: string;
-  duration: number; // em minutos
-  pomodoroSessions: number;
+  studyTime: number; // em minutos
+  breakTime: number; // em minutos
+  longBreakTime: number; // em minutos
+  cycles: number; // número de ciclos pomodoro
   isCompleted: boolean;
   priority: 'alta' | 'média' | 'baixa';
-  description?: string;
 }
 
 interface TodayStudyScheduleProps {
@@ -34,8 +35,8 @@ interface TodayStudyScheduleProps {
 }
 
 export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProps) {
-  const [todaySessions, setTodaySessions] = useState<StudySession[]>([]);
-  const [currentSession, setCurrentSession] = useState<StudySession | null>(null);
+  const [todaySessions, setTodaySessions] = useState<any[]>([]);
+  const [currentSession, setCurrentSession] = useState<any>(null);
   const [showTimer, setShowTimer] = useState(false);
 
   useEffect(() => {
@@ -66,31 +67,40 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
       return;
     }
 
-    // Simular sessões baseadas nas matérias do plano
+    // Gerar sessões Pomodoro baseadas nas matérias do plano
     const enabledSubjects = studyPlan.subjects?.filter((s: any) => s.enabled) || [];
-    const sessions: StudySession[] = [];
+    const pomodoroSettings = studyPlan.pomodoroSettings || {
+      studyDuration: 25,
+      shortBreak: 5,
+      longBreak: 15,
+      sessionsUntilLongBreak: 4
+    };
     
+    const sessions: any[] = [];
     let currentTime = todaySchedule.startTime;
     
     enabledSubjects.forEach((subject: any, index: number) => {
       if (index < 3) { // Máximo 3 sessões por dia
-        const duration = 50; // 50 minutos por sessão (2 pomodoros)
-        const pomodoroSessions = Math.ceil(duration / (studyPlan.pomodoroSettings?.studyDuration || 25));
+        const cycles = 2; // 2 ciclos pomodoro por matéria
+        const totalStudyTime = cycles * pomodoroSettings.studyDuration;
+        const totalBreakTime = (cycles - 1) * pomodoroSettings.shortBreak + pomodoroSettings.longBreak;
+        const totalDuration = totalStudyTime + totalBreakTime;
         
-        const session: StudySession = {
+        const session = {
           id: index + 1,
           subject: subject.name,
+          studyTime: pomodoroSettings.studyDuration,
+          breakTime: pomodoroSettings.shortBreak,
+          longBreakTime: pomodoroSettings.longBreak,
+          cycles: cycles,
           startTime: currentTime,
-          endTime: addMinutes(currentTime, duration),
-          duration,
-          pomodoroSessions,
+          endTime: addMinutes(currentTime, totalDuration),
           isCompleted: false,
-          priority: subject.priority,
-          description: `Estudo focado em ${subject.name} - ${pomodoroSessions} pomodoros`
+          priority: subject.priority
         };
         
         sessions.push(session);
-        currentTime = addMinutes(session.endTime, 10); // 10 min de intervalo
+        currentTime = addMinutes(session.endTime, 10); // 10 min de intervalo entre matérias
       }
     });
 
@@ -133,13 +143,13 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
   };
 
   const getTotalStudyTime = () => {
-    return todaySessions.reduce((total, session) => total + session.duration, 0);
+    return todaySessions.reduce((total, session) => total + (session.cycles * session.studyTime), 0);
   };
 
   const getCompletedTime = () => {
     return todaySessions
       .filter(s => s.isCompleted)
-      .reduce((total, session) => total + session.duration, 0);
+      .reduce((total, session) => total + (session.cycles * session.studyTime), 0);
   };
 
   if (!studyPlan) {
@@ -203,75 +213,16 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
         </CardContent>
       </Card>
 
-      {/* Study Sessions */}
-      <div className="space-y-4">
-        {todaySessions.map((session) => (
-          <Card 
-            key={session.id} 
-            className={`border transition-all shadow-sm ${
-              session.isCompleted 
-                ? 'bg-green-50 border-green-300 shadow-green-100' 
-                : 'bg-white border-gray-300 hover:border-blue-400 hover:shadow-md'
-            }`}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                    session.isCompleted 
-                      ? 'bg-green-500 text-white' 
-                      : 'bg-blue-100 text-blue-600'
-                  }`}>
-                    {session.isCompleted ? (
-                      <CheckCircle2 className="w-6 h-6" />
-                    ) : (
-                      <Brain className="w-6 h-6" />
-                    )}
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold text-gray-900">{session.subject}</h4>
-                      <Badge className={getPriorityColor(session.priority)}>
-                        {session.priority}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{session.description}</p>
-                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{session.startTime} - {session.endTime}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Timer className="w-4 h-4" />
-                        <span>{session.pomodoroSessions} pomodoros</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  {!session.isCompleted ? (
-                    <Button 
-                      onClick={() => startSession(session)}
-                      className="bg-blue-600 hover:bg-blue-700"
-                      size="sm"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Iniciar
-                    </Button>
-                  ) : (
-                    <Button variant="ghost" size="sm" disabled>
-                      <CheckCircle2 className="w-4 h-4 mr-2" />
-                      Concluído
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Pomodoro Sessions */}
+      <PomodoroScheduleDisplay 
+        sessions={todaySessions}
+        onStartSession={(sessionId) => {
+          const session = todaySessions.find(s => s.id === sessionId);
+          if (session) {
+            startSession(session);
+          }
+        }}
+      />
 
       {/* Pomodoro Timer Modal */}
       {showTimer && currentSession && (
