@@ -421,10 +421,7 @@ export default function VoiceTutorTeacher() {
                     <div className="w-2 h-2 rounded-full bg-indigo-400 mt-2" />
                     <p>Fale claramente e em português</p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-purple-400 mt-2" />
-                    <p>Mencione seu ano escolar</p>
-                  </div>
+
                   <div className="flex items-start gap-2">
                     <div className="w-2 h-2 rounded-full bg-pink-400 mt-2" />
                     <p>Pergunte sobre qualquer matéria</p>
