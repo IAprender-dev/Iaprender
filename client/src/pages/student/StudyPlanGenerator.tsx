@@ -325,10 +325,10 @@ export default function StudyPlanGenerator() {
 
               {/* Step Content */}
               {currentStep === 1 && (
-                <Card className="border-0 shadow-lg">
-                  <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-t-lg">
-                    <CardTitle className="flex items-center gap-3">
-                      <BookOpen className="w-6 h-6" />
+                <Card className="border border-gray-200 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-3 text-gray-900">
+                      <BookOpen className="w-6 h-6 text-blue-600" />
                       Selecione suas Matérias - {(user as any)?.schoolYear}
                     </CardTitle>
                   </CardHeader>
@@ -358,10 +358,10 @@ export default function StudyPlanGenerator() {
                         {subjects.map((subject) => (
                           <Card 
                             key={subject.id} 
-                            className={`p-4 transition-all cursor-pointer ${
+                            className={`p-4 transition-all cursor-pointer bg-white ${
                               subject.enabled 
-                                ? 'border-blue-300 bg-blue-50/50 shadow-md' 
-                                : 'border-gray-200 hover:border-gray-300'
+                                ? 'border-blue-400 border-2 shadow-md ring-2 ring-blue-100' 
+                                : 'border-gray-300 hover:border-blue-300 hover:shadow-sm'
                             }`}
                             onClick={() => updateSubject(subject.id, 'enabled', !subject.enabled)}
                           >
@@ -413,18 +413,18 @@ export default function StudyPlanGenerator() {
                         ))}
                       </div>
                       
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                        <h4 className="font-semibold text-blue-800 mb-2">Resumo da Carga Horária</h4>
+                      <div className="bg-blue-50 border border-blue-300 rounded-xl p-4">
+                        <h4 className="font-semibold text-blue-900 mb-2">Resumo da Carga Horária</h4>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <span className="text-gray-600">Total Semanal:</span>
-                            <span className="font-semibold text-blue-600 ml-2">
+                            <span className="text-gray-700">Total Semanal:</span>
+                            <span className="font-semibold text-blue-700 ml-2">
                               {getTotalWeeklyHours()}h
                             </span>
                           </div>
                           <div>
-                            <span className="text-gray-600">Disponível:</span>
-                            <span className="font-semibold text-green-600 ml-2">
+                            <span className="text-gray-700">Disponível:</span>
+                            <span className="font-semibold text-green-700 ml-2">
                               {getAvailableWeeklyHours()}h
                             </span>
                           </div>
@@ -444,17 +444,21 @@ export default function StudyPlanGenerator() {
               )}
 
               {currentStep === 2 && (
-                <Card className="border-0 shadow-lg">
-                  <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-t-lg">
-                    <CardTitle className="flex items-center gap-3">
-                      <Calendar className="w-6 h-6" />
+                <Card className="border border-gray-200 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-gray-200 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-3 text-gray-900">
+                      <Calendar className="w-6 h-6 text-indigo-600" />
                       Configure seus Horários de Estudo
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
                     <div className="grid gap-4">
                       {schedule.map((day) => (
-                        <Card key={day.day} className="p-4">
+                        <Card key={day.day} className={`p-4 bg-white ${
+                          day.enabled 
+                            ? 'border-indigo-400 border-2 shadow-md ring-2 ring-indigo-100' 
+                            : 'border-gray-300'
+                        }`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               <Switch
@@ -499,22 +503,22 @@ export default function StudyPlanGenerator() {
                       ))}
                     </div>
 
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
-                      <h4 className="font-semibold text-indigo-800 mb-2">Análise de Tempo</h4>
+                    <div className="bg-indigo-50 border border-indigo-300 rounded-xl p-4">
+                      <h4 className="font-semibold text-indigo-900 mb-2">Análise de Tempo</h4>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
-                          <span>Horas disponíveis por semana:</span>
-                          <span className="font-semibold">{getAvailableWeeklyHours()}h</span>
+                          <span className="text-gray-700">Horas disponíveis por semana:</span>
+                          <span className="font-semibold text-gray-900">{getAvailableWeeklyHours()}h</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span>Horas necessárias:</span>
-                          <span className="font-semibold">{getTotalWeeklyHours()}h</span>
+                          <span className="text-gray-700">Horas necessárias:</span>
+                          <span className="font-semibold text-gray-900">{getTotalWeeklyHours()}h</span>
                         </div>
                         <Progress 
                           value={Math.min((getTotalWeeklyHours() / getAvailableWeeklyHours()) * 100, 100)}
                           className="h-2"
                         />
-                        <p className="text-xs text-gray-600">
+                        <p className="text-xs text-gray-700">
                           {getAvailableWeeklyHours() >= getTotalWeeklyHours() 
                             ? "✅ Tempo suficiente disponível"
                             : "⚠️ Considere ajustar horários ou reduzir carga"
@@ -544,10 +548,10 @@ export default function StudyPlanGenerator() {
               )}
 
               {currentStep === 3 && (
-                <Card className="border-0 shadow-lg">
-                  <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-t-lg">
-                    <CardTitle className="flex items-center gap-3">
-                      <Timer className="w-6 h-6" />
+                <Card className="border border-gray-200 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-200 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-3 text-gray-900">
+                      <Timer className="w-6 h-6 text-purple-600" />
                       Configurações da Técnica Pomodoro
                     </CardTitle>
                   </CardHeader>
@@ -628,12 +632,12 @@ export default function StudyPlanGenerator() {
                       />
                     </div>
 
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
-                      <h4 className="font-semibold text-purple-800 mb-2">
+                    <div className="bg-purple-50 border border-purple-300 rounded-xl p-4">
+                      <h4 className="font-semibold text-purple-900 mb-2">
                         <Timer className="w-4 h-4 inline mr-2" />
                         Como Funciona a Técnica Pomodoro
                       </h4>
-                      <ul className="text-sm text-purple-700 space-y-1">
+                      <ul className="text-sm text-gray-700 space-y-1">
                         <li>• {pomodoroSettings.studyDuration} minutos de estudo focado</li>
                         <li>• {pomodoroSettings.shortBreak} minutos de pausa curta</li>
                         <li>• A cada {pomodoroSettings.sessionsUntilLongBreak} sessões: {pomodoroSettings.longBreak} minutos de pausa longa</li>
@@ -662,10 +666,10 @@ export default function StudyPlanGenerator() {
               )}
 
               {currentStep === 4 && generatedPlan && (
-                <Card className="border-0 shadow-lg">
-                  <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-lg">
-                    <CardTitle className="flex items-center gap-3">
-                      <CheckCircle2 className="w-6 h-6" />
+                <Card className="border border-gray-200 shadow-lg bg-white">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-200 rounded-t-lg">
+                    <CardTitle className="flex items-center gap-3 text-gray-900">
+                      <CheckCircle2 className="w-6 h-6 text-green-600" />
                       Plano de Estudos Gerado com Sucesso!
                     </CardTitle>
                   </CardHeader>
@@ -750,30 +754,30 @@ export default function StudyPlanGenerator() {
               )}
 
               {/* Tips */}
-              <Card className="border-0 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Sparkles className="w-5 h-5" />
+              <Card className="border border-gray-200 shadow-lg bg-white">
+                <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-gray-200 rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
+                    <Sparkles className="w-5 h-5 text-amber-600" />
                     Dicas do AIverse
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3">
                   <div className="space-y-3 text-sm">
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <p>Priorize matérias com maior dificuldade nos horários em que você tem mais energia</p>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <p className="text-gray-700">Priorize matérias com maior dificuldade nos horários em que você tem mais energia</p>
                     </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <p>Use o timer Pomodoro para manter o foco e evitar esgotamento mental</p>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <p className="text-gray-700">Use o timer Pomodoro para manter o foco e evitar esgotamento mental</p>
                     </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <p>Reserve pelo menos um dia da semana para revisão geral</p>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-3 h-3 bg-purple-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <p className="text-gray-700">Reserve pelo menos um dia da semana para revisão geral</p>
                     </div>
-                    <div className="flex items-start space-x-2">
-                      <div className="w-2 h-2 bg-orange-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                      <p>Ajuste o plano semanalmente conforme seu progresso</p>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-3 h-3 bg-orange-500 rounded-full mt-1 flex-shrink-0"></div>
+                      <p className="text-gray-700">Ajuste o plano semanalmente conforme seu progresso</p>
                     </div>
                   </div>
                 </CardContent>
