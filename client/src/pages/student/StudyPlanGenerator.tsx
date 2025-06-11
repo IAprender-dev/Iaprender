@@ -59,8 +59,6 @@ const schoolYearSubjects: Record<string, Subject[]> = {
     { id: "ciencias", name: "Ciências", priority: "média", hoursPerWeek: 3, difficulty: 2, enabled: true },
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
-    { id: "educacao_fisica", name: "Educação Física", priority: "baixa", hoursPerWeek: 2, difficulty: 1, enabled: false },
-    { id: "artes", name: "Artes", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "7º ano": [
     { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
@@ -69,8 +67,6 @@ const schoolYearSubjects: Record<string, Subject[]> = {
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 2, enabled: true },
     { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
-    { id: "educacao_fisica", name: "Educação Física", priority: "baixa", hoursPerWeek: 2, difficulty: 1, enabled: false },
-    { id: "artes", name: "Artes", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "8º ano": [
     { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 4, difficulty: 4, enabled: true },
@@ -79,8 +75,6 @@ const schoolYearSubjects: Record<string, Subject[]> = {
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
-    { id: "educacao_fisica", name: "Educação Física", priority: "baixa", hoursPerWeek: 2, difficulty: 1, enabled: false },
-    { id: "artes", name: "Artes", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "9º ano": [
     { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 4, difficulty: 5, enabled: true },
@@ -89,8 +83,6 @@ const schoolYearSubjects: Record<string, Subject[]> = {
     { id: "historia", name: "História", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "geografia", name: "Geografia", priority: "média", hoursPerWeek: 2, difficulty: 3, enabled: true },
     { id: "ingles", name: "Inglês", priority: "média", hoursPerWeek: 2, difficulty: 4, enabled: true },
-    { id: "educacao_fisica", name: "Educação Física", priority: "baixa", hoursPerWeek: 2, difficulty: 1, enabled: false },
-    { id: "artes", name: "Artes", priority: "baixa", hoursPerWeek: 1, difficulty: 1, enabled: false },
   ],
   "1º ano": [
     { id: "matematica", name: "Matemática", priority: "alta", hoursPerWeek: 5, difficulty: 5, enabled: true },

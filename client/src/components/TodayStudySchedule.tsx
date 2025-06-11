@@ -15,6 +15,7 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import PomodoroTimer from "./PomodoroTimer";
+import PomodoroScheduleDisplay from "./PomodoroScheduleDisplay";
 
 interface StudySession {
   id: number;
