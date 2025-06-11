@@ -72,8 +72,41 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
       'domingo': 'Domingo'
     };
 
+    const targetDay = dayMap[dayName];
+
+    // Use pre-generated sessions from the plan if available
+    if (activePlan.sessions && activePlan.sessions.length > 0) {
+      const todaySessions = activePlan.sessions.filter((session: any) => {
+        if (session.dayOfWeek === targetDay) {
+          return true;
+        }
+        // Also check by date
+        const sessionDate = new Date(session.startTime);
+        const todayDate = new Date();
+        return sessionDate.toDateString() === todayDate.toDateString();
+      });
+
+      // Convert sessions to the expected format
+      const formattedSessions = todaySessions.map((session: any, index: number) => ({
+        id: session.id || index + 1,
+        subject: session.subject,
+        studyTime: activePlan.pomodoroSettings?.studyDuration || 25,
+        breakTime: activePlan.pomodoroSettings?.shortBreak || 5,
+        longBreakTime: activePlan.pomodoroSettings?.longBreak || 15,
+        cycles: session.pomodoroCount || 1,
+        startTime: new Date(session.startTime).toTimeString().slice(0, 5),
+        endTime: new Date(session.endTime).toTimeString().slice(0, 5),
+        isCompleted: session.isCompleted || false,
+        priority: activePlan.subjects?.find((s: any) => s.name === session.subject)?.priority || 'média'
+      }));
+
+      setTodaySessions(formattedSessions);
+      return;
+    }
+
+    // Fallback: check if there's a schedule for today
     const todaySchedule = activePlan.schedule?.find((s: any) => 
-      s.day === dayMap[dayName] && s.enabled
+      s.day === targetDay && s.enabled
     );
 
     if (!todaySchedule) {
@@ -81,44 +114,7 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
       return;
     }
 
-    // Gerar sessões Pomodoro baseadas nas matérias do plano
-    const enabledSubjects = activePlan.subjects?.filter((s: any) => s.enabled) || [];
-    const pomodoroSettings = activePlan.pomodoroSettings || {
-      studyDuration: 25,
-      shortBreak: 5,
-      longBreak: 15,
-      sessionsUntilLongBreak: 4
-    };
-    
-    const sessions: any[] = [];
-    let currentTime = todaySchedule.startTime;
-    
-    enabledSubjects.forEach((subject: any, index: number) => {
-      if (index < 3) { // Máximo 3 sessões por dia
-        const cycles = 2; // 2 ciclos pomodoro por matéria
-        const totalStudyTime = cycles * pomodoroSettings.studyDuration;
-        const totalBreakTime = (cycles - 1) * pomodoroSettings.shortBreak + pomodoroSettings.longBreak;
-        const totalDuration = totalStudyTime + totalBreakTime;
-        
-        const session = {
-          id: index + 1,
-          subject: subject.name,
-          studyTime: pomodoroSettings.studyDuration,
-          breakTime: pomodoroSettings.shortBreak,
-          longBreakTime: pomodoroSettings.longBreak,
-          cycles: cycles,
-          startTime: currentTime,
-          endTime: addMinutes(currentTime, totalDuration),
-          isCompleted: false,
-          priority: subject.priority
-        };
-        
-        sessions.push(session);
-        currentTime = addMinutes(session.endTime, 10); // 10 min de intervalo entre matérias
-      }
-    });
-
-    setTodaySessions(sessions);
+    setTodaySessions([]);
   };
 
   const addMinutes = (time: string, minutes: number): string => {

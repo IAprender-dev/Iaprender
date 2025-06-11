@@ -211,35 +211,56 @@ export default function StudyPlanGenerator() {
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay() + 1);
     
-    enabledDays.forEach((daySchedule, dayIndex) => {
+    // Map days to proper week indices
+    const dayMapping: Record<string, number> = {
+      'Segunda': 0, 'Terça': 1, 'Quarta': 2, 'Quinta': 3, 
+      'Sexta': 4, 'Sábado': 5, 'Domingo': 6
+    };
+
+    enabledDays.forEach((daySchedule) => {
+      const dayIndex = dayMapping[daySchedule.day];
+      if (dayIndex === undefined) return;
+      
       const sessionDate = new Date(startOfWeek);
       sessionDate.setDate(startOfWeek.getDate() + dayIndex);
       
       const [startHour, startMin] = daySchedule.startTime.split(':').map(Number);
-      sessionDate.setHours(startHour, startMin, 0, 0);
+      const [endHour, endMin] = daySchedule.endTime.split(':').map(Number);
       
-      enabledSubjects.forEach((subject, subjectIndex) => {
-        if (subjectIndex < 3) { // Max 3 subjects per day
-          const cycles = 2;
-          const totalStudyTime = cycles * pomodoroSettings.studyDuration;
-          const totalBreakTime = (cycles - 1) * pomodoroSettings.shortBreak;
-          const sessionDuration = totalStudyTime + totalBreakTime;
-          
-          const sessionStart = new Date(sessionDate);
-          sessionStart.setMinutes(sessionStart.getMinutes() + (subjectIndex * (sessionDuration + 10)));
-          
-          const sessionEnd = new Date(sessionStart);
-          sessionEnd.setMinutes(sessionEnd.getMinutes() + sessionDuration);
-          
+      const dayStart = new Date(sessionDate);
+      dayStart.setHours(startHour, startMin, 0, 0);
+      
+      const dayEnd = new Date(sessionDate);
+      dayEnd.setHours(endHour, endMin, 0, 0);
+      
+      const availableMinutes = (dayEnd.getTime() - dayStart.getTime()) / (1000 * 60);
+      
+      // Calculate how many subjects can fit within available time
+      const sessionDuration = pomodoroSettings.studyDuration + pomodoroSettings.shortBreak; // One Pomodoro + break
+      const maxSessions = Math.floor(availableMinutes / sessionDuration);
+      const subjectsToSchedule = Math.min(enabledSubjects.length, maxSessions);
+      
+      let currentTime = new Date(dayStart);
+      
+      enabledSubjects.slice(0, subjectsToSchedule).forEach((subject, subjectIndex) => {
+        const sessionStart = new Date(currentTime);
+        const sessionEnd = new Date(currentTime);
+        sessionEnd.setMinutes(sessionEnd.getMinutes() + pomodoroSettings.studyDuration);
+        
+        // Check if session fits within day bounds
+        if (sessionEnd <= dayEnd) {
           sessions.push({
-            id: Date.now() + sessions.length,
+            id: Date.now() + sessions.length + Math.random(),
             subject: subject.name,
             startTime: sessionStart,
             endTime: sessionEnd,
             isCompleted: false,
-            pomodoroCount: cycles,
+            pomodoroCount: 1,
             dayOfWeek: daySchedule.day
           });
+          
+          // Move to next time slot (study + break)
+          currentTime.setMinutes(currentTime.getMinutes() + sessionDuration);
         }
       });
     });
