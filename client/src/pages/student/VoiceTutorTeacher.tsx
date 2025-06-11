@@ -314,7 +314,7 @@ export default function VoiceTutorTeacher() {
             
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-800">Pro Versa</h1>
-              <p className="text-sm text-gray-600">Sua tutora baseada em IA</p>
+              <p className="text-sm text-gray-600">Sua tutora com voz por IA</p>
             </div>
             
             <div className="flex items-center gap-2">

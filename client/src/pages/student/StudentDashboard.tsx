@@ -389,7 +389,7 @@ export default function StudentDashboard() {
                           <Badge className="bg-pink-100 text-pink-700 border-pink-200">Novo</Badge>
                         </div>
                         <h3 className="font-bold text-lg text-slate-900 mb-2">Pro Versa</h3>
-                        <p className="text-sm text-slate-600">Tutora de voz com IA</p>
+                        <p className="text-sm text-slate-600">Tutora com voz por IA</p>
                         <div className="mt-4 flex items-center text-pink-600 group-hover:text-pink-700">
                           <span className="text-sm font-medium">Acessar</span>
                           <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
@@ -528,7 +528,7 @@ export default function StudentDashboard() {
                           </div>
                           <div>
                             <h3 className="text-xl font-bold text-slate-800">Pro Versa</h3>
-                            <p className="text-sm text-slate-600">Sua tutora baseada em IA</p>
+                            <p className="text-sm text-slate-600">Sua tutora com voz por IA</p>
                           </div>
                           <Badge className="bg-gradient-to-r from-pink-500 to-purple-500 text-white text-xs">NOVO</Badge>
                         </div>
