@@ -399,14 +399,14 @@ export default function StudyPlanGenerator() {
                               {subject.enabled && (
                                 <div className="space-y-2">
                                   <div className="flex items-center space-x-2">
-                                    <Label className="text-xs">Horas/semana:</Label>
+                                    <Label className="text-xs text-gray-900 font-medium">Horas/semana:</Label>
                                     <Input
                                       type="number"
                                       min="1"
                                       max="10"
                                       value={subject.hoursPerWeek}
                                       onChange={(e) => updateSubject(subject.id, 'hoursPerWeek', parseInt(e.target.value))}
-                                      className="w-16 h-8 text-center"
+                                      className="w-16 h-8 text-center border-gray-300 focus:border-indigo-500"
                                       onClick={(e) => e.stopPropagation()}
                                     />
                                   </div>
@@ -417,12 +417,12 @@ export default function StudyPlanGenerator() {
                         ))}
                       </div>
                       
-                      <div className="bg-blue-50 border border-blue-300 rounded-xl p-4">
-                        <h4 className="font-semibold text-blue-900 mb-2">Resumo da Carga Horária</h4>
+                      <div className="bg-indigo-50 border border-indigo-300 rounded-xl p-4">
+                        <h4 className="font-semibold text-indigo-900 mb-2">Resumo da Carga Horária</h4>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <span className="text-gray-700">Total Semanal:</span>
-                            <span className="font-semibold text-blue-700 ml-2">
+                            <span className="font-semibold text-indigo-700 ml-2">
                               {getTotalWeeklyHours()}h
                             </span>
                           </div>
