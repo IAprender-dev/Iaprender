@@ -34,8 +34,21 @@ import { useToast } from "@/hooks/use-toast";
 export default function PlanejamentoAula() {
   const { toast } = useToast();
   
-  const [tema, setTema] = useState("");
-  const [duracao, setDuracao] = useState("");
+  // Form state for comprehensive lesson plan data
+  const [formData, setFormData] = useState({
+    disciplina: "",
+    anoSerie: "",
+    etapaEnsino: "",
+    tema: "",
+    duracao: "",
+    recursos: "",
+    perfilTurma: "",
+    numeroAlunos: "",
+    objetivosEspecificos: "",
+    escola: "",
+    professor: ""
+  });
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [temaAnalysis, setTemaAnalysis] = useState<any>(null);
@@ -45,6 +58,14 @@ export default function PlanejamentoAula() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, []);
+
+  // Handle form data changes
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   // Analisar tema automaticamente usando IA e diretrizes do MEC/BNCC
   const analisarTema = async (temaInput: string) => {
@@ -84,21 +105,21 @@ export default function PlanejamentoAula() {
   // Debounce para análise do tema
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (tema.trim().length > 3) {
-        analisarTema(tema);
+      if (formData.tema.trim().length > 3) {
+        analisarTema(formData.tema);
       } else {
         setTemaAnalysis(null);
       }
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [tema]);
+  }, [formData.tema]);
 
   const gerarPlano = async () => {
-    if (!tema.trim() || !duracao) {
+    if (!formData.tema.trim() || !formData.duracao || !formData.disciplina || !formData.anoSerie) {
       toast({
         title: "Campos obrigatórios",
-        description: "Preencha o tema e a duração para gerar o plano de aula.",
+        description: "Preencha todos os campos obrigatórios para gerar o plano de aula.",
         variant: "destructive"
       });
       return;
@@ -116,14 +137,13 @@ export default function PlanejamentoAula() {
     setIsGenerating(true);
     
     try {
-      const response = await fetch('/api/generate-lesson-plan', {
+      const response = await fetch('/api/generate-comprehensive-lesson-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          tema, 
-          duracao, 
+          ...formData,
           analysis: temaAnalysis 
         }),
       });
@@ -210,16 +230,136 @@ export default function PlanejamentoAula() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Campo do Tema */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Escola */}
+                  <div className="space-y-2">
+                    <Label htmlFor="escola" className="text-sm font-semibold text-slate-700">
+                      Nome da Escola
+                    </Label>
+                    <Input
+                      id="escola"
+                      placeholder="Nome da instituição de ensino"
+                      value={formData.escola}
+                      onChange={(e) => handleFormChange('escola', e.target.value)}
+                      className="border-slate-300 focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* Professor */}
+                  <div className="space-y-2">
+                    <Label htmlFor="professor" className="text-sm font-semibold text-slate-700">
+                      Professor(a) Responsável
+                    </Label>
+                    <Input
+                      id="professor"
+                      placeholder="Nome do professor"
+                      value={formData.professor}
+                      onChange={(e) => handleFormChange('professor', e.target.value)}
+                      className="border-slate-300 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Disciplina */}
+                  <div className="space-y-2">
+                    <Label htmlFor="disciplina" className="text-sm font-semibold text-slate-700">
+                      Disciplina/Componente Curricular *
+                    </Label>
+                    <Select value={formData.disciplina} onValueChange={(value) => handleFormChange('disciplina', value)}>
+                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
+                        <SelectValue placeholder="Selecione a disciplina" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Matemática">Matemática</SelectItem>
+                        <SelectItem value="Língua Portuguesa">Língua Portuguesa</SelectItem>
+                        <SelectItem value="Ciências">Ciências</SelectItem>
+                        <SelectItem value="História">História</SelectItem>
+                        <SelectItem value="Geografia">Geografia</SelectItem>
+                        <SelectItem value="Física">Física</SelectItem>
+                        <SelectItem value="Química">Química</SelectItem>
+                        <SelectItem value="Biologia">Biologia</SelectItem>
+                        <SelectItem value="Inglês">Inglês</SelectItem>
+                        <SelectItem value="Educação Física">Educação Física</SelectItem>
+                        <SelectItem value="Artes">Artes</SelectItem>
+                        <SelectItem value="Filosofia">Filosofia</SelectItem>
+                        <SelectItem value="Sociologia">Sociologia</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Etapa de Ensino */}
+                  <div className="space-y-2">
+                    <Label htmlFor="etapaEnsino" className="text-sm font-semibold text-slate-700">
+                      Etapa de Ensino *
+                    </Label>
+                    <Select value={formData.etapaEnsino} onValueChange={(value) => handleFormChange('etapaEnsino', value)}>
+                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
+                        <SelectValue placeholder="Selecione a etapa" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Educação Infantil">Educação Infantil</SelectItem>
+                        <SelectItem value="Ensino Fundamental I">Ensino Fundamental I</SelectItem>
+                        <SelectItem value="Ensino Fundamental II">Ensino Fundamental II</SelectItem>
+                        <SelectItem value="Ensino Médio">Ensino Médio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Ano/Série */}
+                  <div className="space-y-2">
+                    <Label htmlFor="anoSerie" className="text-sm font-semibold text-slate-700">
+                      Ano/Série *
+                    </Label>
+                    <Select value={formData.anoSerie} onValueChange={(value) => handleFormChange('anoSerie', value)}>
+                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
+                        <SelectValue placeholder="Selecione o ano/série" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1º ano">1º ano</SelectItem>
+                        <SelectItem value="2º ano">2º ano</SelectItem>
+                        <SelectItem value="3º ano">3º ano</SelectItem>
+                        <SelectItem value="4º ano">4º ano</SelectItem>
+                        <SelectItem value="5º ano">5º ano</SelectItem>
+                        <SelectItem value="6º ano">6º ano</SelectItem>
+                        <SelectItem value="7º ano">7º ano</SelectItem>
+                        <SelectItem value="8º ano">8º ano</SelectItem>
+                        <SelectItem value="9º ano">9º ano</SelectItem>
+                        <SelectItem value="1ª série">1ª série</SelectItem>
+                        <SelectItem value="2ª série">2ª série</SelectItem>
+                        <SelectItem value="3ª série">3ª série</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Número de Alunos */}
+                  <div className="space-y-2">
+                    <Label htmlFor="numeroAlunos" className="text-sm font-semibold text-slate-700">
+                      Número de Alunos
+                    </Label>
+                    <Input
+                      id="numeroAlunos"
+                      type="number"
+                      placeholder="Ex: 25"
+                      value={formData.numeroAlunos}
+                      onChange={(e) => handleFormChange('numeroAlunos', e.target.value)}
+                      className="border-slate-300 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Tema da Aula */}
                 <div className="space-y-2">
                   <Label htmlFor="tema" className="text-sm font-semibold text-slate-700">
-                    Tema da Aula *
+                    Tema/Conteúdo Específico *
                   </Label>
                   <Textarea
                     id="tema"
                     placeholder="Digite o tema da sua aula (ex: Frações, Sistema Solar, Brasil Colônia...)"
-                    value={tema}
-                    onChange={(e) => setTema(e.target.value)}
+                    value={formData.tema}
+                    onChange={(e) => handleFormChange('tema', e.target.value)}
                     className="min-h-[80px] resize-none border-slate-300 focus:border-blue-500 focus:ring-blue-500"
                   />
                   {isAnalyzing && (
@@ -264,12 +404,12 @@ export default function PlanejamentoAula() {
                   </Card>
                 )}
 
-                {/* Campo de Duração */}
+                {/* Duração */}
                 <div className="space-y-2">
                   <Label htmlFor="duracao" className="text-sm font-semibold text-slate-700">
                     Duração da Aula *
                   </Label>
-                  <Select value={duracao} onValueChange={setDuracao}>
+                  <Select value={formData.duracao} onValueChange={(value) => handleFormChange('duracao', value)}>
                     <SelectTrigger className="w-full border-slate-300 focus:border-blue-500">
                       <SelectValue placeholder="Selecione a duração" />
                     </SelectTrigger>
@@ -284,10 +424,52 @@ export default function PlanejamentoAula() {
                   </Select>
                 </div>
 
+                {/* Recursos Disponíveis */}
+                <div className="space-y-2">
+                  <Label htmlFor="recursos" className="text-sm font-semibold text-slate-700">
+                    Recursos Disponíveis
+                  </Label>
+                  <Textarea
+                    id="recursos"
+                    placeholder="Liste os recursos disponíveis (tecnológicos, materiais, espaço físico...)"
+                    value={formData.recursos}
+                    onChange={(e) => handleFormChange('recursos', e.target.value)}
+                    className="min-h-[60px] resize-none border-slate-300 focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Perfil da Turma */}
+                <div className="space-y-2">
+                  <Label htmlFor="perfilTurma" className="text-sm font-semibold text-slate-700">
+                    Perfil da Turma
+                  </Label>
+                  <Textarea
+                    id="perfilTurma"
+                    placeholder="Descreva características especiais, nível socioeconômico, necessidades específicas..."
+                    value={formData.perfilTurma}
+                    onChange={(e) => handleFormChange('perfilTurma', e.target.value)}
+                    className="min-h-[60px] resize-none border-slate-300 focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Objetivos Específicos */}
+                <div className="space-y-2">
+                  <Label htmlFor="objetivosEspecificos" className="text-sm font-semibold text-slate-700">
+                    Objetivos Específicos que Deseja Alcançar
+                  </Label>
+                  <Textarea
+                    id="objetivosEspecificos"
+                    placeholder="Descreva os objetivos específicos que pretende alcançar com esta aula..."
+                    value={formData.objetivosEspecificos}
+                    onChange={(e) => handleFormChange('objetivosEspecificos', e.target.value)}
+                    className="min-h-[80px] resize-none border-slate-300 focus:border-blue-500"
+                  />
+                </div>
+
                 {/* Botão Gerar Plano */}
                 <Button 
                   onClick={gerarPlano}
-                  disabled={isGenerating || !tema.trim() || !duracao || !temaAnalysis}
+                  disabled={isGenerating || !formData.tema.trim() || !formData.duracao || !formData.disciplina || !formData.anoSerie || !temaAnalysis}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
                 >
                   {isGenerating ? (
@@ -351,133 +533,261 @@ export default function PlanejamentoAula() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    {/* Cabeçalho do Plano */}
-                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-l-4 border-blue-500">
-                      <h2 className="text-xl font-bold text-slate-900 mb-2">{planoGerado.titulo}</h2>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-semibold text-slate-700">Disciplina:</span>
-                          <p className="text-slate-600">{planoGerado.disciplina}</p>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-700">Série:</span>
-                          <p className="text-slate-600">{planoGerado.serie}</p>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-700">Duração:</span>
-                          <p className="text-slate-600">{planoGerado.duracao}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Observações sobre conformidade com BNCC */}
-                    {planoGerado.observacoesBNCC && (
-                      <div className="bg-orange-50 border-orange-200 border p-4 rounded-lg">
-                        <div className="flex items-start gap-2">
-                          <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
-                          <div>
-                            <h4 className="font-semibold text-orange-800 mb-1">Observações sobre BNCC</h4>
-                            <p className="text-orange-700 text-sm">{planoGerado.observacoesBNCC}</p>
-                          </div>
+                  <div className="space-y-6 max-h-[70vh] overflow-y-auto">
+                    {/* 1. Identificação */}
+                    {planoGerado.identificacao && (
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-l-4 border-blue-500">
+                        <h2 className="text-xl font-bold text-slate-900 mb-3">1. Identificação</h2>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          {Object.entries(planoGerado.identificacao).map(([key, value]) => (
+                            <div key={key}>
+                              <span className="font-semibold text-slate-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                              <p className="text-slate-600">{value}</p>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
 
-                    {/* Seções do Plano */}
-                    <div className="space-y-4">
-                      {/* Objetivos */}
+                    {/* 2. Alinhamento BNCC */}
+                    {planoGerado.alinhamentoBNCC && (
+                      <div className="bg-green-50 border-green-200 border p-4 rounded-lg">
+                        <h3 className="flex items-center gap-2 font-semibold text-green-800 mb-3">
+                          <CheckCircle className="h-5 w-5" />
+                          2. Alinhamento Curricular BNCC
+                        </h3>
+                        <div className="space-y-2 text-sm">
+                          {Object.entries(planoGerado.alinhamentoBNCC).map(([key, value]) => (
+                            <div key={key}>
+                              <span className="font-medium text-green-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                              <p className="text-green-600 ml-2">{typeof value === 'string' ? value : JSON.stringify(value)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. Tema da Aula */}
+                    {planoGerado.temaDaAula && (
+                      <div>
+                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
+                          <BookOpen className="h-4 w-4 text-purple-600" />
+                          3. Tema da Aula
+                        </h3>
+                        <div className="bg-purple-50 p-3 rounded-lg space-y-2 text-sm">
+                          {Object.entries(planoGerado.temaDaAula).map(([key, value]) => (
+                            <div key={key}>
+                              <span className="font-medium text-purple-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                              <p className="text-purple-600 ml-2">{value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 4. Objetivos de Aprendizagem */}
+                    {planoGerado.objetivosAprendizagem && (
                       <div>
                         <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
                           <Target className="h-4 w-4 text-blue-600" />
-                          Objetivos
+                          4. Objetivos de Aprendizagem
                         </h3>
-                        <p className="text-slate-700 text-sm leading-relaxed">{planoGerado.objetivo}</p>
-                      </div>
-
-                      {/* Cronograma de Atividades */}
-                      {planoGerado.cronograma && (
-                        <div>
-                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-3">
-                            <Clock className="h-4 w-4 text-blue-600" />
-                            Cronograma da Aula
-                          </h3>
-                          <div className="space-y-3">
-                            {planoGerado.cronograma.map((etapa: any, index: number) => (
-                              <div key={index} className="bg-slate-50 p-3 rounded-lg border-l-4 border-blue-500">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="font-medium text-slate-900 text-sm">{etapa.atividade}</span>
-                                  <Badge variant="outline" className="text-xs font-medium">
-                                    {etapa.tempo}
-                                  </Badge>
-                                </div>
-                                <p className="text-xs text-slate-600">{etapa.descricao}</p>
+                        <div className="bg-blue-50 p-3 rounded-lg space-y-2 text-sm">
+                          {Object.entries(planoGerado.objetivosAprendizagem).map(([key, value]) => (
+                            <div key={key}>
+                              <span className="font-medium text-blue-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                              <div className="text-blue-600 ml-2">
+                                {Array.isArray(value) ? (
+                                  <ul className="list-disc list-inside space-y-1">
+                                    {value.map((item, index) => <li key={index}>{item}</li>)}
+                                  </ul>
+                                ) : (
+                                  <p>{value}</p>
+                                )}
                               </div>
-                            ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 5. Conteúdos */}
+                    {planoGerado.conteudos && (
+                      <div>
+                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
+                          <Layers className="h-4 w-4 text-amber-600" />
+                          5. Conteúdos
+                        </h3>
+                        <div className="bg-amber-50 p-3 rounded-lg space-y-2 text-sm">
+                          {Object.entries(planoGerado.conteudos).map(([key, value]) => (
+                            <div key={key}>
+                              <span className="font-medium text-amber-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                              <div className="text-amber-600 ml-2">
+                                {Array.isArray(value) ? (
+                                  <ul className="list-disc list-inside space-y-1">
+                                    {value.map((item, index) => <li key={index}>{item}</li>)}
+                                  </ul>
+                                ) : (
+                                  <p>{value}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 6. Metodologia */}
+                    {planoGerado.metodologia && (
+                      <div>
+                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
+                          <Settings className="h-4 w-4 text-indigo-600" />
+                          6. Metodologia e Estratégias Didáticas
+                        </h3>
+                        <div className="bg-indigo-50 p-3 rounded-lg text-sm">
+                          {typeof planoGerado.metodologia === 'object' ? (
+                            Object.entries(planoGerado.metodologia).map(([key, value]) => (
+                              <div key={key} className="mb-2">
+                                <span className="font-medium text-indigo-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                                <div className="text-indigo-600 ml-2">
+                                  {Array.isArray(value) ? (
+                                    <ul className="list-disc list-inside space-y-1">
+                                      {value.map((item, index) => <li key={index}>{item}</li>)}
+                                    </ul>
+                                  ) : (
+                                    <p>{value}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-indigo-600">{planoGerado.metodologia}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 7. Sequência Didática */}
+                    {planoGerado.sequenciaDidatica && (
+                      <div>
+                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
+                          <Clock className="h-4 w-4 text-rose-600" />
+                          7. Sequência Didática Detalhada
+                        </h3>
+                        <div className="space-y-3">
+                          {Object.entries(planoGerado.sequenciaDidatica).map(([fase, conteudo]) => (
+                            <div key={fase} className="bg-rose-50 p-3 rounded-lg border-l-4 border-rose-500">
+                              <h4 className="font-medium text-rose-700 capitalize mb-2">{fase.replace(/([A-Z])/g, ' $1').toLowerCase()}</h4>
+                              <div className="text-rose-600 text-sm">
+                                {Array.isArray(conteudo) ? (
+                                  <ul className="list-disc list-inside space-y-1">
+                                    {conteudo.map((item, index) => <li key={index}>{item}</li>)}
+                                  </ul>
+                                ) : (
+                                  <p>{conteudo}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 8. Recursos Didáticos */}
+                    {planoGerado.recursosDidaticos && (
+                      <div>
+                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
+                          <Package className="h-4 w-4 text-emerald-600" />
+                          8. Recursos Didáticos
+                        </h3>
+                        <div className="bg-emerald-50 p-3 rounded-lg text-sm">
+                          {typeof planoGerado.recursosDidaticos === 'object' ? (
+                            Object.entries(planoGerado.recursosDidaticos).map(([key, value]) => (
+                              <div key={key} className="mb-2">
+                                <span className="font-medium text-emerald-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                                <div className="text-emerald-600 ml-2">
+                                  {Array.isArray(value) ? (
+                                    <ul className="list-disc list-inside">
+                                      {value.map((item, index) => <li key={index}>{item}</li>)}
+                                    </ul>
+                                  ) : (
+                                    <p>{value}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-emerald-600">{planoGerado.recursosDidaticos}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 9. Avaliação */}
+                    {planoGerado.avaliacao && (
+                      <div>
+                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
+                          <ClipboardCheck className="h-4 w-4 text-teal-600" />
+                          9. Avaliação
+                        </h3>
+                        <div className="bg-teal-50 p-3 rounded-lg text-sm">
+                          {typeof planoGerado.avaliacao === 'object' ? (
+                            Object.entries(planoGerado.avaliacao).map(([key, value]) => (
+                              <div key={key} className="mb-2">
+                                <span className="font-medium text-teal-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                                <div className="text-teal-600 ml-2">
+                                  {Array.isArray(value) ? (
+                                    <ul className="list-disc list-inside">
+                                      {value.map((item, index) => <li key={index}>{item}</li>)}
+                                    </ul>
+                                  ) : (
+                                    <p>{value}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-teal-600">{planoGerado.avaliacao}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Seções adicionais (10-15) de forma similar */}
+                    {Object.entries(planoGerado).map(([secao, conteudo]) => {
+                      if (['identificacao', 'alinhamentoBNCC', 'temaDaAula', 'objetivosAprendizagem', 'conteudos', 'metodologia', 'sequenciaDidatica', 'recursosDidaticos', 'avaliacao'].includes(secao)) {
+                        return null;
+                      }
+                      
+                      return (
+                        <div key={secao}>
+                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
+                            <FileText className="h-4 w-4 text-slate-600" />
+                            {secao.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          </h3>
+                          <div className="bg-slate-50 p-3 rounded-lg text-sm">
+                            {typeof conteudo === 'object' ? (
+                              Object.entries(conteudo).map(([key, value]) => (
+                                <div key={key} className="mb-2">
+                                  <span className="font-medium text-slate-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+                                  <div className="text-slate-600 ml-2">
+                                    {Array.isArray(value) ? (
+                                      <ul className="list-disc list-inside">
+                                        {value.map((item, index) => <li key={index}>{item}</li>)}
+                                      </ul>
+                                    ) : (
+                                      <p>{value}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-slate-600">{conteudo}</p>
+                            )}
                           </div>
                         </div>
-                      )}
-
-                      {/* Conteúdo Programático */}
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                          <BookOpen className="h-4 w-4 text-green-600" />
-                          Conteúdo Programático
-                        </h3>
-                        <ul className="space-y-1">
-                          {planoGerado.conteudoProgramatico?.map((item: string, index: number) => (
-                            <li key={index} className="flex items-start gap-2 text-sm text-slate-700">
-                              <ChevronRight className="h-3 w-3 text-slate-400 mt-1 flex-shrink-0" />
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Metodologia */}
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                          <Settings className="h-4 w-4 text-purple-600" />
-                          Metodologia
-                        </h3>
-                        <p className="text-slate-700 text-sm leading-relaxed">{planoGerado.metodologia}</p>
-                      </div>
-
-                      {/* Recursos Necessários */}
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                          <Plus className="h-4 w-4 text-amber-600" />
-                          Recursos Necessários
-                        </h3>
-                        <div className="flex flex-wrap gap-1">
-                          {planoGerado.recursos?.map((recurso: string, index: number) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {recurso}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Avaliação */}
-                      <div>
-                        <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                          Avaliação
-                        </h3>
-                        <p className="text-slate-700 text-sm leading-relaxed">{planoGerado.avaliacao}</p>
-                      </div>
-
-                      {/* Observações */}
-                      {planoGerado.observacoes && (
-                        <div>
-                          <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                            <Lightbulb className="h-4 w-4 text-yellow-600" />
-                            Observações
-                          </h3>
-                          <p className="text-slate-700 text-sm leading-relaxed">{planoGerado.observacoes}</p>
-                        </div>
-                      )}
-                    </div>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>

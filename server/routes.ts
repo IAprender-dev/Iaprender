@@ -1253,6 +1253,233 @@ RESPONDA APENAS COM JSON VÁLIDO:
     }
   });
 
+  // Comprehensive lesson plan generation endpoint
+  app.post('/api/generate-comprehensive-lesson-plan', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { 
+        disciplina, 
+        anoSerie, 
+        etapaEnsino, 
+        tema, 
+        duracao, 
+        recursos, 
+        perfilTurma, 
+        numeroAlunos, 
+        objetivosEspecificos, 
+        escola, 
+        professor,
+        analysis 
+      } = req.body;
+
+      const comprehensivePrompt = `Você é um especialista em educação brasileira com amplo conhecimento da BNCC, diretrizes do MEC e metodologias pedagógicas contemporâneas. Sua função é criar planejamentos de aula completos, profissionais e alinhados às normativas educacionais brasileiras.
+
+DADOS FORNECIDOS PELO PROFESSOR:
+- Disciplina/Componente Curricular: ${disciplina}
+- Ano/Série e Etapa de Ensino: ${anoSerie} - ${etapaEnsino}
+- Tema/Conteúdo específico: ${tema}
+- Duração da aula: ${duracao} minutos
+- Recursos disponíveis: ${recursos || 'Não especificado'}
+- Perfil da turma: ${perfilTurma || 'Não especificado'}
+- Número de alunos: ${numeroAlunos || 'Não especificado'}
+- Objetivos específicos: ${objetivosEspecificos || 'Não especificado'}
+- Nome da escola: ${escola || 'Não especificado'}
+- Professor responsável: ${professor || 'Não especificado'}
+
+ESTRUTURA OBRIGATÓRIA DO PLANEJAMENTO:
+
+1. IDENTIFICAÇÃO
+- Nome da escola/instituição
+- Professor(a) responsável
+- Disciplina/Componente curricular
+- Ano/Série - Turma
+- Data e duração da aula
+- Número de alunos
+
+2. ALINHAMENTO CURRICULAR BNCC
+- Unidade Temática (quando aplicável)
+- Objeto de Conhecimento específico
+- Habilidades BNCC (códigos e descrições completas)
+- Competências Gerais da BNCC mobilizadas (específicas e numeradas)
+- Competências Específicas da área/componente
+
+3. TEMA DA AULA
+- Título claro e atrativo
+- Contextualização do tema no currículo
+- Relevância social e científica do conteúdo
+
+4. OBJETIVOS DE APRENDIZAGEM
+Objetivo Geral:
+- Formulado com verbo no infinitivo
+- Claro e alcançável na duração proposta
+
+Objetivos Específicos:
+- Baseados na Taxonomia de Bloom revisada
+- Contemplando dimensões: conceitual, procedimental e atitudinal
+- Mensuráveis e observáveis
+
+5. CONTEÚDOS
+- Conceituais: (saber que)
+- Procedimentais: (saber fazer)
+- Atitudinais: (saber ser/conviver)
+
+6. METODOLOGIA E ESTRATÉGIAS DIDÁTICAS
+- Metodologias Ativas sugeridas (quando apropriado)
+- Estratégias de ensino diversificadas
+- Momentos pedagógicos estruturados:
+  * Problematização inicial
+  * Organização do conhecimento
+  * Aplicação do conhecimento
+- Diferenciação pedagógica para atender diferentes estilos de aprendizagem
+
+7. SEQUÊNCIA DIDÁTICA DETALHADA
+INÍCIO (X minutos):
+- Acolhimento e organização da turma
+- Verificação de conhecimentos prévios
+- Apresentação dos objetivos
+- Contextualização/problematização inicial
+
+DESENVOLVIMENTO (X minutos):
+- Passo a passo das atividades
+- Explicação dos conceitos
+- Atividades práticas/experimentais
+- Momentos de interação e discussão
+- Sistematização do conhecimento
+
+FECHAMENTO (X minutos):
+- Síntese dos aprendizados
+- Verificação da compreensão
+- Reflexão sobre o processo
+- Orientações para próximas etapas
+
+8. RECURSOS DIDÁTICOS
+- Materiais: lista completa e organizada
+- Tecnológicos: quando aplicável
+- Espaços: sala de aula, laboratório, pátio, etc.
+- Recursos humanos: palestrantes, monitores, etc.
+
+9. AVALIAÇÃO
+- Diagnóstica: verificação de conhecimentos prévios
+- Formativa: durante o processo (instrumentos e critérios)
+- Somativa: ao final da aula/sequência
+- Instrumentos avaliativos: específicos e variados
+- Critérios de avaliação: claros e objetivos
+- Feedback: como será fornecido aos estudantes
+
+10. INCLUSÃO E ACESSIBILIDADE
+- Adaptações curriculares para estudantes com necessidades especiais
+- Estratégias inclusivas para diferentes perfis de aprendizagem
+- Recursos de acessibilidade quando necessários
+
+11. INTERDISCIPLINARIDADE
+- Conexões com outras disciplinas
+- Temas transversais da BNCC abordados
+- Projetos integradores quando aplicável
+
+12. CONTEXTUALIZAÇÃO
+- Conexão com a realidade local dos estudantes
+- Aplicação prática do conhecimento
+- Relevância social do conteúdo
+
+13. EXTENSÃO E APROFUNDAMENTO
+- Atividades complementares para casa
+- Sugestões de pesquisa e leitura
+- Projetos de aprofundamento para estudantes interessados
+
+14. REFLEXÃO DOCENTE
+- Pontos de atenção durante a execução
+- Possíveis dificuldades e soluções
+- Indicadores de sucesso da aula
+- Espaço para anotações pós-aula
+
+15. REFERÊNCIAS
+- Bibliográficas: fundamentação teórica
+- Digitais: sites, vídeos, aplicativos
+- Documentos oficiais: BNCC, diretrizes específicas
+
+DIRETRIZES PARA ELABORAÇÃO:
+- Use linguagem técnica apropriada, mas acessível
+- Seja específico e detalhado nas orientações
+- Organize informações de forma clara e sequencial
+- Inclua tempo estimado para cada atividade
+- Garanta coerência entre objetivos, metodologia e avaliação
+- Respeite as especificidades da faixa etária
+- Considere os diferentes ritmos de aprendizagem
+- Promova participação ativa dos estudantes
+- Sempre citar os códigos específicos das habilidades BNCC
+- Garantir que todas as atividades tenham propósito pedagógico claro
+- Equilibrar momentos de explicação, prática e reflexão
+- Incluir momentos de autoavaliação dos estudantes
+- Prever tempo para dúvidas e esclarecimentos
+- Considere a progressão curricular vertical e horizontal
+- Integrar valores humanos e cidadania quando possível
+
+Retorne um plano de aula completo e profissional seguindo exatamente esta estrutura em formato JSON com as seguintes chaves principais:
+{
+  "identificacao": {},
+  "alinhamentoBNCC": {},
+  "temaDaAula": {},
+  "objetivosAprendizagem": {},
+  "conteudos": {},
+  "metodologia": {},
+  "sequenciaDidatica": {},
+  "recursosDidaticos": {},
+  "avaliacao": {},
+  "inclusaoAcessibilidade": {},
+  "interdisciplinaridade": {},
+  "contextualizacao": {},
+  "extensaoAprofundamento": {},
+  "reflexaoDocente": {},
+  "referencias": {}
+}`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514', // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
+          max_tokens: 4000,
+          system: comprehensivePrompt,
+          messages: [
+            {
+              role: 'user',
+              content: `Crie um plano de aula completo e profissional seguindo todas as diretrizes da BNCC e metodologias pedagógicas contemporâneas para o tema "${tema}" em ${disciplina} para ${anoSerie} (${etapaEnsino}) com duração de ${duracao} minutos.`
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na API do Anthropic');
+      }
+
+      const data = await response.json();
+      const content = data.content[0].text;
+      
+      try {
+        const cleanContent = content.replace(/```json\n?|```\n?/g, '').trim();
+        const planoData = JSON.parse(cleanContent);
+        
+        res.json(planoData);
+      } catch (parseError) {
+        console.error('Erro ao parsear resposta da IA:', parseError);
+        res.status(500).json({ 
+          error: 'Erro interno do servidor ao processar resposta da IA',
+          details: parseError.message 
+        });
+      }
+    } catch (error: any) {
+      console.error('Erro na geração do plano de aula:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error.message 
+      });
+    }
+  });
+
   // Geração de plano de aula com IA
   app.post("/api/generate-lesson-plan", authenticate, async (req, res) => {
     try {
