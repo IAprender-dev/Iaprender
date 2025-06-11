@@ -1413,23 +1413,90 @@ DIRETRIZES PARA ELABORAÇÃO:
 - Considere a progressão curricular vertical e horizontal
 - Integrar valores humanos e cidadania quando possível
 
-Retorne um plano de aula completo e profissional seguindo exatamente esta estrutura em formato JSON com as seguintes chaves principais:
+IMPORTANTE: Retorne APENAS um JSON válido e bem formatado. Use STRINGS para todos os valores, nunca objetos aninhados. 
+
+Para listas/arrays, use apenas strings separadas por vírgulas ou pontos. Para seções como "habilidades", "competências", use strings com formatação clara.
+
+Exemplo de formatação correta:
+- Para habilidades: "EF05CI11: Associar o movimento diário do Sol e das demais estrelas no céu ao movimento de rotação da Terra"
+- Para competências: "1. Valorizar e utilizar os conhecimentos historicamente construídos sobre o mundo físico, social, cultural e digital"
+- Para sequência didática: Use strings descritivas simples, não objetos
+
+Estrutura JSON obrigatória:
 {
-  "identificacao": {},
-  "alinhamentoBNCC": {},
-  "temaDaAula": {},
-  "objetivosAprendizagem": {},
-  "conteudos": {},
-  "metodologia": {},
-  "sequenciaDidatica": {},
-  "recursosDidaticos": {},
-  "avaliacao": {},
-  "inclusaoAcessibilidade": {},
-  "interdisciplinaridade": {},
-  "contextualizacao": {},
-  "extensaoAprofundamento": {},
-  "reflexaoDocente": {},
-  "referencias": {}
+  "identificacao": {
+    "disciplina": "string",
+    "anoSerie": "string", 
+    "etapaEnsino": "string",
+    "tema": "string",
+    "duracao": "string",
+    "professor": "string"
+  },
+  "alinhamentoBNCC": {
+    "unidadeTematica": "string",
+    "objetoConhecimento": "string", 
+    "habilidades": "string com códigos e descrições completas",
+    "competenciasGerais": "string numerada com descrições",
+    "competenciasEspecificas": "string com descrições da área"
+  },
+  "temaDaAula": {
+    "titulo": "string",
+    "contextualizacao": "string",
+    "relevancia": "string"
+  },
+  "objetivosAprendizagem": {
+    "objetivoGeral": "string",
+    "objetivosEspecificos": "string com múltiplos objetivos separados por pontos"
+  },
+  "conteudos": {
+    "conceituais": "string",
+    "procedimentais": "string", 
+    "atitudinais": "string"
+  },
+  "metodologia": {
+    "metodologiasAtivas": "string",
+    "estrategiasEnsino": "string",
+    "momentosPedagogicos": "string"
+  },
+  "sequenciaDidatica": {
+    "inicio": "string detalhada das atividades iniciais com tempo",
+    "desenvolvimento": "string detalhada das atividades principais com tempo",
+    "fechamento": "string detalhada das atividades finais com tempo"
+  },
+  "recursosDidaticos": {
+    "materiaisNecessarios": "string",
+    "recursosDigitais": "string",
+    "espacosFisicos": "string"
+  },
+  "avaliacao": {
+    "instrumentos": "string",
+    "criterios": "string",
+    "momentos": "string"
+  },
+  "inclusaoAcessibilidade": {
+    "adaptacoes": "string",
+    "estrategiasInclusivas": "string"
+  },
+  "interdisciplinaridade": {
+    "conexoes": "string",
+    "integracaoAreas": "string"
+  },
+  "contextualizacao": {
+    "realidadeLocal": "string",
+    "aplicacoesPraticas": "string"
+  },
+  "extensaoAprofundamento": {
+    "atividadesComplementares": "string",
+    "pesquisasExtras": "string"
+  },
+  "reflexaoDocente": {
+    "pontosAtencao": "string",
+    "adaptacoesPossivel": "string"
+  },
+  "referencias": {
+    "bibliograficas": "string",
+    "digitais": "string"
+  }
 }`;
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -1446,7 +1513,7 @@ Retorne um plano de aula completo e profissional seguindo exatamente esta estrut
           messages: [
             {
               role: 'user',
-              content: `Crie um plano de aula completo e profissional seguindo todas as diretrizes da BNCC e metodologias pedagógicas contemporâneas para o tema "${tema}" em ${disciplina} para ${anoSerie} (${etapaEnsino}) com duração de ${duracao} minutos.`
+              content: `Crie um plano de aula completo e profissional seguindo todas as diretrizes da BNCC e metodologias pedagógicas contemporâneas para o tema "${tema}" em ${disciplina} para ${anoSerie} (${etapaEnsino}) com duração de ${duracao} minutos. Retorne APENAS o JSON válido conforme a estrutura especificada.`
             }
           ]
         })

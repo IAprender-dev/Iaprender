@@ -52,11 +52,47 @@ const renderValue = (value: any): React.ReactNode => {
   if (Array.isArray(value)) {
     return (
       <ul className="list-disc list-inside space-y-1">
-        {value.map((item, index) => <li key={index}>{String(item)}</li>)}
+        {value.map((item, index) => (
+          <li key={index}>
+            {typeof item === 'object' ? (
+              <div className="space-y-1">
+                {Object.entries(item).map(([key, val]) => (
+                  <div key={key}>
+                    <span className="font-medium">{key}:</span> {String(val)}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              String(item)
+            )}
+          </li>
+        ))}
       </ul>
     );
   }
-  return <p>{String(value)}</p>;
+  
+  if (typeof value === 'object' && value !== null) {
+    return (
+      <div className="space-y-2">
+        {Object.entries(value).map(([key, val]) => (
+          <div key={key} className="pl-3 border-l-2 border-gray-200">
+            <span className="font-medium text-gray-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
+            <div className="mt-1 text-gray-600">
+              {Array.isArray(val) ? (
+                <ul className="list-disc list-inside ml-4 space-y-1">
+                  {val.map((item, idx) => <li key={idx}>{String(item)}</li>)}
+                </ul>
+              ) : (
+                <p>{String(val)}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  
+  return <p className="leading-relaxed">{String(value)}</p>;
 };
 
 export default function PlanejamentoAula() {
