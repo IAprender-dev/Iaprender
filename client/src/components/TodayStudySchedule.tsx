@@ -257,10 +257,10 @@ export default function TodayStudySchedule({ studyPlan }: TodayStudyScheduleProp
             </div>
             
             <PomodoroTimer
-              studyDuration={studyPlan.pomodoroSettings?.studyDuration || 25}
-              shortBreakDuration={studyPlan.pomodoroSettings?.shortBreak || 5}
-              longBreakDuration={studyPlan.pomodoroSettings?.longBreak || 15}
-              sessionsUntilLongBreak={studyPlan.pomodoroSettings?.sessionsUntilLongBreak || 4}
+              studyDuration={(studyPlan || JSON.parse(localStorage.getItem('iaulaStudyPlan') || '{}'))?.pomodoroSettings?.studyDuration || 25}
+              shortBreakDuration={(studyPlan || JSON.parse(localStorage.getItem('iaulaStudyPlan') || '{}'))?.pomodoroSettings?.shortBreak || 5}
+              longBreakDuration={(studyPlan || JSON.parse(localStorage.getItem('iaulaStudyPlan') || '{}'))?.pomodoroSettings?.longBreak || 15}
+              sessionsUntilLongBreak={(studyPlan || JSON.parse(localStorage.getItem('iaulaStudyPlan') || '{}'))?.pomodoroSettings?.sessionsUntilLongBreak || 4}
               subject={currentSession.subject}
               onSessionComplete={(type) => {
                 if (type === 'study') {
