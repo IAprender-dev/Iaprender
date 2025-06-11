@@ -464,7 +464,7 @@ export default function VoiceTutorTeacher() {
                         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
                           <Mic className="h-8 w-8 text-white" />
                         </div>
-                        <h4 className="font-medium text-gray-800 mb-2">Professora Ana está ouvindo...</h4>
+                        <h4 className="font-medium text-gray-800 mb-2">Pro Versa está ouvindo...</h4>
                         <p className="text-gray-600">Fale naturalmente para começar a conversa</p>
                       </div>
                     )}

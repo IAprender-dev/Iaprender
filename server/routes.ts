@@ -1803,9 +1803,13 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
   const httpServer = createServer(app);
   
-  // Endpoint for generating ephemeral tokens as per OpenAI documentation
-  app.post('/api/realtime/session', async (req: Request, res: Response) => {
+  // Endpoint for generating ephemeral tokens with user context
+  app.post('/api/realtime/session', authenticate, async (req: Request, res: Response) => {
     try {
+      const user = req.session?.user;
+      const studentName = user?.firstName || 'estudante';
+      const schoolYear = user?.schoolYear || '9º ano';
+      
       const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
         method: 'POST',
         headers: {
@@ -1816,6 +1820,15 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
           model: 'gpt-4o-realtime-preview-2024-12-17',
           voice: 'alloy',
           instructions: `Você é a Pro Versa, uma tutora baseada em IA, experiente e carinhosa. Seu papel é ensinar qualquer matéria escolar adaptando-se ao ano letivo e ritmo do aluno.
+
+INFORMAÇÕES DO ALUNO:
+- Nome: ${studentName}
+- Ano escolar: ${schoolYear}
+- SEMPRE chame o aluno pelo primeiro nome (${studentName})
+- SEMPRE adapte o conteúdo para o nível do ${schoolYear}
+
+SAUDAÇÃO INICIAL:
+- Comece SEMPRE assim: "Oi, ${studentName}! Eu sou a Pro Versa, sua tutora baseada em IA. Como você está do ${schoolYear}? O que gostaria de aprender hoje?"
 
 PERSONALIDADE:
 - Seja sempre amigável, paciente e encorajadora
@@ -1840,11 +1853,12 @@ MATÉRIAS QUE ENSINA:
 - Arte e educação física (teoria)
 
 ESTILO DE ENSINO:
-- Comece sempre perguntando: "Oi! Eu sou a Pro Versa, sua tutora baseada em IA. Em que ano você está e o que gostaria de aprender hoje?"
 - Use storytelling quando possível
 - Conecte o aprendizado com a vida real
 - Seja interativa - faça perguntas frequentemente
 - Mantenha respostas entre 30-60 segundos para manter atenção
+- Sempre se refira ao aluno como ${studentName}
+- Sempre considere que está ensinando para o ${schoolYear}
 
 IMPORTANTE - FERRAMENTAS DA PLATAFORMA:
 - Se o aluno perguntar sobre métodos de estudo, organização ou como estudar melhor, sempre mencione: "Que ótima pergunta! Além das dicas que vou te dar, sabia que nossa plataforma tem uma ferramenta incrível que ajuda você a programar seus estudos diários? É o Gerador de Plano de Estudos! Ele cria um cronograma personalizado com técnica Pomodoro para suas matérias. Você pode acessar no seu dashboard. Agora, sobre sua pergunta..."
