@@ -235,32 +235,52 @@ export default function StudyPlanGenerator() {
       
       const availableMinutes = (dayEnd.getTime() - dayStart.getTime()) / (1000 * 60);
       
-      // Calculate how many subjects can fit within available time
-      const sessionDuration = pomodoroSettings.studyDuration + pomodoroSettings.shortBreak; // One Pomodoro + break
-      const maxSessions = Math.floor(availableMinutes / sessionDuration);
-      const subjectsToSchedule = Math.min(enabledSubjects.length, maxSessions);
+      // Calculate session duration with proper break intervals
+      const studyDuration = pomodoroSettings.studyDuration;
+      const shortBreak = pomodoroSettings.shortBreak;
+      const longBreak = pomodoroSettings.longBreak;
+      const sessionsUntilLongBreak = pomodoroSettings.sessionsUntilLongBreak || 4;
+      
+      // Each subject gets multiple pomodoro cycles
+      const cyclesPerSubject = 2;
+      const subjectDuration = (cyclesPerSubject * studyDuration) + ((cyclesPerSubject - 1) * shortBreak);
+      const subjectWithLongBreak = subjectDuration + longBreak;
+      
+      const maxSubjects = Math.floor(availableMinutes / subjectWithLongBreak);
+      const subjectsToSchedule = Math.min(enabledSubjects.length, maxSubjects);
       
       let currentTime = new Date(dayStart);
+      let sessionCount = 0;
       
       enabledSubjects.slice(0, subjectsToSchedule).forEach((subject, subjectIndex) => {
-        const sessionStart = new Date(currentTime);
-        const sessionEnd = new Date(currentTime);
-        sessionEnd.setMinutes(sessionEnd.getMinutes() + pomodoroSettings.studyDuration);
+        // Check if we have enough time for this subject
+        const timeNeeded = subjectDuration + (subjectIndex < subjectsToSchedule - 1 ? longBreak : 0);
+        const timeRemaining = (dayEnd.getTime() - currentTime.getTime()) / (1000 * 60);
         
-        // Check if session fits within day bounds
-        if (sessionEnd <= dayEnd) {
+        if (timeRemaining >= timeNeeded) {
+          const sessionStart = new Date(currentTime);
+          const sessionEnd = new Date(currentTime);
+          sessionEnd.setMinutes(sessionEnd.getMinutes() + subjectDuration);
+          
           sessions.push({
             id: Date.now() + sessions.length + Math.random(),
             subject: subject.name,
             startTime: sessionStart,
             endTime: sessionEnd,
             isCompleted: false,
-            pomodoroCount: 1,
+            pomodoroCount: cyclesPerSubject,
             dayOfWeek: daySchedule.day
           });
           
-          // Move to next time slot (study + break)
-          currentTime.setMinutes(currentTime.getMinutes() + sessionDuration);
+          // Move current time to end of session
+          currentTime = new Date(sessionEnd);
+          
+          // Add long break between subjects (except for the last one)
+          if (subjectIndex < subjectsToSchedule - 1) {
+            currentTime.setMinutes(currentTime.getMinutes() + longBreak);
+          }
+          
+          sessionCount++;
         }
       });
     });
