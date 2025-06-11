@@ -74,10 +74,8 @@ export default function AITutorChat() {
     mutationFn: async (message: string) => {
       const response = await apiRequest('POST', '/api/ai/tutor-chat', {
         message,
-        conversationHistory: messages.slice(-10),
-        studentName: user?.firstName || 'Estudante',
-        context: 'educational_text_tutor',
-        grade: '9º ano'
+        chatHistory: messages.slice(-10),
+        studentGrade: user?.schoolYear || '9º ano'
       });
       
       if (!response.ok) {
