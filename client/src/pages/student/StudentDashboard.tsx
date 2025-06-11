@@ -332,6 +332,92 @@ export default function StudentDashboard() {
                 </Card>
               </div>
 
+              {/* Central de IAs */}
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                  <Bot className="h-6 w-6 text-purple-600" />
+                  Central de IAs
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Link href="/central-ia">
+                    <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
+                            <Bot className="h-6 w-6 text-white" />
+                          </div>
+                          <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+                            <Sparkles className="h-3 w-3 mr-1" />
+                            Novo
+                          </Badge>
+                        </div>
+                        <h3 className="font-bold text-lg text-slate-900 mb-2">Central de IAs</h3>
+                        <p className="text-sm text-slate-600">ChatGPT, Claude e Gemini em um só lugar</p>
+                        <div className="mt-4 flex items-center text-purple-600 group-hover:text-purple-700">
+                          <span className="text-sm font-medium">Acessar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+
+                  <Link href="/aluno/tutor-ia">
+                    <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl">
+                            <Bot className="h-6 w-6 text-white" />
+                          </div>
+                        </div>
+                        <h3 className="font-bold text-lg text-slate-900 mb-2">Tutor IA Texto</h3>
+                        <p className="text-sm text-slate-600">Tutoria personalizada por texto</p>
+                        <div className="mt-4 flex items-center text-indigo-600 group-hover:text-indigo-700">
+                          <span className="text-sm font-medium">Acessar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+
+                  <Link href="/aluno/tutor-voz">
+                    <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-3 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl">
+                            <Mic className="h-6 w-6 text-white" />
+                          </div>
+                          <Badge className="bg-pink-100 text-pink-700 border-pink-200">Novo</Badge>
+                        </div>
+                        <h3 className="font-bold text-lg text-slate-900 mb-2">Pro Versa</h3>
+                        <p className="text-sm text-slate-600">Tutora de voz com IA</p>
+                        <div className="mt-4 flex items-center text-pink-600 group-hover:text-pink-700">
+                          <span className="text-sm font-medium">Acessar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+
+                  <Link href="/aluno/planejamento">
+                    <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl">
+                            <Target className="h-6 w-6 text-white" />
+                          </div>
+                        </div>
+                        <h3 className="font-bold text-lg text-slate-900 mb-2">Plano de Estudos</h3>
+                        <p className="text-sm text-slate-600">Organize seus estudos com IA</p>
+                        <div className="mt-4 flex items-center text-green-600 group-hover:text-green-700">
+                          <span className="text-sm font-medium">Acessar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </div>
+              </div>
+
               {/* Quick Actions */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 {/* Translator Card */}
