@@ -186,7 +186,7 @@ export default function VoiceTutorChat() {
   };
 
   const handleRealtimeMessage = (message: any) => {
-    console.log('Received message:', message.type);
+    console.log('Received message:', message.type, message);
     
     switch (message.type) {
       case 'session.created':
@@ -210,9 +210,29 @@ export default function VoiceTutorChat() {
         break;
         
       case 'conversation.item.input_audio_transcription.completed':
+        console.log('User transcription completed:', message.transcript);
         if (message.transcript && message.transcript.trim()) {
           setCurrentTranscript('');
           addMessage('user', message.transcript, 'text');
+        }
+        break;
+        
+      case 'conversation.item.input_audio_transcription.failed':
+        console.log('User transcription failed:', message);
+        break;
+        
+      case 'conversation.item.created':
+        // Handle user input items
+        if (message.item && message.item.type === 'message' && message.item.role === 'user') {
+          console.log('User message item created:', message.item);
+          // Check if there's content to display
+          if (message.item.content && message.item.content.length > 0) {
+            const textContent = message.item.content.find((c: any) => c.type === 'input_text');
+            if (textContent && textContent.text) {
+              console.log('Adding user message from item:', textContent.text);
+              addMessage('user', textContent.text, 'text');
+            }
+          }
         }
         break;
         
@@ -237,11 +257,24 @@ export default function VoiceTutorChat() {
         break;
         
       case 'input_audio_buffer.speech_started':
+        console.log('User started speaking');
         setConversationState('listening');
+        setCurrentTranscript(''); // Clear any previous transcript
         break;
         
       case 'input_audio_buffer.speech_stopped':
+        console.log('User stopped speaking');
         setConversationState('thinking');
+        // Commit the input audio buffer to get transcription
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+          wsRef.current.send(JSON.stringify({
+            type: 'input_audio_buffer.commit'
+          }));
+        }
+        break;
+        
+      case 'input_audio_buffer.committed':
+        console.log('Audio buffer committed, waiting for transcription...');
         break;
         
       case 'response.created':
