@@ -563,7 +563,7 @@ export default function StudyPlanGenerator() {
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-4">
                         <div>
-                          <Label>Tempo de Estudo (minutos)</Label>
+                          <Label className="text-gray-900 font-medium">Tempo de Estudo (minutos)</Label>
                           <Input
                             type="number"
                             min="15"
@@ -573,12 +573,12 @@ export default function StudyPlanGenerator() {
                               ...prev,
                               studyDuration: parseInt(e.target.value)
                             }))}
-                            className="rounded-xl"
+                            className="rounded-xl border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                         
                         <div>
-                          <Label>Pausa Curta (minutos)</Label>
+                          <Label className="text-gray-900 font-medium">Pausa Curta (minutos)</Label>
                           <Input
                             type="number"
                             min="3"
@@ -588,14 +588,14 @@ export default function StudyPlanGenerator() {
                               ...prev,
                               shortBreak: parseInt(e.target.value)
                             }))}
-                            className="rounded-xl"
+                            className="rounded-xl border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                       </div>
                       
                       <div className="space-y-4">
                         <div>
-                          <Label>Pausa Longa (minutos)</Label>
+                          <Label className="text-gray-900 font-medium">Pausa Longa (minutos)</Label>
                           <Input
                             type="number"
                             min="15"
@@ -605,12 +605,12 @@ export default function StudyPlanGenerator() {
                               ...prev,
                               longBreak: parseInt(e.target.value)
                             }))}
-                            className="rounded-xl"
+                            className="rounded-xl border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                         
                         <div>
-                          <Label>Sessões até pausa longa</Label>
+                          <Label className="text-gray-900 font-medium">Sessões até pausa longa</Label>
                           <Input
                             type="number"
                             min="2"
@@ -620,19 +620,19 @@ export default function StudyPlanGenerator() {
                               ...prev,
                               sessionsUntilLongBreak: parseInt(e.target.value)
                             }))}
-                            className="rounded-xl"
+                            className="rounded-xl border-gray-300 focus:border-indigo-500"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Objetivos e Metas Específicas</Label>
+                      <Label className="text-gray-900 font-medium">Objetivos e Metas Específicas</Label>
                       <Textarea
                         value={goals}
                         onChange={(e) => setGoals(e.target.value)}
                         placeholder="Ex: Focar em álgebra em matemática, melhorar interpretação de texto em português..."
-                        className="rounded-xl min-h-[100px]"
+                        className="rounded-xl min-h-[100px] border-gray-300 focus:border-indigo-500"
                       />
                     </div>
 
