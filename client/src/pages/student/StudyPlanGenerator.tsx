@@ -205,13 +205,52 @@ export default function StudyPlanGenerator() {
     const enabledSubjects = subjects.filter(s => s.enabled);
     const enabledDays = schedule.filter(s => s.enabled);
     
-    // Algoritmo para distribuir matérias pelos dias
+    // Generate sessions for the week
+    const sessions: any[] = [];
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay() + 1);
+    
+    enabledDays.forEach((daySchedule, dayIndex) => {
+      const sessionDate = new Date(startOfWeek);
+      sessionDate.setDate(startOfWeek.getDate() + dayIndex);
+      
+      const [startHour, startMin] = daySchedule.startTime.split(':').map(Number);
+      sessionDate.setHours(startHour, startMin, 0, 0);
+      
+      enabledSubjects.forEach((subject, subjectIndex) => {
+        if (subjectIndex < 3) { // Max 3 subjects per day
+          const cycles = 2;
+          const totalStudyTime = cycles * pomodoroSettings.studyDuration;
+          const totalBreakTime = (cycles - 1) * pomodoroSettings.shortBreak;
+          const sessionDuration = totalStudyTime + totalBreakTime;
+          
+          const sessionStart = new Date(sessionDate);
+          sessionStart.setMinutes(sessionStart.getMinutes() + (subjectIndex * (sessionDuration + 10)));
+          
+          const sessionEnd = new Date(sessionStart);
+          sessionEnd.setMinutes(sessionEnd.getMinutes() + sessionDuration);
+          
+          sessions.push({
+            id: Date.now() + sessions.length,
+            subject: subject.name,
+            startTime: sessionStart,
+            endTime: sessionEnd,
+            isCompleted: false,
+            pomodoroCount: cycles,
+            dayOfWeek: daySchedule.day
+          });
+        }
+      });
+    });
+    
     const plan = {
       id: Date.now(),
       name: planName || `Plano de ${(user as any)?.schoolYear}`,
       schoolYear: (user as any)?.schoolYear,
       subjects: enabledSubjects,
       schedule: enabledDays,
+      sessions: sessions,
       pomodoroSettings,
       goals,
       createdAt: new Date(),
@@ -220,7 +259,7 @@ export default function StudyPlanGenerator() {
 
     setGeneratedPlan(plan);
     
-    // Salvar no localStorage
+    // Save to localStorage
     localStorage.setItem('iaulaStudyPlan', JSON.stringify(plan));
     
     setCurrentStep(4);
@@ -720,6 +759,48 @@ export default function StudyPlanGenerator() {
                       </Card>
                     </div>
 
+                    {/* Plan Details */}
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-900">Resumo do Plano</h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-3">
+                          <div>
+                            <h5 className="font-medium text-gray-800 mb-2">Matérias Selecionadas:</h5>
+                            <div className="space-y-1">
+                              {generatedPlan.subjects.map((subject: any) => (
+                                <div key={subject.id} className="flex justify-between text-sm">
+                                  <span className="text-gray-700">{subject.name}</span>
+                                  <span className="text-gray-600">{subject.hoursPerWeek}h/semana</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <h5 className="font-medium text-gray-800 mb-2">Horários de Estudo:</h5>
+                            <div className="space-y-1">
+                              {generatedPlan.schedule.map((day: any) => (
+                                <div key={day.day} className="flex justify-between text-sm">
+                                  <span className="text-gray-700">{day.day}</span>
+                                  <span className="text-gray-600">{day.startTime} - {day.endTime}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {generatedPlan.goals && (
+                        <div>
+                          <h5 className="font-medium text-gray-800 mb-2">Objetivos:</h5>
+                          <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{generatedPlan.goals}</p>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex space-x-3">
                       <Button 
                         variant="outline"
@@ -727,7 +808,7 @@ export default function StudyPlanGenerator() {
                         className="flex-1"
                       >
                         <Settings className="w-4 h-4 mr-2" />
-                        Ajustar
+                        Editar Plano
                       </Button>
                       <Button 
                         onClick={() => navigate("/aluno/dashboard")}

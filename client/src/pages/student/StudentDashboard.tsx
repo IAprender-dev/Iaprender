@@ -66,24 +66,53 @@ export default function StudentDashboard() {
   
   // Carregar plano de estudos do localStorage
   useEffect(() => {
-    const savedPlan = localStorage.getItem('iaulaStudyPlan');
-    if (savedPlan) {
-      try {
-        const plan = JSON.parse(savedPlan);
-        // Converter strings de data de volta para objetos Date
-        plan.createdAt = new Date(plan.createdAt);
-        plan.sessions = plan.sessions.map((session: any) => ({
-          ...session,
-          startTime: new Date(session.startTime),
-          endTime: new Date(session.endTime)
-        }));
-        setStudyPlan(plan);
-      } catch (error) {
-        console.error('Erro ao carregar plano de estudos:', error);
-        localStorage.removeItem('iaulaStudyPlan');
+    const loadStudyPlan = () => {
+      const savedPlan = localStorage.getItem('iaulaStudyPlan');
+      if (savedPlan) {
+        try {
+          const plan = JSON.parse(savedPlan);
+          // Converter strings de data de volta para objetos Date
+          plan.createdAt = new Date(plan.createdAt);
+          if (plan.sessions) {
+            plan.sessions = plan.sessions.map((session: any) => ({
+              ...session,
+              startTime: new Date(session.startTime),
+              endTime: new Date(session.endTime)
+            }));
+          }
+          setStudyPlan(plan);
+        } catch (error) {
+          console.error('Erro ao carregar plano de estudos:', error);
+          localStorage.removeItem('iaulaStudyPlan');
+        }
       }
-    }
-  }, []);
+    };
+
+    loadStudyPlan();
+    
+    // Listen for storage changes (when plan is created in another tab/component)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'iaulaStudyPlan') {
+        loadStudyPlan();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check for updates when component becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadStudyPlan();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [location]);
 
   const getTodaySessions = () => {
     if (!studyPlan) return [];
