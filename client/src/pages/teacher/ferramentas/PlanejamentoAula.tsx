@@ -444,7 +444,7 @@ export default function PlanejamentoAula() {
                         ) : (
                           <AlertTriangle className="h-5 w-5 text-orange-600" />
                         )}
-                        <span className="font-semibold text-sm">
+                        <span className={`font-semibold text-sm ${temaAnalysis.conformeRegulasBNCC ? 'text-green-800' : 'text-orange-800'}`}>
                           {temaAnalysis.conformeRegulasBNCC ? 'Tema alinhado à BNCC' : 'Atenção: Tema fora das diretrizes'}
                         </span>
                       </div>
