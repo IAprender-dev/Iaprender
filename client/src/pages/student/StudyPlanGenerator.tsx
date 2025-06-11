@@ -159,8 +159,8 @@ export default function StudyPlanGenerator() {
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
 
   useEffect(() => {
-    if (user?.schoolYear && schoolYearSubjects[user.schoolYear]) {
-      setSubjects([...schoolYearSubjects[user.schoolYear]]);
+    if ((user as any)?.schoolYear && schoolYearSubjects[(user as any).schoolYear]) {
+      setSubjects([...schoolYearSubjects[(user as any).schoolYear]]);
     }
   }, [user]);
 
@@ -204,8 +204,8 @@ export default function StudyPlanGenerator() {
     // Algoritmo para distribuir matérias pelos dias
     const plan = {
       id: Date.now(),
-      name: planName || `Plano de ${user?.schoolYear}`,
-      schoolYear: user?.schoolYear,
+      name: planName || `Plano de ${(user as any)?.schoolYear}`,
+      schoolYear: (user as any)?.schoolYear,
       subjects: enabledSubjects,
       schedule: enabledDays,
       pomodoroSettings,
@@ -262,7 +262,7 @@ export default function StudyPlanGenerator() {
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">Gerador de Plano de Estudos</h1>
                   <p className="text-sm text-gray-600">
-                    {user?.schoolYear} • Técnica Pomodoro Integrada
+                    {(user as any)?.schoolYear} • Técnica Pomodoro Integrada
                   </p>
                 </div>
               </div>
@@ -676,7 +676,7 @@ export default function StudyPlanGenerator() {
                       </div>
                       <h3 className="text-2xl font-bold text-gray-900">{generatedPlan.name}</h3>
                       <p className="text-gray-600">
-                        Seu plano personalizado para {generatedPlan.schoolYear} está pronto!
+                        Seu plano personalizado para {(generatedPlan as any).schoolYear} está pronto!
                       </p>
                     </div>
 

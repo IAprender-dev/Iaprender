@@ -37,6 +37,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
 import aiverseLogo from "@assets/Design sem nome (5)_1749568909858.png";
+import TodayStudySchedule from "@/components/TodayStudySchedule";
 
 interface StudySession {
   id: number;
