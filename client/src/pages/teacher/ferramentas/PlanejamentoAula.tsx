@@ -560,36 +560,69 @@ export default function PlanejamentoAula() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-6 max-h-[70vh] overflow-y-auto">
+                  <div className="space-y-8 max-h-[80vh] overflow-y-auto pr-2">
+                    {/* Header com título principal */}
+                    <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 rounded-2xl p-8 text-white shadow-xl">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                          <Calendar className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h2 className="text-3xl font-bold mb-2">Plano de Aula Profissional</h2>
+                          <p className="text-indigo-100 text-lg opacity-90">Desenvolvido com metodologias pedagógicas modernas e diretrizes BNCC</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-3 mt-6">
+                        <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium backdrop-blur-sm">✨ Baseado na BNCC</span>
+                        <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium backdrop-blur-sm">🎯 Objetivos Claros</span>
+                        <span className="px-4 py-2 bg-white/20 rounded-full text-sm font-medium backdrop-blur-sm">📚 Metodologia Ativa</span>
+                      </div>
+                    </div>
+
                     {/* 1. Identificação */}
                     {planoGerado.identificacao && (
-                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-lg border-l-4 border-blue-500">
-                        <h2 className="text-xl font-bold text-slate-900 mb-3">1. Identificação</h2>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          {Object.entries(planoGerado.identificacao).map(([key, value]) => (
-                            <div key={key}>
-                              <span className="font-semibold text-slate-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                              <p className="text-slate-600">{String(value)}</p>
+                      <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="bg-gradient-to-r from-slate-50 via-gray-50 to-slate-50 px-8 py-6 border-b border-gray-200">
+                          <h3 className="flex items-center gap-4 font-bold text-gray-900 text-xl">
+                            <div className="p-3 bg-slate-600 rounded-xl shadow-md">
+                              <User className="h-6 w-6 text-white" />
                             </div>
-                          ))}
+                            <span className="bg-gradient-to-r from-slate-700 to-gray-800 bg-clip-text text-transparent">1. Identificação</span>
+                          </h3>
+                        </div>
+                        <div className="p-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {Object.entries(planoGerado.identificacao).map(([key, value]) => (
+                              <div key={key} className="group bg-gradient-to-br from-slate-50 to-gray-50 p-6 rounded-xl border border-slate-200 hover:shadow-md transition-all duration-300">
+                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
+                                <p className="text-slate-900 text-lg font-semibold">{String(value)}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}
 
                     {/* 2. Alinhamento BNCC */}
                     {planoGerado.alinhamentoBNCC && (
-                      <div className="bg-green-50 border-green-200 border p-4 rounded-lg">
-                        <h3 className="flex items-center gap-2 font-semibold text-green-800 mb-3">
-                          <CheckCircle className="h-5 w-5" />
-                          2. Alinhamento Curricular BNCC
-                        </h3>
-                        <div className="space-y-2 text-sm">
-                          {Object.entries(planoGerado.alinhamentoBNCC).map(([key, value]) => (
-                            <div key={key}>
-                              <span className="font-medium text-green-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                              <p className="text-green-600 ml-2">{typeof value === 'string' ? value : JSON.stringify(value)}</p>
+                      <div className="bg-white border border-emerald-200 rounded-2xl shadow-lg overflow-hidden">
+                        <div className="bg-gradient-to-r from-emerald-50 via-green-50 to-emerald-50 px-8 py-6 border-b border-emerald-200">
+                          <h3 className="flex items-center gap-4 font-bold text-gray-900 text-xl">
+                            <div className="p-3 bg-emerald-600 rounded-xl shadow-md">
+                              <CheckCircle className="h-6 w-6 text-white" />
                             </div>
-                          ))}
+                            <span className="bg-gradient-to-r from-emerald-700 to-green-800 bg-clip-text text-transparent">2. Alinhamento Curricular BNCC</span>
+                          </h3>
+                        </div>
+                        <div className="p-8">
+                          <div className="space-y-6">
+                            {Object.entries(planoGerado.alinhamentoBNCC).map(([key, value]) => (
+                              <div key={key} className="bg-gradient-to-br from-emerald-50 to-green-50 p-6 rounded-xl border border-emerald-200">
+                                <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2 block">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
+                                <p className="text-emerald-900 text-base leading-relaxed">{typeof value === 'string' ? value : JSON.stringify(value)}</p>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     )}

@@ -1441,7 +1441,7 @@ Retorne um plano de aula completo e profissional seguindo exatamente esta estrut
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514', // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
-          max_tokens: 4000,
+          max_tokens: 8000,
           system: comprehensivePrompt,
           messages: [
             {
@@ -1460,15 +1460,27 @@ Retorne um plano de aula completo e profissional seguindo exatamente esta estrut
       const content = data.content[0].text;
       
       try {
-        const cleanContent = content.replace(/```json\n?|```\n?/g, '').trim();
+        // Clean and extract JSON from the response
+        let cleanContent = content.replace(/```json\n?|```\n?/g, '').trim();
+        
+        // Find the start and end of JSON object
+        const jsonStart = cleanContent.indexOf('{');
+        const jsonEnd = cleanContent.lastIndexOf('}');
+        
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          cleanContent = cleanContent.substring(jsonStart, jsonEnd + 1);
+        }
+        
         const planoData = JSON.parse(cleanContent);
         
         res.json(planoData);
       } catch (parseError) {
         console.error('Erro ao parsear resposta da IA:', parseError);
+        console.error('Conteúdo recebido:', content.substring(0, 500) + '...');
         res.status(500).json({ 
           error: 'Erro interno do servidor ao processar resposta da IA',
-          details: parseError.message 
+          details: String(parseError),
+          rawContent: content.substring(0, 500)
         });
       }
     } catch (error: any) {
