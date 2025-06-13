@@ -219,6 +219,11 @@ export default function PlanejamentoAula() {
         title: "Plano gerado com sucesso!",
         description: "Seu plano de aula profissional está pronto para uso.",
       });
+
+      // Aguardar um breve momento para o estado ser atualizado e então fazer download automático
+      setTimeout(() => {
+        gerarPDF(planoData, true);
+      }, 500);
     } catch (error: any) {
       console.error('Erro na geração do plano:', error);
       toast({
@@ -231,8 +236,16 @@ export default function PlanejamentoAula() {
     }
   };
 
+  const exportarPDFAutomatico = async (planoData: LessonPlanData) => {
+    await gerarPDF(planoData, true);
+  };
+
   const exportarPDF = async () => {
-    if (!planoGerado) {
+    await gerarPDF(planoGerado, false);
+  };
+
+  const gerarPDF = async (planoData: LessonPlanData | null, automatico: boolean = false) => {
+    if (!planoData) {
       toast({
         title: "Nenhum plano disponível",
         description: "Gere um plano de aula primeiro para exportar em PDF.",
@@ -358,53 +371,53 @@ export default function PlanejamentoAula() {
       adicionarCabecalho();
 
       // Identificação
-      if (planoGerado.identificacao) {
-        adicionarSecao("1", "Identificação", planoGerado.identificacao);
+      if (planoData.identificacao) {
+        adicionarSecao("1", "Identificação", planoData.identificacao);
       }
 
       // Alinhamento BNCC
-      if (planoGerado.alinhamentoBNCC) {
-        adicionarSecao("2", "Alinhamento BNCC", planoGerado.alinhamentoBNCC);
+      if (planoData.alinhamentoBNCC) {
+        adicionarSecao("2", "Alinhamento BNCC", planoData.alinhamentoBNCC);
       }
 
       // Tema da Aula
-      if (planoGerado.temaDaAula) {
-        adicionarSecao("3", "Tema da Aula", planoGerado.temaDaAula);
+      if (planoData.temaDaAula) {
+        adicionarSecao("3", "Tema da Aula", planoData.temaDaAula);
       }
 
       // Objetivos de Aprendizagem
-      if (planoGerado.objetivosAprendizagem) {
-        adicionarSecao("4", "Objetivos de Aprendizagem", planoGerado.objetivosAprendizagem);
+      if (planoData.objetivosAprendizagem) {
+        adicionarSecao("4", "Objetivos de Aprendizagem", planoData.objetivosAprendizagem);
       }
 
       // Conteúdos
-      if (planoGerado.conteudos) {
-        adicionarSecao("5", "Conteúdos", planoGerado.conteudos);
+      if (planoData.conteudos) {
+        adicionarSecao("5", "Conteúdos", planoData.conteudos);
       }
 
       // Metodologia
-      if (planoGerado.metodologia) {
-        adicionarSecao("6", "Metodologia", planoGerado.metodologia);
+      if (planoData.metodologia) {
+        adicionarSecao("6", "Metodologia", planoData.metodologia);
       }
 
       // Sequência Didática
-      if (planoGerado.sequenciaDidatica) {
-        adicionarSecao("7", "Sequência Didática", planoGerado.sequenciaDidatica);
+      if (planoData.sequenciaDidatica) {
+        adicionarSecao("7", "Sequência Didática", planoData.sequenciaDidatica);
       }
 
       // Recursos Didáticos
-      if (planoGerado.recursosDidaticos) {
-        adicionarSecao("8", "Recursos Didáticos", planoGerado.recursosDidaticos);
+      if (planoData.recursosDidaticos) {
+        adicionarSecao("8", "Recursos Didáticos", planoData.recursosDidaticos);
       }
 
       // Avaliação
-      if (planoGerado.avaliacao) {
-        adicionarSecao("9", "Avaliação", planoGerado.avaliacao);
+      if (planoData.avaliacao) {
+        adicionarSecao("9", "Avaliação", planoData.avaliacao);
       }
 
       // Seções adicionais
       let numeroSecao = 10;
-      Object.entries(planoGerado).forEach(([secao, conteudo]) => {
+      Object.entries(planoData).forEach(([secao, conteudo]) => {
         if (!['identificacao', 'alinhamentoBNCC', 'temaDaAula', 'objetivosAprendizagem', 'conteudos', 'metodologia', 'sequenciaDidatica', 'recursosDidaticos', 'avaliacao'].includes(secao)) {
           const tituloSecao = secao.replace(/([A-Z])/g, ' $1').toLowerCase();
           const tituloFormatado = tituloSecao.charAt(0).toUpperCase() + tituloSecao.slice(1);
@@ -422,52 +435,89 @@ export default function PlanejamentoAula() {
       const rodapeWidth = pdf.getTextWidth(rodape);
       pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
 
-      // Tentar múltiplos métodos para garantir o download
+      // Gerar nome do arquivo baseado no tema e data
       const disciplinaDetectada = temaAnalysis?.disciplina || 'disciplina';
       const nomeArquivo = `plano_aula_${disciplinaDetectada.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
       
-      try {
-        // Método 1: jsPDF save padrão
-        pdf.save(nomeArquivo);
-        console.log('PDF salvo usando método padrão');
-      } catch (error) {
-        console.log('Método padrão falhou, tentando método alternativo');
-        
+      // Método aprimorado de download com múltiplas tentativas
+      const realizarDownload = () => {
         try {
-          // Método 2: Download manual com blob
-          const pdfOutput = pdf.output('datauristring');
-          const link = document.createElement('a');
-          link.href = pdfOutput;
-          link.download = nomeArquivo;
-          link.target = '_blank';
+          // Método 1: jsPDF save (funciona na maioria dos navegadores modernos)
+          pdf.save(nomeArquivo);
           
-          // Forçar clique com user interaction
-          document.body.appendChild(link);
-          link.style.display = 'none';
+          if (!automatico) {
+            toast({
+              title: "PDF baixado com sucesso!",
+              description: "Seu plano de aula foi baixado para a pasta Downloads.",
+            });
+          }
           
-          // Usar evento de clique real
-          const clickEvent = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: false
-          });
+        } catch (error) {
+          console.warn('Método save() falhou, tentando blob download');
           
-          link.dispatchEvent(clickEvent);
-          document.body.removeChild(link);
-          console.log('PDF salvo usando método alternativo');
-          
-        } catch (error2) {
-          console.log('Método alternativo falhou, abrindo em nova aba');
-          // Método 3: Abrir em nova aba como fallback
-          const pdfDataUri = pdf.output('datauristring');
-          window.open(pdfDataUri, '_blank');
+          try {
+            // Método 2: Blob download manual
+            const pdfBlob = pdf.output('blob');
+            const url = URL.createObjectURL(pdfBlob);
+            const link = document.createElement('a');
+            
+            link.href = url;
+            link.download = nomeArquivo;
+            link.style.display = 'none';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Limpar URL criada
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            
+            if (!automatico) {
+              toast({
+                title: "PDF baixado com sucesso!",
+                description: "Seu plano de aula foi baixado para a pasta Downloads.",
+              });
+            }
+            
+          } catch (error2) {
+            console.warn('Blob download falhou, abrindo em nova aba');
+            
+            // Método 3: Abrir em nova aba (fallback)
+            const pdfDataUri = pdf.output('datauristring');
+            const newWindow = window.open();
+            if (newWindow) {
+              newWindow.document.write(`
+                <html>
+                  <head><title>Plano de Aula - ${disciplinaDetectada}</title></head>
+                  <body style="margin:0;padding:0;">
+                    <iframe src="${pdfDataUri}" style="width:100%;height:100vh;border:none;"></iframe>
+                  </body>
+                </html>
+              `);
+              
+              if (!automatico) {
+                toast({
+                  title: "PDF aberto em nova aba",
+                  description: "Use Ctrl+S para salvar o arquivo manualmente.",
+                });
+              }
+            } else {
+              throw new Error('Popup bloqueado pelo navegador');
+            }
+          }
         }
-      }
+      };
 
-      toast({
-        title: "PDF gerado com sucesso!",
-        description: "Seu plano de aula foi exportado com layout profissional.",
-      });
+      // Executar download
+      realizarDownload();
+      
+      // Para download automático, mostrar toast específico
+      if (automatico) {
+        toast({
+          title: "Download automático iniciado!",
+          description: "O PDF do seu plano de aula está sendo baixado automaticamente.",
+        });
+      }
 
     } catch (error) {
       console.error('Erro ao gerar PDF:', error);
@@ -479,11 +529,18 @@ export default function PlanejamentoAula() {
     }
   };
 
-  const salvarPlano = () => {
-    toast({
-      title: "Plano salvo",
-      description: "Seu plano de aula foi salvo com sucesso.",
-    });
+  const salvarPlano = async () => {
+    if (!planoGerado) {
+      toast({
+        title: "Nenhum plano disponível",
+        description: "Gere um plano de aula primeiro para salvar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Salvar significa fazer download do PDF
+    await exportarPDF();
   };
 
   return (
