@@ -327,13 +327,13 @@ export default function PlanejamentoAula() {
         let yPosEsquerda = yPos;
         let yPosDireita = yPos;
 
-        const itensEsquerda = [];
-        const itensDireita = [];
+        const itensEsquerda: [string, any][] = [];
+        const itensDireita: [string, any][] = [];
         
         // Distribuir itens entre as duas colunas
         if (typeof conteudo === 'object' && conteudo !== null) {
           const entradas = Object.entries(conteudo);
-          entradas.forEach((item, index) => {
+          entradas.forEach((item: [string, any], index: number) => {
             if (index % 2 === 0) {
               itensEsquerda.push(item);
             } else {
