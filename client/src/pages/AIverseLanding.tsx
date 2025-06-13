@@ -216,14 +216,14 @@ export default function AIverseLanding() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-gradient-to-br from-slate-50/50 via-white to-blue-50/30 p-8 rounded-3xl border border-slate-100/50">
-            <Card className="relative overflow-hidden border-2 hover:border-indigo-200 transition-all duration-300 hover:shadow-xl group">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="landing-card relative overflow-hidden border-2 hover:border-indigo-200 transition-all duration-300 hover:shadow-xl group">
               
               <CardContent className="p-8 relative">
                 <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
                   <Layers className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray -900 mb-3">Interface Unificada</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Interface Unificada</h3>
                 <p className="text-gray-600 mb-4">
                   Acesse mais de 30 modelos de IA através de uma interface intuitiva e consistente, 
                   sem precisar aprender múltiplas plataformas.
@@ -235,7 +235,7 @@ export default function AIverseLanding() {
               </CardContent>
             </Card>
 
-            <Card className="relative overflow-hidden border-2 hover:border-purple-200 transition-all duration-300 hover:shadow-xl group">
+            <Card className="landing-card relative overflow-hidden border-2 hover:border-pink-200 transition-all duration-300 hover:shadow-xl group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
               <CardContent className="p-8 relative">
                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
@@ -253,7 +253,7 @@ export default function AIverseLanding() {
               </CardContent>
             </Card>
 
-            <Card className="relative overflow-hidden border-2 hover:border-green-200 transition-all duration-300 hover:shadow-xl group">
+            <Card className="landing-card relative overflow-hidden border-2 hover:border-green-200 transition-all duration-300 hover:shadow-xl group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
               <CardContent className="p-8 relative">
                 <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-6">
@@ -713,7 +713,7 @@ export default function AIverseLanding() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="hover:shadow-xl transition-shadow border-2 hover:border-indigo-200">
+            <Card className="landing-card hover:shadow-xl transition-shadow border-2 hover:border-indigo-200">
               <CardContent className="p-8 text-center">
                 <FileText className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Documentação Completa</h3>
@@ -726,7 +726,7 @@ export default function AIverseLanding() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-xl transition-shadow border-2 hover:border-purple-200">
+            <Card className="landing-card hover:shadow-xl transition-shadow border-2 hover:border-purple-200">
               <CardContent className="p-8 text-center">
                 <Users className="h-12 w-12 text-purple-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Comunidade Ativa</h3>
@@ -739,7 +739,7 @@ export default function AIverseLanding() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-xl transition-shadow border-2 hover:border-green-200">
+            <Card className="landing-card hover:shadow-xl transition-shadow border-2 hover:border-green-200">
               <CardContent className="p-8 text-center">
                 <Headphones className="h-12 w-12 text-green-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-3">Suporte Especializado</h3>
