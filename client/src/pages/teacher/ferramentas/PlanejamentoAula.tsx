@@ -98,19 +98,15 @@ const renderValue = (value: any): React.ReactNode => {
 export default function PlanejamentoAula() {
   const { toast } = useToast();
   
-  // Form state for comprehensive lesson plan data
+  // Form state for essential lesson plan data
   const [formData, setFormData] = useState({
-    disciplina: "",
-    anoSerie: "",
-    etapaEnsino: "",
-    tema: "",
+    escola: "",
+    numeroAlunos: "",
+    tema: "", // tema/conteúdo específico
     duracao: "",
     recursos: "",
     perfilTurma: "",
-    numeroAlunos: "",
-    objetivosEspecificos: "",
-    escola: "",
-    professor: ""
+    objetivosEspecificos: ""
   });
   
   const [isGenerating, setIsGenerating] = useState(false);
@@ -180,10 +176,10 @@ export default function PlanejamentoAula() {
   }, [formData.tema]);
 
   const gerarPlano = async () => {
-    if (!formData.tema.trim() || !formData.duracao || !formData.disciplina || !formData.anoSerie) {
+    if (!formData.tema.trim() || !formData.duracao || !formData.escola || !formData.numeroAlunos) {
       toast({
         title: "Campos obrigatórios",
-        description: "Preencha todos os campos obrigatórios para gerar o plano de aula.",
+        description: "Preencha escola, número de alunos, tema e duração da aula.",
         variant: "destructive"
       });
       return;
@@ -427,7 +423,8 @@ export default function PlanejamentoAula() {
       pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
 
       // Tentar múltiplos métodos para garantir o download
-      const nomeArquivo = `plano_aula_${(formData.disciplina || 'disciplina').toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const disciplinaDetectada = temaAnalysis?.disciplina || 'disciplina';
+      const nomeArquivo = `plano_aula_${disciplinaDetectada.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
       
       try {
         // Método 1: jsPDF save padrão
@@ -538,110 +535,21 @@ export default function PlanejamentoAula() {
                   {/* Escola */}
                   <div className="space-y-2">
                     <Label htmlFor="escola" className="text-sm font-semibold text-slate-700">
-                      Nome da Escola
+                      Nome da Escola *
                     </Label>
                     <Input
                       id="escola"
-                      placeholder="Nome da instituição de ensino"
+                      placeholder="Ex: Escola Municipal João Silva"
                       value={formData.escola}
                       onChange={(e) => handleFormChange('escola', e.target.value)}
                       className="border-slate-300 focus:border-blue-500"
                     />
                   </div>
 
-                  {/* Professor */}
-                  <div className="space-y-2">
-                    <Label htmlFor="professor" className="text-sm font-semibold text-slate-700">
-                      Professor(a) Responsável
-                    </Label>
-                    <Input
-                      id="professor"
-                      placeholder="Nome do professor"
-                      value={formData.professor}
-                      onChange={(e) => handleFormChange('professor', e.target.value)}
-                      className="border-slate-300 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Disciplina */}
-                  <div className="space-y-2">
-                    <Label htmlFor="disciplina" className="text-sm font-semibold text-slate-700">
-                      Disciplina/Componente Curricular *
-                    </Label>
-                    <Select value={formData.disciplina} onValueChange={(value) => handleFormChange('disciplina', value)}>
-                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
-                        <SelectValue placeholder="Selecione a disciplina" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Matemática">Matemática</SelectItem>
-                        <SelectItem value="Língua Portuguesa">Língua Portuguesa</SelectItem>
-                        <SelectItem value="Ciências">Ciências</SelectItem>
-                        <SelectItem value="História">História</SelectItem>
-                        <SelectItem value="Geografia">Geografia</SelectItem>
-                        <SelectItem value="Física">Física</SelectItem>
-                        <SelectItem value="Química">Química</SelectItem>
-                        <SelectItem value="Biologia">Biologia</SelectItem>
-                        <SelectItem value="Inglês">Inglês</SelectItem>
-                        <SelectItem value="Educação Física">Educação Física</SelectItem>
-                        <SelectItem value="Artes">Artes</SelectItem>
-                        <SelectItem value="Filosofia">Filosofia</SelectItem>
-                        <SelectItem value="Sociologia">Sociologia</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Etapa de Ensino */}
-                  <div className="space-y-2">
-                    <Label htmlFor="etapaEnsino" className="text-sm font-semibold text-slate-700">
-                      Etapa de Ensino *
-                    </Label>
-                    <Select value={formData.etapaEnsino} onValueChange={(value) => handleFormChange('etapaEnsino', value)}>
-                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
-                        <SelectValue placeholder="Selecione a etapa" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Educação Infantil">Educação Infantil</SelectItem>
-                        <SelectItem value="Ensino Fundamental I">Ensino Fundamental I</SelectItem>
-                        <SelectItem value="Ensino Fundamental II">Ensino Fundamental II</SelectItem>
-                        <SelectItem value="Ensino Médio">Ensino Médio</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Ano/Série */}
-                  <div className="space-y-2">
-                    <Label htmlFor="anoSerie" className="text-sm font-semibold text-slate-700">
-                      Ano/Série *
-                    </Label>
-                    <Select value={formData.anoSerie} onValueChange={(value) => handleFormChange('anoSerie', value)}>
-                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
-                        <SelectValue placeholder="Selecione o ano/série" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1º ano">1º ano</SelectItem>
-                        <SelectItem value="2º ano">2º ano</SelectItem>
-                        <SelectItem value="3º ano">3º ano</SelectItem>
-                        <SelectItem value="4º ano">4º ano</SelectItem>
-                        <SelectItem value="5º ano">5º ano</SelectItem>
-                        <SelectItem value="6º ano">6º ano</SelectItem>
-                        <SelectItem value="7º ano">7º ano</SelectItem>
-                        <SelectItem value="8º ano">8º ano</SelectItem>
-                        <SelectItem value="9º ano">9º ano</SelectItem>
-                        <SelectItem value="1ª série">1ª série</SelectItem>
-                        <SelectItem value="2ª série">2ª série</SelectItem>
-                        <SelectItem value="3ª série">3ª série</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   {/* Número de Alunos */}
                   <div className="space-y-2">
                     <Label htmlFor="numeroAlunos" className="text-sm font-semibold text-slate-700">
-                      Número de Alunos
+                      Número de Alunos *
                     </Label>
                     <Input
                       id="numeroAlunos"
@@ -654,91 +562,105 @@ export default function PlanejamentoAula() {
                   </div>
                 </div>
 
-                {/* Tema da Aula */}
+                {/* Tema/Conteúdo Específico */}
                 <div className="space-y-2">
                   <Label htmlFor="tema" className="text-sm font-semibold text-slate-700">
                     Tema/Conteúdo Específico *
                   </Label>
                   <Textarea
                     id="tema"
-                    placeholder="Digite o tema da sua aula (ex: Frações, Sistema Solar, Brasil Colônia...)"
+                    placeholder="Ex: Frações, Sistema Solar, Revolução Industrial, etc."
                     value={formData.tema}
                     onChange={(e) => handleFormChange('tema', e.target.value)}
-                    className="min-h-[80px] resize-none border-slate-300 focus:border-blue-500 focus:ring-blue-500"
+                    rows={3}
+                    className="border-slate-300 focus:border-blue-500 resize-none"
                   />
                   {isAnalyzing && (
-                    <div className="flex items-center gap-2 text-sm text-blue-600">
+                    <div className="flex items-center gap-2 text-blue-600 text-sm">
                       <RefreshCw className="h-4 w-4 animate-spin" />
-                      Analisando tema conforme diretrizes do MEC e BNCC...
+                      Analisando tema conforme BNCC...
+                    </div>
+                  )}
+                  {temaAnalysis && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-green-700 mb-2">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="font-medium">Análise BNCC Concluída</span>
+                      </div>
+                      <div className="text-sm text-green-600 space-y-1">
+                        <p><strong>Disciplina:</strong> {temaAnalysis.disciplina}</p>
+                        <p><strong>Ano/Série:</strong> {temaAnalysis.anoSerie}</p>
+                        <p><strong>Conforme BNCC:</strong> {temaAnalysis.conformeRegulasBNCC ? 'Sim' : 'Não'}</p>
+                        {temaAnalysis.observacoes && (
+                          <p><strong>Observações:</strong> {temaAnalysis.observacoes}</p>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Análise do Tema */}
-                {temaAnalysis && (
-                  <Card className={`border-2 ${temaAnalysis.conformeRegulasBNCC ? 'border-green-200 bg-green-50' : 'border-orange-200 bg-orange-50'}`}>
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex items-center gap-2">
-                        {temaAnalysis.conformeRegulasBNCC ? (
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                        ) : (
-                          <AlertTriangle className="h-5 w-5 text-orange-600" />
-                        )}
-                        <span className={`font-semibold text-sm ${temaAnalysis.conformeRegulasBNCC ? 'text-green-800' : 'text-orange-800'}`}>
-                          {temaAnalysis.conformeRegulasBNCC ? 'Tema alinhado à BNCC' : 'Atenção: Tema fora das diretrizes'}
-                        </span>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div>
-                          <span className="text-sm font-medium text-slate-700">Disciplina identificada: </span>
-                          <Badge variant="secondary">{temaAnalysis.disciplina}</Badge>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium text-slate-700">Ano/Série sugerido: </span>
-                          <Badge variant="secondary">{temaAnalysis.anoSerie}</Badge>
-                        </div>
-                        {!temaAnalysis.conformeRegulasBNCC && (
-                          <div className="text-sm text-orange-700 bg-orange-100 p-2 rounded">
-                            <strong>Observação:</strong> {temaAnalysis.observacoes}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Duração da Aula */}
+                  <div className="space-y-2">
+                    <Label htmlFor="duracao" className="text-sm font-semibold text-slate-700">
+                      Duração da Aula *
+                    </Label>
+                    <Select value={formData.duracao} onValueChange={(value) => handleFormChange('duracao', value)}>
+                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
+                        <SelectValue placeholder="Selecione a duração" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="30 minutos">30 minutos</SelectItem>
+                        <SelectItem value="45 minutos">45 minutos</SelectItem>
+                        <SelectItem value="50 minutos">50 minutos</SelectItem>
+                        <SelectItem value="90 minutos">90 minutos (aula dupla)</SelectItem>
+                        <SelectItem value="120 minutos">120 minutos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Duração */}
-                <div className="space-y-2">
-                  <Label htmlFor="duracao" className="text-sm font-semibold text-slate-700">
-                    Duração da Aula *
-                  </Label>
-                  <Select value={formData.duracao} onValueChange={(value) => handleFormChange('duracao', value)}>
-                    <SelectTrigger className="w-full border-slate-300 focus:border-blue-500">
-                      <SelectValue placeholder="Selecione a duração" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 minutos</SelectItem>
-                      <SelectItem value="45">45 minutos</SelectItem>
-                      <SelectItem value="50">50 minutos</SelectItem>
-                      <SelectItem value="60">60 minutos</SelectItem>
-                      <SelectItem value="90">90 minutos</SelectItem>
-                      <SelectItem value="120">120 minutos</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {/* Recursos Disponíveis */}
+                  <div className="space-y-2">
+                    <Label htmlFor="recursos" className="text-sm font-semibold text-slate-700">
+                      Recursos Disponíveis
+                    </Label>
+                    <Input
+                      id="recursos"
+                      placeholder="Ex: Projetor, computador, laboratório"
+                      value={formData.recursos}
+                      onChange={(e) => handleFormChange('recursos', e.target.value)}
+                      className="border-slate-300 focus:border-blue-500"
+                    />
+                  </div>
                 </div>
 
-                {/* Recursos Disponíveis */}
+                {/* Perfil da Turma */}
                 <div className="space-y-2">
-                  <Label htmlFor="recursos" className="text-sm font-semibold text-slate-700">
-                    Recursos Disponíveis
+                  <Label htmlFor="perfilTurma" className="text-sm font-semibold text-slate-700">
+                    Perfil da Turma
                   </Label>
                   <Textarea
-                    id="recursos"
-                    placeholder="Liste os recursos disponíveis (tecnológicos, materiais, espaço físico...)"
-                    value={formData.recursos}
-                    onChange={(e) => handleFormChange('recursos', e.target.value)}
-                    className="min-h-[60px] resize-none border-slate-300 focus:border-blue-500"
+                    id="perfilTurma"
+                    placeholder="Descreva características da turma (nível, necessidades especiais, etc.)"
+                    value={formData.perfilTurma}
+                    onChange={(e) => handleFormChange('perfilTurma', e.target.value)}
+                    rows={3}
+                    className="border-slate-300 focus:border-blue-500 resize-none"
+                  />
+                </div>
+
+                {/* Objetivos Específicos */}
+                <div className="space-y-2">
+                  <Label htmlFor="objetivosEspecificos" className="text-sm font-semibold text-slate-700">
+                    Objetivos Específicos
+                  </Label>
+                  <Textarea
+                    id="objetivosEspecificos"
+                    placeholder="Descreva os objetivos específicos da aula"
+                    value={formData.objetivosEspecificos}
+                    onChange={(e) => handleFormChange('objetivosEspecificos', e.target.value)}
+                    rows={3}
+                    className="border-slate-300 focus:border-blue-500 resize-none"
                   />
                 </div>
 
@@ -773,7 +695,7 @@ export default function PlanejamentoAula() {
                 {/* Botão Gerar Plano */}
                 <Button 
                   onClick={gerarPlano}
-                  disabled={isGenerating || !formData.tema.trim() || !formData.duracao || !formData.disciplina || !formData.anoSerie || !temaAnalysis}
+                  disabled={isGenerating || !formData.tema.trim() || !formData.duracao || !formData.escola || !formData.numeroAlunos || !temaAnalysis}
                   className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
                 >
                   {isGenerating ? (
