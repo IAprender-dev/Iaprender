@@ -216,14 +216,14 @@ export default function AIverseLanding() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-gradient-to-br from-slate-50/50 via-white to-blue-50/30 p-8 rounded-3xl border border-slate-100/50">
             <Card className="relative overflow-hidden border-2 hover:border-indigo-200 transition-all duration-300 hover:shadow-xl group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              
               <CardContent className="p-8 relative">
                 <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
                   <Layers className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Interface Unificada</h3>
+                <h3 className="text-2xl font-bold text-gray -900 mb-3">Interface Unificada</h3>
                 <p className="text-gray-600 mb-4">
                   Acesse mais de 30 modelos de IA através de uma interface intuitiva e consistente, 
                   sem precisar aprender múltiplas plataformas.
