@@ -541,12 +541,28 @@ export default function GeradorAtividades() {
         yPos += 15; // Espaço entre questões
       });
 
-      // Salvar PDF das questões
+      // Salvar PDF das questões com método robusto
       const timestamp = new Date().toISOString().split('T')[0];
       const disciplina = (atividadeGerada?.materia || 'atividade').toLowerCase().replace(/\s+/g, '_');
       const nomeArquivo = `atividade_${disciplina}_${timestamp}.pdf`;
       
-      pdf.save(nomeArquivo);
+      // Criar blob e forçar download
+      const pdfBlob = pdf.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      
+      // Criar link temporário para download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nomeArquivo;
+      link.style.display = 'none';
+      
+      // Adicionar ao DOM, clicar e remover
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Limpar URL do blob
+      setTimeout(() => URL.revokeObjectURL(url), 100);
 
       // Gerar PDF do gabarito separado
       setTimeout(() => {
@@ -602,9 +618,26 @@ export default function GeradorAtividades() {
           }
         }
 
-        // Salvar gabarito
+        // Salvar gabarito com método robusto
         const nomeGabarito = `gabarito_${disciplina}_${timestamp}.pdf`;
-        pdfGabarito.save(nomeGabarito);
+        
+        // Criar blob e forçar download do gabarito
+        const gabaritoBlob = pdfGabarito.output('blob');
+        const gabaritoUrl = URL.createObjectURL(gabaritoBlob);
+        
+        // Criar link temporário para download do gabarito
+        const gabaritoLink = document.createElement('a');
+        gabaritoLink.href = gabaritoUrl;
+        gabaritoLink.download = nomeGabarito;
+        gabaritoLink.style.display = 'none';
+        
+        // Adicionar ao DOM, clicar e remover
+        document.body.appendChild(gabaritoLink);
+        gabaritoLink.click();
+        document.body.removeChild(gabaritoLink);
+        
+        // Limpar URL do blob
+        setTimeout(() => URL.revokeObjectURL(gabaritoUrl), 100);
       }, 800);
 
       toast({

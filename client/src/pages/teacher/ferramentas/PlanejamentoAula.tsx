@@ -426,9 +426,26 @@ export default function PlanejamentoAula() {
       const rodapeWidth = pdf.getTextWidth(rodape);
       pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
 
-      // Salvar PDF
+      // Salvar PDF com método mais robusto
       const nomeArquivo = `plano_aula_${(formData.disciplina || 'disciplina').toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(nomeArquivo);
+      
+      // Criar blob e forçar download
+      const pdfBlob = pdf.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      
+      // Criar link temporário para download
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nomeArquivo;
+      link.style.display = 'none';
+      
+      // Adicionar ao DOM, clicar e remover
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Limpar URL do blob
+      setTimeout(() => URL.revokeObjectURL(url), 100);
 
       toast({
         title: "PDF gerado com sucesso!",
