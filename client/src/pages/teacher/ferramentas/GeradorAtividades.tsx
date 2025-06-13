@@ -266,8 +266,6 @@ export default function GeradorAtividades() {
 
   // Função para extrair questões estruturadas do HTML
   const extrairQuestoes = (html: string) => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
     const questoes: Array<{
       numero: string;
       enunciado: string;
@@ -275,59 +273,120 @@ export default function GeradorAtividades() {
       gabarito?: string;
     }> = [];
 
-    const texto = doc.body.textContent || '';
-    const linhas = texto.split('\n').filter(linha => linha.trim());
+    // Primeiro, tenta extrair do HTML estruturado
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    
+    // Extrai todo o texto do documento
+    let textoCompleto = doc.body.textContent || html;
+    
+    // Se não conseguir extrair do HTML, usa o texto direto
+    if (!textoCompleto || textoCompleto.trim().length < 50) {
+      textoCompleto = html;
+    }
+
+    // Remove marcações markdown e HTML
+    textoCompleto = textoCompleto
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/\*([^*]+)\*/g, '$1')
+      .replace(/---/g, '')
+      .replace(/\n+/g, '\n')
+      .trim();
+
+    console.log('Texto para análise:', textoCompleto.substring(0, 500));
+
+    const linhas = textoCompleto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     
     let questaoAtual: any = null;
     let capturandoGabarito = false;
     const respostas: { [key: string]: string } = {};
 
-    for (const linha of linhas) {
-      const linhaTrim = linha.trim();
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
       
-      // Detecta seção de gabarito
-      if (linhaTrim.toLowerCase().includes('gabarito') || linhaTrim.toLowerCase().includes('resposta')) {
+      // Detecta seção de gabarito/respostas
+      if (linha.toLowerCase().includes('gabarito') || 
+          linha.toLowerCase().includes('resposta') ||
+          linha.toLowerCase().includes('answer')) {
         capturandoGabarito = true;
         continue;
       }
 
-      // Se estamos capturando gabarito, extrair respostas
+      // Se estamos na seção de gabarito
       if (capturandoGabarito) {
-        const matchGabarito = linhaTrim.match(/(\d+)[.:\-\s]*([a-e])/i);
+        // Busca padrões como: 1. a) ou 1: a ou 1 - a
+        const matchGabarito = linha.match(/(\d+)[.:\-\s]*([a-e])[).]?/i);
         if (matchGabarito) {
           respostas[matchGabarito[1]] = matchGabarito[2].toLowerCase();
         }
         continue;
       }
 
-      // Detecta questão (número seguido de ponto, parênteses ou hífen)
-      const matchQuestao = linhaTrim.match(/^(\d+)[.):\-]\s*(.+)/);
-      if (matchQuestao) {
-        if (questaoAtual) {
+      // Detecta início de questão - vários padrões possíveis
+      const patternsQuestao = [
+        /^(\d+)[.)]\s*(.+)/, // 1. texto ou 1) texto
+        /^(\d+)\s*[-–]\s*(.+)/, // 1 - texto
+        /^(\d+)\s*[–]\s*(.+)/, // 1 – texto
+        /^Questão\s*(\d+)[.:\-\s]*(.+)/i, // Questão 1: texto
+        /^(\d+)\s*(.+)/ // 1 texto (mais flexível)
+      ];
+
+      let matchQuestao = null;
+      for (const pattern of patternsQuestao) {
+        matchQuestao = linha.match(pattern);
+        if (matchQuestao && matchQuestao[2] && matchQuestao[2].length > 5) {
+          break;
+        }
+      }
+
+      if (matchQuestao && matchQuestao[2] && matchQuestao[2].trim().length > 3) {
+        // Salva questão anterior se existir
+        if (questaoAtual && questaoAtual.alternativas.length > 0) {
           questoes.push(questaoAtual);
         }
+        
         questaoAtual = {
           numero: matchQuestao[1],
-          enunciado: matchQuestao[2],
+          enunciado: matchQuestao[2].trim(),
           alternativas: []
         };
         continue;
       }
 
-      // Detecta alternativas
-      const matchAlternativa = linhaTrim.match(/^([a-e])[.)]\s*(.+)/i);
-      if (matchAlternativa && questaoAtual) {
-        questaoAtual.alternativas.push(`${matchAlternativa[1].toLowerCase()}) ${matchAlternativa[2]}`);
+      // Detecta alternativas - vários padrões
+      const patternsAlternativa = [
+        /^([a-e])[.)]\s*(.+)/i, // a) texto ou a. texto
+        /^([a-e])\s*[-–]\s*(.+)/i, // a - texto
+        /^([a-e])\s*(.+)/i // a texto (mais flexível)
+      ];
+
+      let matchAlternativa = null;
+      for (const pattern of patternsAlternativa) {
+        matchAlternativa = linha.match(pattern);
+        if (matchAlternativa && matchAlternativa[2] && matchAlternativa[2].length > 2) {
+          break;
+        }
+      }
+
+      if (matchAlternativa && questaoAtual && matchAlternativa[2].trim().length > 1) {
+        const letra = matchAlternativa[1].toLowerCase();
+        const textoAlternativa = matchAlternativa[2].trim();
+        questaoAtual.alternativas.push(`${letra}) ${textoAlternativa}`);
         continue;
       }
 
-      // Adiciona texto ao enunciado se não for alternativa nem questão
-      if (questaoAtual && linhaTrim && !linhaTrim.match(/^[a-e][.)]/) && linhaTrim.length > 10) {
-        questaoAtual.enunciado += ` ${linhaTrim}`;
+      // Se não é questão nem alternativa, mas temos questão atual, adiciona ao enunciado
+      if (questaoAtual && linha.length > 10 && 
+          !linha.match(/^[a-e][.)]/) && 
+          !linha.toLowerCase().includes('gabarito') &&
+          !linha.toLowerCase().includes('resposta')) {
+        questaoAtual.enunciado += ` ${linha}`;
       }
     }
 
-    if (questaoAtual) {
+    // Adiciona última questão se existir
+    if (questaoAtual && questaoAtual.alternativas.length > 0) {
       questoes.push(questaoAtual);
     }
 
@@ -337,6 +396,9 @@ export default function GeradorAtividades() {
         questao.gabarito = respostas[questao.numero];
       }
     });
+
+    console.log(`Questões extraídas: ${questoes.length}`);
+    console.log('Primeiras questões:', questoes.slice(0, 2));
 
     return questoes;
   };
