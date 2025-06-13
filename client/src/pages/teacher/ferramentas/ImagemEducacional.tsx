@@ -87,8 +87,8 @@ export default function ImagemEducacional() {
       if (data.images && data.images.length > 0) {
         setImagemGerada(data.images[0].url);
         toast({
-          title: "Imagem gerada com sucesso!",
-          description: "Sua imagem educacional foi criada com IA.",
+          title: "Sua requisição foi gerada com sucesso!",
+          description: "Em instantes você receberá sua Imagem Educacional",
         });
       } else {
         throw new Error('Nenhuma imagem foi gerada');
