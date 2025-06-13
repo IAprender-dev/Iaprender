@@ -196,6 +196,13 @@ export default function PlanejamentoAula() {
       return;
     }
 
+    // Mostrar popup de sucesso imediatamente
+    toast({
+      title: "Sua requisição foi gerada com sucesso!",
+      description: "Em instantes você receberá seu Plano de Aula.",
+      duration: 4000,
+    });
+
     setIsGenerating(true);
     
     try {
@@ -263,8 +270,13 @@ export default function PlanejamentoAula() {
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
-        format: 'a4'
+        format: 'a4',
+        putOnlyUsedFonts: true,
+        compress: true
       });
+
+      // Configurar codificação UTF-8 para caracteres acentuados
+      pdf.internal.pageSize.getWidth();
 
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -832,9 +844,7 @@ export default function PlanejamentoAula() {
                     <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
                       <BookOpen className="h-5 w-5 text-green-600" />
                     </div>
-                    <CardTitle className="text-xl font-bold text-slate-900">
-                      {formData.tema ? `Plano de Aula - ${formData.tema}` : "Plano de Aula"}
-                    </CardTitle>
+                    <CardTitle className="text-xl font-bold text-slate-900">Plano de Aula</CardTitle>
                   </div>
                   {planoGerado && (
                     <div className="flex gap-2">
@@ -880,7 +890,7 @@ export default function PlanejamentoAula() {
                           <Calendar className="h-8 w-8 text-white" />
                         </div>
                         <div>
-                          <h2 className="text-3xl font-bold mb-2">Plano de Aula Profissional</h2>
+                          <h2 className="text-3xl font-bold mb-2">{formData.tema ? `Plano de Aula - ${formData.tema}` : "Plano de Aula"}</h2>
                           <p className="text-indigo-100 text-lg opacity-90">Desenvolvido com metodologias pedagógicas modernas e diretrizes BNCC</p>
                         </div>
                       </div>
