@@ -264,146 +264,290 @@ export default function GeradorAtividades() {
     }
   };
 
-  // Função para baixar PDF com qualidade profissional
+  // Função para extrair questões estruturadas do HTML
+  const extrairQuestoes = (html: string) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const questoes: Array<{
+      numero: string;
+      enunciado: string;
+      alternativas: string[];
+      gabarito?: string;
+    }> = [];
+
+    const texto = doc.body.textContent || '';
+    const linhas = texto.split('\n').filter(linha => linha.trim());
+    
+    let questaoAtual: any = null;
+    let capturandoGabarito = false;
+    const respostas: { [key: string]: string } = {};
+
+    for (const linha of linhas) {
+      const linhaTrim = linha.trim();
+      
+      // Detecta seção de gabarito
+      if (linhaTrim.toLowerCase().includes('gabarito') || linhaTrim.toLowerCase().includes('resposta')) {
+        capturandoGabarito = true;
+        continue;
+      }
+
+      // Se estamos capturando gabarito, extrair respostas
+      if (capturandoGabarito) {
+        const matchGabarito = linhaTrim.match(/(\d+)[.:\-\s]*([a-e])/i);
+        if (matchGabarito) {
+          respostas[matchGabarito[1]] = matchGabarito[2].toLowerCase();
+        }
+        continue;
+      }
+
+      // Detecta questão (número seguido de ponto, parênteses ou hífen)
+      const matchQuestao = linhaTrim.match(/^(\d+)[.):\-]\s*(.+)/);
+      if (matchQuestao) {
+        if (questaoAtual) {
+          questoes.push(questaoAtual);
+        }
+        questaoAtual = {
+          numero: matchQuestao[1],
+          enunciado: matchQuestao[2],
+          alternativas: []
+        };
+        continue;
+      }
+
+      // Detecta alternativas
+      const matchAlternativa = linhaTrim.match(/^([a-e])[.)]\s*(.+)/i);
+      if (matchAlternativa && questaoAtual) {
+        questaoAtual.alternativas.push(`${matchAlternativa[1].toLowerCase()}) ${matchAlternativa[2]}`);
+        continue;
+      }
+
+      // Adiciona texto ao enunciado se não for alternativa nem questão
+      if (questaoAtual && linhaTrim && !linhaTrim.match(/^[a-e][.)]/) && linhaTrim.length > 10) {
+        questaoAtual.enunciado += ` ${linhaTrim}`;
+      }
+    }
+
+    if (questaoAtual) {
+      questoes.push(questaoAtual);
+    }
+
+    // Associa gabarito às questões
+    questoes.forEach(questao => {
+      if (respostas[questao.numero]) {
+        questao.gabarito = respostas[questao.numero];
+      }
+    });
+
+    return questoes;
+  };
+
+  // Função para baixar PDF com layout profissional
   const baixarPDF = async () => {
     if (!atividadeGerada) return;
     
     try {
-      // Cria um container temporário otimizado para impressão
-      const tempContainer = document.createElement('div');
       const sanitizedContent = DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo));
-      tempContainer.innerHTML = sanitizedContent;
+      const questoes = extrairQuestoes(sanitizedContent);
       
-      // Aplica estilos otimizados para PDF
-      tempContainer.style.cssText = `
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-        width: 794px;
-        padding: 60px 50px;
-        font-family: 'Times New Roman', serif;
-        font-size: 16px;
-        line-height: 1.6;
-        color: #000000;
-        background: #ffffff;
-        box-sizing: border-box;
-      `;
-      
-      document.body.appendChild(tempContainer);
-      
-      // Aguarda o carregamento das fontes
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Captura com configurações otimizadas
-      const canvas = await html2canvas(tempContainer, {
-        scale: 2.5, // Alta resolução para texto nítido
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: 794,
-        height: tempContainer.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        logging: false,
-        foreignObjectRendering: false
-      });
+      if (questoes.length === 0) {
+        toast({
+          title: "Nenhuma questão encontrada",
+          description: "Não foi possível extrair questões da atividade.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      
-      // Configurações PDF A4 em pontos
+      // Configurações do PDF
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
-        format: 'a4',
-        compress: true
+        format: 'a4'
       });
-      
-      const pageWidth = 595.28;
-      const pageHeight = 841.89;
-      const margin = 40;
-      const usableWidth = pageWidth - (margin * 2);
-      const usableHeight = pageHeight - (margin * 2);
-      
-      // Calcula dimensões da imagem
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = usableWidth / imgWidth;
-      const scaledHeight = imgHeight * ratio;
-      
-      let currentPosition = 0;
-      let pageCount = 0;
-      
-      // Divide o conteúdo em páginas
-      while (currentPosition < scaledHeight) {
-        if (pageCount > 0) {
-          pdf.addPage();
-        }
-        
-        // Calcula a altura da seção atual
-        const remainingHeight = scaledHeight - currentPosition;
-        const sectionHeight = Math.min(usableHeight, remainingHeight);
-        
-        // Calcula a posição Y na imagem original
-        const sourceY = currentPosition / ratio;
-        const sourceHeight = sectionHeight / ratio;
-        
-        // Cria canvas para esta seção
-        const sectionCanvas = document.createElement('canvas');
-        const sectionCtx = sectionCanvas.getContext('2d');
-        
-        sectionCanvas.width = imgWidth;
-        sectionCanvas.height = sourceHeight;
-        
-        // Preenche com fundo branco
-        if (sectionCtx) {
-          sectionCtx.fillStyle = '#ffffff';
-          sectionCtx.fillRect(0, 0, imgWidth, sourceHeight);
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 50;
+      const contentWidth = pageWidth - (margin * 2);
+      let yPos = margin;
+
+      // Função para adicionar cabeçalho profissional
+      const adicionarCabecalho = (incluirCamposAluno = true) => {
+        if (incluirCamposAluno) {
+          // Campos do aluno
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(9);
           
-          // Desenha a seção da imagem
-          sectionCtx.drawImage(
-            canvas,
-            0, sourceY, imgWidth, sourceHeight,
-            0, 0, imgWidth, sourceHeight
-          );
+          // Linha superior
+          pdf.setDrawColor(100, 100, 100);
+          pdf.setLineWidth(0.5);
+          pdf.line(margin, yPos, pageWidth - margin, yPos);
+          yPos += 12;
+
+          // Campos em linha
+          pdf.text('Nome:', margin, yPos);
+          pdf.line(margin + 35, yPos + 2, pageWidth - 150, yPos + 2);
+          pdf.text('Data:', pageWidth - 140, yPos);
+          pdf.line(pageWidth - 110, yPos + 2, pageWidth - margin, yPos + 2);
+          yPos += 20;
+
+          pdf.text('Turma:', margin, yPos);
+          pdf.line(margin + 35, yPos + 2, margin + 120, yPos + 2);
+          pdf.text('Nota:', pageWidth - 80, yPos);
+          pdf.line(pageWidth - 50, yPos + 2, pageWidth - margin, yPos + 2);
+          yPos += 20;
+
+          // Linha inferior
+          pdf.line(margin, yPos, pageWidth - margin, yPos);
+          yPos += 25;
         }
+
+        // Título principal
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(16);
+        const titulo = 'LISTA DE EXERCÍCIOS';
+        const tituloWidth = pdf.getTextWidth(titulo);
+        pdf.text(titulo, (pageWidth - tituloWidth) / 2, yPos);
+        yPos += 25;
+
+        // Subtítulo
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        const disciplina = atividadeGerada?.materia || 'Disciplina';
+        const serie = atividadeGerada?.serie || 'Série';
+        const subtitulo = `${disciplina} • ${serie}`;
+        const subtituloWidth = pdf.getTextWidth(subtitulo);
+        pdf.text(subtitulo, (pageWidth - subtituloWidth) / 2, yPos);
+        yPos += 30;
+      };
+
+      // Função para verificar espaço e quebrar página se necessário
+      const verificarQuebraPagina = (alturaMinima: number) => {
+        if (yPos + alturaMinima > pageHeight - margin - 20) {
+          pdf.addPage();
+          yPos = margin + 15;
+          adicionarCabecalho(false);
+          return true;
+        }
+        return false;
+      };
+
+      // Função para calcular altura necessária de uma questão
+      const calcularAlturaQuestao = (questao: any) => {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
         
-        // Converte para base64
-        const sectionData = sectionCanvas.toDataURL('image/png', 1.0);
+        const linhasEnunciado = pdf.splitTextToSize(questao.enunciado, contentWidth - 30);
+        const alturaEnunciado = linhasEnunciado.length * 13;
         
-        // Adiciona ao PDF
-        pdf.addImage(
-          sectionData,
-          'PNG',
-          margin,
-          margin,
-          usableWidth,
-          sectionHeight,
-          undefined,
-          'MEDIUM'
-        );
+        let alturaAlternativas = 0;
+        questao.alternativas.forEach((alt: string) => {
+          const linhasAlt = pdf.splitTextToSize(alt, contentWidth - 40);
+          alturaAlternativas += linhasAlt.length * 13 + 5;
+        });
+
+        return alturaEnunciado + alturaAlternativas + 25; // Margem extra
+      };
+
+      // Adicionar cabeçalho inicial
+      adicionarCabecalho(true);
+
+      // Gerar questões
+      questoes.forEach((questao, index) => {
+        const alturaQuestao = calcularAlturaQuestao(questao);
+        verificarQuebraPagina(alturaQuestao);
+
+        // Número da questão
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.text(`${questao.numero}.`, margin, yPos);
         
-        currentPosition += sectionHeight;
-        pageCount++;
-      }
+        // Enunciado
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(11);
+        const linhasEnunciado = pdf.splitTextToSize(questao.enunciado, contentWidth - 30);
+        pdf.text(linhasEnunciado, margin + 20, yPos);
+        yPos += linhasEnunciado.length * 13 + 8;
+
+        // Alternativas
+        questao.alternativas.forEach((alternativa: string) => {
+          const linhasAlternativa = pdf.splitTextToSize(alternativa, contentWidth - 40);
+          pdf.text(linhasAlternativa, margin + 30, yPos);
+          yPos += linhasAlternativa.length * 13 + 5;
+        });
+
+        yPos += 15; // Espaço entre questões
+      });
+
+      // Salvar PDF das questões
+      const timestamp = new Date().toISOString().split('T')[0];
+      const disciplina = (atividadeGerada?.materia || 'atividade').toLowerCase().replace(/\s+/g, '_');
+      const nomeArquivo = `atividade_${disciplina}_${timestamp}.pdf`;
       
-      // Remove o elemento temporário
-      document.body.removeChild(tempContainer);
-      
-      // Gera nome do arquivo
-      const nomeArquivo = (atividadeGerada.titulo || 'atividade')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9\s]/g, '')
-        .replace(/\s+/g, '_')
-        .toLowerCase()
-        .substring(0, 50);
-      
-      // Salva o PDF
-      pdf.save(`${nomeArquivo}.pdf`);
-      
+      pdf.save(nomeArquivo);
+
+      // Gerar PDF do gabarito separado
+      setTimeout(() => {
+        const pdfGabarito = new jsPDF({
+          orientation: 'portrait',
+          unit: 'pt',
+          format: 'a4'
+        });
+
+        let yPosGab = margin + 20;
+
+        // Cabeçalho do gabarito
+        pdfGabarito.setFont('helvetica', 'bold');
+        pdfGabarito.setFontSize(18);
+        const tituloGab = 'GABARITO';
+        const tituloGabWidth = pdfGabarito.getTextWidth(tituloGab);
+        pdfGabarito.text(tituloGab, (pageWidth - tituloGabWidth) / 2, yPosGab);
+        yPosGab += 25;
+
+        pdfGabarito.setFont('helvetica', 'normal');
+        pdfGabarito.setFontSize(12);
+        const subtituloGab = `${atividadeGerada?.materia || 'Disciplina'} • ${atividadeGerada?.serie || 'Série'}`;
+        const subtituloGabWidth = pdfGabarito.getTextWidth(subtituloGab);
+        pdfGabarito.text(subtituloGab, (pageWidth - subtituloGabWidth) / 2, yPosGab);
+        yPosGab += 35;
+
+        // Linha separadora
+        pdfGabarito.setDrawColor(0, 0, 0);
+        pdfGabarito.setLineWidth(1);
+        pdfGabarito.line(margin, yPosGab, pageWidth - margin, yPosGab);
+        yPosGab += 30;
+
+        // Respostas em colunas
+        pdfGabarito.setFont('helvetica', 'normal');
+        pdfGabarito.setFontSize(11);
+        
+        const colunas = 4;
+        const questoesPorColuna = Math.ceil(questoes.length / colunas);
+        const larguraColuna = contentWidth / colunas;
+
+        for (let col = 0; col < colunas; col++) {
+          const inicioColuna = col * questoesPorColuna;
+          const fimColuna = Math.min(inicioColuna + questoesPorColuna, questoes.length);
+          const xColuna = margin + (col * larguraColuna);
+          let yColuna = yPosGab;
+
+          for (let i = inicioColuna; i < fimColuna; i++) {
+            const questao = questoes[i];
+            // Usar gabarito extraído ou gerar alternativa padrão
+            const resposta = questao.gabarito || String.fromCharCode(97 + (i % 5));
+            pdfGabarito.text(`${questao.numero}. ${resposta})`, xColuna, yColuna);
+            yColuna += 18;
+          }
+        }
+
+        // Salvar gabarito
+        const nomeGabarito = `gabarito_${disciplina}_${timestamp}.pdf`;
+        pdfGabarito.save(nomeGabarito);
+      }, 800);
+
       toast({
-        title: "PDF gerado com sucesso",
-        description: `Documento salvo com ${pageCount} página(s) e margens adequadas.`,
+        title: "PDFs gerados com sucesso!",
+        description: "Atividade e gabarito salvos em arquivos separados com layout profissional.",
       });
       
     } catch (error) {
