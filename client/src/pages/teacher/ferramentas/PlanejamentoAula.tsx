@@ -235,11 +235,214 @@ export default function PlanejamentoAula() {
     }
   };
 
-  const exportarPDF = () => {
-    toast({
-      title: "Exportação iniciada",
-      description: "Seu plano de aula será exportado em PDF.",
-    });
+  const exportarPDF = async () => {
+    if (!planoGerado) {
+      toast({
+        title: "Nenhum plano disponível",
+        description: "Gere um plano de aula primeiro para exportar em PDF.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Importar jsPDF dinamicamente
+      const { default: jsPDF } = await import('jspdf');
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 50;
+      const contentWidth = pageWidth - (margin * 2);
+      let yPos = margin;
+
+      // Função para verificar quebra de página
+      const verificarQuebraPagina = (alturaMinima: number) => {
+        if (yPos + alturaMinima > pageHeight - margin - 20) {
+          pdf.addPage();
+          yPos = margin;
+          return true;
+        }
+        return false;
+      };
+
+      // Função para adicionar cabeçalho
+      const adicionarCabecalho = () => {
+        // Logo e título
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(20);
+        const titulo = 'PLANO DE AULA';
+        const tituloWidth = pdf.getTextWidth(titulo);
+        pdf.text(titulo, (pageWidth - tituloWidth) / 2, yPos);
+        yPos += 30;
+
+        // Linha separadora
+        pdf.setDrawColor(100, 100, 100);
+        pdf.setLineWidth(1);
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 25;
+      };
+
+      // Função para adicionar seção
+      const adicionarSecao = (numero: string, titulo: string, conteudo: any, cor: string = '#4F46E5') => {
+        verificarQuebraPagina(60);
+
+        // Título da seção
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(79, 70, 229); // Cor azul
+        pdf.text(`${numero}. ${titulo}`, margin, yPos);
+        yPos += 20;
+
+        // Linha abaixo do título
+        pdf.setDrawColor(79, 70, 229);
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 15;
+
+        // Conteúdo
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(60, 60, 60);
+
+        if (typeof conteudo === 'object' && conteudo !== null) {
+          Object.entries(conteudo).forEach(([key, value]) => {
+            verificarQuebraPagina(30);
+            
+            // Subtítulo
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(10);
+            const subtitulo = key.replace(/([A-Z])/g, ' $1').toLowerCase();
+            pdf.text(`${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`, margin, yPos);
+            yPos += 15;
+
+            // Conteúdo do subtítulo
+            pdf.setFont('helvetica', 'normal');
+            if (Array.isArray(value)) {
+              value.forEach((item: any) => {
+                verificarQuebraPagina(20);
+                if (typeof item === 'object') {
+                  Object.entries(item).forEach(([subKey, subValue]) => {
+                    const texto = `• ${subKey}: ${String(subValue)}`;
+                    const linhas = pdf.splitTextToSize(texto, contentWidth - 20);
+                    pdf.text(linhas, margin + 15, yPos);
+                    yPos += linhas.length * 12 + 5;
+                  });
+                } else {
+                  const texto = `• ${String(item)}`;
+                  const linhas = pdf.splitTextToSize(texto, contentWidth - 20);
+                  pdf.text(linhas, margin + 15, yPos);
+                  yPos += linhas.length * 12 + 5;
+                }
+              });
+            } else {
+              const texto = String(value);
+              const linhas = pdf.splitTextToSize(texto, contentWidth - 20);
+              pdf.text(linhas, margin + 15, yPos);
+              yPos += linhas.length * 12 + 8;
+            }
+            yPos += 10;
+          });
+        } else {
+          const texto = String(conteudo);
+          const linhas = pdf.splitTextToSize(texto, contentWidth);
+          pdf.text(linhas, margin, yPos);
+          yPos += linhas.length * 12 + 15;
+        }
+
+        yPos += 20; // Espaço entre seções
+      };
+
+      // Adicionar cabeçalho
+      adicionarCabecalho();
+
+      // Identificação
+      if (planoGerado.identificacao) {
+        adicionarSecao("1", "Identificação", planoGerado.identificacao);
+      }
+
+      // Alinhamento BNCC
+      if (planoGerado.alinhamentoBNCC) {
+        adicionarSecao("2", "Alinhamento BNCC", planoGerado.alinhamentoBNCC);
+      }
+
+      // Tema da Aula
+      if (planoGerado.temaDaAula) {
+        adicionarSecao("3", "Tema da Aula", planoGerado.temaDaAula);
+      }
+
+      // Objetivos de Aprendizagem
+      if (planoGerado.objetivosAprendizagem) {
+        adicionarSecao("4", "Objetivos de Aprendizagem", planoGerado.objetivosAprendizagem);
+      }
+
+      // Conteúdos
+      if (planoGerado.conteudos) {
+        adicionarSecao("5", "Conteúdos", planoGerado.conteudos);
+      }
+
+      // Metodologia
+      if (planoGerado.metodologia) {
+        adicionarSecao("6", "Metodologia", planoGerado.metodologia);
+      }
+
+      // Sequência Didática
+      if (planoGerado.sequenciaDidatica) {
+        adicionarSecao("7", "Sequência Didática", planoGerado.sequenciaDidatica);
+      }
+
+      // Recursos Didáticos
+      if (planoGerado.recursosDidaticos) {
+        adicionarSecao("8", "Recursos Didáticos", planoGerado.recursosDidaticos);
+      }
+
+      // Avaliação
+      if (planoGerado.avaliacao) {
+        adicionarSecao("9", "Avaliação", planoGerado.avaliacao);
+      }
+
+      // Seções adicionais
+      let numeroSecao = 10;
+      Object.entries(planoGerado).forEach(([secao, conteudo]) => {
+        if (!['identificacao', 'alinhamentoBNCC', 'temaDaAula', 'objetivosAprendizagem', 'conteudos', 'metodologia', 'sequenciaDidatica', 'recursosDidaticos', 'avaliacao'].includes(secao)) {
+          const tituloSecao = secao.replace(/([A-Z])/g, ' $1').toLowerCase();
+          const tituloFormatado = tituloSecao.charAt(0).toUpperCase() + tituloSecao.slice(1);
+          adicionarSecao(String(numeroSecao), tituloFormatado, conteudo);
+          numeroSecao++;
+        }
+      });
+
+      // Rodapé na última página
+      verificarQuebraPagina(50);
+      pdf.setFont('helvetica', 'italic');
+      pdf.setFontSize(8);
+      pdf.setTextColor(120, 120, 120);
+      const rodape = `Plano gerado em ${new Date().toLocaleDateString('pt-BR')} - AIverse Educacional`;
+      const rodapeWidth = pdf.getTextWidth(rodape);
+      pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
+
+      // Salvar PDF
+      const nomeArquivo = `plano_aula_${(formData.disciplina || 'disciplina').toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(nomeArquivo);
+
+      toast({
+        title: "PDF gerado com sucesso!",
+        description: "Seu plano de aula foi exportado com layout profissional.",
+      });
+
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Não foi possível criar o PDF. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const salvarPlano = () => {
