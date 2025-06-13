@@ -144,20 +144,30 @@ ${analysisResult.assessment}
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
-            <Link href="/professor/dashboard">
-              <Button variant="outline" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Análise de Documentos</h1>
-              <p className="text-slate-600">Transforme qualquer documento em material didático estruturado</p>
+        {/* Header */}
+        <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <div className="flex items-center gap-3">
+              <Link href="/professor/dashboard">
+                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
+              </Link>
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl">
+                  <FileText className="h-5 w-5 text-rose-600" />
+                </div>
+                <div>
+                  <h1 className="text-lg md:text-xl font-bold text-slate-900">Análise de Documentos</h1>
+                  <p className="text-sm text-slate-600">Transforme qualquer documento em material didático estruturado</p>
+                </div>
+              </div>
             </div>
           </div>
+        </header>
+
+        <div className="max-w-7xl mx-auto px-6 py-6">
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Upload Section */}

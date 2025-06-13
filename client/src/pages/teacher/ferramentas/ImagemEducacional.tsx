@@ -150,38 +150,22 @@ export default function ImagemEducacional() {
       
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-4">
-                <Link href="/professor/dashboard">
-                  <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
-                    <ArrowLeft className="h-4 w-4" />
-                    Voltar
-                  </Button>
-                </Link>
-                <div className="h-6 w-px bg-slate-300" />
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
-                    <ImageIcon className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-slate-900">Criar Imagem Educacional</h1>
-                    <p className="text-sm text-slate-600">Gere imagens didáticas com Inteligência Artificial</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Logo IAverse */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link href="/professor/dashboard">
+                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
+              </Link>
               <div className="flex items-center gap-2">
-                <div className="text-right">
-                  <div className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    IAverse
-                  </div>
-                  <div className="text-xs text-slate-500">Educação + IA</div>
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                  <ImageIcon className="h-4 w-4 text-white" />
                 </div>
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
+                <div>
+                  <h1 className="text-lg md:text-xl font-bold text-slate-900">Imagens Educacionais</h1>
+                  <p className="text-sm text-slate-600">Gere imagens didáticas com Inteligência Artificial</p>
                 </div>
               </div>
             </div>
@@ -189,7 +173,7 @@ export default function ImagemEducacional() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Painel de Configuração */}

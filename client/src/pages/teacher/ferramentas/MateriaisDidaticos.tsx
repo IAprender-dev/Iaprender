@@ -491,20 +491,20 @@ export default function ResumosDidaticos() {
 
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center gap-3">
             <Link href="/professor/dashboard">
               <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="p-2 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl">
-                <BookOpenCheck className="h-6 w-6 text-blue-600" />
+                <BookOpenCheck className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-slate-800">Resumos Didáticos IA</h1>
+                <h1 className="text-lg md:text-xl font-bold text-slate-800">Resumos Didáticos</h1>
                 <p className="text-sm text-slate-600">Crie resumos profissionais alinhados com a BNCC</p>
               </div>
             </div>
@@ -513,7 +513,7 @@ export default function ResumosDidaticos() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Configuração */}
