@@ -332,34 +332,34 @@ export default function CentralIA() {
         </header>
 
         {/* Conteúdo Principal */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12">
           
           {/* Header da Central */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-slate-900 mb-4">Central de Inteligência Artificial</h1>
-            <p className="text-xl text-slate-600 mb-2">Escolha a IA que melhor atende às suas necessidades educacionais</p>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">Central de Inteligência Artificial</h1>
+            <p className="text-lg md:text-xl text-slate-600 mb-2">Escolha a IA que melhor atende às suas necessidades educacionais</p>
             <p className="text-sm text-slate-500">Clique em uma das opções abaixo para começar</p>
           </div>
           
           {/* Cards das IAs */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {Object.entries(modelInfo).map(([key, info]) => (
               <Card 
                 key={key}
-                className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 ${info.borderColor} ${info.hoverColor} bg-gradient-to-br ${info.cardColor}`}
+                className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-2 ${info.borderColor} ${info.hoverColor} bg-gradient-to-br ${info.cardColor}`}
                 onClick={() => handleAISelection(key as AIModel)}
               >
-                <CardContent className="p-8 text-center">
-                  <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center ${info.avatarColor} shadow-lg`}>
+                <CardContent className="p-6 text-center">
+                  <div className={`w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center ${info.avatarColor} shadow-lg`}>
                     <div className="text-white">
                       {info.icon}
                     </div>
                   </div>
-                  <h3 className="font-bold text-xl text-slate-900 mb-3">{info.name}</h3>
-                  <p className="text-sm text-slate-700 mb-6 leading-relaxed">
+                  <h3 className="font-bold text-lg text-slate-900 mb-2">{info.name}</h3>
+                  <p className="text-sm text-slate-700 mb-4 leading-relaxed">
                     {info.description}
                   </p>
-                  <div className="flex items-center justify-center text-blue-600 font-medium">
+                  <div className="flex items-center justify-center text-blue-600 font-medium text-sm">
                     <span>Começar conversa</span>
                     <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
                   </div>
@@ -369,36 +369,34 @@ export default function CentralIA() {
           </div>
 
           {/* Informações adicionais */}
-          <div className="mt-16 text-center">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 max-w-4xl mx-auto">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">Como usar a Central de IA</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-blue-600 font-bold text-sm">1</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">Escolha sua IA</h3>
-                    <p className="text-sm text-slate-600">Selecione a inteligência artificial que melhor se adequa à sua tarefa</p>
-                  </div>
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-4xl mx-auto">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 text-center">Como usar a Central de IA</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 font-bold text-xs">1</span>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-blue-600 font-bold text-sm">2</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">Digite sua pergunta</h3>
-                    <p className="text-sm text-slate-600">Faça perguntas, peça análises ou solicite criação de conteúdo</p>
-                  </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1 text-sm">Escolha sua IA</h3>
+                  <p className="text-xs text-slate-600">Selecione a inteligência artificial que melhor se adequa à sua tarefa</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <span className="text-blue-600 font-bold text-sm">3</span>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 mb-1">Anexe arquivos</h3>
-                    <p className="text-sm text-slate-600">Adicione documentos, imagens ou outros materiais para análise</p>
-                  </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 font-bold text-xs">2</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1 text-sm">Digite sua pergunta</h3>
+                  <p className="text-xs text-slate-600">Faça perguntas, peça análises ou solicite criação de conteúdo</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 font-bold text-xs">3</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 mb-1 text-sm">Anexe arquivos</h3>
+                  <p className="text-xs text-slate-600">Adicione documentos, imagens ou outros materiais para análise</p>
                 </div>
               </div>
             </div>

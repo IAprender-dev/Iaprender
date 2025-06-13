@@ -495,30 +495,30 @@ export default function PlanejamentoAula() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center gap-4">
+          <div className="max-w-7xl mx-auto px-6 py-3">
+            <div className="flex items-center gap-3">
               <Link href="/professor/dashboard">
                 <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
               </Link>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <img 
                   src={aiverseLogoNew} 
                   alt="AIverse Logo" 
-                  className="w-12 h-12 object-contain"
+                  className="w-10 h-10 object-contain"
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-900">AIverse - Seu Universo de IA</h1>
-                  <p className="text-slate-600">Planejamento de Aula - Geração inteligente com IA baseada nas diretrizes do MEC e BNCC</p>
+                  <h1 className="text-lg md:text-xl font-bold text-slate-900">Planejamento de Aula</h1>
+                  <p className="text-slate-600 text-sm">Geração inteligente com IA baseada nas diretrizes do MEC e BNCC</p>
                 </div>
               </div>
             </div>
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Formulário de Entrada */}
             <Card className="bg-white/60 backdrop-blur-sm border-slate-200/50 shadow-xl">

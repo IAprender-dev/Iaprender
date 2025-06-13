@@ -293,15 +293,15 @@ export default function NoticiasPodcasts() {
         <title>Notícias e Podcasts - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-8 py-8 max-w-7xl">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+        <div className="container mx-auto px-6 pt-4 pb-8 max-w-7xl">
           {/* Header with Logo and Back Button */}
-          <div className="flex items-center justify-between mb-10">
-            <div className="flex items-center gap-4">
-              <img src={aiverseLogo} alt="AIverse" className="w-16 h-16 object-contain" />
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <img src={aiverseLogo} alt="AIverse" className="w-12 h-12 object-contain" />
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">AIverse</h1>
-                <p className="text-gray-600 text-lg">Centro de Conteúdo</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Notícias do Universo</h1>
+                <p className="text-gray-600 text-sm md:text-base">Mantenha-se atualizado com as últimas novidades em IA e educação</p>
               </div>
             </div>
             
@@ -314,33 +314,29 @@ export default function NoticiasPodcasts() {
             </Link>
           </div>
 
-          <div className="mb-10">
-            <p className="text-gray-600 text-lg">Mantenha-se atualizado com as últimas novidades em IA e educação</p>
-          </div>
-
           {/* Tab Navigation */}
-          <div className="flex gap-4 mb-10">
+          <div className="flex gap-3 mb-6">
             <Button
               variant={activeTab === 'news' ? 'default' : 'outline'}
               onClick={() => setActiveTab('news')}
-              className={`gap-3 h-12 px-6 rounded-xl font-medium ${
+              className={`gap-2 h-10 px-5 rounded-lg font-medium ${
                 activeTab === 'news' 
                   ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg' 
                   : 'border-gray-300 text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <Newspaper className="h-5 w-5" />
+              <Newspaper className="h-4 w-4" />
               Notícias IA
             </Button>
             <Button
               onClick={() => setActiveTab('podcasts')}
-              className={`gap-3 h-12 px-6 rounded-xl font-medium ${
+              className={`gap-2 h-10 px-5 rounded-lg font-medium ${
                 activeTab === 'podcasts' 
                   ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg border-0' 
                   : 'border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white'
               }`}
             >
-              <Headphones className={`h-5 w-5 ${activeTab === 'podcasts' ? 'text-white' : 'text-gray-700'}`} />
+              <Headphones className={`h-4 w-4 ${activeTab === 'podcasts' ? 'text-white' : 'text-gray-700'}`} />
               Podcasts
             </Button>
           </div>
