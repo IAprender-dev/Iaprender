@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "wouter";
 import { 
   Brain, 
   Users, 
@@ -29,410 +28,245 @@ import {
   Shield,
   Lightbulb,
   Rocket,
-  Calendar
+  Calendar,
+  Lock,
+  Building2,
+  DollarSign,
+  UserCheck,
+  HeartHandshake,
+  Laptop,
+  FileCheck,
+  Briefcase,
+  School,
+  ArrowUpRight,
+  CircleCheck,
+  X,
+  Menu,
+  Quote,
+  Cpu,
+  Gauge,
+  Heart,
+  Headphones,
+  Gift,
+  Timer,
+  TrendingDown,
+  Infinity,
+  Layers,
+  Network,
+  Palette,
+  Microscope,
+  Compass,
+  Puzzle,
+  Landmark,
+  Languages
 } from "lucide-react";
-
-import aiverseLogo from "@assets/Design sem nome (5)_1749594709695.png";
+import { useState, useEffect } from "react";
 
 export default function AIverseLanding() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeFeature, setActiveFeature] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveFeature((prev) => (prev + 1) % 4);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const features = [
+    { icon: Brain, label: "Inteligência Adaptativa", color: "from-indigo-500 to-purple-600" },
+    { icon: Users, label: "Inclusão Total", color: "from-purple-500 to-pink-600" },
+    { icon: Globe, label: "Alcance Global", color: "from-green-500 to-emerald-600" },
+    { icon: Infinity, label: "Possibilidades Infinitas", color: "from-orange-500 to-red-600" }
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="fixed top-0 w-full bg-white/80 backdrop-blur-xl border-b border-gray-100 z-50">
+      <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-white/95 backdrop-blur-xl shadow-lg' : 'bg-white/80 backdrop-blur-lg'
+      } border-b border-gray-100`}>
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <img src={aiverseLogo} alt="AIverse" className="h-10 w-10" />
+              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <Sparkles className="h-6 w-6 text-white" />
+              </div>
               <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 AIverse
               </span>
             </div>
-            
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#ferramentas" className="text-gray-600 hover:text-indigo-600 transition-colors">Ferramentas IA</a>
-              <a href="#dashboards" className="text-gray-600 hover:text-indigo-600 transition-colors">Dashboards</a>
-              <a href="#impacto" className="text-gray-600 hover:text-indigo-600 transition-colors">Impacto</a>
+
+            <div className="hidden lg:flex items-center space-x-8">
+              <a href="#plataforma" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Plataforma</a>
+              <a href="#inteligencias" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Inteligências</a>
+              <a href="#educacao" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Para Educação</a>
+              <a href="#impacto" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Impacto</a>
+              <a href="#recursos" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Recursos</a>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link href="/auth">
-                <Button variant="ghost" size="sm" className="text-gray-700 hover:text-indigo-700 hover:bg-indigo-50">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/auth">
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white border-0">
-                  Explorar AIverse
-                </Button>
-              </Link>
+
+            <div className="hidden lg:flex items-center space-x-4">
+              <Button size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25">
+                Acessar AIverse
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
+
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </nav>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden bg-white border-t">
+            <div className="px-4 py-4 space-y-3">
+              <a href="#plataforma" className="block py-2 text-gray-700 hover:text-indigo-600">Plataforma</a>
+              <a href="#inteligencias" className="block py-2 text-gray-700 hover:text-indigo-600">Inteligências</a>
+              <a href="#educacao" className="block py-2 text-gray-700 hover:text-indigo-600">Para Educação</a>
+              <a href="#impacto" className="block py-2 text-gray-700 hover:text-indigo-600">Impacto</a>
+              <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600">
+                Acessar AIverse
+              </Button>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-20 bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto">
-            <Badge className="mb-6 bg-indigo-100 text-indigo-700 hover:bg-indigo-200">
-              🌟 Nova Era da Educação com IA
-            </Badge>
-            
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-800 bg-clip-text text-transparent">
-                AIverse
+      <section className="pt-32 pb-20 bg-gradient-to-br from-gray-50 via-white to-indigo-50/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-gray-100/50 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center max-w-5xl mx-auto">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              <span className="text-gray-900">A Plataforma Mundial de</span>
+              <br />
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                Inteligência Artificial
               </span>
               <br />
-              <span className="text-gray-900">Seu Universo de</span>
-              <br />
-              <span className="text-gray-900">Inteligência Artificial</span>
+              <span className="text-gray-900">para Educação</span>
             </h1>
-            
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              A plataforma educacional mais completa do mundo, integrando as melhores IAs para texto, imagem, vídeo e áudio. 
-              Transforme sua metodologia de ensino com 25+ modelos de IA de última geração.
+
+            <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Democratizando o acesso às <span className="font-semibold text-gray-900">mais avançadas IAs do planeta</span>, 
+              capacitando professores e alunos para o futuro que já chegou.
             </p>
-            
+
+            {/* Dynamic Feature Display */}
+            <div className="mb-12 h-24 flex items-center justify-center">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  className={`transition-all duration-500 ${
+                    activeFeature === index ? 'opacity-100 scale-100' : 'opacity-0 scale-95 absolute'
+                  }`}
+                >
+                  <div className="flex items-center justify-center space-x-4">
+                    <div className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center shadow-lg`}>
+                      <feature.icon className="h-8 w-8 text-white" />
+                    </div>
+                    <span className="text-2xl font-semibold text-gray-800">{feature.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth">
-                <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-3">
-                  Entrar no AIverse
-                  <Rocket className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
-              <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-50 border border-indigo-200 hover:border-indigo-300 px-8 py-3">
-                Explorar Ferramentas
-                <Play className="ml-2 h-5 w-5" />
+              <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-6 text-lg shadow-xl shadow-indigo-500/25 group">
+                Explorar o AIverse
+                <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+              </Button>
+              <Button size="lg" variant="outline" className="border-2 border-gray-300 hover:border-indigo-300 px-10 py-6 text-lg group">
+                <Play className="mr-2 h-5 w-5 text-gray-600 group-hover:text-indigo-600" />
+                Ver em Ação
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Global AI Statistics */}
-      <section className="py-20 bg-white">
+      {/* Platform Overview */}
+      <section id="plataforma" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              A Revolução da IA na Educação Global
+            <Badge className="mb-4 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700">
+              Plataforma Completa
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Um Universo de Possibilidades em IA
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Dados mundiais comprovam: a inteligência artificial está transformando o ensino em todos os continentes
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-indigo-600 mb-2">89%</div>
-              <div className="text-gray-600">Universidades americanas usam IA</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">76%</div>
-              <div className="text-gray-600">Professores globalmente adotaram IA</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-cyan-600 mb-2">€2Bi</div>
-              <div className="text-gray-600">Investimento EU em IA educacional</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-emerald-600 mb-2">+40%</div>
-              <div className="text-gray-600">Melhoria em aprendizagem com IA</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* AI Tools Showcase */}
-      <section id="ferramentas" className="py-20 bg-gradient-to-br from-gray-50 to-indigo-50/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Todas as IAs Líderes Mundiais em Uma Plataforma
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Acesso integrado aos modelos mais avançados de inteligência artificial para todas as suas necessidades educacionais
+              Reunimos as melhores inteligências artificiais do mundo em uma única plataforma, 
+              especialmente otimizada para transformar a educação.
             </p>
           </div>
 
-          {/* Text AI Models */}
-          <div className="mb-16">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-8 flex items-center justify-center">
-              <Brain className="mr-3 h-6 w-6 text-indigo-600" />
-              Modelos de Linguagem
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-              <Card className="hover:shadow-lg transition-shadow border-emerald-100 hover:border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-emerald-100 border border-emerald-200 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Brain className="h-6 w-6 text-emerald-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">OpenAI</h4>
-                  <p className="text-sm text-emerald-700 font-medium">GPT-4o, GPT-4o mini</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="hover:shadow-lg transition-shadow border-blue-100 hover:border-blue-200 bg-gradient-to-br from-blue-50 to-sky-50">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-blue-100 border border-blue-200 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="h-6 w-6 text-blue-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Google Gemini</h4>
-                  <p className="text-sm text-blue-700 font-medium">1.5 Pro, 1.5 Flash, 2.0</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="hover:shadow-lg transition-shadow border-orange-100 hover:border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-orange-100 border border-orange-200 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Bot className="h-6 w-6 text-orange-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Claude</h4>
-                  <p className="text-sm text-orange-700 font-medium">3 Haiku, 3 Opus, 3.5 Sonnet</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="hover:shadow-lg transition-shadow border-purple-100 hover:border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-purple-100 border border-purple-200 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Zap className="h-6 w-6 text-purple-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Llama 3</h4>
-                  <p className="text-sm text-purple-700 font-medium">Meta AI</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="hover:shadow-lg transition-shadow border-indigo-100 hover:border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50">
-                <CardContent className="p-6 text-center">
-                  <div className="w-12 h-12 bg-indigo-100 border border-indigo-200 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Star className="h-6 w-6 text-indigo-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Mistral & Command R</h4>
-                  <p className="text-sm text-indigo-700 font-medium">R Plus Models</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Image AI Models */}
-          <div className="mb-16">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-8 flex items-center justify-center">
-              <Image className="mr-3 h-6 w-6 text-purple-600" />
-              Geração de Imagens
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-              <Card className="hover:shadow-lg transition-shadow border-pink-100 hover:border-pink-200 bg-gradient-to-br from-pink-50 to-rose-50">
-                <CardContent className="p-4 text-center">
-                  <div className="w-8 h-8 bg-pink-100 border border-pink-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Image className="h-4 w-4 text-pink-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Stable Diffusion</h4>
-                  <p className="text-xs text-pink-700 font-medium">3.0, 3.5</p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow border-violet-100 hover:border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50">
-                <CardContent className="p-4 text-center">
-                  <div className="w-8 h-8 bg-violet-100 border border-violet-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Sparkles className="h-4 w-4 text-violet-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Flux</h4>
-                  <p className="text-xs text-violet-700 font-medium">1.0 Dev, Pro, Ultra</p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow border-cyan-100 hover:border-cyan-200 bg-gradient-to-br from-cyan-50 to-teal-50">
-                <CardContent className="p-4 text-center">
-                  <div className="w-8 h-8 bg-cyan-100 border border-cyan-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Star className="h-4 w-4 text-cyan-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Ideogram</h4>
-                  <p className="text-xs text-cyan-700 font-medium">2, 2-Turbo</p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow border-emerald-100 hover:border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50">
-                <CardContent className="p-4 text-center">
-                  <div className="w-8 h-8 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Brain className="h-4 w-4 text-emerald-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Google Imagen</h4>
-                  <p className="text-xs text-emerald-700 font-medium">3, 3-fast</p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow border-amber-100 hover:border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50">
-                <CardContent className="p-4 text-center">
-                  <div className="w-8 h-8 bg-amber-100 border border-amber-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Zap className="h-4 w-4 text-amber-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">DALL-E 3</h4>
-                  <p className="text-xs text-amber-700 font-medium">OpenAI</p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow border-indigo-100 hover:border-indigo-200 bg-gradient-to-br from-indigo-50 to-blue-50">
-                <CardContent className="p-4 text-center">
-                  <div className="w-8 h-8 bg-indigo-100 border border-indigo-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Target className="h-4 w-4 text-indigo-700" />
-                  </div>
-                  <h4 className="font-semibold text-gray-900 mb-1 text-sm">Recraft AI</h4>
-                  <p className="text-xs text-indigo-700 font-medium">Design profissional</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Video & Audio */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-8 flex items-center">
-                <Video className="mr-3 h-6 w-6 text-red-600" />
-                Criação de Vídeos
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="hover:shadow-lg transition-shadow border-red-100 hover:border-red-200 bg-gradient-to-br from-red-50 to-rose-50">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-8 h-8 bg-red-100 border border-red-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                      <Video className="h-4 w-4 text-red-700" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Runway</h4>
-                    <p className="text-xs text-red-700 font-medium">Video Gen-3 Alpha</p>
-                  </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow border-orange-100 hover:border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-8 h-8 bg-orange-100 border border-orange-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                      <Play className="h-4 w-4 text-orange-700" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Luma AI</h4>
-                    <p className="text-xs text-orange-700 font-medium">Alta qualidade</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-8 flex items-center">
-                <Mic className="mr-3 h-6 w-6 text-green-600" />
-                Áudio e Narração
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="hover:shadow-lg transition-shadow border-green-100 hover:border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-8 h-8 bg-green-100 border border-green-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                      <Mic className="h-4 w-4 text-green-700" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">ElevenLabs</h4>
-                    <p className="text-xs text-green-700 font-medium">Vozes realistas</p>
-                  </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow border-teal-100 hover:border-teal-200 bg-gradient-to-br from-teal-50 to-cyan-50">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-8 h-8 bg-teal-100 border border-teal-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                      <Bot className="h-4 w-4 text-teal-700" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">OpenAI Voice</h4>
-                    <p className="text-xs text-teal-700 font-medium">Síntese natural</p>
-                  </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow border-blue-100 hover:border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-8 h-8 bg-blue-100 border border-blue-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                      <FileText className="h-4 w-4 text-blue-700" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Deepgram AI</h4>
-                    <p className="text-xs text-blue-700 font-medium">Transcrição</p>
-                  </CardContent>
-                </Card>
-                <Card className="hover:shadow-lg transition-shadow border-purple-100 hover:border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50">
-                  <CardContent className="p-4 text-center">
-                    <div className="w-8 h-8 bg-purple-100 border border-purple-200 rounded-lg flex items-center justify-center mx-auto mb-2">
-                      <BarChart className="h-4 w-4 text-purple-700" />
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 text-sm">Assembly AI</h4>
-                    <p className="text-xs text-purple-700 font-medium">Análise áudio</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Dashboard Showcase */}
-      <section id="dashboards" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Dashboards Especializados por Perfil
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Interfaces intuitivas e poderosas adaptadas para cada tipo de usuário educacional
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Teacher Dashboard */}
-            <Card className="border-2 border-blue-200 bg-blue-50/30 hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-6">
-                  <GraduationCap className="h-6 w-6 text-white" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="relative overflow-hidden border-2 hover:border-indigo-200 transition-all duration-300 hover:shadow-xl group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              <CardContent className="p-8 relative">
+                <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                  <Layers className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Professores</h3>
-                <p className="text-gray-600 mb-6">
-                  Suite completa de ferramentas IA para transformar o ensino e otimizar o trabalho docente.
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Interface Unificada</h3>
+                <p className="text-gray-600 mb-4">
+                  Acesse mais de 30 modelos de IA através de uma interface intuitiva e consistente, 
+                  sem precisar aprender múltiplas plataformas.
                 </p>
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Gerador de atividades IA
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Criação de imagens educacionais
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Planejamento BNCC
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Resumos didáticos automáticos
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Central de IA com 25+ modelos
-                  </div>
+                <div className="flex items-center text-indigo-600 font-medium">
+                  <span>Simplicidade no poder</span>
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Student Dashboard */}
-            <Card className="border-2 border-purple-200 bg-purple-50/30 hover:shadow-xl transition-all duration-300">
-              <CardContent className="p-8">
-                <div className="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mb-6">
-                  <BookOpen className="h-6 w-6 text-white" />
+            <Card className="relative overflow-hidden border-2 hover:border-purple-200 transition-all duration-300 hover:shadow-xl group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              <CardContent className="p-8 relative">
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
+                  <Network className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Alunos</h3>
-                <p className="text-gray-600 mb-6">
-                  Plataforma completa de aprendizado com IA personalizada e ferramentas adaptativas.
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Integração Total</h3>
+                <p className="text-gray-600 mb-4">
+                  Todas as IAs conversam entre si, permitindo fluxos de trabalho complexos 
+                  que combinam o melhor de cada tecnologia.
                 </p>
-                <div className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Pro Versa - Tutora IA por voz
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Exercícios adaptativos
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Wikipedia Explorer
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Planejamento de estudos
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-3" />
-                    Sistema de ranking
-                  </div>
+                <div className="flex items-center text-purple-600 font-medium">
+                  <span>Sinergia perfeita</span>
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="relative overflow-hidden border-2 hover:border-green-200 transition-all duration-300 hover:shadow-xl group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
+              <CardContent className="p-8 relative">
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-6">
+                  <Languages className="h-7 w-7 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">100% em Português</h3>
+                <p className="text-gray-600 mb-4">
+                  Interface, suporte e documentação completamente em português, 
+                  eliminando barreiras linguísticas.
+                </p>
+                <div className="flex items-center text-green-600 font-medium">
+                  <span>Inclusão real</span>
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </div>
               </CardContent>
             </Card>
@@ -440,128 +274,571 @@ export default function AIverseLanding() {
         </div>
       </section>
 
-      {/* Education Impact */}
-      <section id="impacto" className="py-20 bg-gradient-to-br from-indigo-50 to-purple-50">
+      {/* AI Ecosystem */}
+      <section id="inteligencias" className="py-20 bg-gradient-to-br from-gray-50 to-indigo-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              O Futuro da Educação é Agora
+            <Badge className="mb-4 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700">
+              Ecossistema Completo
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              As Melhores IAs do Mundo, Juntas
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Descubra como a AIverse está revolucionando o aprendizado em instituições ao redor do mundo
+              Um arsenal completo de inteligências artificiais líderes mundiais, 
+              todas otimizadas para educação
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Lightbulb className="h-8 w-8 text-indigo-600" />
+
+          {/* AI Categories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+            {/* Text & Language */}
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-indigo-100">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Linguagem & Texto</h3>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Aprendizado Personalizado</h3>
-              <p className="text-gray-600 text-sm">IA adapta-se ao ritmo e estilo de cada estudante</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <Zap className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">GPT-4o</p>
+                    <p className="text-xs text-gray-500">OpenAI</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Claude 3.5</p>
+                    <p className="text-xs text-gray-500">Anthropic</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Sparkles className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Gemini 2.0</p>
+                    <p className="text-xs text-gray-500">Google</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Star className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Llama 3</p>
+                    <p className="text-xs text-gray-500">Meta</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mt-4">
+                + 8 outros modelos especializados em educação
+              </p>
             </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="h-8 w-8 text-green-600" />
+
+            {/* Image Generation */}
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-purple-100">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+                  <Image className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Criação Visual</h3>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Eficiência Docente</h3>
-              <p className="text-gray-600 text-sm">Automatize tarefas e foque no que realmente importa</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Palette className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">DALL-E 3</p>
+                    <p className="text-xs text-gray-500">OpenAI</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center">
+                    <Microscope className="h-4 w-4 text-pink-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Stable Diffusion</p>
+                    <p className="text-xs text-gray-500">Stability AI</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center">
+                    <Compass className="h-4 w-4 text-violet-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Flux 1.0</p>
+                    <p className="text-xs text-gray-500">Black Forest</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-cyan-100 rounded-lg flex items-center justify-center">
+                    <Target className="h-4 w-4 text-cyan-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Ideogram 2</p>
+                    <p className="text-xs text-gray-500">Ideogram AI</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mt-4">
+                + 6 outros geradores especializados
+              </p>
             </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Award className="h-8 w-8 text-purple-600" />
+
+            {/* Video & Motion */}
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-red-100">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
+                  <Video className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Vídeo & Animação</h3>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Resultados Comprovados</h3>
-              <p className="text-gray-600 text-sm">Melhoria média de 40% no desempenho estudantil</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Play className="h-5 w-5 text-red-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Runway Gen-3 Alpha</p>
+                      <p className="text-sm text-gray-500">Criação de vídeos educacionais</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Sparkles className="h-5 w-5 text-orange-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Luma AI</p>
+                      <p className="text-sm text-gray-500">Animações 3D interativas</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-cyan-600" />
+
+            {/* Audio & Voice */}
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-green-100">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
+                  <Mic className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Áudio & Voz</h3>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Segurança Total</h3>
-              <p className="text-gray-600 text-sm">Proteção de dados e privacidade educacional</p>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">ElevenLabs</p>
+                      <p className="text-sm text-gray-500">Narração natural em português</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="h-5 w-5 text-emerald-600" />
+                    <div>
+                      <p className="font-semibold text-gray-900">Deepgram</p>
+                      <p className="text-sm text-gray-500">Transcrição automática precisa</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Integration Power */}
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-8 text-white text-center">
+            <Puzzle className="h-12 w-12 mx-auto mb-4 text-indigo-200" />
+            <h3 className="text-2xl font-bold mb-4">O Poder da Integração</h3>
+            <p className="text-lg text-indigo-100 max-w-3xl mx-auto">
+              Não são apenas ferramentas isoladas. No AIverse, todas as IAs trabalham em conjunto, 
+              criando possibilidades infinitas para professores e alunos explorarem o conhecimento.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Education Focus */}
+      <section id="educacao" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700">
+              Foco Educacional
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Ferramentas Projetadas para Transformar a Educação
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Cada recurso foi pensado para empoderar educadores e inspirar estudantes
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+            {/* For Educators */}
+            <div>
+              <div className="flex items-center mb-8">
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mr-4">
+                  <GraduationCap className="h-7 w-7 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Para Educadores</h3>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4 mt-1">
+                    <Lightbulb className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Criador de Conteúdo Inteligente</h4>
+                    <p className="text-gray-600">
+                      Gere planos de aula, atividades e avaliações personalizadas em minutos, 
+                      alinhadas aos objetivos pedagógicos.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mr-4 mt-1">
+                    <Target className="h-5 w-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Assistente Pedagógico 24/7</h4>
+                    <p className="text-gray-600">
+                      IA treinada em metodologias educacionais para apoiar no planejamento 
+                      e execução de estratégias de ensino.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mr-4 mt-1">
+                    <BarChart className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Analytics de Aprendizagem</h4>
+                    <p className="text-gray-600">
+                      Acompanhe o progresso individual e coletivo com insights profundos 
+                      sobre o desenvolvimento dos alunos.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* For Students */}
+            <div>
+              <div className="flex items-center mb-8">
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mr-4">
+                  <BookOpen className="h-7 w-7 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Para Estudantes</h3>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mr-4 mt-1">
+                    <Users className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Tutor Personalizado</h4>
+                    <p className="text-gray-600">
+                      Assistente de estudos que se adapta ao ritmo e estilo de aprendizagem 
+                      de cada aluno, disponível 24/7.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center mr-4 mt-1">
+                    <MessageSquare className="h-5 w-5 text-pink-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Aprendizagem Interativa</h4>
+                    <p className="text-gray-600">
+                      Converse naturalmente com a IA para explorar conceitos, 
+                      tirar dúvidas e aprofundar conhecimentos.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="w-10 h-10 bg-rose-100 rounded-xl flex items-center justify-center mr-4 mt-1">
+                    <Rocket className="h-5 w-5 text-rose-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">Preparação para o Futuro</h4>
+                    <p className="text-gray-600">
+                      Desenvolva habilidades essenciais do século XXI trabalhando 
+                      diretamente com as tecnologias que moldarão o amanhã.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Inclusive Education */}
+          <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-12">
+            <div className="max-w-4xl mx-auto text-center">
+              <Heart className="h-12 w-12 text-red-500 mx-auto mb-6" />
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Educação Verdadeiramente Inclusiva
+              </h3>
+              <p className="text-lg text-gray-600 mb-8">
+                O AIverse foi construído com acessibilidade em mente. Interface adaptável, 
+                suporte multilíngue, recursos para diferentes necessidades de aprendizagem. 
+                Porque acreditamos que todos merecem acesso às melhores ferramentas educacionais.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center mx-auto mb-3">
+                    <Languages className="h-8 w-8 text-indigo-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900">Multilíngue</h4>
+                  <p className="text-sm text-gray-600 mt-1">Suporte completo em português e outros idiomas</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center mx-auto mb-3">
+                    <UserCheck className="h-8 w-8 text-purple-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900">Acessível</h4>
+                  <p className="text-sm text-gray-600 mt-1">Interface adaptável para todas as necessidades</p>
+                </div>
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center mx-auto mb-3">
+                    <HeartHandshake className="h-8 w-8 text-pink-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900">Personalizada</h4>
+                  <p className="text-sm text-gray-600 mt-1">Adaptação ao ritmo individual de cada usuário</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-r from-indigo-600 to-purple-600">
+      {/* Global Impact */}
+      <section id="impacto" className="py-20 bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-white/10 text-white border-white/20">
+              Impacto Global
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Transformando a Educação Mundial
+            </h2>
+            <p className="text-lg text-indigo-100 max-w-3xl mx-auto">
+              O AIverse está na vanguarda da revolução educacional, democratizando o acesso 
+              às tecnologias mais avançadas
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+              <CardContent className="p-6 text-center">
+                <Globe className="h-10 w-10 text-cyan-400 mx-auto mb-4" />
+                <h3 className="font-semibold text-white mb-2">Alcance Global</h3>
+                <p className="text-indigo-200 text-sm">
+                  Preparando estudantes para um mundo conectado e digitalizado
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+              <CardContent className="p-6 text-center">
+                <TrendingUp className="h-10 w-10 text-green-400 mx-auto mb-4" />
+                <h3 className="font-semibold text-white mb-2">Resultados Comprovados</h3>
+                <p className="text-indigo-200 text-sm">
+                  Melhoria significativa no engajamento e desempenho acadêmico
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+              <CardContent className="p-6 text-center">
+                <Award className="h-10 w-10 text-yellow-400 mx-auto mb-4" />
+                <h3 className="font-semibold text-white mb-2">Excelência Reconhecida</h3>
+                <p className="text-indigo-200 text-sm">
+                  Desenvolvido com as melhores práticas pedagógicas mundiais
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+              <CardContent className="p-6 text-center">
+                <Shield className="h-10 w-10 text-purple-400 mx-auto mb-4" />
+                <h3 className="font-semibold text-white mb-2">Segurança Total</h3>
+                <p className="text-indigo-200 text-sm">
+                  Proteção de dados e privacidade com padrões internacionais
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 max-w-4xl mx-auto">
+            <div className="text-center">
+              <Landmark className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold mb-4">Nossa Missão</h3>
+              <p className="text-lg text-indigo-100 leading-relaxed">
+                Democratizar o acesso à inteligência artificial na educação, capacitando cada professor 
+                a se tornar um super-educador e cada aluno a alcançar seu máximo potencial. 
+                O AIverse não é apenas uma plataforma - é um movimento global pela educação do futuro.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Resources Section */}
+      <section id="recursos" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Recursos e Suporte
+            </h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Tudo que você precisa para dominar o AIverse e transformar sua prática educacional
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="hover:shadow-xl transition-shadow border-2 hover:border-indigo-200">
+              <CardContent className="p-8 text-center">
+                <FileText className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Documentação Completa</h3>
+                <p className="text-gray-600 mb-4">
+                  Guias detalhados, tutoriais e melhores práticas para cada ferramenta
+                </p>
+                <Button variant="outline" className="w-full">
+                  Acessar Documentação
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-xl transition-shadow border-2 hover:border-purple-200">
+              <CardContent className="p-8 text-center">
+                <Users className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Comunidade Ativa</h3>
+                <p className="text-gray-600 mb-4">
+                  Conecte-se com educadores do mundo todo compartilhando experiências
+                </p>
+                <Button variant="outline" className="w-full">
+                  Entrar na Comunidade
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-xl transition-shadow border-2 hover:border-green-200">
+              <CardContent className="p-8 text-center">
+                <Headphones className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Suporte Especializado</h3>
+                <p className="text-gray-600 mb-4">
+                  Equipe dedicada pronta para ajudar em português, quando você precisar
+                </p>
+                <Button variant="outline" className="w-full">
+                  Falar com Suporte
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Transforme sua Educação com IA Hoje
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Pronto para Transformar sua Educação?
           </h2>
           <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Junte-se às milhares de instituições que já descobriram o poder da inteligência artificial na educação
+            Junte-se à revolução educacional. O futuro está aqui, e ele fala português.
           </p>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth">
-              <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-3">
-                Começar Gratuitamente
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 px-8 py-3">
-              Agendar Demonstração
-              <Clock className="ml-2 h-5 w-5" />
+            <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 px-10 py-6 text-lg font-semibold shadow-2xl">
+              Começar Agora
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 px-10 py-6 text-lg">
+              <MessageSquare className="mr-2 h-5 w-5" />
+              Falar com Especialista
             </Button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      <footer className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <img src={aiverseLogo} alt="AIverse" className="h-8 w-8" />
-                <span className="text-xl font-bold">AIverse</span>
+                <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Sparkles className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold">AIverse</span>
               </div>
-              <p className="text-gray-400 text-sm">
-                Seu universo de inteligência artificial para educação de classe mundial.
+              <p className="text-gray-400 mb-4">
+                A plataforma mundial de inteligência artificial para educação.
               </p>
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <Heart className="h-4 w-4 text-red-500" />
+                <span>Feito com paixão para educadores</span>
+              </div>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold mb-4">Produto</h4>
+              <h4 className="font-semibold mb-4">Plataforma</h4>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Ferramentas IA</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Dashboards</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Recursos</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Integrações</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Segurança</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Acessibilidade</a></li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold mb-4">Suporte</h4>
+              <h4 className="font-semibold mb-4">Recursos</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">Documentação</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Tutoriais</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contato</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Comunidade</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Empresa</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">Sobre</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Missão</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contato</a></li>
               </ul>
             </div>
           </div>
-          
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
-              © 2024 AIverse. Todos os direitos reservados.
-            </p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacidade</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Termos</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Cookies</a>
+
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-gray-400 text-sm mb-4 md:mb-0">
+                © 2024 AIverse. Todos os direitos reservados.
+              </p>
+              <div className="flex flex-wrap justify-center gap-6 text-sm">
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">Termos de Uso</a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacidade</a>
+                <a href="#" className="text-gray-400 hover:text-white transition-colors">Cookies</a>
+              </div>
             </div>
           </div>
         </div>
