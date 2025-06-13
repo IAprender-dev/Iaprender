@@ -26,6 +26,7 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import DOMPurify from 'dompurify';
 
 interface AtividadeGerada {
   id: string;
@@ -270,7 +271,8 @@ export default function GeradorAtividades() {
     try {
       // Cria um container temporário otimizado para impressão
       const tempContainer = document.createElement('div');
-      tempContainer.innerHTML = processarConteudoAtividade(atividadeGerada.conteudo);
+      const sanitizedContent = DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo));
+      tempContainer.innerHTML = sanitizedContent;
       
       // Aplica estilos otimizados para PDF
       tempContainer.style.cssText = `
