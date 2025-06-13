@@ -52,6 +52,10 @@ export default function GeradorAtividades() {
   const [incluirGabarito, setIncluirGabarito] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Estados para análise BNCC
+  const [temaAnalysis, setTemaAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  
   // Estados para resultado
   const [atividadeGerada, setAtividadeGerada] = useState<AtividadeGerada | null>(null);
 
@@ -59,6 +63,52 @@ export default function GeradorAtividades() {
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, []);
+
+  // Função para analisar tema automaticamente
+  const analisarTema = async (temaInput: string) => {
+    if (!temaInput.trim()) {
+      setTemaAnalysis(null);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      const response = await fetch('/api/analyze-tema', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tema: temaInput }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro na análise do tema');
+      }
+
+      const analysis = await response.json();
+      setTemaAnalysis(analysis);
+    } catch (error: any) {
+      console.error('Erro na análise:', error);
+      toast({
+        title: "Erro na análise",
+        description: "Não foi possível analisar o tema. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Debounce para análise automática do tema
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (tema.trim().length > 5) {
+        analisarTema(tema);
+      }
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [tema]);
 
   // Função para processar e limpar o conteúdo da atividade
   const processarConteudoAtividade = (conteudo: string): string => {
@@ -465,19 +515,19 @@ export default function GeradorAtividades() {
           yPos += 25;
         }
 
-        // Título principal
+        // Título principal baseado no tema
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(16);
-        const titulo = 'LISTA DE EXERCÍCIOS';
+        const titulo = atividadeGerada?.titulo || `Atividade - ${tema}`;
         const tituloWidth = pdf.getTextWidth(titulo);
         pdf.text(titulo, (pageWidth - tituloWidth) / 2, yPos);
         yPos += 25;
 
-        // Subtítulo
+        // Subtítulo com informações da análise BNCC ou dados gerados
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
-        const disciplina = atividadeGerada?.materia || 'Disciplina';
-        const serie = atividadeGerada?.serie || 'Série';
+        const disciplina = temaAnalysis?.disciplina || atividadeGerada?.materia || 'Disciplina';
+        const serie = temaAnalysis?.anoSerie || atividadeGerada?.serie || 'Série';
         const subtitulo = `${disciplina} • ${serie}`;
         const subtituloWidth = pdf.getTextWidth(subtitulo);
         pdf.text(subtitulo, (pageWidth - subtituloWidth) / 2, yPos);
@@ -515,31 +565,54 @@ export default function GeradorAtividades() {
       // Adicionar cabeçalho inicial
       adicionarCabecalho(true);
 
-      // Gerar questões
+      // Gerar questões com styling melhorado
       questoes.forEach((questao, index) => {
         const alturaQuestao = calcularAlturaQuestao(questao);
         verificarQuebraPagina(alturaQuestao);
 
-        // Número da questão
+        // Número da questão com destaque
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(12);
-        pdf.text(`${questao.numero}.`, margin, yPos);
+        pdf.setTextColor(51, 65, 85); // slate-700
+        pdf.text(`Questão ${questao.numero}`, margin, yPos);
+        yPos += 20;
         
-        // Enunciado
+        // Enunciado com formatação melhorada
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
-        const linhasEnunciado = pdf.splitTextToSize(questao.enunciado, contentWidth - 30);
-        pdf.text(linhasEnunciado, margin + 20, yPos);
-        yPos += linhasEnunciado.length * 13 + 8;
+        pdf.setTextColor(71, 85, 105); // slate-600
+        const linhasEnunciado = pdf.splitTextToSize(questao.enunciado, contentWidth - 20);
+        pdf.text(linhasEnunciado, margin + 10, yPos);
+        yPos += linhasEnunciado.length * 15 + 10;
 
-        // Alternativas
-        questao.alternativas.forEach((alternativa: string) => {
-          const linhasAlternativa = pdf.splitTextToSize(alternativa, contentWidth - 40);
-          pdf.text(linhasAlternativa, margin + 30, yPos);
-          yPos += linhasAlternativa.length * 13 + 5;
-        });
+        // Alternativas com melhor espaçamento
+        if (questao.alternativas.length > 0 && questao.alternativas[0] !== 'Resposta:') {
+          questao.alternativas.forEach((alternativa: string) => {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(10);
+            pdf.setTextColor(100, 116, 139); // slate-500
+            const linhasAlternativa = pdf.splitTextToSize(alternativa, contentWidth - 40);
+            pdf.text(linhasAlternativa, margin + 20, yPos);
+            yPos += linhasAlternativa.length * 14 + 6;
+          });
+        } else {
+          // Para questões dissertativas, adiciona linhas para resposta
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(10);
+          pdf.setTextColor(148, 163, 184); // slate-400
+          pdf.text('Resposta:', margin + 10, yPos);
+          yPos += 20;
+          
+          // Adiciona linhas para escrita
+          for (let i = 0; i < 4; i++) {
+            pdf.setDrawColor(203, 213, 225); // slate-300
+            pdf.setLineWidth(0.5);
+            pdf.line(margin + 10, yPos, pageWidth - margin - 10, yPos);
+            yPos += 18;
+          }
+        }
 
-        yPos += 15; // Espaço entre questões
+        yPos += 20; // Espaço entre questões
       });
 
       // Gerar nome do arquivo
@@ -692,6 +765,54 @@ export default function GeradorAtividades() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Análise BNCC em tempo real */}
+                  {isAnalyzing && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 animate-pulse">
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600"></div>
+                        <span className="text-sm font-medium text-amber-800">Analisando tema...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {temaAnalysis && !isAnalyzing && (
+                    <div className={`border rounded-lg p-4 ${temaAnalysis.conformeRegulasBNCC 
+                      ? 'bg-emerald-50 border-emerald-200' 
+                      : 'bg-red-50 border-red-200'
+                    }`}>
+                      <div className="flex items-start gap-2 mb-3">
+                        {temaAnalysis.conformeRegulasBNCC ? (
+                          <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <Target className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <h4 className={`font-semibold text-sm ${temaAnalysis.conformeRegulasBNCC 
+                            ? 'text-emerald-800' 
+                            : 'text-red-800'
+                          }`}>
+                            {temaAnalysis.conformeRegulasBNCC 
+                              ? 'Tema alinhado à BNCC' 
+                              : 'Atenção: Verificar alinhamento'
+                            }
+                          </h4>
+                          <div className={`text-xs mt-2 space-y-1 ${temaAnalysis.conformeRegulasBNCC 
+                            ? 'text-emerald-700' 
+                            : 'text-red-700'
+                          }`}>
+                            <p><strong>Disciplina:</strong> {temaAnalysis.disciplina}</p>
+                            <p><strong>Ano/Série:</strong> {temaAnalysis.anoSerie}</p>
+                            {temaAnalysis.observacoes && (
+                              <p className="mt-2 text-xs leading-relaxed">
+                                <strong>Observações:</strong> {temaAnalysis.observacoes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Tipo de Atividade */}
