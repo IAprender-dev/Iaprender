@@ -107,10 +107,28 @@ export default function ImagemEducacional() {
 
   // Função para download
   const baixarImagem = async () => {
-    if (!imagemGerada) return;
+    if (!imagemGerada) {
+      toast({
+        title: "Erro",
+        description: "Nenhuma imagem foi gerada ainda.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
-      const response = await fetch(imagemGerada);
+      // Tentar download direto primeiro
+      const response = await fetch(imagemGerada, {
+        mode: 'cors',
+        headers: {
+          'Accept': 'image/*'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao carregar imagem');
+      }
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -119,19 +137,34 @@ export default function ImagemEducacional() {
       a.download = `imagem-educacional-${Date.now()}.png`;
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Cleanup
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
       
       toast({
         title: "Download concluído",
         description: "Imagem salva com sucesso.",
       });
     } catch (error) {
-      toast({
-        title: "Erro no download",
-        description: "Não foi possível baixar a imagem.",
-        variant: "destructive"
-      });
+      console.error('Erro no download:', error);
+      
+      // Fallback: abrir em nova aba
+      try {
+        window.open(imagemGerada, '_blank');
+        toast({
+          title: "Imagem aberta em nova aba",
+          description: "Clique com o botão direito na imagem e selecione 'Salvar imagem como'.",
+        });
+      } catch (fallbackError) {
+        toast({
+          title: "Erro no download",
+          description: "Não foi possível baixar a imagem. Tente novamente.",
+          variant: "destructive"
+        });
+      }
     }
   };
 

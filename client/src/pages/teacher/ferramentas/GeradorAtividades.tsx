@@ -242,9 +242,10 @@ export default function GeradorAtividades() {
       
       setAtividadeGerada(novaAtividade);
       
+      // Mostrar popup de sucesso imediatamente
       toast({
-        title: "Atividade gerada com sucesso!",
-        description: "Sua atividade educacional foi criada com IA.",
+        title: "Sua requisição foi gerada com sucesso!",
+        description: "Em instantes você receberá sua Atividade Educacional",
       });
     } catch (error) {
       console.error('Erro ao gerar atividade:', error);
@@ -410,9 +411,30 @@ export default function GeradorAtividades() {
 
   // Função para baixar PDF com layout profissional
   const baixarPDF = async () => {
-    if (!atividadeGerada) return;
-    
+    if (!atividadeGerada) {
+      toast({
+        title: "Erro",
+        description: "Nenhuma atividade foi gerada ainda.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      // Importar jsPDF dinamicamente
+      const { default: jsPDF } = await import('jspdf');
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4',
+        putOnlyUsedFonts: true,
+        compress: true
+      });
+
+      // Configurar codificação UTF-8 para caracteres acentuados
+      pdf.internal.pageSize.getWidth();
+
       const sanitizedContent = DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo));
       const questoes = extrairQuestoes(sanitizedContent);
       
@@ -424,13 +446,6 @@ export default function GeradorAtividades() {
         });
         return;
       }
-
-      // Configurações do PDF
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt',
-        format: 'a4'
-      });
 
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -546,45 +561,13 @@ export default function GeradorAtividades() {
         yPos += 15; // Espaço entre questões
       });
 
-      // Salvar PDF das questões usando múltiplos métodos
+      // Gerar nome do arquivo
       const timestamp = new Date().toISOString().split('T')[0];
       const disciplina = (atividadeGerada?.materia || 'atividade').toLowerCase().replace(/\s+/g, '_');
       const nomeArquivo = `atividade_${disciplina}_${timestamp}.pdf`;
       
-      try {
-        // Método 1: jsPDF save padrão
-        pdf.save(nomeArquivo);
-        console.log('PDF atividade salvo usando método padrão');
-      } catch (error) {
-        console.log('Método padrão falhou para atividade, tentando alternativo');
-        
-        try {
-          // Método 2: Download manual
-          const pdfOutput = pdf.output('datauristring');
-          const link = document.createElement('a');
-          link.href = pdfOutput;
-          link.download = nomeArquivo;
-          link.target = '_blank';
-          
-          document.body.appendChild(link);
-          link.style.display = 'none';
-          
-          const clickEvent = new MouseEvent('click', {
-            view: window,
-            bubbles: true,
-            cancelable: false
-          });
-          
-          link.dispatchEvent(clickEvent);
-          document.body.removeChild(link);
-          console.log('PDF atividade salvo usando método alternativo');
-          
-        } catch (error2) {
-          console.log('Abrindo atividade em nova aba');
-          const pdfDataUri = pdf.output('datauristring');
-          window.open(pdfDataUri, '_blank');
-        }
-      }
+      // Fazer download do PDF
+      pdf.save(nomeArquivo);
 
       // Gerar PDF do gabarito separado
       setTimeout(() => {
@@ -640,43 +623,9 @@ export default function GeradorAtividades() {
           }
         }
 
-        // Salvar gabarito usando múltiplos métodos
+        // Salvar gabarito
         const nomeGabarito = `gabarito_${disciplina}_${timestamp}.pdf`;
-        
-        try {
-          // Método 1: jsPDF save padrão
-          pdfGabarito.save(nomeGabarito);
-          console.log('PDF gabarito salvo usando método padrão');
-        } catch (error) {
-          console.log('Método padrão falhou para gabarito, tentando alternativo');
-          
-          try {
-            // Método 2: Download manual
-            const gabaritoOutput = pdfGabarito.output('datauristring');
-            const gabaritoLink = document.createElement('a');
-            gabaritoLink.href = gabaritoOutput;
-            gabaritoLink.download = nomeGabarito;
-            gabaritoLink.target = '_blank';
-            
-            document.body.appendChild(gabaritoLink);
-            gabaritoLink.style.display = 'none';
-            
-            const gabaritoClickEvent = new MouseEvent('click', {
-              view: window,
-              bubbles: true,
-              cancelable: false
-            });
-            
-            gabaritoLink.dispatchEvent(gabaritoClickEvent);
-            document.body.removeChild(gabaritoLink);
-            console.log('PDF gabarito salvo usando método alternativo');
-            
-          } catch (error2) {
-            console.log('Abrindo gabarito em nova aba');
-            const gabaritoDataUri = pdfGabarito.output('datauristring');
-            window.open(gabaritoDataUri, '_blank');
-          }
-        }
+        pdfGabarito.save(nomeGabarito);
       }, 800);
 
       toast({
