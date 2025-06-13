@@ -186,14 +186,14 @@ export default function AIverseLanding() {
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-10 py-6 text-lg shadow-xl shadow-indigo-500/25 group">
+            <div className="flex justify-center">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-12 py-6 text-lg shadow-xl shadow-indigo-500/25 group"
+                onClick={() => window.location.href = '/login'}
+              >
                 Explorar o AIverse
                 <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-              </Button>
-              <Button size="lg" variant="outline" className="border-2 border-gray-300 hover:border-indigo-300 px-10 py-6 text-lg group">
-                <Play className="mr-2 h-5 w-5 text-gray-600 group-hover:text-indigo-600" />
-                Ver em Ação
               </Button>
             </div>
           </div>
