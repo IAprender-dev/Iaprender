@@ -426,26 +426,46 @@ export default function PlanejamentoAula() {
       const rodapeWidth = pdf.getTextWidth(rodape);
       pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
 
-      // Salvar PDF com método mais robusto
+      // Tentar múltiplos métodos para garantir o download
       const nomeArquivo = `plano_aula_${(formData.disciplina || 'disciplina').toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
       
-      // Criar blob e forçar download
-      const pdfBlob = pdf.output('blob');
-      const url = URL.createObjectURL(pdfBlob);
-      
-      // Criar link temporário para download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = nomeArquivo;
-      link.style.display = 'none';
-      
-      // Adicionar ao DOM, clicar e remover
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Limpar URL do blob
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      try {
+        // Método 1: jsPDF save padrão
+        pdf.save(nomeArquivo);
+        console.log('PDF salvo usando método padrão');
+      } catch (error) {
+        console.log('Método padrão falhou, tentando método alternativo');
+        
+        try {
+          // Método 2: Download manual com blob
+          const pdfOutput = pdf.output('datauristring');
+          const link = document.createElement('a');
+          link.href = pdfOutput;
+          link.download = nomeArquivo;
+          link.target = '_blank';
+          
+          // Forçar clique com user interaction
+          document.body.appendChild(link);
+          link.style.display = 'none';
+          
+          // Usar evento de clique real
+          const clickEvent = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: false
+          });
+          
+          link.dispatchEvent(clickEvent);
+          document.body.removeChild(link);
+          console.log('PDF salvo usando método alternativo');
+          
+        } catch (error2) {
+          console.log('Método alternativo falhou, abrindo em nova aba');
+          // Método 3: Abrir em nova aba como fallback
+          const pdfDataUri = pdf.output('datauristring');
+          window.open(pdfDataUri, '_blank');
+        }
+      }
 
       toast({
         title: "PDF gerado com sucesso!",

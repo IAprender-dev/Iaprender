@@ -541,28 +541,45 @@ export default function GeradorAtividades() {
         yPos += 15; // Espaço entre questões
       });
 
-      // Salvar PDF das questões com método robusto
+      // Salvar PDF das questões usando múltiplos métodos
       const timestamp = new Date().toISOString().split('T')[0];
       const disciplina = (atividadeGerada?.materia || 'atividade').toLowerCase().replace(/\s+/g, '_');
       const nomeArquivo = `atividade_${disciplina}_${timestamp}.pdf`;
       
-      // Criar blob e forçar download
-      const pdfBlob = pdf.output('blob');
-      const url = URL.createObjectURL(pdfBlob);
-      
-      // Criar link temporário para download
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = nomeArquivo;
-      link.style.display = 'none';
-      
-      // Adicionar ao DOM, clicar e remover
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Limpar URL do blob
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      try {
+        // Método 1: jsPDF save padrão
+        pdf.save(nomeArquivo);
+        console.log('PDF atividade salvo usando método padrão');
+      } catch (error) {
+        console.log('Método padrão falhou para atividade, tentando alternativo');
+        
+        try {
+          // Método 2: Download manual
+          const pdfOutput = pdf.output('datauristring');
+          const link = document.createElement('a');
+          link.href = pdfOutput;
+          link.download = nomeArquivo;
+          link.target = '_blank';
+          
+          document.body.appendChild(link);
+          link.style.display = 'none';
+          
+          const clickEvent = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: false
+          });
+          
+          link.dispatchEvent(clickEvent);
+          document.body.removeChild(link);
+          console.log('PDF atividade salvo usando método alternativo');
+          
+        } catch (error2) {
+          console.log('Abrindo atividade em nova aba');
+          const pdfDataUri = pdf.output('datauristring');
+          window.open(pdfDataUri, '_blank');
+        }
+      }
 
       // Gerar PDF do gabarito separado
       setTimeout(() => {
@@ -618,26 +635,43 @@ export default function GeradorAtividades() {
           }
         }
 
-        // Salvar gabarito com método robusto
+        // Salvar gabarito usando múltiplos métodos
         const nomeGabarito = `gabarito_${disciplina}_${timestamp}.pdf`;
         
-        // Criar blob e forçar download do gabarito
-        const gabaritoBlob = pdfGabarito.output('blob');
-        const gabaritoUrl = URL.createObjectURL(gabaritoBlob);
-        
-        // Criar link temporário para download do gabarito
-        const gabaritoLink = document.createElement('a');
-        gabaritoLink.href = gabaritoUrl;
-        gabaritoLink.download = nomeGabarito;
-        gabaritoLink.style.display = 'none';
-        
-        // Adicionar ao DOM, clicar e remover
-        document.body.appendChild(gabaritoLink);
-        gabaritoLink.click();
-        document.body.removeChild(gabaritoLink);
-        
-        // Limpar URL do blob
-        setTimeout(() => URL.revokeObjectURL(gabaritoUrl), 100);
+        try {
+          // Método 1: jsPDF save padrão
+          pdfGabarito.save(nomeGabarito);
+          console.log('PDF gabarito salvo usando método padrão');
+        } catch (error) {
+          console.log('Método padrão falhou para gabarito, tentando alternativo');
+          
+          try {
+            // Método 2: Download manual
+            const gabaritoOutput = pdfGabarito.output('datauristring');
+            const gabaritoLink = document.createElement('a');
+            gabaritoLink.href = gabaritoOutput;
+            gabaritoLink.download = nomeGabarito;
+            gabaritoLink.target = '_blank';
+            
+            document.body.appendChild(gabaritoLink);
+            gabaritoLink.style.display = 'none';
+            
+            const gabaritoClickEvent = new MouseEvent('click', {
+              view: window,
+              bubbles: true,
+              cancelable: false
+            });
+            
+            gabaritoLink.dispatchEvent(gabaritoClickEvent);
+            document.body.removeChild(gabaritoLink);
+            console.log('PDF gabarito salvo usando método alternativo');
+            
+          } catch (error2) {
+            console.log('Abrindo gabarito em nova aba');
+            const gabaritoDataUri = pdfGabarito.output('datauristring');
+            window.open(gabaritoDataUri, '_blank');
+          }
+        }
       }, 800);
 
       toast({
