@@ -69,15 +69,13 @@ export default function TeacherDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-30">
-          <div className="px-6 py-4">
+          <div className="px-6 py-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-4">
-                  <img src={alverseLogo} alt="Alverse" className="h-16 w-16 object-contain" />
-                  <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Seu Universo de IA</h1>
-                    <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <img src={alverseLogo} alt="Alverse" className="h-12 w-12 object-contain" />
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">Dashboard do Professor</h1>
+                  <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -95,7 +93,7 @@ export default function TeacherDashboard() {
         </header>
 
         {/* Main Dashboard Content */}
-        <main className="p-6 space-y-8">
+        <main className="p-4 space-y-6">
           {/* Welcome Section */}
           <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-3xl p-8 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-3xl"></div>

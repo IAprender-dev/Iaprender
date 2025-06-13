@@ -179,33 +179,33 @@ export default function ResumosBNCC() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 overflow-x-hidden">
         {/* Header */}
         <div className="border-b border-slate-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <Link href="/professor">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
+            <div className="flex items-center gap-3">
+              <Link href="/professor/dashboard">
                 <Button 
                   size="sm"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Voltar</span>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Voltar
                 </Button>
               </Link>
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
-                  <GraduationCap className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
+                  <GraduationCap className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  <h1 className="text-lg md:text-xl font-bold text-slate-900">
                     Resumos BNCC
                   </h1>
-                  <p className="text-slate-500 text-xs sm:text-sm hidden sm:block">Resumos educacionais alinhados à Base Nacional Comum Curricular</p>
+                  <p className="text-slate-600 text-sm">Resumos educacionais alinhados à Base Nacional Comum Curricular</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto p-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Painel de Configuração */}
             <div className="space-y-6">
