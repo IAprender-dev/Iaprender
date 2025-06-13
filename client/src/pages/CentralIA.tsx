@@ -82,6 +82,11 @@ export default function CentralIA() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [showSavedItems, setShowSavedItems] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Garantir que a página sempre inicie no topo
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
   
   // AI Models info
   const modelInfo = {

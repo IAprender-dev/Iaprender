@@ -59,6 +59,11 @@ export default function NoticiasPodcasts() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
 
+  // Garantir que a página sempre inicie no topo
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+
   useEffect(() => {
     // Simulate loading news and podcasts
     const loadContent = async () => {

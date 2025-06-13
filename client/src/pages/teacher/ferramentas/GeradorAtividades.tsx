@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
 import aiverseLogoNew from "@/assets/aiverse-logo-new.png";
@@ -54,6 +54,11 @@ export default function GeradorAtividades() {
   
   // Estados para resultado
   const [atividadeGerada, setAtividadeGerada] = useState<AtividadeGerada | null>(null);
+
+  // Garantir que a página sempre inicie no topo
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
 
   // Função para processar e limpar o conteúdo da atividade
   const processarConteudoAtividade = (conteudo: string): string => {
