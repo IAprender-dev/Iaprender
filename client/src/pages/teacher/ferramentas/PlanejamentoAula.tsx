@@ -34,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/AuthContext";
 
 interface LessonPlanData {
   identificacao?: Record<string, any>;
@@ -97,6 +98,7 @@ const renderValue = (value: any): React.ReactNode => {
 
 export default function PlanejamentoAula() {
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Form state for essential lesson plan data
   const [formData, setFormData] = useState({
@@ -280,21 +282,98 @@ export default function PlanejamentoAula() {
         return false;
       };
 
-      // Função para adicionar cabeçalho
-      const adicionarCabecalho = () => {
-        // Logo e título
+      // Função para adicionar título do plano específico
+      const adicionarTituloPlano = () => {
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(20);
-        const titulo = 'PLANO DE AULA';
-        const tituloWidth = pdf.getTextWidth(titulo);
-        pdf.text(titulo, (pageWidth - tituloWidth) / 2, yPos);
-        yPos += 30;
+        pdf.setFontSize(18);
+        pdf.setTextColor(79, 70, 229);
+        const tituloPlano = `Plano de Aula - ${formData.tema}`;
+        const tituloWidth = pdf.getTextWidth(tituloPlano);
+        pdf.text(tituloPlano, (pageWidth - tituloWidth) / 2, yPos);
+        yPos += 25;
 
         // Linha separadora
-        pdf.setDrawColor(100, 100, 100);
+        pdf.setDrawColor(79, 70, 229);
         pdf.setLineWidth(1);
         pdf.line(margin, yPos, pageWidth - margin, yPos);
-        yPos += 25;
+        yPos += 20;
+      };
+
+      // Função especial para identificação com layout lado a lado
+      const adicionarIdentificacao = (conteudo: any) => {
+        verificarQuebraPagina(120);
+
+        // Título da seção Identificação
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(14);
+        pdf.setTextColor(79, 70, 229);
+        pdf.text('1. Identificação', margin, yPos);
+        yPos += 20;
+
+        // Linha abaixo do título
+        pdf.setDrawColor(79, 70, 229);
+        pdf.setLineWidth(0.5);
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 15;
+
+        // Layout em duas colunas para identificação
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(60, 60, 60);
+
+        const colunaEsquerda = contentWidth * 0.48;
+        const colunaDireita = contentWidth * 0.48;
+        const espacoEntreColunas = contentWidth * 0.04;
+        let yPosEsquerda = yPos;
+        let yPosDireita = yPos;
+
+        const itensEsquerda = [];
+        const itensDireita = [];
+        
+        // Distribuir itens entre as duas colunas
+        if (typeof conteudo === 'object' && conteudo !== null) {
+          const entradas = Object.entries(conteudo);
+          entradas.forEach((item, index) => {
+            if (index % 2 === 0) {
+              itensEsquerda.push(item);
+            } else {
+              itensDireita.push(item);
+            }
+          });
+        }
+
+        // Renderizar coluna esquerda
+        itensEsquerda.forEach(([key, value]) => {
+          pdf.setFont('helvetica', 'bold');
+          const subtitulo = key.replace(/([A-Z])/g, ' $1').toLowerCase();
+          const subtituloFormatado = `${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`;
+          pdf.text(subtituloFormatado, margin, yPosEsquerda);
+          yPosEsquerda += 12;
+
+          pdf.setFont('helvetica', 'normal');
+          const texto = String(value);
+          const linhas = pdf.splitTextToSize(texto, colunaEsquerda);
+          pdf.text(linhas, margin, yPosEsquerda);
+          yPosEsquerda += linhas.length * 12 + 8;
+        });
+
+        // Renderizar coluna direita
+        itensDireita.forEach(([key, value]) => {
+          pdf.setFont('helvetica', 'bold');
+          const subtitulo = key.replace(/([A-Z])/g, ' $1').toLowerCase();
+          const subtituloFormatado = `${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`;
+          pdf.text(subtituloFormatado, margin + colunaEsquerda + espacoEntreColunas, yPosDireita);
+          yPosDireita += 12;
+
+          pdf.setFont('helvetica', 'normal');
+          const texto = String(value);
+          const linhas = pdf.splitTextToSize(texto, colunaDireita);
+          pdf.text(linhas, margin + colunaEsquerda + espacoEntreColunas, yPosDireita);
+          yPosDireita += linhas.length * 12 + 8;
+        });
+
+        // Atualizar yPos para a maior altura entre as duas colunas
+        yPos = Math.max(yPosEsquerda, yPosDireita) + 20;
       };
 
       // Função para adicionar seção
@@ -367,13 +446,13 @@ export default function PlanejamentoAula() {
         yPos += 20; // Espaço entre seções
       };
 
-      // Adicionar cabeçalho
-      adicionarCabecalho();
-
-      // Identificação
+      // Iniciar com identificação usando layout especial
       if (planoData.identificacao) {
-        adicionarSecao("1", "Identificação", planoData.identificacao);
+        adicionarIdentificacao(planoData.identificacao);
       }
+
+      // Adicionar título do plano após identificação
+      adicionarTituloPlano();
 
       // Alinhamento BNCC
       if (planoData.alinhamentoBNCC) {
@@ -426,12 +505,15 @@ export default function PlanejamentoAula() {
         }
       });
 
-      // Rodapé na última página
+      // Rodapé na última página com informações do professor
       verificarQuebraPagina(50);
       pdf.setFont('helvetica', 'italic');
       pdf.setFontSize(8);
       pdf.setTextColor(120, 120, 120);
-      const rodape = `Plano gerado em ${new Date().toLocaleDateString('pt-BR')} - AIverse Educacional`;
+      
+      const nomeCompleto = user ? `${user.firstName} ${user.lastName}` : 'Professor';
+      const emailProfessor = user?.email || '';
+      const rodape = `Plano gerado em ${new Date().toLocaleDateString('pt-BR')} por ${nomeCompleto} (${emailProfessor}) - AIverse Educacional`;
       const rodapeWidth = pdf.getTextWidth(rodape);
       pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
 
@@ -691,35 +773,7 @@ export default function PlanejamentoAula() {
                   </div>
                 </div>
 
-                {/* Perfil da Turma */}
-                <div className="space-y-2">
-                  <Label htmlFor="perfilTurma" className="text-sm font-semibold text-slate-700">
-                    Perfil da Turma
-                  </Label>
-                  <Textarea
-                    id="perfilTurma"
-                    placeholder="Descreva características da turma (nível, necessidades especiais, etc.)"
-                    value={formData.perfilTurma}
-                    onChange={(e) => handleFormChange('perfilTurma', e.target.value)}
-                    rows={3}
-                    className="border-slate-300 focus:border-blue-500 resize-none"
-                  />
-                </div>
 
-                {/* Objetivos Específicos */}
-                <div className="space-y-2">
-                  <Label htmlFor="objetivosEspecificos" className="text-sm font-semibold text-slate-700">
-                    Objetivos Específicos
-                  </Label>
-                  <Textarea
-                    id="objetivosEspecificos"
-                    placeholder="Descreva os objetivos específicos da aula"
-                    value={formData.objetivosEspecificos}
-                    onChange={(e) => handleFormChange('objetivosEspecificos', e.target.value)}
-                    rows={3}
-                    className="border-slate-300 focus:border-blue-500 resize-none"
-                  />
-                </div>
 
                 {/* Perfil da Turma */}
                 <div className="space-y-2">
@@ -778,7 +832,9 @@ export default function PlanejamentoAula() {
                     <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
                       <BookOpen className="h-5 w-5 text-green-600" />
                     </div>
-                    <CardTitle className="text-xl font-bold text-slate-900">Plano de Aula</CardTitle>
+                    <CardTitle className="text-xl font-bold text-slate-900">
+                      {formData.tema ? `Plano de Aula - ${formData.tema}` : "Plano de Aula"}
+                    </CardTitle>
                   </div>
                   {planoGerado && (
                     <div className="flex gap-2">
