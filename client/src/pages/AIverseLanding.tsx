@@ -627,70 +627,70 @@ export default function AIverseLanding() {
       </section>
 
       {/* Global Impact */}
-      <section id="impacto" className="py-20 bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+      <section id="impacto" className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-500/5"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-16">
-            <Badge className="mb-4 bg-white/10 text-white border-white/20">
+            <Badge className="mb-4 bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border-blue-200">
               Impacto Global
             </Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
               Transformando a Educação Mundial
             </h2>
-            <p className="text-lg text-indigo-100 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-700 max-w-3xl mx-auto">
               O AIverse está na vanguarda da revolução educacional, democratizando o acesso 
               às tecnologias mais avançadas
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <Card className="bg-white/90 backdrop-blur-sm border-blue-200 shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center">
-                <Globe className="h-10 w-10 text-cyan-400 mx-auto mb-4" />
-                <h3 className="font-semibold text-white mb-2">Alcance Global</h3>
-                <p className="text-indigo-200 text-sm">
+                <Globe className="h-10 w-10 text-cyan-600 mx-auto mb-4" />
+                <h3 className="font-semibold text-gray-900 mb-2">Alcance Global</h3>
+                <p className="text-gray-600 text-sm">
                   Preparando estudantes para um mundo conectado e digitalizado
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <Card className="bg-white/90 backdrop-blur-sm border-green-200 shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center">
-                <TrendingUp className="h-10 w-10 text-green-400 mx-auto mb-4" />
-                <h3 className="font-semibold text-white mb-2">Resultados Comprovados</h3>
-                <p className="text-indigo-200 text-sm">
+                <TrendingUp className="h-10 w-10 text-green-600 mx-auto mb-4" />
+                <h3 className="font-semibold text-gray-900 mb-2">Resultados Comprovados</h3>
+                <p className="text-gray-600 text-sm">
                   Melhoria significativa no engajamento e desempenho acadêmico
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <Card className="bg-white/90 backdrop-blur-sm border-yellow-200 shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center">
-                <Award className="h-10 w-10 text-yellow-400 mx-auto mb-4" />
-                <h3 className="font-semibold text-white mb-2">Excelência Reconhecida</h3>
-                <p className="text-indigo-200 text-sm">
+                <Award className="h-10 w-10 text-yellow-600 mx-auto mb-4" />
+                <h3 className="font-semibold text-gray-900 mb-2">Excelência Reconhecida</h3>
+                <p className="text-gray-600 text-sm">
                   Desenvolvido com as melhores práticas pedagógicas mundiais
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <Card className="bg-white/90 backdrop-blur-sm border-purple-200 shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-6 text-center">
-                <Shield className="h-10 w-10 text-purple-400 mx-auto mb-4" />
-                <h3 className="font-semibold text-white mb-2">Segurança Total</h3>
-                <p className="text-indigo-200 text-sm">
+                <Shield className="h-10 w-10 text-purple-600 mx-auto mb-4" />
+                <h3 className="font-semibold text-gray-900 mb-2">Segurança Total</h3>
+                <p className="text-gray-600 text-sm">
                   Proteção de dados e privacidade com padrões internacionais
                 </p>
               </CardContent>
             </Card>
           </div>
 
-          <div className="bg-white/5 backdrop-blur-lg rounded-3xl p-8 border border-white/10 max-w-4xl mx-auto">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-12 border border-blue-200 shadow-xl max-w-4xl mx-auto">
             <div className="text-center">
-              <Landmark className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold mb-4">Nossa Missão</h3>
-              <p className="text-lg text-indigo-100 leading-relaxed">
+              <Landmark className="h-12 w-12 text-indigo-600 mx-auto mb-6" />
+              <h3 className="text-2xl font-bold mb-6 text-gray-900">Nossa Missão</h3>
+              <p className="text-lg text-gray-700 leading-relaxed">
                 Democratizar o acesso à inteligência artificial na educação, capacitando cada professor 
                 a se tornar um super-educador e cada aluno a alcançar seu máximo potencial. 
                 O AIverse não é apenas uma plataforma - é um movimento global pela educação do futuro.
@@ -779,7 +779,7 @@ export default function AIverseLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
+      <footer className="bg-slate-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -789,18 +789,18 @@ export default function AIverseLanding() {
                 </div>
                 <span className="text-2xl font-bold">AIverse</span>
               </div>
-              <p className="text-gray-400 mb-4">
+              <p className="text-slate-300 mb-4">
                 A plataforma mundial de inteligência artificial para educação.
               </p>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Heart className="h-4 w-4 text-red-500" />
+              <div className="flex items-center space-x-2 text-sm text-slate-400">
+                <Heart className="h-4 w-4 text-red-400" />
                 <span>Feito com paixão para educadores</span>
               </div>
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Plataforma</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h4 className="font-semibold mb-4 text-slate-100">Plataforma</h4>
+              <ul className="space-y-2 text-sm text-slate-300">
                 <li><a href="#" className="hover:text-white transition-colors">Recursos</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Integrações</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Segurança</a></li>
@@ -809,8 +809,8 @@ export default function AIverseLanding() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Recursos</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h4 className="font-semibold mb-4 text-slate-100">Recursos</h4>
+              <ul className="space-y-2 text-sm text-slate-300">
                 <li><a href="#" className="hover:text-white transition-colors">Documentação</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Tutoriais</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
@@ -819,8 +819,8 @@ export default function AIverseLanding() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Empresa</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h4 className="font-semibold mb-4 text-slate-100">Empresa</h4>
+              <ul className="space-y-2 text-sm text-slate-300">
                 <li><a href="#" className="hover:text-white transition-colors">Sobre</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Missão</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li>
@@ -829,15 +829,15 @@ export default function AIverseLanding() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8">
+          <div className="border-t border-slate-700 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 text-sm mb-4 md:mb-0">
+              <p className="text-slate-300 text-sm mb-4 md:mb-0">
                 © 2024 AIverse. Todos os direitos reservados.
               </p>
               <div className="flex flex-wrap justify-center gap-6 text-sm">
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Termos de Uso</a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacidade</a>
-                <a href="#" className="text-gray-400 hover:text-white transition-colors">Cookies</a>
+                <a href="#" className="text-slate-300 hover:text-white transition-colors">Termos de Uso</a>
+                <a href="#" className="text-slate-300 hover:text-white transition-colors">Privacidade</a>
+                <a href="#" className="text-slate-300 hover:text-white transition-colors">Cookies</a>
               </div>
             </div>
           </div>
