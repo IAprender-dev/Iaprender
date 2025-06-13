@@ -51,6 +51,11 @@ export default function TeacherDashboard() {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
 
+  // Garantir que a página sempre inicie no topo
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+
   // Get current date
   const currentDate = new Date();
   const formattedDate = currentDate.toLocaleDateString('pt-BR', {

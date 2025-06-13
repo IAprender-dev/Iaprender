@@ -38,6 +38,11 @@ export default function ImagemEducacional() {
   const [isLoading, setIsLoading] = useState(false);
   const [imagemGerada, setImagemGerada] = useState<string | null>(null);
 
+  // Garantir que a página sempre inicie no topo
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+
   // Sugestões de prompts educacionais
   const sugestoesTemas = [
     "Sistema solar com todos os planetas e suas órbitas em cores vibrantes",

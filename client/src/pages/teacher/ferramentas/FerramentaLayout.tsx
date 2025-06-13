@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
 import { ArrowLeft, HelpCircle } from "lucide-react";
@@ -22,6 +22,11 @@ export default function FerramentaLayout({
   icon,
   helpText
 }: FerramentaLayoutProps) {
+  // Garantir que a página sempre inicie no topo
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <>
       <Helmet>
