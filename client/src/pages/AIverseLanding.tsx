@@ -756,24 +756,27 @@ export default function AIverseLanding() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Pronto para Transformar sua Educação?
-          </h2>
-          <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
-            Junte-se à revolução educacional. O futuro está aqui, e ele fala português.
-          </p>
+      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5"></div>
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative">
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-12 shadow-xl border border-indigo-200">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">
+              Pronto para Transformar sua Educação?
+            </h2>
+            <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
+              Junte-se à revolução educacional. O futuro está aqui, e ele fala português.
+            </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 px-10 py-6 text-lg font-semibold shadow-2xl">
-              Começar Agora
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 px-10 py-6 text-lg">
-              <MessageSquare className="mr-2 h-5 w-5" />
-              Falar com Especialista
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 px-10 py-6 text-lg font-semibold shadow-xl">
+                Começar Agora
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              <Button size="lg" variant="outline" className="border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-10 py-6 text-lg font-semibold">
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Falar com Especialista
+              </Button>
+            </div>
           </div>
         </div>
       </section>
