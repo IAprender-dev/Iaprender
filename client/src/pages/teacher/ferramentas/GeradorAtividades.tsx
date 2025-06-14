@@ -465,6 +465,9 @@ export default function GeradorAtividades() {
 
       // Configurar codificação UTF-8 para caracteres acentuados
       pdf.internal.pageSize.getWidth();
+      
+      // Configurar fonte para suporte a caracteres acentuados
+      pdf.setFont('helvetica');
 
       const sanitizedContent = DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo));
       const questoes = extrairQuestoes(sanitizedContent);
@@ -523,14 +526,58 @@ export default function GeradorAtividades() {
         pdf.text(titulo, (pageWidth - tituloWidth) / 2, yPos);
         yPos += 25;
 
-        // Subtítulo com informações da análise BNCC ou dados gerados
+        // Informações detalhadas em formato profissional
         pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(11);
-        const disciplina = temaAnalysis?.disciplina || atividadeGerada?.materia || 'Disciplina';
-        const serie = temaAnalysis?.anoSerie || atividadeGerada?.serie || 'Série';
-        const subtitulo = `${disciplina} • ${serie}`;
-        const subtituloWidth = pdf.getTextWidth(subtitulo);
-        pdf.text(subtitulo, (pageWidth - subtituloWidth) / 2, yPos);
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
+        
+        // Definir variáveis com informações
+        const disciplina = temaAnalysis?.disciplina || atividadeGerada?.materia || 'Identificação automática';
+        const serieInfo = temaAnalysis?.anoSerie || atividadeGerada?.serie || 'Série';
+        const etapaEnsino = serieInfo?.includes('Médio') ? 'Ensino Médio' : 
+                           serieInfo?.includes('Fund') ? 'Ensino Fundamental' : 
+                           'Ensino Fundamental';
+
+        // Disciplina
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Disciplina:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(disciplina, margin + 60, yPos);
+        yPos += 15;
+
+        // Etapa de ensino
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Etapa de Ensino:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(etapaEnsino, margin + 80, yPos);
+        yPos += 15;
+
+        // Duração
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Duração:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('45 minutos', margin + 50, yPos);
+        yPos += 15;
+
+        // Ano/Série
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Ano/Série:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(serieInfo, margin + 60, yPos);
+        yPos += 15;
+
+        // Tema
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Tema:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(tema || 'Não especificado', margin + 35, yPos);
+        yPos += 15;
+
+        // Professor
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Professor(a):', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('C.I.I.A AIverse', margin + 70, yPos);
         yPos += 30;
       };
 
@@ -597,18 +644,18 @@ export default function GeradorAtividades() {
           });
         } else {
           // Para questões dissertativas, adiciona linhas para resposta
-          pdf.setFont('helvetica', 'normal');
+          pdf.setFont('helvetica', 'bold');
           pdf.setFontSize(10);
-          pdf.setTextColor(148, 163, 184); // slate-400
+          pdf.setTextColor(71, 85, 105); // slate-600
           pdf.text('Resposta:', margin + 10, yPos);
           yPos += 20;
           
-          // Adiciona linhas para escrita
-          for (let i = 0; i < 4; i++) {
+          // Adiciona linhas para escrita com melhor espaçamento
+          for (let i = 0; i < 5; i++) {
             pdf.setDrawColor(203, 213, 225); // slate-300
             pdf.setLineWidth(0.5);
             pdf.line(margin + 10, yPos, pageWidth - margin - 10, yPos);
-            yPos += 18;
+            yPos += 20;
           }
         }
 
