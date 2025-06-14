@@ -9,7 +9,8 @@ import { useAuth } from "@/lib/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Sparkles, BookOpen, Users, Brain } from "lucide-react";
+import { ArrowLeft, Sparkles, BookOpen, Users, Brain, ChevronDown, User, GraduationCap } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
 import aiverseLogo from "@assets/Design sem nome (5)_1749599545530.png";
@@ -367,15 +368,47 @@ export default function Auth() {
                         </div>
                         
                         <div className="space-y-3">
-                          <Label htmlFor="role" className="text-slate-700 font-semibold text-base">Eu sou</Label>
-                          <select
-                            id="role"
-                            className="w-full px-4 py-4 border-2 border-slate-200 bg-white/50 backdrop-blur-sm rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 h-14 text-base font-medium text-slate-700 transition-all duration-300"
-                            {...registerForm.register("role")}
+                          <Label htmlFor="role" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Eu sou</Label>
+                          <Select 
+                            value={registerForm.watch("role")} 
+                            onValueChange={(value: "teacher" | "student") => {
+                              registerForm.setValue("role", value);
+                              registerForm.trigger("role");
+                            }}
                           >
-                            <option value="teacher">Professor(a)</option>
-                            <option value="student">Estudante</option>
-                          </select>
+                            <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                  <User className="w-4 h-4 text-white" />
+                                </div>
+                                <SelectValue placeholder="Selecione seu perfil" className="text-slate-600" />
+                              </div>
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
+                              <SelectItem value="teacher" className="py-4 px-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                    <GraduationCap className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-slate-800">Professor(a)</p>
+                                    <p className="text-xs text-slate-600">Criar conteúdo e gerenciar turmas</p>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="student" className="py-4 px-4 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                    <BookOpen className="w-5 h-5 text-white" />
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-slate-800">Estudante</p>
+                                    <p className="text-xs text-slate-600">Aprender e acompanhar progresso</p>
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
                           {registerForm.formState.errors.role && (
                             <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
                               <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
@@ -386,21 +419,76 @@ export default function Auth() {
                         
                         {registerForm.watch("role") === "student" && (
                           <div className="space-y-3">
-                            <Label htmlFor="schoolYear" className="text-slate-700 font-semibold text-base">Ano Escolar</Label>
-                            <select
-                              id="schoolYear"
-                              className="w-full px-4 py-4 border-2 border-slate-200 bg-white/50 backdrop-blur-sm rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 h-14 text-base font-medium text-slate-700 transition-all duration-300"
-                              {...registerForm.register("schoolYear")}
+                            <Label htmlFor="schoolYear" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Ano Escolar</Label>
+                            <Select 
+                              value={registerForm.watch("schoolYear") || ""} 
+                              onValueChange={(value: string) => {
+                                registerForm.setValue("schoolYear", value);
+                                registerForm.trigger("schoolYear");
+                              }}
                             >
-                              <option value="">Selecione seu ano escolar</option>
-                              <option value="6º ano">6º ano</option>
-                              <option value="7º ano">7º ano</option>
-                              <option value="8º ano">8º ano</option>
-                              <option value="9º ano">9º ano</option>
-                              <option value="1º ano">1º ano (Ensino Médio)</option>
-                              <option value="2º ano">2º ano (Ensino Médio)</option>
-                              <option value="3º ano">3º ano (Ensino Médio)</option>
-                            </select>
+                              <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                    <BookOpen className="w-4 h-4 text-white" />
+                                  </div>
+                                  <SelectValue placeholder="Selecione seu ano escolar" className="text-slate-600" />
+                                </div>
+                              </SelectTrigger>
+                              <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl max-h-80">
+                                <div className="p-2">
+                                  <div className="mb-3">
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Fundamental II</p>
+                                  </div>
+                                  <SelectItem value="6º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">6</div>
+                                      <span className="font-medium text-slate-800">6º ano</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="7º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">7</div>
+                                      <span className="font-medium text-slate-800">7º ano</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="8º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">8</div>
+                                      <span className="font-medium text-slate-800">8º ano</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="9º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-3">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-7 h-7 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg flex items-center justify-center text-white font-bold text-sm">9</div>
+                                      <span className="font-medium text-slate-800">9º ano</span>
+                                    </div>
+                                  </SelectItem>
+                                  
+                                  <div className="mb-3 mt-4">
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Médio</p>
+                                  </div>
+                                  <SelectItem value="1º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">1</div>
+                                      <span className="font-medium text-slate-800">1º ano (Ensino Médio)</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="2º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">2</div>
+                                      <span className="font-medium text-slate-800">2º ano (Ensino Médio)</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="3º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-7 h-7 bg-gradient-to-br from-purple-700 to-purple-900 rounded-lg flex items-center justify-center text-white font-bold text-sm">3</div>
+                                      <span className="font-medium text-slate-800">3º ano (Ensino Médio)</span>
+                                    </div>
+                                  </SelectItem>
+                                </div>
+                              </SelectContent>
+                            </Select>
                             {registerForm.formState.errors.schoolYear && (
                               <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
                                 <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
