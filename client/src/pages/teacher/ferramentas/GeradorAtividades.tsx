@@ -142,23 +142,32 @@ Gere o conteúdo em HTML bem formatado.`;
       const data = await response.json();
       
       // Convert quiz questions to HTML format
-      let htmlContent = `<h2>Atividade: ${tema}</h2>`;
+      let htmlContent = `<h2>Atividade: ${tema}</h2>\n\n`;
+      let answerKey = '';
       
       if (data.questions && Array.isArray(data.questions)) {
         data.questions.forEach((question: any, index: number) => {
-          htmlContent += `
-            <div class="question">
-              <h3>${index + 1}. ${question.question}</h3>
-              <div class="alternatives">
-                ${question.options.map((option: string, optIndex: number) => 
-                  `<p>${String.fromCharCode(97 + optIndex)}) ${option}</p>`
-                ).join('')}
-              </div>
-            </div>
-          `;
+          htmlContent += `${index + 1}. ${question.question}\n\n`;
+          
+          question.options.forEach((option: string, optIndex: number) => {
+            htmlContent += `${String.fromCharCode(97 + optIndex)}) ${option}\n`;
+          });
+          
+          htmlContent += `\n`;
+          
+          // Build answer key
+          if (question.correctAnswer !== undefined) {
+            const correctLetter = String.fromCharCode(97 + question.correctAnswer);
+            answerKey += `${index + 1}. ${correctLetter}\n`;
+          }
         });
+        
+        // Add answer key if requested
+        if (incluirGabarito && answerKey) {
+          htmlContent += `\n\n--- GABARITO ---\n\n${answerKey}`;
+        }
       } else {
-        htmlContent += `<p>Erro ao processar as questões geradas.</p>`;
+        htmlContent += `Erro ao processar as questões geradas.`;
       }
       
       const novaAtividade: AtividadeGerada = {
@@ -208,25 +217,11 @@ Gere o conteúdo em HTML bem formatado.`;
   // Função para copiar conteúdo limpo (sem formatação markdown)
   const copiarConteudo = () => {
     if (atividadeGerada) {
-      // Remove formatação HTML e markdown para texto limpo
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(processarConteudoAtividade(atividadeGerada.conteudo), 'text/html');
-      let textoLimpo = doc.body.textContent || doc.body.innerText || '';
-      
-      // Remove caracteres de formatação markdown
-      textoLimpo = textoLimpo
-        .replace(/###\s*/g, '')
-        .replace(/####\s*/g, '')
-        .replace(/\*\*([^*]+)\*\*/g, '$1')
-        .replace(/\*([^*]+)\*/g, '$1')
-        .replace(/---+/g, '')
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
-      
-      navigator.clipboard.writeText(textoLimpo);
+      // Use the content that already has proper line breaks
+      navigator.clipboard.writeText(atividadeGerada.conteudo);
       toast({
         title: "Conteúdo copiado!",
-        description: "Atividade copiada para a área de transferência sem formatação.",
+        description: "Atividade copiada para a área de transferência com formatação preservada.",
       });
     }
   };
@@ -517,18 +512,18 @@ Gere o conteúdo em HTML bem formatado.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
       <Helmet>
         <title>Gerador de Atividades - AIverse</title>
       </Helmet>
       
       {/* Header */}
-      <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
+      <div className="bg-slate-900/95 backdrop-blur-xl border-b border-cyan-500/20 sticky top-0 z-50 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/professor/dashboard">
-                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                <Button size="sm" className="gap-2 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white shadow-lg border-0">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
@@ -540,8 +535,8 @@ Gere o conteúdo em HTML bem formatado.`;
                   className="w-10 h-10 object-contain"
                 />
                 <div>
-                  <h1 className="text-lg md:text-xl font-bold text-slate-900">Gerador de Atividades</h1>
-                  <p className="text-sm text-slate-600">Crie atividades educacionais personalizadas</p>
+                  <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Gerador de Atividades</h1>
+                  <p className="text-sm text-slate-300">Crie atividades educacionais personalizadas</p>
                 </div>
               </div>
             </div>
@@ -554,22 +549,22 @@ Gere o conteúdo em HTML bem formatado.`;
           
           {/* Painel de Configuração */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
+            <Card className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/30 shadow-2xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-slate-800">
-                  <FileText className="h-5 w-5 text-blue-600" />
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <FileText className="h-5 w-5 text-cyan-400" />
                   Configurações da Atividade
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Configuração do Tema */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium text-slate-700">Tema da Atividade</label>
+                  <label className="text-sm font-medium text-slate-200">Tema da Atividade</label>
                   <Textarea
                     placeholder="Ex: Frações no cotidiano, Revolução Industrial, Sistema Solar..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
-                    className="min-h-[80px] border-slate-300 focus:border-blue-500"
+                    className="min-h-[80px] bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20"
                   />
                   {/* Simple validation for Portuguese characters */}
                   {tema && !/^[\w\s\u00C0-\u017F\u0100-\u024F\u1E00-\u1EFF.,!?;:()\-"']*$/.test(tema) && (
@@ -582,9 +577,9 @@ Gere o conteúdo em HTML bem formatado.`;
                 {/* Configurações Básicas */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Matéria</label>
+                    <label className="text-sm font-medium text-slate-200">Matéria</label>
                     <Select value={materia} onValueChange={setMateria}>
-                      <SelectTrigger className="border-slate-300">
+                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                         <SelectValue placeholder="Selecione a matéria" />
                       </SelectTrigger>
                       <SelectContent>
@@ -605,9 +600,9 @@ Gere o conteúdo em HTML bem formatado.`;
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Série</label>
+                    <label className="text-sm font-medium text-slate-200">Série</label>
                     <Select value={serie} onValueChange={setSerie}>
-                      <SelectTrigger className="border-slate-300">
+                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                         <SelectValue placeholder="Selecione a série" />
                       </SelectTrigger>
                       <SelectContent>
