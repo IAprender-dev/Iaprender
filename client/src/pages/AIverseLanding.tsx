@@ -106,26 +106,47 @@ export default function AIverseLanding() {
               </span>
             </div>
 
-            <div className="hidden lg:flex items-center space-x-1">
-              <a href="#plataforma" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-lg hover:shadow-lg hover:shadow-slate-900/25 hover:scale-105">
+            <div className="hidden lg:flex items-center space-x-1 relative overflow-hidden rounded-2xl group">
+              {/* Dynamic side-by-side gradient background with ambient glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-900/3 via-indigo-900/3 via-emerald-900/3 via-rose-900/3 to-amber-900/3 animate-[ambient-glow_6s_ease-in-out_infinite] rounded-2xl"></div>
+              
+              {/* Flowing horizontal gradient that moves across the navigation */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 via-purple-500/10 via-emerald-500/10 via-rose-500/10 to-transparent animate-[flow_8s_ease-in-out_infinite] rounded-2xl"></div>
+              
+              {/* Reverse flowing gradient for dynamic layered effect */}
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-teal-500/8 via-pink-500/8 via-amber-500/8 to-transparent animate-[flow-reverse_12s_ease-in-out_infinite] rounded-2xl"></div>
+              
+              {/* Side-by-side color transitions */}
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-all duration-1000 rounded-2xl"></div>
+              
+              <a href="#plataforma" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-lg hover:shadow-lg hover:shadow-slate-900/25 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Plataforma</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/10 to-slate-700/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/10 to-slate-700/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-slate-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_2s_ease-in-out_infinite]"></div>
               </a>
-              <a href="#inteligencias" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-lg hover:shadow-lg hover:shadow-indigo-900/25 hover:scale-105">
+              
+              <a href="#inteligencias" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-lg hover:shadow-lg hover:shadow-indigo-900/25 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Inteligências</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/10 to-purple-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/10 to-purple-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-indigo-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_2.5s_ease-in-out_infinite]"></div>
               </a>
-              <a href="#educacao" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-lg hover:shadow-lg hover:shadow-emerald-900/25 hover:scale-105">
+              
+              <a href="#educacao" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-lg hover:shadow-lg hover:shadow-emerald-900/25 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Para Educação</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 to-teal-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 to-teal-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-emerald-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_3s_ease-in-out_infinite]"></div>
               </a>
-              <a href="#impacto" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-lg hover:shadow-lg hover:shadow-rose-900/25 hover:scale-105">
+              
+              <a href="#impacto" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-lg hover:shadow-lg hover:shadow-rose-900/25 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Impacto</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-900/10 to-pink-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-900/10 to-pink-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-rose-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_3.5s_ease-in-out_infinite]"></div>
               </a>
-              <a href="#recursos" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-amber-900 hover:to-orange-800 rounded-lg hover:shadow-lg hover:shadow-amber-900/25 hover:scale-105">
+              
+              <a href="#recursos" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-amber-900 hover:to-orange-800 rounded-lg hover:shadow-lg hover:shadow-amber-900/25 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Recursos</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-900/10 to-orange-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-900/10 to-orange-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-amber-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_4s_ease-in-out_infinite]"></div>
               </a>
             </div>
 
@@ -147,23 +168,32 @@ export default function AIverseLanding() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-gradient-to-br from-slate-50 to-slate-100/80 border-t border-slate-200 backdrop-blur-sm">
-            <div className="px-4 py-6 space-y-2">
-              <a href="#plataforma" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-xl hover:shadow-lg hover:shadow-slate-900/20 hover:scale-105">
+          <div className="lg:hidden bg-gradient-to-br from-slate-50 to-slate-100/80 border-t border-slate-200 backdrop-blur-sm relative overflow-hidden">
+            {/* Dynamic background gradient for mobile */}
+            <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/5 via-purple-500/5 via-emerald-500/5 to-rose-500/5 animate-[ambient-glow_8s_ease-in-out_infinite]"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-transparent via-slate-400/10 to-transparent animate-[flow_10s_ease-in-out_infinite]"></div>
+            
+            <div className="px-4 py-6 space-y-2 relative">
+              <a href="#plataforma" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-xl hover:shadow-lg hover:shadow-slate-900/20 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Plataforma</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               </a>
-              <a href="#inteligencias" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-xl hover:shadow-lg hover:shadow-indigo-900/20 hover:scale-105">
+              <a href="#inteligencias" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-xl hover:shadow-lg hover:shadow-indigo-900/20 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Inteligências</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               </a>
-              <a href="#educacao" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-xl hover:shadow-lg hover:shadow-emerald-900/20 hover:scale-105">
+              <a href="#educacao" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-xl hover:shadow-lg hover:shadow-emerald-900/20 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Para Educação</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               </a>
-              <a href="#impacto" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-xl hover:shadow-lg hover:shadow-rose-900/20 hover:scale-105">
+              <a href="#impacto" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-xl hover:shadow-lg hover:shadow-rose-900/20 hover:scale-105 overflow-hidden">
                 <span className="relative z-10">Impacto</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
               </a>
-              <div className="pt-4 border-t border-slate-300/50">
-                <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-105 rounded-xl py-3 font-semibold tracking-wide">
-                  Acessar AIverse
+              <div className="pt-4 border-t border-slate-300/50 relative">
+                <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-500 hover:scale-105 rounded-xl py-3 font-semibold tracking-wide relative overflow-hidden group">
+                  <span className="relative z-10">Acessar AIverse</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                 </Button>
               </div>
             </div>
