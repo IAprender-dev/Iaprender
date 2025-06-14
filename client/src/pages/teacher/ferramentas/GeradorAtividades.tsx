@@ -463,11 +463,41 @@ export default function GeradorAtividades() {
         compress: true
       });
 
-      // Configurar codificação UTF-8 para caracteres acentuados
-      pdf.internal.pageSize.getWidth();
+      // Configurar encoding UTF-8 e fonte com suporte completo a acentos
+      pdf.setFont('helvetica', 'normal');
+      pdf.setCharSpace(0);
       
-      // Configurar fonte para suporte a caracteres acentuados
-      pdf.setFont('helvetica');
+      // Função para garantir texto com acentos corretos
+      const textoComAcentos = (texto: string) => {
+        return texto
+          .replace(/Duracao/g, 'Duração')
+          .replace(/Ano serie/g, 'Ano/Série') 
+          .replace(/Unidade tematica/g, 'Unidade temática')
+          .replace(/Competencias gerais/g, 'Competências gerais')
+          .replace(/Competencias especificas/g, 'Competências específicas')
+          .replace(/Titulo/g, 'Título')
+          .replace(/Contextualizacao/g, 'Contextualização')
+          .replace(/Relevancia/g, 'Relevância')
+          .replace(/Objetivos especificos/g, 'Objetivos específicos')
+          .replace(/Estrategias ensino/g, 'Estratégias de ensino')
+          .replace(/Momentos pedagogicos/g, 'Momentos pedagógicos')
+          .replace(/Inicio/g, 'Início')
+          .replace(/Materiais necessarios/g, 'Materiais necessários')
+          .replace(/Espacos fisicos/g, 'Espaços físicos')
+          .replace(/Criterios/g, 'Critérios')
+          .replace(/Inclusao acessibilidade/g, 'Inclusão e acessibilidade')
+          .replace(/Adaptacoes/g, 'Adaptações')
+          .replace(/Estrategias inclusivas/g, 'Estratégias inclusivas')
+          .replace(/Conexoes/g, 'Conexões')
+          .replace(/Integracao areas/g, 'Integração de áreas')
+          .replace(/Aplicacoes praticas/g, 'Aplicações práticas')
+          .replace(/Extensao aprofundamento/g, 'Extensão e aprofundamento')
+          .replace(/Reflexao docente/g, 'Reflexão docente')
+          .replace(/Pontos atencao/g, 'Pontos de atenção')
+          .replace(/Adaptacoes possivel/g, 'Adaptações possíveis')
+          .replace(/Referencias/g, 'Referências')
+          .replace(/Bibliograficas/g, 'Bibliográficas');
+      };
 
       const sanitizedContent = DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo));
       const questoes = extrairQuestoes(sanitizedContent);
@@ -546,28 +576,28 @@ export default function GeradorAtividades() {
 
         // Disciplina
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Disciplina:', margin, yPos);
+        pdf.text(textoComAcentos('Disciplina:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         pdf.text(disciplina, margin + 60, yPos);
         yPos += 15;
 
         // Etapa de ensino
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Etapa de Ensino:', margin, yPos);
+        pdf.text(textoComAcentos('Etapa de Ensino:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         pdf.text(etapaEnsino, margin + 85, yPos);
         yPos += 15;
 
         // Duração
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Duração:', margin, yPos);
+        pdf.text(textoComAcentos('Duração:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         pdf.text('45 minutos', margin + 55, yPos);
         yPos += 15;
 
         // Ano/Série
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Ano/Série:', margin, yPos);
+        pdf.text(textoComAcentos('Ano/Série:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         pdf.text(serieInfo, margin + 65, yPos);
         yPos += 15;
@@ -600,7 +630,7 @@ export default function GeradorAtividades() {
 
         // Unidade temática
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Unidade temática:', margin, yPos);
+        pdf.text(textoComAcentos('Unidade temática:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const unidadeTematica = 'Matéria e Energia';
         pdf.text(unidadeTematica, margin + 100, yPos);
@@ -608,7 +638,7 @@ export default function GeradorAtividades() {
 
         // Objeto de Conhecimento
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Objeto de Conhecimento:', margin, yPos);
+        pdf.text(textoComAcentos('Objeto de Conhecimento:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const objetoConhecimento = 'Estrutura da matéria';
         pdf.text(objetoConhecimento, margin + 130, yPos);
@@ -616,7 +646,7 @@ export default function GeradorAtividades() {
 
         // Habilidades
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Habilidades:', margin, yPos);
+        pdf.text(textoComAcentos('Habilidades:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const habilidades = 'EF09CI03';
         pdf.text(habilidades, margin + 70, yPos);
@@ -624,7 +654,7 @@ export default function GeradorAtividades() {
 
         // Competências gerais
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Competências gerais:', margin, yPos);
+        pdf.text(textoComAcentos('Competências gerais:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const competenciasGerais = 'Conhecimento científico';
         pdf.text(competenciasGerais, margin + 115, yPos);
@@ -632,7 +662,7 @@ export default function GeradorAtividades() {
 
         // Competências específicas
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Competências específicas:', margin, yPos);
+        pdf.text(textoComAcentos('Competências específicas:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const competenciasEspecificas = 'Ciências da Natureza';
         pdf.text(competenciasEspecificas, margin + 130, yPos);
@@ -652,7 +682,7 @@ export default function GeradorAtividades() {
 
         // Título
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Título:', margin, yPos);
+        pdf.text(textoComAcentos('Título:'), margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const tituloAula = atividadeGerada?.titulo || `Atividade sobre ${tema}`;
         pdf.text(tituloAula, margin + 40, yPos);
@@ -660,7 +690,7 @@ export default function GeradorAtividades() {
 
         // Contextualização
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Contextualização:', margin, yPos);
+        pdf.text(textoComAcentos('Contextualização:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const contextualizacao = `Esta atividade aborda ${tema} de forma prática e contextualizada, promovendo o desenvolvimento das competências previstas na BNCC.`;
@@ -670,7 +700,7 @@ export default function GeradorAtividades() {
 
         // Relevância
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Relevância:', margin, yPos);
+        pdf.text(textoComAcentos('Relevância:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const relevancia = `O estudo de ${tema} é fundamental para a compreensão científica do mundo que nos cerca, desenvolvendo habilidades de investigação e pensamento crítico nos estudantes.`;
@@ -692,7 +722,7 @@ export default function GeradorAtividades() {
 
         // Objetivos específicos
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Objetivos específicos:', margin, yPos);
+        pdf.text(textoComAcentos('Objetivos específicos:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const objetivosEspecificos = `Desenvolver compreensão conceitual sobre ${tema}, aplicar conhecimentos em situações práticas e desenvolver habilidades de análise crítica.`;
@@ -714,7 +744,7 @@ export default function GeradorAtividades() {
 
         // Estratégias de ensino
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Estratégias de ensino:', margin, yPos);
+        pdf.text(textoComAcentos('Estratégias de ensino:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const estrategias = 'Abordagem investigativa, discussões dirigidas, atividades práticas e resolução de problemas contextualizados.';
@@ -724,7 +754,7 @@ export default function GeradorAtividades() {
 
         // Momentos pedagógicos
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Momentos pedagógicos:', margin, yPos);
+        pdf.text(textoComAcentos('Momentos pedagógicos:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const momentos = 'Problematização inicial, organização do conhecimento e aplicação do conhecimento.';
@@ -746,7 +776,7 @@ export default function GeradorAtividades() {
 
         // Início
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Início:', margin, yPos);
+        pdf.text(textoComAcentos('Início:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const inicio = 'Apresentação do tema, levantamento de conhecimentos prévios e problematização inicial.';
@@ -768,7 +798,7 @@ export default function GeradorAtividades() {
 
         // Materiais necessários
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Materiais necessários:', margin, yPos);
+        pdf.text(textoComAcentos('Materiais necessários:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const materiais = 'Quadro, projetor, material impresso, computador com acesso à internet.';
@@ -778,7 +808,7 @@ export default function GeradorAtividades() {
 
         // Espaços físicos
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Espaços físicos:', margin, yPos);
+        pdf.text(textoComAcentos('Espaços físicos:'), margin, yPos);
         yPos += 15;
         pdf.setFont('helvetica', 'normal');
         const espacos = 'Sala de aula tradicional, laboratório (se disponível).';
@@ -832,7 +862,7 @@ export default function GeradorAtividades() {
 
       // Critérios
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Critérios:', margin, yPos);
+      pdf.text(textoComAcentos('Critérios:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const criteriosAvaliacao = 'Compreensão conceitual, aplicação prática, participação e qualidade das respostas.';
