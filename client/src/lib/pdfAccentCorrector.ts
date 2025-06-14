@@ -127,6 +127,33 @@ export class PDFAccentCorrector {
       });
     }
 
+    // Correções específicas para problemas detectados no PDF
+    correctedText = correctedText
+      .replace(/\bTitulo\b/g, 'Título')
+      .replace(/\btitulo\b/g, 'título')
+      .replace(/\bEspecificos\b/g, 'Específicos')
+      .replace(/\bespecificos\b/g, 'específicos')
+      .replace(/\bEspecificas\b/g, 'Específicas')
+      .replace(/\bespecificas\b/g, 'específicas')
+      .replace(/\bContextualizacao\b/g, 'Contextualização')
+      .replace(/\bcontextualizacao\b/g, 'contextualização')
+      .replace(/\bRelevancia\b/g, 'Relevância')
+      .replace(/\brelevancia\b/g, 'relevância')
+      .replace(/\bNecessarios\b/g, 'Necessários')
+      .replace(/\bnecessarios\b/g, 'necessários')
+      .replace(/\bNecessarias\b/g, 'Necessárias')
+      .replace(/\bnecessarias\b/g, 'necessárias')
+      .replace(/\bFisicos\b/g, 'Físicos')
+      .replace(/\bfisicos\b/g, 'físicos')
+      .replace(/\bPossivel\b/g, 'Possível')
+      .replace(/\bpossivel\b/g, 'possível')
+      .replace(/\bTemática\b/g, 'Temática')
+      .replace(/\btematica\b/g, 'temática')
+      .replace(/\bPedagógicos\b/g, 'Pedagógicos')
+      .replace(/\bpedagogicos\b/g, 'pedagógicos')
+      .replace(/\bInclusivas\b/g, 'Inclusivas')
+      .replace(/\binclusivas\b/g, 'inclusivas');
+
     // Normalizar espaços
     correctedText = correctedText.replace(/\s+/g, ' ').trim();
 
