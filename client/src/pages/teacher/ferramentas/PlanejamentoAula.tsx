@@ -711,9 +711,16 @@ export default function PlanejamentoAula() {
                     <Input
                       id="numeroAlunos"
                       type="number"
+                      min="0"
                       placeholder="Ex: 25"
                       value={formData.numeroAlunos}
-                      onChange={(e) => handleFormChange('numeroAlunos', e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent negative values
+                        if (value === '' || parseInt(value) >= 0) {
+                          handleFormChange('numeroAlunos', value);
+                        }
+                      }}
                       className="border-slate-300 focus:border-blue-500"
                     />
                   </div>
