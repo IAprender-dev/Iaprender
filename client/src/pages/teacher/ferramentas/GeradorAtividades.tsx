@@ -884,7 +884,7 @@ export default function GeradorAtividades() {
 
       // Adaptações
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Adaptações:', margin, yPos);
+      pdf.text(textoComAcentos('Adaptações:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const adaptacoes = 'Material em fonte ampliada, tempo adicional para realização, suporte visual e tátil quando necessário.';
@@ -894,7 +894,7 @@ export default function GeradorAtividades() {
 
       // Estratégias inclusivas
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Estratégias inclusivas:', margin, yPos);
+      pdf.text(textoComAcentos('Estratégias inclusivas:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const estrategiasInclusivas = 'Diversificação de linguagens, recursos multissensoriais e trabalho colaborativo.';
@@ -916,7 +916,7 @@ export default function GeradorAtividades() {
 
       // Conexões
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Conexões:', margin, yPos);
+      pdf.text(textoComAcentos('Conexões:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const conexoes = 'Matemática, Física, Geografia e História nas aplicações e contextos do tema.';
@@ -926,7 +926,7 @@ export default function GeradorAtividades() {
 
       // Integração de áreas
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Integração de áreas:', margin, yPos);
+      pdf.text(textoComAcentos('Integração de áreas:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const integracaoAreas = 'Articulação entre conhecimentos científicos e suas aplicações tecnológicas e sociais.';
@@ -948,7 +948,7 @@ export default function GeradorAtividades() {
 
       // Aplicações práticas
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Aplicações práticas:', margin, yPos);
+      pdf.text(textoComAcentos('Aplicações práticas:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const aplicacoesPraticas = 'Exemplos do cotidiano, situações reais e problemas da comunidade local.';
@@ -986,7 +986,7 @@ export default function GeradorAtividades() {
 
       // Pontos de atenção
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Pontos de atenção:', margin, yPos);
+      pdf.text(textoComAcentos('Pontos de atenção:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const pontosAtencao = 'Observar ritmo de aprendizagem, dificuldades específicas e engajamento dos estudantes.';
@@ -996,7 +996,7 @@ export default function GeradorAtividades() {
 
       // Adaptações possíveis
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Adaptações possíveis:', margin, yPos);
+      pdf.text(textoComAcentos('Adaptações possíveis:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const adaptacoesPossiveis = 'Ajustes metodológicos, recursos alternativos e estratégias diferenciadas conforme necessidade.';
@@ -1018,7 +1018,7 @@ export default function GeradorAtividades() {
 
       // Bibliográficas
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Bibliográficas:', margin, yPos);
+      pdf.text(textoComAcentos('Bibliográficas:'), margin, yPos);
       yPos += 15;
       pdf.setFont('helvetica', 'normal');
       const referencias = 'BRASIL. Base Nacional Comum Curricular. Brasília: MEC, 2018. Livro didático adotado pela escola.';
