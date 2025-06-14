@@ -230,7 +230,7 @@ export default function Auth() {
                             id="email"
                             type="email"
                             placeholder="Digite seu email"
-                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-500 placeholder:font-medium"
                             {...loginForm.register("email")}
                           />
                           {loginForm.formState.errors.email && (
@@ -256,7 +256,7 @@ export default function Auth() {
                             id="password"
                             type="password"
                             placeholder="Digite sua senha"
-                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-500 placeholder:font-medium"
                             {...loginForm.register("password")}
                           />
                           {loginForm.formState.errors.password && (
@@ -291,90 +291,105 @@ export default function Auth() {
                 
                 <TabsContent value="register" className="space-y-6 mt-8">
                   <Card className="border-0 shadow-2xl rounded-3xl bg-white/80 backdrop-blur-xl">
-                    <CardHeader className="space-y-1 pb-4">
-                      <CardTitle className="text-xl">Criar nova conta</CardTitle>
-                      <CardDescription>
-                        Preencha os dados abaixo para começar
+                    <CardHeader className="space-y-3 pb-6 pt-8 px-8">
+                      <CardTitle className="text-2xl font-bold text-slate-900">Criar nova conta</CardTitle>
+                      <CardDescription className="text-slate-600 font-medium">
+                        Preencha os dados abaixo para começar sua jornada educacional
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                    <CardContent className="space-y-6 px-8 pb-8">
+                      <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="firstName">Nome</Label>
+                          <div className="space-y-3">
+                            <Label htmlFor="firstName" className="text-slate-700 font-semibold text-base">Nome</Label>
                             <Input
                               id="firstName"
-                              placeholder="Seu nome"
-                              className="rounded-xl h-12"
+                              placeholder="Digite seu nome"
+                              className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-500 placeholder:font-medium"
                               {...registerForm.register("firstName")}
                             />
                             {registerForm.formState.errors.firstName && (
-                              <p className="text-sm text-red-600">{registerForm.formState.errors.firstName.message}</p>
+                              <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
+                                <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
+                                <span>{registerForm.formState.errors.firstName.message}</span>
+                              </p>
                             )}
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="lastName">Sobrenome</Label>
+                          <div className="space-y-3">
+                            <Label htmlFor="lastName" className="text-slate-700 font-semibold text-base">Sobrenome</Label>
                             <Input
                               id="lastName"
-                              placeholder="Seu sobrenome"
-                              className="rounded-xl h-12"
+                              placeholder="Digite seu sobrenome"
+                              className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-500 placeholder:font-medium"
                               {...registerForm.register("lastName")}
                             />
                             {registerForm.formState.errors.lastName && (
-                              <p className="text-sm text-red-600">{registerForm.formState.errors.lastName.message}</p>
+                              <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
+                                <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
+                                <span>{registerForm.formState.errors.lastName.message}</span>
+                              </p>
                             )}
                           </div>
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label htmlFor="email">Email</Label>
+                        <div className="space-y-3">
+                          <Label htmlFor="email" className="text-slate-700 font-semibold text-base">Email</Label>
                           <Input
                             id="email"
                             type="email"
-                            placeholder="seu@email.com"
-                            className="rounded-xl h-12"
+                            placeholder="Digite seu email"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-500 placeholder:font-medium"
                             {...registerForm.register("email")}
                           />
                           {registerForm.formState.errors.email && (
-                            <p className="text-sm text-red-600">{registerForm.formState.errors.email.message}</p>
+                            <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
+                              <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
+                              <span>{registerForm.formState.errors.email.message}</span>
+                            </p>
                           )}
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label htmlFor="password">Senha</Label>
+                        <div className="space-y-3">
+                          <Label htmlFor="password" className="text-slate-700 font-semibold text-base">Senha</Label>
                           <Input
                             id="password"
                             type="password"
                             placeholder="Mínimo 6 caracteres"
-                            className="rounded-xl h-12"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-500 placeholder:font-medium"
                             {...registerForm.register("password")}
                           />
                           {registerForm.formState.errors.password && (
-                            <p className="text-sm text-red-600">{registerForm.formState.errors.password.message}</p>
+                            <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
+                              <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
+                              <span>{registerForm.formState.errors.password.message}</span>
+                            </p>
                           )}
                         </div>
                         
-                        <div className="space-y-2">
-                          <Label htmlFor="role">Eu sou</Label>
+                        <div className="space-y-3">
+                          <Label htmlFor="role" className="text-slate-700 font-semibold text-base">Eu sou</Label>
                           <select
                             id="role"
-                            className="w-full px-3 py-3 border border-input bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-12"
+                            className="w-full px-4 py-4 border-2 border-slate-200 bg-white/50 backdrop-blur-sm rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 h-14 text-base font-medium text-slate-700 transition-all duration-300"
                             {...registerForm.register("role")}
                           >
                             <option value="teacher">Professor(a)</option>
                             <option value="student">Estudante</option>
                           </select>
                           {registerForm.formState.errors.role && (
-                            <p className="text-sm text-red-600">{registerForm.formState.errors.role.message}</p>
+                            <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
+                              <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
+                              <span>{registerForm.formState.errors.role.message}</span>
+                            </p>
                           )}
                         </div>
                         
                         {registerForm.watch("role") === "student" && (
-                          <div className="space-y-2">
-                            <Label htmlFor="schoolYear">Ano Escolar</Label>
+                          <div className="space-y-3">
+                            <Label htmlFor="schoolYear" className="text-slate-700 font-semibold text-base">Ano Escolar</Label>
                             <select
                               id="schoolYear"
-                              className="w-full px-3 py-3 border border-input bg-background rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 h-12"
+                              className="w-full px-4 py-4 border-2 border-slate-200 bg-white/50 backdrop-blur-sm rounded-2xl focus:outline-none focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 h-14 text-base font-medium text-slate-700 transition-all duration-300"
                               {...registerForm.register("schoolYear")}
                             >
                               <option value="">Selecione seu ano escolar</option>
@@ -387,17 +402,30 @@ export default function Auth() {
                               <option value="3º ano">3º ano (Ensino Médio)</option>
                             </select>
                             {registerForm.formState.errors.schoolYear && (
-                              <p className="text-sm text-red-600">{registerForm.formState.errors.schoolYear.message}</p>
+                              <p className="text-sm text-red-500 font-medium flex items-center space-x-2">
+                                <span className="w-4 h-4 bg-red-100 rounded-full flex items-center justify-center">!</span>
+                                <span>{registerForm.formState.errors.schoolYear.message}</span>
+                              </p>
                             )}
                           </div>
                         )}
                         
                         <Button 
                           type="submit" 
-                          className="w-full bg-blue-600 hover:bg-blue-700 rounded-xl h-12 text-white"
+                          className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 rounded-2xl h-14 text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02]"
                           disabled={registerMutation.isPending}
                         >
-                          {registerMutation.isPending ? "Criando conta..." : "Criar Conta"}
+                          {registerMutation.isPending ? (
+                            <div className="flex items-center space-x-3">
+                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                              <span>Criando conta...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <span>Criar conta gratuita</span>
+                              <Users className="w-5 h-5" />
+                            </div>
+                          )}
                         </Button>
                       </form>
                     </CardContent>
