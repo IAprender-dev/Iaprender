@@ -385,7 +385,7 @@ export default function Auth() {
                               </div>
                             </SelectTrigger>
                             <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
-                              <SelectItem value="teacher" className="py-4 px-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200">
+                              <SelectItem value="teacher" className="py-4 px-4 hover:bg-slate-50/80 rounded-lg cursor-pointer transition-all duration-300 ease-out">
                                 <div className="flex items-center space-x-3">
                                   <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
                                     <GraduationCap className="w-5 h-5 text-white" />
@@ -396,7 +396,7 @@ export default function Auth() {
                                   </div>
                                 </div>
                               </SelectItem>
-                              <SelectItem value="student" className="py-4 px-4 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200">
+                              <SelectItem value="student" className="py-4 px-4 hover:bg-slate-50/80 rounded-lg cursor-pointer transition-all duration-300 ease-out">
                                 <div className="flex items-center space-x-3">
                                   <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
                                     <BookOpen className="w-5 h-5 text-white" />
@@ -440,25 +440,25 @@ export default function Auth() {
                                   <div className="mb-3">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Fundamental II</p>
                                   </div>
-                                  <SelectItem value="6º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                  <SelectItem value="6º ano" className="py-3 px-3 hover:bg-slate-50/60 rounded-lg cursor-pointer transition-all duration-300 ease-out mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">6</div>
                                       <span className="font-medium text-slate-800">6º ano</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="7º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                  <SelectItem value="7º ano" className="py-3 px-3 hover:bg-slate-50/60 rounded-lg cursor-pointer transition-all duration-300 ease-out mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">7</div>
                                       <span className="font-medium text-slate-800">7º ano</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="8º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                  <SelectItem value="8º ano" className="py-3 px-3 hover:bg-slate-50/60 rounded-lg cursor-pointer transition-all duration-300 ease-out mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">8</div>
                                       <span className="font-medium text-slate-800">8º ano</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="9º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 rounded-lg cursor-pointer transition-all duration-200 mb-3">
+                                  <SelectItem value="9º ano" className="py-3 px-3 hover:bg-slate-50/60 rounded-lg cursor-pointer transition-all duration-300 ease-out mb-3">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg flex items-center justify-center text-white font-bold text-sm">9</div>
                                       <span className="font-medium text-slate-800">9º ano</span>
@@ -468,19 +468,19 @@ export default function Auth() {
                                   <div className="mb-3 mt-4">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Médio</p>
                                   </div>
-                                  <SelectItem value="1º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                  <SelectItem value="1º ano" className="py-3 px-3 hover:bg-slate-50/60 rounded-lg cursor-pointer transition-all duration-300 ease-out mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">1</div>
                                       <span className="font-medium text-slate-800">1º ano (Ensino Médio)</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="2º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200 mb-1">
+                                  <SelectItem value="2º ano" className="py-3 px-3 hover:bg-slate-50/60 rounded-lg cursor-pointer transition-all duration-300 ease-out mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">2</div>
                                       <span className="font-medium text-slate-800">2º ano (Ensino Médio)</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="3º ano" className="py-3 px-3 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200">
+                                  <SelectItem value="3º ano" className="py-3 px-3 hover:bg-slate-50/60 rounded-lg cursor-pointer transition-all duration-300 ease-out">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-purple-700 to-purple-900 rounded-lg flex items-center justify-center text-white font-bold text-sm">3</div>
                                       <span className="font-medium text-slate-800">3º ano (Ensino Médio)</span>
