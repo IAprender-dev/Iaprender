@@ -12,20 +12,20 @@ export interface EncodingValidationResult {
 
 export class TextEncodingValidator {
   private static readonly PORTUGUESE_CHARS = {
-    // Vowels with accents
-    'á': /[àáâãä]/g,
-    'é': /[èéêë]/g,
-    'í': /[ìíîï]/g,
-    'ó': /[òóôõö]/g,
-    'ú': /[ùúûü]/g,
-    'ç': /[ç]/g,
+    // Only match actual encoding problems, not valid Portuguese characters
+    'á': /[àâãä]/g,  // Don't match 'á' itself
+    'é': /[èêë]/g,   // Don't match 'é' itself
+    'í': /[ìîï]/g,   // Don't match 'í' itself
+    'ó': /[òôõö]/g,  // Don't match 'ó' itself
+    'ú': /[ùûü]/g,   // Don't match 'ú' itself
+    'ç': /(?!ç)[cÇ]/g, // Only problematic c/C, not ç itself
     // Uppercase
-    'Á': /[ÀÁÂÃÄ]/g,
-    'É': /[ÈÉÊË]/g,
-    'Í': /[ÌÍÎÏ]/g,
-    'Ó': /[ÒÓÔÕÖ]/g,
-    'Ú': /[ÙÚÛÜ]/g,
-    'Ç': /[Ç]/g,
+    'Á': /[ÀÂÃÄ]/g,  // Don't match 'Á' itself
+    'É': /[ÈÊËE]/g,  // Don't match 'É' itself
+    'Í': /[ÌÎÏ]/g,   // Don't match 'Í' itself
+    'Ó': /[ÒÔÕÖ]/g,  // Don't match 'Ó' itself
+    'Ú': /[ÙÛÜU]/g,  // Don't match 'Ú' itself
+    'Ç': /(?!Ç)[C]/g, // Only problematic C, not Ç itself
   };
 
   private static readonly COMMON_ENCODING_ISSUES = {
@@ -93,8 +93,11 @@ export class TextEncodingValidator {
     // Fix educational terms
     correctedText = this.fixEducationalTerms(correctedText, issues);
     
-    // Normalize Portuguese characters
-    correctedText = this.normalizePortugueseChars(correctedText, issues);
+    // Only normalize characters if there are actual encoding problems
+    // Skip this step for educational context to avoid false positives
+    if (context !== 'educational') {
+      correctedText = this.normalizePortugueseChars(correctedText, issues);
+    }
     
     // Check for invalid UTF-8 sequences
     correctedText = this.fixInvalidUTF8(correctedText, issues);
@@ -178,10 +181,17 @@ export class TextEncodingValidator {
   private static normalizePortugueseChars(text: string, issues: string[]): string {
     let corrected = text;
 
+    // Only normalize characters that are actually problematic encodings
+    // Don't flag normal Portuguese characters as issues
     for (const [correct, pattern] of Object.entries(this.PORTUGUESE_CHARS)) {
-      if (pattern.test(corrected)) {
-        corrected = corrected.replace(pattern, correct);
-        issues.push(`Normalized Portuguese character to: ${correct}`);
+      const matches = corrected.match(pattern);
+      if (matches) {
+        // Only flag as issue if the character is not already the correct one
+        const hasActualIssues = matches.some(match => match !== correct);
+        if (hasActualIssues) {
+          corrected = corrected.replace(pattern, correct);
+          issues.push(`Normalized Portuguese character to: ${correct}`);
+        }
       }
     }
 

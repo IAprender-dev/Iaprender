@@ -1313,15 +1313,7 @@ export default function GeradorAtividades() {
                     autoCorrect={false}
                     rows={3}
                   />
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <div className="text-xs text-blue-800">
-                        <p className="font-medium mb-1">Detecção Automática BNCC</p>
-                        <p>A IA analisará o tema e identificará automaticamente a disciplina e ano/série conforme as diretrizes da BNCC.</p>
-                      </div>
-                    </div>
-                  </div>
+
 
                   {/* Análise BNCC em tempo real */}
                   {isAnalyzing && (
