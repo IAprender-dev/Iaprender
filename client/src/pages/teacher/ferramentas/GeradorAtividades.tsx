@@ -526,10 +526,12 @@ export default function GeradorAtividades() {
         pdf.text(titulo, (pageWidth - tituloWidth) / 2, yPos);
         yPos += 25;
 
-        // Informações detalhadas em formato profissional
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
+        // ========== 1. IDENTIFICAÇÃO ==========
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text('1. IDENTIFICAÇÃO', margin, yPos);
+        yPos += 20;
         
         // Definir variáveis com informações
         const disciplina = temaAnalysis?.disciplina || atividadeGerada?.materia || 'Identificação automática';
@@ -537,6 +539,10 @@ export default function GeradorAtividades() {
         const etapaEnsino = serieInfo?.includes('Médio') ? 'Ensino Médio' : 
                            serieInfo?.includes('Fund') ? 'Ensino Fundamental' : 
                            'Ensino Fundamental';
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
 
         // Disciplina
         pdf.setFont('helvetica', 'bold');
@@ -549,36 +555,128 @@ export default function GeradorAtividades() {
         pdf.setFont('helvetica', 'bold');
         pdf.text('Etapa de Ensino:', margin, yPos);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(etapaEnsino, margin + 80, yPos);
+        pdf.text(etapaEnsino, margin + 85, yPos);
         yPos += 15;
 
         // Duração
         pdf.setFont('helvetica', 'bold');
         pdf.text('Duração:', margin, yPos);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('45 minutos', margin + 50, yPos);
+        pdf.text('45 minutos', margin + 55, yPos);
         yPos += 15;
 
         // Ano/Série
         pdf.setFont('helvetica', 'bold');
         pdf.text('Ano/Série:', margin, yPos);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(serieInfo, margin + 60, yPos);
+        pdf.text(serieInfo, margin + 65, yPos);
         yPos += 15;
 
         // Tema
         pdf.setFont('helvetica', 'bold');
         pdf.text('Tema:', margin, yPos);
         pdf.setFont('helvetica', 'normal');
-        pdf.text(tema || 'Não especificado', margin + 35, yPos);
+        pdf.text(tema || 'Não especificado', margin + 40, yPos);
         yPos += 15;
 
         // Professor
         pdf.setFont('helvetica', 'bold');
         pdf.text('Professor(a):', margin, yPos);
         pdf.setFont('helvetica', 'normal');
-        pdf.text('C.I.I.A AIverse', margin + 70, yPos);
+        pdf.text('C.I.I.A AIverse', margin + 75, yPos);
         yPos += 30;
+
+        // ========== 2. ALINHAMENTO BNCC ==========
+        verificarQuebraPagina(120);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text('2. ALINHAMENTO BNCC', margin, yPos);
+        yPos += 20;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
+
+        // Unidade Temática
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Unidade Temática:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const unidadeTematica = 'Matéria e Energia';
+        pdf.text(unidadeTematica, margin + 100, yPos);
+        yPos += 15;
+
+        // Objeto de Conhecimento
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Objeto de Conhecimento:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const objetoConhecimento = 'Estrutura da matéria';
+        pdf.text(objetoConhecimento, margin + 130, yPos);
+        yPos += 15;
+
+        // Habilidades
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Habilidades:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const habilidades = 'EF09CI03';
+        pdf.text(habilidades, margin + 70, yPos);
+        yPos += 15;
+
+        // Competências Gerais
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Competências Gerais:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const competenciasGerais = 'Conhecimento científico';
+        pdf.text(competenciasGerais, margin + 115, yPos);
+        yPos += 15;
+
+        // Competências Específicas
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Competências Específicas:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const competenciasEspecificas = 'Ciências da Natureza';
+        pdf.text(competenciasEspecificas, margin + 130, yPos);
+        yPos += 30;
+
+        // ========== 3. TEMA DA AULA ==========
+        verificarQuebraPagina(100);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text('3. TEMA DA AULA', margin, yPos);
+        yPos += 20;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
+
+        // Título
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Título:', margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const tituloAula = atividadeGerada?.titulo || `Atividade sobre ${tema}`;
+        pdf.text(tituloAula, margin + 40, yPos);
+        yPos += 15;
+
+        // Contextualização
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Contextualização:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const contextualizacao = `Esta atividade aborda ${tema} de forma prática e contextualizada, promovendo o desenvolvimento das competências previstas na BNCC.`;
+        const linhasContextualizacao = pdf.splitTextToSize(contextualizacao, contentWidth - 20);
+        pdf.text(linhasContextualizacao, margin + 10, yPos);
+        yPos += linhasContextualizacao.length * 14 + 10;
+
+        // Relevância
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Relevância:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const relevancia = `O estudo de ${tema} é fundamental para a compreensão científica do mundo que nos cerca, desenvolvendo habilidades de investigação e pensamento crítico nos estudantes.`;
+        const linhasRelevancia = pdf.splitTextToSize(relevancia, contentWidth - 20);
+        pdf.text(linhasRelevancia, margin + 10, yPos);
+        yPos += linhasRelevancia.length * 14 + 30;
       };
 
       // Função para verificar espaço e quebrar página se necessário
@@ -611,6 +709,14 @@ export default function GeradorAtividades() {
 
       // Adicionar cabeçalho inicial
       adicionarCabecalho(true);
+
+      // ========== 4. QUESTÕES ==========
+      verificarQuebraPagina(100);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('4. QUESTÕES', margin, yPos);
+      yPos += 30;
 
       // Gerar questões com styling melhorado
       questoes.forEach((questao, index) => {
@@ -662,6 +768,62 @@ export default function GeradorAtividades() {
         yPos += 20; // Espaço entre questões
       });
 
+      // ========== 5. CRITÉRIOS DE AVALIAÇÃO ==========
+      verificarQuebraPagina(120);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('5. CRITÉRIOS DE AVALIAÇÃO', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      // Critérios de avaliação
+      const criterios = [
+        'Compreensão conceitual dos conteúdos abordados',
+        'Capacidade de aplicação dos conhecimentos em diferentes contextos',
+        'Desenvolvimento do raciocínio científico e pensamento crítico',
+        'Clareza e organização nas respostas dissertativas',
+        'Participação e envolvimento durante a atividade'
+      ];
+
+      criterios.forEach((criterio, index) => {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`• `, margin, yPos);
+        pdf.setFont('helvetica', 'normal');
+        const linhasCriterio = pdf.splitTextToSize(criterio, contentWidth - 20);
+        pdf.text(linhasCriterio, margin + 15, yPos);
+        yPos += linhasCriterio.length * 14 + 5;
+      });
+
+      yPos += 20;
+
+      // ========== 6. OBSERVAÇÕES ==========
+      verificarQuebraPagina(80);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('6. OBSERVAÇÕES', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      const observacoes = 'Esta atividade foi gerada automaticamente pela plataforma AIverse e está alinhada com as diretrizes da BNCC. Recomenda-se adaptação conforme as necessidades específicas da turma e do contexto escolar.';
+      const linhasObservacoes = pdf.splitTextToSize(observacoes, contentWidth - 20);
+      pdf.text(linhasObservacoes, margin + 10, yPos);
+      yPos += linhasObservacoes.length * 14 + 30;
+
+      // Rodapé profissional
+      pdf.setFont('helvetica', 'italic');
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 116, 139); // slate-500
+      const rodape = `Documento gerado em ${new Date().toLocaleDateString('pt-BR')} pela plataforma AIverse - Central de Inteligência Artificial`;
+      pdf.text(rodape, margin, pageHeight - 30);
+
       // Gerar nome do arquivo
       const timestamp = new Date().toISOString().split('T')[0];
       const disciplina = (atividadeGerada?.materia || 'atividade').toLowerCase().replace(/\s+/g, '_');
@@ -680,9 +842,13 @@ export default function GeradorAtividades() {
 
         let yPosGab = margin + 20;
 
+        // Configurar fonte para suporte a caracteres acentuados
+        pdfGabarito.setFont('helvetica');
+
         // Cabeçalho do gabarito
         pdfGabarito.setFont('helvetica', 'bold');
         pdfGabarito.setFontSize(18);
+        pdfGabarito.setTextColor(30, 41, 59); // slate-800
         const tituloGab = 'GABARITO';
         const tituloGabWidth = pdfGabarito.getTextWidth(tituloGab);
         pdfGabarito.text(tituloGab, (pageWidth - tituloGabWidth) / 2, yPosGab);
@@ -690,10 +856,24 @@ export default function GeradorAtividades() {
 
         pdfGabarito.setFont('helvetica', 'normal');
         pdfGabarito.setFontSize(12);
-        const subtituloGab = `${atividadeGerada?.materia || 'Disciplina'} • ${atividadeGerada?.serie || 'Série'}`;
+        pdfGabarito.setTextColor(51, 65, 85); // slate-700
+        const subtituloGab = `${disciplina} • ${serieInfo}`;
         const subtituloGabWidth = pdfGabarito.getTextWidth(subtituloGab);
         pdfGabarito.text(subtituloGab, (pageWidth - subtituloGabWidth) / 2, yPosGab);
-        yPosGab += 35;
+        yPosGab += 20;
+
+        // Informações do tema
+        pdfGabarito.setFont('helvetica', 'bold');
+        pdfGabarito.setFontSize(10);
+        pdfGabarito.text('Tema:', margin, yPosGab);
+        pdfGabarito.setFont('helvetica', 'normal');
+        pdfGabarito.text(tema || 'Não especificado', margin + 40, yPosGab);
+        
+        pdfGabarito.setFont('helvetica', 'bold');
+        pdfGabarito.text('Data:', pageWidth - 120, yPosGab);
+        pdfGabarito.setFont('helvetica', 'normal');
+        pdfGabarito.text(new Date().toLocaleDateString('pt-BR'), pageWidth - 80, yPosGab);
+        yPosGab += 25;
 
         // Linha separadora
         pdfGabarito.setDrawColor(0, 0, 0);
@@ -701,9 +881,17 @@ export default function GeradorAtividades() {
         pdfGabarito.line(margin, yPosGab, pageWidth - margin, yPosGab);
         yPosGab += 30;
 
+        // Título da seção de respostas
+        pdfGabarito.setFont('helvetica', 'bold');
+        pdfGabarito.setFontSize(12);
+        pdfGabarito.setTextColor(30, 41, 59); // slate-800
+        pdfGabarito.text('RESPOSTAS', margin, yPosGab);
+        yPosGab += 20;
+
         // Respostas em colunas
         pdfGabarito.setFont('helvetica', 'normal');
         pdfGabarito.setFontSize(11);
+        pdfGabarito.setTextColor(51, 65, 85); // slate-700
         
         const colunas = 4;
         const questoesPorColuna = Math.ceil(questoes.length / colunas);
