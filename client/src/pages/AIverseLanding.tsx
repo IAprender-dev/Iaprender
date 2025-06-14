@@ -106,12 +106,27 @@ export default function AIverseLanding() {
               </span>
             </div>
 
-            <div className="hidden lg:flex items-center space-x-8">
-              <a href="#plataforma" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Plataforma</a>
-              <a href="#inteligencias" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Inteligências</a>
-              <a href="#educacao" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Para Educação</a>
-              <a href="#impacto" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Impacto</a>
-              <a href="#recursos" className="text-gray-700 hover:text-indigo-600 transition-colors font-medium">Recursos</a>
+            <div className="hidden lg:flex items-center space-x-1">
+              <a href="#plataforma" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-lg hover:shadow-lg hover:shadow-slate-900/25 hover:scale-105">
+                <span className="relative z-10">Plataforma</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/10 to-slate-700/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </a>
+              <a href="#inteligencias" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-lg hover:shadow-lg hover:shadow-indigo-900/25 hover:scale-105">
+                <span className="relative z-10">Inteligências</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/10 to-purple-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </a>
+              <a href="#educacao" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-lg hover:shadow-lg hover:shadow-emerald-900/25 hover:scale-105">
+                <span className="relative z-10">Para Educação</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 to-teal-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </a>
+              <a href="#impacto" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-lg hover:shadow-lg hover:shadow-rose-900/25 hover:scale-105">
+                <span className="relative z-10">Impacto</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-rose-900/10 to-pink-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </a>
+              <a href="#recursos" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-amber-900 hover:to-orange-800 rounded-lg hover:shadow-lg hover:shadow-amber-900/25 hover:scale-105">
+                <span className="relative z-10">Recursos</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-900/10 to-orange-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </a>
             </div>
 
             <div className="hidden lg:flex items-center space-x-4">
@@ -132,15 +147,25 @@ export default function AIverseLanding() {
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t">
-            <div className="px-4 py-4 space-y-3">
-              <a href="#plataforma" className="block py-2 text-gray-700 hover:text-indigo-600">Plataforma</a>
-              <a href="#inteligencias" className="block py-2 text-gray-700 hover:text-indigo-600">Inteligências</a>
-              <a href="#educacao" className="block py-2 text-gray-700 hover:text-indigo-600">Para Educação</a>
-              <a href="#impacto" className="block py-2 text-gray-700 hover:text-indigo-600">Impacto</a>
-              <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600">
-                Acessar AIverse
-              </Button>
+          <div className="lg:hidden bg-gradient-to-br from-slate-50 to-slate-100/80 border-t border-slate-200 backdrop-blur-sm">
+            <div className="px-4 py-6 space-y-2">
+              <a href="#plataforma" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-xl hover:shadow-lg hover:shadow-slate-900/20 hover:scale-105">
+                <span className="relative z-10">Plataforma</span>
+              </a>
+              <a href="#inteligencias" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-xl hover:shadow-lg hover:shadow-indigo-900/20 hover:scale-105">
+                <span className="relative z-10">Inteligências</span>
+              </a>
+              <a href="#educacao" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-xl hover:shadow-lg hover:shadow-emerald-900/20 hover:scale-105">
+                <span className="relative z-10">Para Educação</span>
+              </a>
+              <a href="#impacto" className="group flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-300 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-xl hover:shadow-lg hover:shadow-rose-900/20 hover:scale-105">
+                <span className="relative z-10">Impacto</span>
+              </a>
+              <div className="pt-4 border-t border-slate-300/50">
+                <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-300 hover:scale-105 rounded-xl py-3 font-semibold tracking-wide">
+                  Acessar AIverse
+                </Button>
+              </div>
             </div>
           </div>
         )}
