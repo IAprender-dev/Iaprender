@@ -66,10 +66,39 @@ export default function AIverseLanding() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [activeSection, setActiveSection] = useState('');
+
+  // Smooth scroll to section and close mobile menu
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+      setActiveSection(sectionId);
+      setIsMobileMenuOpen(false); // Close mobile menu after selection
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
+      
+      // Track active section on scroll
+      const sections = ['plataforma', 'inteligencias', 'educacao', 'impacto', 'recursos'];
+      const scrollPosition = window.scrollY + 100;
+
+      for (const sectionId of sections) {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(sectionId);
+            break;
+          }
+        }
+      }
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -119,35 +148,57 @@ export default function AIverseLanding() {
               {/* Side-by-side color transitions */}
               <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-all duration-1000 rounded-2xl"></div>
               
-              <a href="#plataforma" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-lg hover:shadow-lg hover:shadow-slate-900/25 hover:scale-105 overflow-hidden">
+              <button 
+                onClick={() => scrollToSection('plataforma')}
+                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-slate-900/25 hover:scale-105 overflow-hidden ${
+                  activeSection === 'plataforma' 
+                    ? 'bg-gradient-to-r from-slate-900 to-slate-700 text-white shadow-lg shadow-slate-900/30' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700'
+                }`}
+              >
                 <span className="relative z-10">Plataforma</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-900/10 to-slate-700/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-slate-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_2s_ease-in-out_infinite]"></div>
-              </a>
+              </button>
               
-              <a href="#inteligencias" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-lg hover:shadow-lg hover:shadow-indigo-900/25 hover:scale-105 overflow-hidden">
+              <button 
+                onClick={() => scrollToSection('inteligencias')}
+                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-indigo-900/25 hover:scale-105 overflow-hidden ${
+                  activeSection === 'inteligencias' 
+                    ? 'bg-gradient-to-r from-indigo-900 to-purple-800 text-white shadow-lg shadow-indigo-900/30' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800'
+                }`}
+              >
                 <span className="relative z-10">Inteligências</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/10 to-purple-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-indigo-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_2.5s_ease-in-out_infinite]"></div>
-              </a>
+              </button>
               
-              <a href="#educacao" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-lg hover:shadow-lg hover:shadow-emerald-900/25 hover:scale-105 overflow-hidden">
+              <button 
+                onClick={() => scrollToSection('educacao')}
+                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-emerald-900/25 hover:scale-105 overflow-hidden ${
+                  activeSection === 'educacao' 
+                    ? 'bg-gradient-to-r from-emerald-900 to-teal-800 text-white shadow-lg shadow-emerald-900/30' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800'
+                }`}
+              >
                 <span className="relative z-10">Para Educação</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 to-teal-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-emerald-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_3s_ease-in-out_infinite]"></div>
-              </a>
+              </button>
               
-              <a href="#impacto" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-lg hover:shadow-lg hover:shadow-rose-900/25 hover:scale-105 overflow-hidden">
+              <button 
+                onClick={() => scrollToSection('impacto')}
+                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-rose-900/25 hover:scale-105 overflow-hidden ${
+                  activeSection === 'impacto' 
+                    ? 'bg-gradient-to-r from-rose-900 to-pink-800 text-white shadow-lg shadow-rose-900/30' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800'
+                }`}
+              >
                 <span className="relative z-10">Impacto</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-rose-900/10 to-pink-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
                 <div className="absolute inset-0 bg-gradient-to-l from-transparent via-rose-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_3.5s_ease-in-out_infinite]"></div>
-              </a>
-              
-              <a href="#recursos" className="group relative px-4 py-2.5 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-amber-900 hover:to-orange-800 rounded-lg hover:shadow-lg hover:shadow-amber-900/25 hover:scale-105 overflow-hidden">
-                <span className="relative z-10">Recursos</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-900/10 to-orange-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-amber-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_4s_ease-in-out_infinite]"></div>
-              </a>
+              </button>
             </div>
 
             <div className="hidden lg:flex items-center space-x-4">
@@ -159,9 +210,12 @@ export default function AIverseLanding() {
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-lg hover:bg-slate-200/80 transition-all duration-300"
             >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMobileMenuOpen ? 
+                <X className="h-6 w-6 text-slate-800 hover:text-slate-900" /> : 
+                <Menu className="h-6 w-6 text-slate-800 hover:text-slate-900" />
+              }
             </button>
           </div>
         </nav>
@@ -174,22 +228,50 @@ export default function AIverseLanding() {
             <div className="absolute inset-0 bg-gradient-to-t from-transparent via-slate-400/10 to-transparent animate-[flow_10s_ease-in-out_infinite]"></div>
             
             <div className="px-4 py-6 space-y-2 relative">
-              <a href="#plataforma" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700 rounded-xl hover:shadow-lg hover:shadow-slate-900/20 hover:scale-105 overflow-hidden">
+              <button 
+                onClick={() => scrollToSection('plataforma')}
+                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-slate-900/20 hover:scale-105 overflow-hidden ${
+                  activeSection === 'plataforma' 
+                    ? 'bg-gradient-to-r from-slate-900 to-slate-700 text-white shadow-lg shadow-slate-900/30 scale-105' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700'
+                }`}
+              >
                 <span className="relative z-10">Plataforma</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-slate-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </a>
-              <a href="#inteligencias" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800 rounded-xl hover:shadow-lg hover:shadow-indigo-900/20 hover:scale-105 overflow-hidden">
+              </button>
+              <button 
+                onClick={() => scrollToSection('inteligencias')}
+                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-indigo-900/20 hover:scale-105 overflow-hidden ${
+                  activeSection === 'inteligencias' 
+                    ? 'bg-gradient-to-r from-indigo-900 to-purple-800 text-white shadow-lg shadow-indigo-900/30 scale-105' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800'
+                }`}
+              >
                 <span className="relative z-10">Inteligências</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </a>
-              <a href="#educacao" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800 rounded-xl hover:shadow-lg hover:shadow-emerald-900/20 hover:scale-105 overflow-hidden">
+              </button>
+              <button 
+                onClick={() => scrollToSection('educacao')}
+                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-emerald-900/20 hover:scale-105 overflow-hidden ${
+                  activeSection === 'educacao' 
+                    ? 'bg-gradient-to-r from-emerald-900 to-teal-800 text-white shadow-lg shadow-emerald-900/30 scale-105' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800'
+                }`}
+              >
                 <span className="relative z-10">Para Educação</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </a>
-              <a href="#impacto" className="group relative flex items-center px-4 py-3 text-slate-800 hover:text-white font-semibold text-sm tracking-wide transition-all duration-500 hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800 rounded-xl hover:shadow-lg hover:shadow-rose-900/20 hover:scale-105 overflow-hidden">
+              </button>
+              <button 
+                onClick={() => scrollToSection('impacto')}
+                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-rose-900/20 hover:scale-105 overflow-hidden ${
+                  activeSection === 'impacto' 
+                    ? 'bg-gradient-to-r from-rose-900 to-pink-800 text-white shadow-lg shadow-rose-900/30 scale-105' 
+                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800'
+                }`}
+              >
                 <span className="relative z-10">Impacto</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-rose-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </a>
+              </button>
               <div className="pt-4 border-t border-slate-300/50 relative">
                 <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-500 hover:scale-105 rounded-xl py-3 font-semibold tracking-wide relative overflow-hidden group">
                   <span className="relative z-10">Acessar AIverse</span>
