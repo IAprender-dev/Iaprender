@@ -1294,12 +1294,14 @@ DADOS FORNECIDOS PELO PROFESSOR:
 ESTRUTURA OBRIGATÓRIA DO PLANEJAMENTO:
 
 1. IDENTIFICAÇÃO
-- Nome da escola/instituição
-- Professor(a) responsável
-- Disciplina/Componente curricular
-- Ano/Série - Turma
-- Data e duração da aula
-- Número de alunos
+- Nome da escola/instituição: ${escola || 'Não especificado'}
+- Professor(a) responsável: ${professor || 'Não especificado'}
+- Email do professor: ${emailProfessor || 'Não especificado'}
+- Disciplina/Componente curricular: ${finalDisciplina}
+- Ano/Série: ${finalAnoSerie}
+- Data da aula: ${new Date().toLocaleDateString('pt-BR')}
+- Duração da aula: ${duracao}
+- Número de alunos: ${numeroAlunos || 'Não especificado'}
 
 2. ALINHAMENTO CURRICULAR BNCC
 - Unidade Temática (quando aplicável)
