@@ -342,12 +342,13 @@ Gere o conteúdo em HTML bem formatado.`;
       pdf.setFont('helvetica', 'normal');
       
       const sanitizedContent = DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo));
-      const questoes = extrairQuestoes(sanitizedContent);
+      // Process content directly with line breaks preserved
+      const linhasConteudo = atividadeGerada.conteudo.split('\n').filter(linha => linha.trim() !== '');
       
-      if (questoes.length === 0) {
+      if (linhasConteudo.length === 0) {
         toast({
-          title: "Nenhuma questão encontrada",
-          description: "Não foi possível extrair questões da atividade.",
+          title: "Nenhum conteúdo encontrado",
+          description: "Não foi possível processar o conteúdo da atividade.",
           variant: "destructive",
         });
         return;
@@ -439,47 +440,45 @@ Gere o conteúdo em HTML bem formatado.`;
       pdf.text(atividadeGerada.titulo.toUpperCase(), pageWidth / 2, yPos, { align: 'center' });
       yPos += 30;
 
-      // Renderizar questões
-      questoes.forEach((questao) => {
+      // Process content line by line with proper formatting
+      linhasConteudo.forEach((linha, index) => {
         // Verificar quebra de página
         if (yPos + 80 > pageHeight - margin) {
           pdf.addPage();
           yPos = margin;
         }
         
-        // Questão
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59);
-        const linhasEnunciado = pdf.splitTextToSize(`${questao.numero}. ${questao.enunciado}`, contentWidth);
-        pdf.text(linhasEnunciado, margin, yPos);
-        yPos += linhasEnunciado.length * 15 + 10;
-        
-        // Alternativas ou espaço para resposta
-        if (questao.alternativas.length > 0 && questao.alternativas[0] !== 'Resposta:') {
-          questao.alternativas.forEach((alternativa: string) => {
-            pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(10);
-            pdf.setTextColor(71, 85, 105);
-            const linhasAlt = pdf.splitTextToSize(alternativa, contentWidth - 30);
-            pdf.text(linhasAlt, margin + 15, yPos);
-            yPos += linhasAlt.length * 12 + 5;
-          });
-        } else {
-          // Espaço para resposta dissertativa
+        // Check if it's a question number (starts with number and period)
+        if (/^\d+\./.test(linha.trim())) {
           pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(12);
+          pdf.setTextColor(30, 41, 59);
+          yPos += 10; // Extra space before questions
+        } 
+        // Check if it's an alternative (starts with letter and parenthesis)
+        else if (/^[a-e]\)/.test(linha.trim())) {
+          pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(10);
-          pdf.text('Resposta:', margin + 10, yPos);
-          yPos += 15;
-          
-          for (let i = 0; i < 4; i++) {
-            pdf.setDrawColor(200, 200, 200);
-            pdf.setLineWidth(0.5);
-            pdf.line(margin + 10, yPos, pageWidth - margin - 10, yPos);
-            yPos += 18;
-          }
+          pdf.setTextColor(71, 85, 105);
+          linha = '    ' + linha; // Indent alternatives
         }
-        yPos += 15;
+        // Check if it's a header or section
+        else if (linha.includes('GABARITO') || linha.includes('Atividade:')) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(14);
+          pdf.setTextColor(30, 41, 59);
+          yPos += 15; // Extra space before headers
+        }
+        // Regular text
+        else {
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(10);
+          pdf.setTextColor(71, 85, 105);
+        }
+        
+        const linhasTexto = pdf.splitTextToSize(linha, contentWidth);
+        pdf.text(linhasTexto, margin, yPos);
+        yPos += linhasTexto.length * 12 + 8;
       });
 
       // Rodapé
@@ -626,7 +625,7 @@ Gere o conteúdo em HTML bem formatado.`;
                 {/* Configurações da Atividade */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Quantidade de Questões</label>
+                    <label className="text-sm font-medium text-slate-200">Quantidade de Questões</label>
                     <div className="relative">
                       <input
                         type="number"
@@ -634,20 +633,20 @@ Gere o conteúdo em HTML bem formatado.`;
                         max="50"
                         value={quantidadeQuestoes}
                         onChange={(e) => setQuantidadeQuestoes(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
                         placeholder="Digite o número de questões (1-50)"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <span className="text-sm text-slate-500">questões</span>
+                        <span className="text-sm text-slate-400">questões</span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-500">Mínimo: 1 questão | Máximo: 50 questões</p>
+                    <p className="text-xs text-slate-400">Mínimo: 1 questão | Máximo: 50 questões</p>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Tipo de Atividade</label>
+                    <label className="text-sm font-medium text-slate-200">Tipo de Atividade</label>
                     <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
-                      <SelectTrigger className="border-slate-300">
+                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -713,10 +712,10 @@ Gere o conteúdo em HTML bem formatado.`;
           {/* Resultado */}
           <div className="lg:col-span-2">
             {atividadeGerada ? (
-              <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
-                <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+              <Card className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/30 shadow-2xl">
+                <CardHeader className="border-b border-cyan-500/20 bg-gradient-to-r from-slate-800/50 to-slate-700/50">
                   {/* Header profissional com informações do usuário */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-white rounded-lg border border-slate-200 shadow-sm">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-slate-700/50 rounded-lg border border-cyan-500/20 shadow-sm">
                     {/* Informações da Escola/Professor */}
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-slate-700">
