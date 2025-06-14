@@ -215,6 +215,9 @@ export default function PlanejamentoAula() {
         },
         body: JSON.stringify({ 
           ...formData,
+          anoSerie: temaAnalysis?.anoSerie || '',
+          professor: user ? `${user.firstName} ${user.lastName}` : '',
+          emailProfessor: user?.email || '',
           analysis: temaAnalysis 
         }),
       });
@@ -860,26 +863,14 @@ export default function PlanejamentoAula() {
                     <CardTitle className="text-xl font-bold text-slate-900">Plano de Aula</CardTitle>
                   </div>
                   {planoGerado && (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={salvarPlano}
-                        className="gap-2"
-                      >
-                        <Save className="h-4 w-4" />
-                        Salvar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={exportarPDF}
-                        className="gap-2"
-                      >
-                        <Download className="h-4 w-4" />
-                        PDF
-                      </Button>
-                    </div>
+                    <Button
+                      size="sm"
+                      className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                      onClick={exportarPDF}
+                    >
+                      <Download className="h-4 w-4" />
+                      Baixar PDF
+                    </Button>
                   )}
                 </div>
               </CardHeader>

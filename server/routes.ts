@@ -1268,14 +1268,19 @@ RESPONDA APENAS COM JSON VÁLIDO:
         objetivosEspecificos, 
         escola, 
         professor,
+        emailProfessor,
         analysis 
       } = req.body;
+
+      // Extract disciplina and anoSerie from analysis if not provided
+      const finalDisciplina = disciplina || analysis?.disciplina || 'Não especificado';
+      const finalAnoSerie = anoSerie || analysis?.anoSerie || 'Não especificado';
 
       const comprehensivePrompt = `Você é um especialista em educação brasileira com amplo conhecimento da BNCC, diretrizes do MEC e metodologias pedagógicas contemporâneas. Sua função é criar planejamentos de aula completos, profissionais e alinhados às normativas educacionais brasileiras.
 
 DADOS FORNECIDOS PELO PROFESSOR:
-- Disciplina/Componente Curricular: ${disciplina}
-- Ano/Série e Etapa de Ensino: ${anoSerie} - ${etapaEnsino}
+- Disciplina/Componente Curricular: ${finalDisciplina}
+- Ano/Série e Etapa de Ensino: ${finalAnoSerie} - ${etapaEnsino || 'Não especificado'}
 - Tema/Conteúdo específico: ${tema}
 - Duração da aula: ${duracao} minutos
 - Recursos disponíveis: ${recursos || 'Não especificado'}
@@ -1284,6 +1289,7 @@ DADOS FORNECIDOS PELO PROFESSOR:
 - Objetivos específicos: ${objetivosEspecificos || 'Não especificado'}
 - Nome da escola: ${escola || 'Não especificado'}
 - Professor responsável: ${professor || 'Não especificado'}
+- Email do professor: ${emailProfessor || 'Não especificado'}
 
 ESTRUTURA OBRIGATÓRIA DO PLANEJAMENTO:
 
