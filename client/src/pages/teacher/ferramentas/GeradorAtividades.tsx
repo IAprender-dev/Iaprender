@@ -552,7 +552,12 @@ Gere o conteúdo em HTML bem formatado.`;
                     onChange={(e) => setTema(e.target.value)}
                     className="min-h-[80px] border-slate-300 focus:border-blue-500"
                   />
-                  <TextEncodingValidator text={tema} />
+                  {/* Simple validation for Portuguese characters */}
+                  {tema && !/^[\w\s\u00C0-\u017F\u0100-\u024F\u1E00-\u1EFF.,!?;:()\-"']*$/.test(tema) && (
+                    <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                      ⚠️ Alguns caracteres podem não ser suportados. Use apenas letras, números e pontuação básica.
+                    </p>
+                  )}
                 </div>
 
                 {/* Configurações Básicas */}
@@ -657,7 +662,7 @@ Gere o conteúdo em HTML bem formatado.`;
                     <Checkbox
                       id="gabarito"
                       checked={incluirGabarito}
-                      onCheckedChange={setIncluirGabarito}
+                      onCheckedChange={(checked) => setIncluirGabarito(checked === true)}
                     />
                     <label htmlFor="gabarito" className="text-sm text-slate-700 cursor-pointer">
                       Incluir gabarito separado
