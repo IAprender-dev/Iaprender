@@ -126,13 +126,12 @@ Gere o conteúdo em HTML bem formatado.`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt,
-          subject: materia,
-          gradeLevel: serie,
+          topic: tema,
+          subject: materia.toLowerCase(),
+          grade: serie,
           questionCount: quantidadeQuestoes,
-          activityType: tipoAtividade,
-          difficulty: nivelDificuldade,
-          includeAnswer: incluirGabarito
+          validateTopic: true,
+          previousQuestions: []
         }),
       });
 
@@ -142,12 +141,32 @@ Gere o conteúdo em HTML bem formatado.`;
 
       const data = await response.json();
       
+      // Convert quiz questions to HTML format
+      let htmlContent = `<h2>Atividade: ${tema}</h2>`;
+      
+      if (data.questions && Array.isArray(data.questions)) {
+        data.questions.forEach((question: any, index: number) => {
+          htmlContent += `
+            <div class="question">
+              <h3>${index + 1}. ${question.question}</h3>
+              <div class="alternatives">
+                ${question.options.map((option: string, optIndex: number) => 
+                  `<p>${String.fromCharCode(97 + optIndex)}) ${option}</p>`
+                ).join('')}
+              </div>
+            </div>
+          `;
+        });
+      } else {
+        htmlContent += `<p>Erro ao processar as questões geradas.</p>`;
+      }
+      
       const novaAtividade: AtividadeGerada = {
         id: Date.now().toString(),
         titulo: `Atividade: ${tema}`,
         materia,
         serie,
-        conteudo: data.content || data.quiz || '',
+        conteudo: htmlContent,
         tipoAtividade,
         dataGeracao: new Date(),
         quantidadeQuestoes,
@@ -613,17 +632,21 @@ Gere o conteúdo em HTML bem formatado.`;
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Quantidade de Questões</label>
-                    <Select value={quantidadeQuestoes.toString()} onValueChange={(value) => setQuantidadeQuestoes(parseInt(value))}>
-                      <SelectTrigger className="border-slate-300">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5 questões</SelectItem>
-                        <SelectItem value="10">10 questões</SelectItem>
-                        <SelectItem value="15">15 questões</SelectItem>
-                        <SelectItem value="20">20 questões</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={quantidadeQuestoes}
+                        onChange={(e) => setQuantidadeQuestoes(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Digite o número de questões (1-50)"
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <span className="text-sm text-slate-500">questões</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500">Mínimo: 1 questão | Máximo: 50 questões</p>
                   </div>
 
                   <div className="space-y-2">
