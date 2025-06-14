@@ -598,9 +598,9 @@ export default function GeradorAtividades() {
         pdf.setFontSize(10);
         pdf.setTextColor(51, 65, 85); // slate-700
 
-        // Unidade Temática
+        // Unidade temática
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Unidade Temática:', margin, yPos);
+        pdf.text('Unidade temática:', margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const unidadeTematica = 'Matéria e Energia';
         pdf.text(unidadeTematica, margin + 100, yPos);
@@ -622,17 +622,17 @@ export default function GeradorAtividades() {
         pdf.text(habilidades, margin + 70, yPos);
         yPos += 15;
 
-        // Competências Gerais
+        // Competências gerais
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Competências Gerais:', margin, yPos);
+        pdf.text('Competências gerais:', margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const competenciasGerais = 'Conhecimento científico';
         pdf.text(competenciasGerais, margin + 115, yPos);
         yPos += 15;
 
-        // Competências Específicas
+        // Competências específicas
         pdf.setFont('helvetica', 'bold');
-        pdf.text('Competências Específicas:', margin, yPos);
+        pdf.text('Competências específicas:', margin, yPos);
         pdf.setFont('helvetica', 'normal');
         const competenciasEspecificas = 'Ciências da Natureza';
         pdf.text(competenciasEspecificas, margin + 130, yPos);
@@ -677,6 +677,114 @@ export default function GeradorAtividades() {
         const linhasRelevancia = pdf.splitTextToSize(relevancia, contentWidth - 20);
         pdf.text(linhasRelevancia, margin + 10, yPos);
         yPos += linhasRelevancia.length * 14 + 30;
+
+        // ========== 4. OBJETIVOS DE APRENDIZAGEM ==========
+        verificarQuebraPagina(100);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text('4. OBJETIVOS DE APRENDIZAGEM', margin, yPos);
+        yPos += 20;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
+
+        // Objetivos específicos
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Objetivos específicos:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const objetivosEspecificos = `Desenvolver compreensão conceitual sobre ${tema}, aplicar conhecimentos em situações práticas e desenvolver habilidades de análise crítica.`;
+        const linhasObjetivos = pdf.splitTextToSize(objetivosEspecificos, contentWidth - 20);
+        pdf.text(linhasObjetivos, margin + 10, yPos);
+        yPos += linhasObjetivos.length * 14 + 30;
+
+        // ========== 5. METODOLOGIA ==========
+        verificarQuebraPagina(120);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text('5. METODOLOGIA', margin, yPos);
+        yPos += 20;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
+
+        // Estratégias de ensino
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Estratégias de ensino:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const estrategias = 'Abordagem investigativa, discussões dirigidas, atividades práticas e resolução de problemas contextualizados.';
+        const linhasEstrategias = pdf.splitTextToSize(estrategias, contentWidth - 20);
+        pdf.text(linhasEstrategias, margin + 10, yPos);
+        yPos += linhasEstrategias.length * 14 + 10;
+
+        // Momentos pedagógicos
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Momentos pedagógicos:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const momentos = 'Problematização inicial, organização do conhecimento e aplicação do conhecimento.';
+        const linhasMomentos = pdf.splitTextToSize(momentos, contentWidth - 20);
+        pdf.text(linhasMomentos, margin + 10, yPos);
+        yPos += linhasMomentos.length * 14 + 30;
+
+        // ========== 6. SEQUÊNCIA DIDÁTICA ==========
+        verificarQuebraPagina(100);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text('6. SEQUÊNCIA DIDÁTICA', margin, yPos);
+        yPos += 20;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
+
+        // Início
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Início:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const inicio = 'Apresentação do tema, levantamento de conhecimentos prévios e problematização inicial.';
+        const linhasInicio = pdf.splitTextToSize(inicio, contentWidth - 20);
+        pdf.text(linhasInicio, margin + 10, yPos);
+        yPos += linhasInicio.length * 14 + 30;
+
+        // ========== 7. RECURSOS DIDÁTICOS ==========
+        verificarQuebraPagina(120);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text('7. RECURSOS DIDÁTICOS', margin, yPos);
+        yPos += 20;
+
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        pdf.setTextColor(51, 65, 85); // slate-700
+
+        // Materiais necessários
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Materiais necessários:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const materiais = 'Quadro, projetor, material impresso, computador com acesso à internet.';
+        const linhasMateriais = pdf.splitTextToSize(materiais, contentWidth - 20);
+        pdf.text(linhasMateriais, margin + 10, yPos);
+        yPos += linhasMateriais.length * 14 + 10;
+
+        // Espaços físicos
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Espaços físicos:', margin, yPos);
+        yPos += 15;
+        pdf.setFont('helvetica', 'normal');
+        const espacos = 'Sala de aula tradicional, laboratório (se disponível).';
+        const linhasEspacos = pdf.splitTextToSize(espacos, contentWidth - 20);
+        pdf.text(linhasEspacos, margin + 10, yPos);
+        yPos += linhasEspacos.length * 14 + 30;
       };
 
       // Função para verificar espaço e quebrar página se necessário
@@ -710,12 +818,190 @@ export default function GeradorAtividades() {
       // Adicionar cabeçalho inicial
       adicionarCabecalho(true);
 
-      // ========== 4. QUESTÕES ==========
+      // ========== 8. AVALIAÇÃO ==========
+      verificarQuebraPagina(120);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('8. AVALIAÇÃO', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      // Critérios
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Critérios:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const criteriosAvaliacao = 'Compreensão conceitual, aplicação prática, participação e qualidade das respostas.';
+      const linhasCriterios = pdf.splitTextToSize(criteriosAvaliacao, contentWidth - 20);
+      pdf.text(linhasCriterios, margin + 10, yPos);
+      yPos += linhasCriterios.length * 14 + 30;
+
+      // ========== 9. INCLUSÃO E ACESSIBILIDADE ==========
+      verificarQuebraPagina(150);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('9. INCLUSÃO E ACESSIBILIDADE', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      // Adaptações
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Adaptações:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const adaptacoes = 'Material em fonte ampliada, tempo adicional para realização, suporte visual e tátil quando necessário.';
+      const linhasAdaptacoes = pdf.splitTextToSize(adaptacoes, contentWidth - 20);
+      pdf.text(linhasAdaptacoes, margin + 10, yPos);
+      yPos += linhasAdaptacoes.length * 14 + 10;
+
+      // Estratégias inclusivas
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Estratégias inclusivas:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const estrategiasInclusivas = 'Diversificação de linguagens, recursos multissensoriais e trabalho colaborativo.';
+      const linhasEstrategiasInc = pdf.splitTextToSize(estrategiasInclusivas, contentWidth - 20);
+      pdf.text(linhasEstrategiasInc, margin + 10, yPos);
+      yPos += linhasEstrategiasInc.length * 14 + 30;
+
+      // ========== 10. INTERDISCIPLINARIDADE ==========
+      verificarQuebraPagina(120);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('10. INTERDISCIPLINARIDADE', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      // Conexões
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Conexões:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const conexoes = 'Matemática, Física, Geografia e História nas aplicações e contextos do tema.';
+      const linhasConexoes = pdf.splitTextToSize(conexoes, contentWidth - 20);
+      pdf.text(linhasConexoes, margin + 10, yPos);
+      yPos += linhasConexoes.length * 14 + 10;
+
+      // Integração de áreas
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Integração de áreas:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const integracaoAreas = 'Articulação entre conhecimentos científicos e suas aplicações tecnológicas e sociais.';
+      const linhasIntegracao = pdf.splitTextToSize(integracaoAreas, contentWidth - 20);
+      pdf.text(linhasIntegracao, margin + 10, yPos);
+      yPos += linhasIntegracao.length * 14 + 30;
+
+      // ========== 11. CONTEXTUALIZAÇÃO ==========
+      verificarQuebraPagina(120);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('11. CONTEXTUALIZAÇÃO', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      // Aplicações práticas
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Aplicações práticas:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const aplicacoesPraticas = 'Exemplos do cotidiano, situações reais e problemas da comunidade local.';
+      const linhasAplicacoes = pdf.splitTextToSize(aplicacoesPraticas, contentWidth - 20);
+      pdf.text(linhasAplicacoes, margin + 10, yPos);
+      yPos += linhasAplicacoes.length * 14 + 30;
+
+      // ========== 12. EXTENSÃO E APROFUNDAMENTO ==========
       verificarQuebraPagina(100);
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(12);
       pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('4. QUESTÕES', margin, yPos);
+      pdf.text('12. EXTENSÃO E APROFUNDAMENTO', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+      const extensao = 'Atividades complementares, pesquisas dirigidas e projetos investigativos para aprofundamento do tema.';
+      const linhasExtensao = pdf.splitTextToSize(extensao, contentWidth - 20);
+      pdf.text(linhasExtensao, margin + 10, yPos);
+      yPos += linhasExtensao.length * 14 + 30;
+
+      // ========== 13. REFLEXÃO DOCENTE ==========
+      verificarQuebraPagina(150);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('13. REFLEXÃO DOCENTE', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      // Pontos de atenção
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Pontos de atenção:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const pontosAtencao = 'Observar ritmo de aprendizagem, dificuldades específicas e engajamento dos estudantes.';
+      const linhasPontos = pdf.splitTextToSize(pontosAtencao, contentWidth - 20);
+      pdf.text(linhasPontos, margin + 10, yPos);
+      yPos += linhasPontos.length * 14 + 10;
+
+      // Adaptações possíveis
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Adaptações possíveis:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const adaptacoesPossiveis = 'Ajustes metodológicos, recursos alternativos e estratégias diferenciadas conforme necessidade.';
+      const linhasAdaptacoesPoss = pdf.splitTextToSize(adaptacoesPossiveis, contentWidth - 20);
+      pdf.text(linhasAdaptacoesPoss, margin + 10, yPos);
+      yPos += linhasAdaptacoesPoss.length * 14 + 30;
+
+      // ========== 14. REFERÊNCIAS ==========
+      verificarQuebraPagina(100);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('14. REFERÊNCIAS', margin, yPos);
+      yPos += 20;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85); // slate-700
+
+      // Bibliográficas
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Bibliográficas:', margin, yPos);
+      yPos += 15;
+      pdf.setFont('helvetica', 'normal');
+      const referencias = 'BRASIL. Base Nacional Comum Curricular. Brasília: MEC, 2018. Livro didático adotado pela escola.';
+      const linhasReferencias = pdf.splitTextToSize(referencias, contentWidth - 20);
+      pdf.text(linhasReferencias, margin + 10, yPos);
+      yPos += linhasReferencias.length * 14 + 30;
+
+      // ========== 15. QUESTÕES ==========
+      verificarQuebraPagina(100);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(12);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text('15. QUESTÕES', margin, yPos);
       yPos += 30;
 
       // Gerar questões com styling melhorado
@@ -857,7 +1143,7 @@ export default function GeradorAtividades() {
         pdfGabarito.setFont('helvetica', 'normal');
         pdfGabarito.setFontSize(12);
         pdfGabarito.setTextColor(51, 65, 85); // slate-700
-        const subtituloGab = `${disciplina} • ${serieInfo}`;
+        const subtituloGab = `${temaAnalysis?.disciplina || 'Disciplina'} • ${temaAnalysis?.anoSerie || 'Série'}`;
         const subtituloGabWidth = pdfGabarito.getTextWidth(subtituloGab);
         pdfGabarito.text(subtituloGab, (pageWidth - subtituloGabWidth) / 2, yPosGab);
         yPosGab += 20;
