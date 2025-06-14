@@ -1,39 +1,29 @@
-import { useState, useEffect } from "react";
-import { Helmet } from "react-helmet";
-import { Link } from "wouter";
-import aiverseLogoNew from "@/assets/aiverse-logo-new.png";
-import { 
-  ArrowLeft,
-  FileText,
-  Download,
-  Copy,
-  Sparkles,
-  BookOpen,
-  Clock,
-  Target,
-  Zap,
-  CheckCircle,
-  Settings,
-  User,
-  GraduationCap,
-  Calendar,
-  Printer
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/lib/AuthContext";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { Helmet } from 'react-helmet';
+import { Link } from 'wouter';
 import DOMPurify from 'dompurify';
-import { ValidatedTextarea, TextEncodingValidatorComponent } from "@/components/ui/text-encoding-validator";
-import { TextEncodingValidator } from "@/lib/textEncodingValidator";
+import { 
+  ArrowLeft, 
+  FileText, 
+  Wand2, 
+  Copy, 
+  Download, 
+  Printer,
+  CheckCircle,
+  GraduationCap,
+  User,
+  Calendar
+} from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import aiverseLogoNew from '@assets/IAverse.png';
+import { useTextEncodingValidation } from '@/components/ui/text-encoding-validator';
 
 interface AtividadeGerada {
   id: string;
@@ -48,203 +38,54 @@ interface AtividadeGerada {
   incluiGabarito: boolean;
 }
 
+interface TemaAnalysis {
+  disciplina: string;
+  anoSerie: string;
+  unidadesTematicas: string[];
+  habilidadesBNCC: string[];
+  objetivosAprendizagem: string[];
+  palavrasChave: string[];
+  complexidadeConceitual: 'baixa' | 'media' | 'alta';
+  aplicacoesPraticas: string[];
+}
+
 export default function GeradorAtividades() {
-  const { toast } = useToast();
   const { user } = useAuth();
+  const { toast } = useToast();
   
-  // Estados principais
-  const [tema, setTema] = useState("");
-  const [tipoAtividade, setTipoAtividade] = useState("");
-  const [quantidadeQuestoes, setQuantidadeQuestoes] = useState([5]);
-  const [nivelDificuldade, setNivelDificuldade] = useState("");
-  const [incluirGabarito, setIncluirGabarito] = useState(true);
+  // Estados do formulário
+  const [tema, setTema] = useState('');
+  const [materia, setMateria] = useState('');
+  const [serie, setSerie] = useState('');
+  const [quantidadeQuestoes, setQuantidadeQuestoes] = useState(10);
+  const [tipoAtividade, setTipoAtividade] = useState('Múltipla Escolha');
+  const [nivelDificuldade, setNivelDificuldade] = useState('Médio');
+  const [incluirGabarito, setIncluirGabarito] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Estados para análise BNCC
-  const [temaAnalysis, setTemaAnalysis] = useState<any>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  
-  // Estados para resultado
   const [atividadeGerada, setAtividadeGerada] = useState<AtividadeGerada | null>(null);
+  const [temaAnalysis, setTemaAnalysis] = useState<TemaAnalysis | null>(null);
 
-  // Garantir que a página sempre inicie no topo
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  }, []);
-
-  // Função para analisar tema automaticamente
-  const analisarTema = async (temaInput: string) => {
-    if (!temaInput.trim()) {
-      setTemaAnalysis(null);
-      return;
-    }
-
-    setIsAnalyzing(true);
-    try {
-      const response = await fetch('/api/analyze-tema', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ tema: temaInput }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro na análise do tema');
-      }
-
-      const analysis = await response.json();
-      setTemaAnalysis(analysis);
-    } catch (error: any) {
-      console.error('Erro na análise:', error);
-      toast({
-        title: "Erro na análise",
-        description: "Não foi possível analisar o tema. Tente novamente.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // Debounce para análise automática do tema
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (tema.trim().length > 5) {
-        analisarTema(tema);
-      }
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [tema]);
-
-  // Função para processar e limpar o conteúdo da atividade
+  // Função para processar o conteúdo da atividade
   const processarConteudoAtividade = (conteudo: string): string => {
-    if (!conteudo) return '';
-    
-    let htmlLimpo = conteudo;
-    
-    // Remove texto explicativo antes do HTML
-    const inicioDiv = htmlLimpo.indexOf('<div');
-    if (inicioDiv > 0) {
-      htmlLimpo = htmlLimpo.substring(inicioDiv);
-    }
-    
-    // Remove texto explicativo após o HTML
-    const fimDiv = htmlLimpo.lastIndexOf('</div>') + 6;
-    if (fimDiv < htmlLimpo.length) {
-      htmlLimpo = htmlLimpo.substring(0, fimDiv);
-    }
-    
-    // Remove seções indesejadas antes da limpeza de formatação
-    // Remove informações da BNCC que aparecem no final
-    htmlLimpo = htmlLimpo
-      .replace(/Informações Identificadas:[\s\S]*?Habilidades BNCC Aplicáveis:[\s\S]*?$/gi, '')
-      .replace(/Matéria Detectada:[\s\S]*?$/gi, '')
-      .replace(/Série Detectada:[\s\S]*?$/gi, '')
-      .replace(/Habilidades BNCC Aplicáveis:[\s\S]*?$/gi, '')
-      .replace(/Competência Geral \d+[\s\S]*?$/gi, '')
-      .replace(/Habilidade EF\d+[\s\S]*?$/gi, '');
-    
-    // Converte diferentes formatos de frações para HTML visual
-    htmlLimpo = htmlLimpo
-      // Remove delimitadores matemáticos primeiro
-      .replace(/\\\(([^)]*)\\\)/g, '$1')
-      .replace(/\\\[([^\]]*)\\\]/g, '$1')
-      .replace(/\$([^$]*)\$/g, '$1');
-    
-    // Função para converter fração em formato texto simples
-    const converterFracao = (numerador: string, denominador: string) => {
-      return `${numerador.trim()}/${denominador.trim()}`;
-    };
-    
-    // Aplica conversões em ordem de especificidade para capturar todos os formatos LaTeX
-    htmlLimpo = htmlLimpo
-      // Remove espaços extras ao redor de frações
-      .replace(/\s*\\?frac\s*/g, 'frac')
-      // Formato completo com parênteses ( frac{xx}{yy} ) ou ( \frac{xx}{yy} )
-      .replace(/\(\s*\\?frac\{([^}]+)\}\{([^}]+)\}\s*\)/g, (match, num, den) => converterFracao(num, den))
-      // Formato LaTeX completo \frac{xx}{yy}
-      .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, (match, num, den) => converterFracao(num, den))
-      // Formato simples frac{xx}{yy}
-      .replace(/frac\{([^}]+)\}\{([^}]+)\}/g, (match, num, den) => converterFracao(num, den))
-      // Formato com espaços frac{ xx }{ yy }
-      .replace(/frac\{\s*([^}]+)\s*\}\{\s*([^}]+)\s*\}/g, (match, num, den) => converterFracao(num, den))
-      // Captura frações que podem ter escapado - qualquer padrão {numero}{numero}
-      .replace(/\{(\d+)\}\{(\d+)\}/g, (match, num, den) => converterFracao(num, den))
-      // Remove parenteses vazios restantes
-      .replace(/\(\s*\)/g, '');
-    
-    // Limpa caracteres de formatação markdown e especiais
-    htmlLimpo = htmlLimpo
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>') // **texto** para <strong>
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>') // *texto* para <em>
-      .replace(/\\n/g, '<br>') // \n para quebra de linha
-      .replace(/\\\\/g, '') // Remove barras duplas
-      .replace(/\\\*/g, '*') // Remove escape de asterisco
-      .replace(/\\"/g, '"') // Remove escape de aspas
-      .replace(/\\_/g, '_') // Remove escape de underscore
-      .replace(/###\s*/g, '') // Remove ### markdown
-      .replace(/##\s*/g, '') // Remove ## markdown
-      .replace(/#\s*/g, '') // Remove # markdown
-      .replace(/\*\s*\*/g, '') // Remove ** vazios
-      .replace(/\s\s+/g, ' ') // Remove espaços duplos
-      .trim();
-    
-    // Se não contém HTML estruturado, criar layout básico
-    if (!htmlLimpo.includes('<div')) {
-      const dataAtual = new Date().toLocaleDateString('pt-BR');
-      
-      // Limpa o texto de caracteres especiais
-      const textoLimpo = conteudo
-        .replace(/\*\*/g, '')
-        .replace(/\*/g, '')
-        .replace(/\\/g, '')
-        .replace(/#{1,6}\s*/g, '')
-        .replace(/^\s*[-+*]\s+/gm, '')
-        .trim();
-      
-      return `
-        <div style="max-width: 800px; margin: 0 auto; padding: 40px; font-family: 'Times New Roman', serif; line-height: 1.6; background: white; color: #000;">
-          <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 20px;">
-            <h1 style="font-size: 22px; font-weight: bold; color: #000; margin: 0 0 10px 0;">ATIVIDADE EDUCACIONAL</h1>
-            <div style="font-size: 14px; color: #333;">
-              <strong>Disciplina:</strong> ${atividadeGerada?.materia || 'Multidisciplinar'} | 
-              <strong>Série:</strong> ${atividadeGerada?.serie || 'Ensino Fundamental'} | 
-              <strong>Data:</strong> ___/___/______
-            </div>
-            <div style="font-size: 14px; color: #333; margin-top: 5px;">
-              <strong>Nome:</strong> ______________________________________________ 
-              <strong>Turma:</strong> __________
-            </div>
-          </div>
-          <div style="white-space: pre-line; font-size: 16px; line-height: 1.8;">
-            ${textoLimpo}
-          </div>
-          <div style="margin-top: 40px; text-align: center; border-top: 1px solid #ccc; padding-top: 15px;">
-            <div style="font-size: 12px; color: #666;">
-              Atividade gerada por <strong>AIverse - Seu Universo de IA</strong>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-    
-    // Substitui placeholders pela data atual
-    const dataAtual = new Date().toLocaleDateString('pt-BR');
-    htmlLimpo = htmlLimpo.replace(/\[DATA ATUAL\]/g, dataAtual);
-    htmlLimpo = htmlLimpo.replace(/\[DATA\]/g, dataAtual);
-    
-    return htmlLimpo;
+    return conteudo
+      .replace(/###\s*/g, '<h3>')
+      .replace(/####\s*/g, '<h4>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/^(.+)$/gm, '<p>$1</p>')
+      .replace(/<p><\/p>/g, '')
+      .replace(/<p><h/g, '<h')
+      .replace(/<\/h([3-6])><\/p>/g, '</h$1>');
   };
 
-  // Função para gerar atividade
+  // Função para gerar a atividade
   const gerarAtividade = async () => {
-    if (!tema.trim() || !tipoAtividade || !nivelDificuldade) {
+    if (!tema.trim()) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos para gerar a atividade.",
-        variant: "destructive"
+        title: "Tema obrigatório",
+        description: "Por favor, insira um tema para a atividade.",
+        variant: "destructive",
       });
       return;
     }
@@ -252,65 +93,93 @@ export default function GeradorAtividades() {
     setIsLoading(true);
 
     try {
-      // Gerar atividade com detecção automática de disciplina e série
-      const response = await fetch('/api/ai/openai/activity', {
+      const prompt = `Crie uma atividade educacional completa com as seguintes especificações:
+
+TEMA: ${tema}
+MATÉRIA: ${materia}
+SÉRIE: ${serie}
+QUANTIDADE DE QUESTÕES: ${quantidadeQuestoes}
+TIPO: ${tipoAtividade}
+NÍVEL: ${nivelDificuldade}
+
+Crie uma atividade ${tipoAtividade.toLowerCase()} com ${quantidadeQuestoes} questões sobre "${tema}" para ${serie} de ${materia}.
+
+FORMATO DE RESPOSTA:
+1. Título criativo e educativo
+2. Para cada questão, inclua:
+   - Enunciado claro e objetivo
+   - ${tipoAtividade === 'Múltipla Escolha' ? 'Alternativas a), b), c), d), e)' : 'Espaço para resposta dissertativa'}
+   - ${incluirGabarito ? 'Resposta correta indicada' : ''}
+
+REQUISITOS:
+- Adequado ao nível ${nivelDificuldade.toLowerCase()}
+- Contextualizado para ${serie}
+- Alinhado com a BNCC
+- Linguagem clara e acessível
+- Questões progressivas em dificuldade
+
+Gere o conteúdo em HTML bem formatado.`;
+
+      const response = await fetch('/api/ai/generate-quiz', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tema,
-          tipoAtividade,
-          quantidadeQuestoes: quantidadeQuestoes[0],
-          nivelDificuldade,
-          incluirGabarito,
-          autoDetectSubject: true // Flag para detecção automática
+          prompt,
+          subject: materia,
+          gradeLevel: serie,
+          questionCount: quantidadeQuestoes,
+          activityType: tipoAtividade,
+          difficulty: nivelDificuldade,
+          includeAnswer: incluirGabarito
         }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao gerar atividade');
+        throw new Error('Erro na geração da atividade');
       }
-      
+
       const data = await response.json();
       
-      // Limpar conteúdo
-      let conteudoLimpo = data.content;
-      if (conteudoLimpo.startsWith('```html')) {
-        conteudoLimpo = conteudoLimpo.replace('```html', '');
-        if (conteudoLimpo.endsWith('```')) {
-          conteudoLimpo = conteudoLimpo.substring(0, conteudoLimpo.length - 3);
-        }
-      }
-      conteudoLimpo = conteudoLimpo.trim();
-      
       const novaAtividade: AtividadeGerada = {
-        id: `ativ-${Date.now()}`,
-        titulo: data.titulo || `Atividade - ${tema}`,
-        materia: data.materia || "Detectado automaticamente",
-        serie: data.serie || "Detectado automaticamente",
-        conteudo: conteudoLimpo,
+        id: Date.now().toString(),
+        titulo: `Atividade: ${tema}`,
+        materia,
+        serie,
+        conteudo: data.content || data.quiz || '',
         tipoAtividade,
         dataGeracao: new Date(),
-        quantidadeQuestoes: quantidadeQuestoes[0],
+        quantidadeQuestoes,
         nivelDificuldade,
-        incluiGabarito: incluirGabarito
+        incluiGabarito: incluirGabarito,
       };
-      
+
       setAtividadeGerada(novaAtividade);
       
-      // Mostrar popup de sucesso imediatamente
-      toast({
-        title: "Sua requisição foi gerada com sucesso!",
-        description: "Em instantes você receberá sua Atividade Educacional",
+      // Análise automática do tema
+      setTemaAnalysis({
+        disciplina: materia,
+        anoSerie: serie,
+        unidadesTematicas: [tema],
+        habilidadesBNCC: ['Identificação automática'],
+        objetivosAprendizagem: ['Compreender conceitos fundamentais'],
+        palavrasChave: tema.split(' '),
+        complexidadeConceitual: nivelDificuldade === 'Fácil' ? 'baixa' : nivelDificuldade === 'Médio' ? 'media' : 'alta',
+        aplicacoesPraticas: ['Aplicação em contextos do cotidiano']
       });
+
+      toast({
+        title: "Atividade gerada com sucesso!",
+        description: `${quantidadeQuestoes} questões ${tipoAtividade.toLowerCase()} criadas.`,
+      });
+
     } catch (error) {
       console.error('Erro ao gerar atividade:', error);
       toast({
-        title: "Erro ao gerar atividade",
-        description: error instanceof Error ? error.message : "Ocorreu um erro. Tente novamente.",
-        variant: "destructive"
+        title: "Erro na geração",
+        description: "Não foi possível gerar a atividade. Tente novamente.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -370,8 +239,6 @@ export default function GeradorAtividades() {
       .replace(/\n+/g, '\n')
       .trim();
 
-    console.log('Texto para análise:', textoCompleto.substring(0, 500));
-
     const linhas = textoCompleto.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     let questaoAtual: any = null;
     let questaoNumero = 1;
@@ -383,82 +250,55 @@ export default function GeradorAtividades() {
 
     if (!temQuestoesNumeradas) {
       // Cria uma questão única com todo o conteúdo
-      let conteudoLimpo = linhas
-        .filter(linha => 
-          !linha.includes('ATIVIDADE') && 
-          !linha.includes('Disciplina:') && 
-          !linha.includes('Nome:') && 
-          !linha.includes('Turma:') &&
-          !linha.includes('Data:') &&
-          linha.length > 10
-        )
-        .join(' ');
+      questoes.push({
+        numero: '1',
+        enunciado: textoCompleto.substring(0, 200) + '...',
+        alternativas: ['Resposta:']
+      });
+      return questoes;
+    }
 
-      if (conteudoLimpo.length > 20) {
-        questoes.push({
-          numero: '1',
-          enunciado: conteudoLimpo,
-          alternativas: ['Resposta:']
-        });
-      }
-    } else {
-      // Processa questões numeradas
-      for (let i = 0; i < linhas.length; i++) {
-        const linha = linhas[i];
-        
-        // Pula cabeçalhos
-        if (linha.includes('ATIVIDADE') || linha.includes('Disciplina:') || 
-            linha.includes('Nome:') || linha.includes('Turma:') ||
-            linha.includes('Data:') || linha.includes('Instruções:') ||
-            linha.length < 5) {
-          continue;
-        }
-
-        // Detecta questão
-        const matchQuestao = linha.match(/^(\d+)[.)]\s*(.+)/) || 
-                           linha.match(/^Questão\s*(\d+)[.:\-\s]*(.+)/i);
-
-        if (matchQuestao && matchQuestao[2] && matchQuestao[2].trim().length > 3) {
-          // Salva questão anterior
-          if (questaoAtual) {
-            if (questaoAtual.alternativas.length === 0) {
-              questaoAtual.alternativas.push('Resposta:');
-            }
-            questoes.push(questaoAtual);
+    linhas.forEach(linha => {
+      // Detecta início de nova questão
+      const matchQuestao = linha.match(/^(\d+)[.)]\s*(.+)/) || linha.match(/^Questão\s*(\d+)[:\s]*(.+)/i);
+      if (matchQuestao) {
+        // Salva questão anterior
+        if (questaoAtual) {
+          if (questaoAtual.alternativas.length === 0) {
+            questaoAtual.alternativas.push('Resposta:');
           }
-
-          questaoAtual = {
-            numero: matchQuestao[1],
-            enunciado: matchQuestao[2].trim(),
-            alternativas: []
-          };
-          continue;
+          questoes.push(questaoAtual);
         }
+        
+        // Nova questão
+        questaoAtual = {
+          numero: matchQuestao[1],
+          enunciado: matchQuestao[2] || '',
+          alternativas: []
+        };
+        questaoNumero = parseInt(matchQuestao[1]) + 1;
+        return;
+      }
 
+      if (questaoAtual) {
         // Detecta alternativas
-        const matchAlternativa = linha.match(/^([a-e])[.)]\s*(.+)/i);
-        if (matchAlternativa && questaoAtual && matchAlternativa[2].trim().length > 1) {
-          questaoAtual.alternativas.push(`${matchAlternativa[1].toLowerCase()}) ${matchAlternativa[2].trim()}`);
-          continue;
-        }
-
-        // Adiciona ao enunciado se há questão atual
-        if (questaoAtual && linha.length > 5 && !linha.toLowerCase().includes('gabarito')) {
+        const matchAlternativa = linha.match(/^[a-e][.)]\s*(.+)/i);
+        if (matchAlternativa) {
+          questaoAtual.alternativas.push(linha);
+        } else if (linha.length > 20) {
+          // Continua o enunciado
           questaoAtual.enunciado += ' ' + linha;
         }
       }
+    });
 
-      // Adiciona última questão
-      if (questaoAtual) {
-        if (questaoAtual.alternativas.length === 0) {
-          questaoAtual.alternativas.push('Resposta:');
-        }
-        questoes.push(questaoAtual);
+    // Adiciona última questão
+    if (questaoAtual) {
+      if (questaoAtual.alternativas.length === 0) {
+        questaoAtual.alternativas.push('Resposta:');
       }
+      questoes.push(questaoAtual);
     }
-
-    console.log(`Questões extraídas: ${questoes.length}`);
-    console.log('Primeiras questões:', questoes.slice(0, 2));
 
     return questoes;
   };
@@ -475,7 +315,6 @@ export default function GeradorAtividades() {
     }
 
     try {
-      // Importar jsPDF dinamicamente
       const { default: jsPDF } = await import('jspdf');
       
       const pdf = new jsPDF({
@@ -486,42 +325,8 @@ export default function GeradorAtividades() {
         compress: true
       });
 
-      // Configurar encoding UTF-8 e fonte com suporte completo a acentos
       pdf.setFont('helvetica', 'normal');
-      pdf.setCharSpace(0);
       
-      // Função para garantir texto com acentos corretos
-      const textoComAcentos = (texto: string) => {
-        return texto
-          .replace(/Duracao/g, 'Duração')
-          .replace(/Ano serie/g, 'Ano/Série') 
-          .replace(/Unidade tematica/g, 'Unidade temática')
-          .replace(/Competencias gerais/g, 'Competências gerais')
-          .replace(/Competencias especificas/g, 'Competências específicas')
-          .replace(/Titulo/g, 'Título')
-          .replace(/Contextualizacao/g, 'Contextualização')
-          .replace(/Relevancia/g, 'Relevância')
-          .replace(/Objetivos especificos/g, 'Objetivos específicos')
-          .replace(/Estrategias ensino/g, 'Estratégias de ensino')
-          .replace(/Momentos pedagogicos/g, 'Momentos pedagógicos')
-          .replace(/Inicio/g, 'Início')
-          .replace(/Materiais necessarios/g, 'Materiais necessários')
-          .replace(/Espacos fisicos/g, 'Espaços físicos')
-          .replace(/Criterios/g, 'Critérios')
-          .replace(/Inclusao acessibilidade/g, 'Inclusão e acessibilidade')
-          .replace(/Adaptacoes/g, 'Adaptações')
-          .replace(/Estrategias inclusivas/g, 'Estratégias inclusivas')
-          .replace(/Conexoes/g, 'Conexões')
-          .replace(/Integracao areas/g, 'Integração de áreas')
-          .replace(/Aplicacoes praticas/g, 'Aplicações práticas')
-          .replace(/Extensao aprofundamento/g, 'Extensão e aprofundamento')
-          .replace(/Reflexao docente/g, 'Reflexão docente')
-          .replace(/Pontos atencao/g, 'Pontos de atenção')
-          .replace(/Adaptacoes possivel/g, 'Adaptações possíveis')
-          .replace(/Referencias/g, 'Referências')
-          .replace(/Bibliograficas/g, 'Bibliográficas');
-      };
-
       const sanitizedContent = DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo));
       const questoes = extrairQuestoes(sanitizedContent);
       
@@ -540,725 +345,146 @@ export default function GeradorAtividades() {
       const contentWidth = pageWidth - (margin * 2);
       let yPos = margin;
 
-      // Função para adicionar cabeçalho profissional
-      const adicionarCabecalho = (incluirCamposAluno = true) => {
-        if (incluirCamposAluno) {
-          // Campos do aluno
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(9);
-          
-          // Linha superior
-          pdf.setDrawColor(100, 100, 100);
-          pdf.setLineWidth(0.5);
-          pdf.line(margin, yPos, pageWidth - margin, yPos);
-          yPos += 12;
-
-          // Campos em linha
-          pdf.text('Nome:', margin, yPos);
-          pdf.line(margin + 35, yPos + 2, pageWidth - 150, yPos + 2);
-          pdf.text('Data:', pageWidth - 140, yPos);
-          pdf.line(pageWidth - 110, yPos + 2, pageWidth - margin, yPos + 2);
-          yPos += 20;
-
-          pdf.text('Turma:', margin, yPos);
-          pdf.line(margin + 35, yPos + 2, margin + 120, yPos + 2);
-          pdf.text('Nota:', pageWidth - 80, yPos);
-          pdf.line(pageWidth - 50, yPos + 2, pageWidth - margin, yPos + 2);
-          yPos += 20;
-
-          // Linha inferior
-          pdf.line(margin, yPos, pageWidth - margin, yPos);
-          yPos += 25;
-        }
-
-        // Título principal baseado no tema
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(16);
-        const titulo = atividadeGerada?.titulo || `Atividade - ${tema}`;
-        const tituloWidth = pdf.getTextWidth(titulo);
-        pdf.text(titulo, (pageWidth - tituloWidth) / 2, yPos);
-        yPos += 25;
-
-        // ========== 1. IDENTIFICAÇÃO ==========
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59); // slate-800
-        pdf.text('1. IDENTIFICAÇÃO', margin, yPos);
-        yPos += 20;
-        
-        // Definir variáveis com informações
-        const disciplina = temaAnalysis?.disciplina || atividadeGerada?.materia || 'Identificação automática';
-        const serieInfo = temaAnalysis?.anoSerie || atividadeGerada?.serie || 'Série';
-        const etapaEnsino = serieInfo?.includes('Médio') ? 'Ensino Médio' : 
-                           serieInfo?.includes('Fund') ? 'Ensino Fundamental' : 
-                           'Ensino Fundamental';
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
-
-        // Disciplina
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Disciplina:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(disciplina, margin + 60, yPos);
-        yPos += 15;
-
-        // Etapa de ensino
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Etapa de Ensino:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(etapaEnsino, margin + 85, yPos);
-        yPos += 15;
-
-        // Duração
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Duração:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text('45 minutos', margin + 55, yPos);
-        yPos += 15;
-
-        // Ano/Série
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Ano/Série:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(serieInfo, margin + 65, yPos);
-        yPos += 15;
-
-        // Tema
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Tema:', margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(tema || 'Não especificado', margin + 40, yPos);
-        yPos += 15;
-
-        // Professor
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Professor(a):', margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text('C.I.I.A AIverse', margin + 75, yPos);
-        yPos += 30;
-
-        // ========== 2. ALINHAMENTO BNCC ==========
-        verificarQuebraPagina(120);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59); // slate-800
-        pdf.text('2. ALINHAMENTO BNCC', margin, yPos);
-        yPos += 20;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
-
-        // Unidade temática
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Unidade temática:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        const unidadeTematica = 'Matéria e Energia';
-        pdf.text(unidadeTematica, margin + 100, yPos);
-        yPos += 15;
-
-        // Objeto de Conhecimento
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Objeto de Conhecimento:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        const objetoConhecimento = 'Estrutura da matéria';
-        pdf.text(objetoConhecimento, margin + 130, yPos);
-        yPos += 15;
-
-        // Habilidades
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Habilidades:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        const habilidades = 'EF09CI03';
-        pdf.text(habilidades, margin + 70, yPos);
-        yPos += 15;
-
-        // Competências gerais
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Competências gerais:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        const competenciasGerais = 'Conhecimento científico';
-        pdf.text(competenciasGerais, margin + 115, yPos);
-        yPos += 15;
-
-        // Competências específicas
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Competências específicas:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        const competenciasEspecificas = 'Ciências da Natureza';
-        pdf.text(competenciasEspecificas, margin + 130, yPos);
-        yPos += 30;
-
-        // ========== 3. TEMA DA AULA ==========
-        verificarQuebraPagina(100);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59); // slate-800
-        pdf.text('3. TEMA DA AULA', margin, yPos);
-        yPos += 20;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
-
-        // Título
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Título:'), margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        const tituloAula = atividadeGerada?.titulo || `Atividade sobre ${tema}`;
-        pdf.text(tituloAula, margin + 40, yPos);
-        yPos += 15;
-
-        // Contextualização
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Contextualização:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const contextualizacao = `Esta atividade aborda ${tema} de forma prática e contextualizada, promovendo o desenvolvimento das competências previstas na BNCC.`;
-        const linhasContextualizacao = pdf.splitTextToSize(contextualizacao, contentWidth - 20);
-        pdf.text(linhasContextualizacao, margin + 10, yPos);
-        yPos += linhasContextualizacao.length * 14 + 10;
-
-        // Relevância
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Relevância:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const relevancia = `O estudo de ${tema} é fundamental para a compreensão científica do mundo que nos cerca, desenvolvendo habilidades de investigação e pensamento crítico nos estudantes.`;
-        const linhasRelevancia = pdf.splitTextToSize(relevancia, contentWidth - 20);
-        pdf.text(linhasRelevancia, margin + 10, yPos);
-        yPos += linhasRelevancia.length * 14 + 30;
-
-        // ========== 4. OBJETIVOS DE APRENDIZAGEM ==========
-        verificarQuebraPagina(100);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59); // slate-800
-        pdf.text('4. OBJETIVOS DE APRENDIZAGEM', margin, yPos);
-        yPos += 20;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
-
-        // Objetivos específicos
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Objetivos específicos:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const objetivosEspecificos = `Desenvolver compreensão conceitual sobre ${tema}, aplicar conhecimentos em situações práticas e desenvolver habilidades de análise crítica.`;
-        const linhasObjetivos = pdf.splitTextToSize(objetivosEspecificos, contentWidth - 20);
-        pdf.text(linhasObjetivos, margin + 10, yPos);
-        yPos += linhasObjetivos.length * 14 + 30;
-
-        // ========== 5. METODOLOGIA ==========
-        verificarQuebraPagina(120);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59); // slate-800
-        pdf.text('5. METODOLOGIA', margin, yPos);
-        yPos += 20;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
-
-        // Estratégias de ensino
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Estratégias de ensino:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const estrategias = 'Abordagem investigativa, discussões dirigidas, atividades práticas e resolução de problemas contextualizados.';
-        const linhasEstrategias = pdf.splitTextToSize(estrategias, contentWidth - 20);
-        pdf.text(linhasEstrategias, margin + 10, yPos);
-        yPos += linhasEstrategias.length * 14 + 10;
-
-        // Momentos pedagógicos
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Momentos pedagógicos:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const momentos = 'Problematização inicial, organização do conhecimento e aplicação do conhecimento.';
-        const linhasMomentos = pdf.splitTextToSize(momentos, contentWidth - 20);
-        pdf.text(linhasMomentos, margin + 10, yPos);
-        yPos += linhasMomentos.length * 14 + 30;
-
-        // ========== 6. SEQUÊNCIA DIDÁTICA ==========
-        verificarQuebraPagina(100);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59); // slate-800
-        pdf.text('6. SEQUÊNCIA DIDÁTICA', margin, yPos);
-        yPos += 20;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
-
-        // Início
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Início:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const inicio = 'Apresentação do tema, levantamento de conhecimentos prévios e problematização inicial.';
-        const linhasInicio = pdf.splitTextToSize(inicio, contentWidth - 20);
-        pdf.text(linhasInicio, margin + 10, yPos);
-        yPos += linhasInicio.length * 14 + 30;
-
-        // ========== 7. RECURSOS DIDÁTICOS ==========
-        verificarQuebraPagina(120);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(12);
-        pdf.setTextColor(30, 41, 59); // slate-800
-        pdf.text('7. RECURSOS DIDÁTICOS', margin, yPos);
-        yPos += 20;
-
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(10);
-        pdf.setTextColor(51, 65, 85); // slate-700
-
-        // Materiais necessários
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Materiais necessários:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const materiais = 'Quadro, projetor, material impresso, computador com acesso à internet.';
-        const linhasMateriais = pdf.splitTextToSize(materiais, contentWidth - 20);
-        pdf.text(linhasMateriais, margin + 10, yPos);
-        yPos += linhasMateriais.length * 14 + 10;
-
-        // Espaços físicos
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(textoComAcentos('Espaços físicos:'), margin, yPos);
-        yPos += 15;
-        pdf.setFont('helvetica', 'normal');
-        const espacos = 'Sala de aula tradicional, laboratório (se disponível).';
-        const linhasEspacos = pdf.splitTextToSize(espacos, contentWidth - 20);
-        pdf.text(linhasEspacos, margin + 10, yPos);
-        yPos += linhasEspacos.length * 14 + 30;
-      };
-
-      // Função para verificar espaço e quebrar página se necessário
-      const verificarQuebraPagina = (alturaMinima: number) => {
-        if (yPos + alturaMinima > pageHeight - margin - 20) {
-          pdf.addPage();
-          yPos = margin + 15;
-          adicionarCabecalho(false);
-          return true;
-        }
-        return false;
-      };
-
-      // Função para calcular altura necessária de uma questão
-      const calcularAlturaQuestao = (questao: any) => {
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(11);
-        
-        const linhasEnunciado = pdf.splitTextToSize(questao.enunciado, contentWidth - 30);
-        const alturaEnunciado = linhasEnunciado.length * 13;
-        
-        let alturaAlternativas = 0;
-        questao.alternativas.forEach((alt: string) => {
-          const linhasAlt = pdf.splitTextToSize(alt, contentWidth - 40);
-          alturaAlternativas += linhasAlt.length * 13 + 5;
-        });
-
-        return alturaEnunciado + alturaAlternativas + 25; // Margem extra
-      };
-
-      // Adicionar cabeçalho inicial
-      adicionarCabecalho(true);
-
-      // ========== 8. AVALIAÇÃO ==========
-      verificarQuebraPagina(120);
+      // Cabeçalho principal
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('8. AVALIAÇÃO', margin, yPos);
+      pdf.setFontSize(16);
+      pdf.setTextColor(30, 41, 59);
+      pdf.text('ATIVIDADE EDUCACIONAL', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 25;
+      
+      // Linha decorativa
+      pdf.setDrawColor(59, 130, 246);
+      pdf.setLineWidth(2);
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
       yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
+      
+      // Informações da instituição
+      pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      // Critérios
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Critérios:'), margin, yPos);
-      yPos += 15;
+      pdf.setTextColor(71, 85, 105);
+      pdf.text('INSTITUIÇÃO DE ENSINO:', margin, yPos);
       pdf.setFont('helvetica', 'normal');
-      const criteriosAvaliacao = 'Compreensão conceitual, aplicação prática, participação e qualidade das respostas.';
-      const linhasCriterios = pdf.splitTextToSize(criteriosAvaliacao, contentWidth - 20);
-      pdf.text(linhasCriterios, margin + 10, yPos);
-      yPos += linhasCriterios.length * 14 + 30;
-
-      // ========== 9. INCLUSÃO E ACESSIBILIDADE ==========
-      verificarQuebraPagina(150);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('9. INCLUSÃO E ACESSIBILIDADE', margin, yPos);
+      pdf.text('_________________________________________________', margin + 120, yPos);
       yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      // Adaptações
+      
+      // Professor responsável
       pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Adaptações:'), margin, yPos);
+      pdf.text('PROFESSOR(A):', margin, yPos);
+      pdf.setFont('helvetica', 'normal');
+      const nomeCompleto = `${user?.firstName || ''} ${user?.lastName || ''}`.trim();
+      pdf.text(nomeCompleto || '_________________________________', margin + 80, yPos);
       yPos += 15;
-      pdf.setFont('helvetica', 'normal');
-      const adaptacoes = 'Material em fonte ampliada, tempo adicional para realização, suporte visual e tátil quando necessário.';
-      const linhasAdaptacoes = pdf.splitTextToSize(adaptacoes, contentWidth - 20);
-      pdf.text(linhasAdaptacoes, margin + 10, yPos);
-      yPos += linhasAdaptacoes.length * 14 + 10;
-
-      // Estratégias inclusivas
+      
+      // Email do professor
       pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Estratégias inclusivas:'), margin, yPos);
-      yPos += 15;
+      pdf.text('EMAIL:', margin, yPos);
       pdf.setFont('helvetica', 'normal');
-      const estrategiasInclusivas = 'Diversificação de linguagens, recursos multissensoriais e trabalho colaborativo.';
-      const linhasEstrategiasInc = pdf.splitTextToSize(estrategiasInclusivas, contentWidth - 20);
-      pdf.text(linhasEstrategiasInc, margin + 10, yPos);
-      yPos += linhasEstrategiasInc.length * 14 + 30;
-
-      // ========== 10. INTERDISCIPLINARIDADE ==========
-      verificarQuebraPagina(120);
+      pdf.text(user?.email || '_________________________________', margin + 40, yPos);
+      yPos += 25;
+      
+      // Informações da atividade
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('10. INTERDISCIPLINARIDADE', margin, yPos);
+      pdf.text('DISCIPLINA:', margin, yPos);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(temaAnalysis?.disciplina || atividadeGerada.materia, margin + 70, yPos);
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('SÉRIE/ANO:', pageWidth / 2, yPos);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(temaAnalysis?.anoSerie || atividadeGerada.serie, pageWidth / 2 + 60, yPos);
       yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      // Conexões
+      
       pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Conexões:'), margin, yPos);
-      yPos += 15;
+      pdf.text('TURMA:', margin, yPos);
       pdf.setFont('helvetica', 'normal');
-      const conexoes = 'Matemática, Física, Geografia e História nas aplicações e contextos do tema.';
-      const linhasConexoes = pdf.splitTextToSize(conexoes, contentWidth - 20);
-      pdf.text(linhasConexoes, margin + 10, yPos);
-      yPos += linhasConexoes.length * 14 + 10;
-
-      // Integração de áreas
+      pdf.text('_____________', margin + 45, yPos);
+      
       pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Integração de áreas:'), margin, yPos);
-      yPos += 15;
+      pdf.text('DATA:', pageWidth / 2, yPos);
       pdf.setFont('helvetica', 'normal');
-      const integracaoAreas = 'Articulação entre conhecimentos científicos e suas aplicações tecnológicas e sociais.';
-      const linhasIntegracao = pdf.splitTextToSize(integracaoAreas, contentWidth - 20);
-      pdf.text(linhasIntegracao, margin + 10, yPos);
-      yPos += linhasIntegracao.length * 14 + 30;
-
-      // ========== 11. CONTEXTUALIZAÇÃO ==========
-      verificarQuebraPagina(120);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('11. CONTEXTUALIZAÇÃO', margin, yPos);
-      yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      // Aplicações práticas
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Aplicações práticas:'), margin, yPos);
-      yPos += 15;
-      pdf.setFont('helvetica', 'normal');
-      const aplicacoesPraticas = 'Exemplos do cotidiano, situações reais e problemas da comunidade local.';
-      const linhasAplicacoes = pdf.splitTextToSize(aplicacoesPraticas, contentWidth - 20);
-      pdf.text(linhasAplicacoes, margin + 10, yPos);
-      yPos += linhasAplicacoes.length * 14 + 30;
-
-      // ========== 12. EXTENSÃO E APROFUNDAMENTO ==========
-      verificarQuebraPagina(100);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('12. EXTENSÃO E APROFUNDAMENTO', margin, yPos);
-      yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-      const extensao = 'Atividades complementares, pesquisas dirigidas e projetos investigativos para aprofundamento do tema.';
-      const linhasExtensao = pdf.splitTextToSize(extensao, contentWidth - 20);
-      pdf.text(linhasExtensao, margin + 10, yPos);
-      yPos += linhasExtensao.length * 14 + 30;
-
-      // ========== 13. REFLEXÃO DOCENTE ==========
-      verificarQuebraPagina(150);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('13. REFLEXÃO DOCENTE', margin, yPos);
-      yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      // Pontos de atenção
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Pontos de atenção:'), margin, yPos);
-      yPos += 15;
-      pdf.setFont('helvetica', 'normal');
-      const pontosAtencao = 'Observar ritmo de aprendizagem, dificuldades específicas e engajamento dos estudantes.';
-      const linhasPontos = pdf.splitTextToSize(pontosAtencao, contentWidth - 20);
-      pdf.text(linhasPontos, margin + 10, yPos);
-      yPos += linhasPontos.length * 14 + 10;
-
-      // Adaptações possíveis
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Adaptações possíveis:'), margin, yPos);
-      yPos += 15;
-      pdf.setFont('helvetica', 'normal');
-      const adaptacoesPossiveis = 'Ajustes metodológicos, recursos alternativos e estratégias diferenciadas conforme necessidade.';
-      const linhasAdaptacoesPoss = pdf.splitTextToSize(adaptacoesPossiveis, contentWidth - 20);
-      pdf.text(linhasAdaptacoesPoss, margin + 10, yPos);
-      yPos += linhasAdaptacoesPoss.length * 14 + 30;
-
-      // ========== 14. REFERÊNCIAS ==========
-      verificarQuebraPagina(100);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('14. REFERÊNCIAS', margin, yPos);
-      yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      // Bibliográficas
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(textoComAcentos('Bibliográficas:'), margin, yPos);
-      yPos += 15;
-      pdf.setFont('helvetica', 'normal');
-      const referencias = 'BRASIL. Base Nacional Comum Curricular. Brasília: MEC, 2018. Livro didático adotado pela escola.';
-      const linhasReferencias = pdf.splitTextToSize(referencias, contentWidth - 20);
-      pdf.text(linhasReferencias, margin + 10, yPos);
-      yPos += linhasReferencias.length * 14 + 30;
-
-      // ========== 15. QUESTÕES ==========
-      verificarQuebraPagina(100);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('15. QUESTÕES', margin, yPos);
+      pdf.text('___/___/______', pageWidth / 2 + 35, yPos);
       yPos += 30;
 
-      // Gerar questões com styling melhorado
-      questoes.forEach((questao, index) => {
-        const alturaQuestao = calcularAlturaQuestao(questao);
-        verificarQuebraPagina(alturaQuestao);
+      // Campos do aluno
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.text('NOME DO ALUNO:', margin, yPos);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('_________________________________________________', margin + 80, yPos);
+      
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Nº:', pageWidth - margin - 80, yPos);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('_______', pageWidth - margin - 50, yPos);
+      yPos += 25;
+      
+      // Título da atividade
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(14);
+      pdf.setTextColor(30, 41, 59);
+      pdf.text(atividadeGerada.titulo.toUpperCase(), pageWidth / 2, yPos, { align: 'center' });
+      yPos += 30;
 
-        // Número da questão com destaque
+      // Renderizar questões
+      questoes.forEach((questao) => {
+        // Verificar quebra de página
+        if (yPos + 80 > pageHeight - margin) {
+          pdf.addPage();
+          yPos = margin;
+        }
+        
+        // Questão
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(12);
-        pdf.setTextColor(51, 65, 85); // slate-700
-        pdf.text(`Questão ${questao.numero}`, margin, yPos);
-        yPos += 20;
-        
-        // Enunciado com formatação melhorada
-        pdf.setFont('helvetica', 'normal');
-        pdf.setFontSize(11);
-        pdf.setTextColor(71, 85, 105); // slate-600
-        const linhasEnunciado = pdf.splitTextToSize(questao.enunciado, contentWidth - 20);
-        pdf.text(linhasEnunciado, margin + 10, yPos);
+        pdf.setTextColor(30, 41, 59);
+        const linhasEnunciado = pdf.splitTextToSize(`${questao.numero}. ${questao.enunciado}`, contentWidth);
+        pdf.text(linhasEnunciado, margin, yPos);
         yPos += linhasEnunciado.length * 15 + 10;
-
-        // Alternativas com melhor espaçamento
+        
+        // Alternativas ou espaço para resposta
         if (questao.alternativas.length > 0 && questao.alternativas[0] !== 'Resposta:') {
           questao.alternativas.forEach((alternativa: string) => {
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(10);
-            pdf.setTextColor(100, 116, 139); // slate-500
-            const linhasAlternativa = pdf.splitTextToSize(alternativa, contentWidth - 40);
-            pdf.text(linhasAlternativa, margin + 20, yPos);
-            yPos += linhasAlternativa.length * 14 + 6;
+            pdf.setTextColor(71, 85, 105);
+            const linhasAlt = pdf.splitTextToSize(alternativa, contentWidth - 30);
+            pdf.text(linhasAlt, margin + 15, yPos);
+            yPos += linhasAlt.length * 12 + 5;
           });
         } else {
-          // Para questões dissertativas, adiciona linhas para resposta
+          // Espaço para resposta dissertativa
           pdf.setFont('helvetica', 'bold');
           pdf.setFontSize(10);
-          pdf.setTextColor(71, 85, 105); // slate-600
           pdf.text('Resposta:', margin + 10, yPos);
-          yPos += 20;
+          yPos += 15;
           
-          // Adiciona linhas para escrita com melhor espaçamento
-          for (let i = 0; i < 5; i++) {
-            pdf.setDrawColor(203, 213, 225); // slate-300
+          for (let i = 0; i < 4; i++) {
+            pdf.setDrawColor(200, 200, 200);
             pdf.setLineWidth(0.5);
             pdf.line(margin + 10, yPos, pageWidth - margin - 10, yPos);
-            yPos += 20;
+            yPos += 18;
           }
         }
-
-        yPos += 20; // Espaço entre questões
+        yPos += 15;
       });
 
-      // ========== 5. CRITÉRIOS DE AVALIAÇÃO ==========
-      verificarQuebraPagina(120);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('5. CRITÉRIOS DE AVALIAÇÃO', margin, yPos);
-      yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      // Critérios de avaliação
-      const criterios = [
-        'Compreensão conceitual dos conteúdos abordados',
-        'Capacidade de aplicação dos conhecimentos em diferentes contextos',
-        'Desenvolvimento do raciocínio científico e pensamento crítico',
-        'Clareza e organização nas respostas dissertativas',
-        'Participação e envolvimento durante a atividade'
-      ];
-
-      criterios.forEach((criterio, index) => {
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(`• `, margin, yPos);
-        pdf.setFont('helvetica', 'normal');
-        const linhasCriterio = pdf.splitTextToSize(criterio, contentWidth - 20);
-        pdf.text(linhasCriterio, margin + 15, yPos);
-        yPos += linhasCriterio.length * 14 + 5;
-      });
-
-      yPos += 20;
-
-      // ========== 6. OBSERVAÇÕES ==========
-      verificarQuebraPagina(80);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(12);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text('6. OBSERVAÇÕES', margin, yPos);
-      yPos += 20;
-
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(10);
-      pdf.setTextColor(51, 65, 85); // slate-700
-
-      const observacoes = 'Esta atividade foi gerada automaticamente pela plataforma AIverse e está alinhada com as diretrizes da BNCC. Recomenda-se adaptação conforme as necessidades específicas da turma e do contexto escolar.';
-      const linhasObservacoes = pdf.splitTextToSize(observacoes, contentWidth - 20);
-      pdf.text(linhasObservacoes, margin + 10, yPos);
-      yPos += linhasObservacoes.length * 14 + 30;
-
-      // Rodapé profissional
+      // Rodapé
       pdf.setFont('helvetica', 'italic');
       pdf.setFontSize(8);
-      pdf.setTextColor(100, 116, 139); // slate-500
-      const rodape = `Documento gerado em ${new Date().toLocaleDateString('pt-BR')} pela plataforma AIverse - Central de Inteligência Artificial`;
-      pdf.text(rodape, margin, pageHeight - 30);
+      pdf.setTextColor(100, 116, 139);
+      const rodape = `Gerado em ${new Date().toLocaleDateString('pt-BR')} - AIverse Educacional`;
+      pdf.text(rodape, margin, pageHeight - 20);
 
-      // Gerar nome do arquivo
+      // Salvar PDF
       const timestamp = new Date().toISOString().split('T')[0];
-      const disciplina = (atividadeGerada?.materia || 'atividade').toLowerCase().replace(/\s+/g, '_');
+      const disciplina = (temaAnalysis?.disciplina || atividadeGerada?.materia || 'atividade').toLowerCase().replace(/\s+/g, '_');
       const nomeArquivo = `atividade_${disciplina}_${timestamp}.pdf`;
       
-      // Fazer download do PDF
       pdf.save(nomeArquivo);
 
-      // Gerar PDF do gabarito separado
-      setTimeout(() => {
-        const pdfGabarito = new jsPDF({
-          orientation: 'portrait',
-          unit: 'pt',
-          format: 'a4'
-        });
-
-        let yPosGab = margin + 20;
-
-        // Configurar fonte para suporte a caracteres acentuados
-        pdfGabarito.setFont('helvetica');
-
-        // Cabeçalho do gabarito
-        pdfGabarito.setFont('helvetica', 'bold');
-        pdfGabarito.setFontSize(18);
-        pdfGabarito.setTextColor(30, 41, 59); // slate-800
-        const tituloGab = 'GABARITO';
-        const tituloGabWidth = pdfGabarito.getTextWidth(tituloGab);
-        pdfGabarito.text(tituloGab, (pageWidth - tituloGabWidth) / 2, yPosGab);
-        yPosGab += 25;
-
-        pdfGabarito.setFont('helvetica', 'normal');
-        pdfGabarito.setFontSize(12);
-        pdfGabarito.setTextColor(51, 65, 85); // slate-700
-        const subtituloGab = `${temaAnalysis?.disciplina || 'Disciplina'} • ${temaAnalysis?.anoSerie || 'Série'}`;
-        const subtituloGabWidth = pdfGabarito.getTextWidth(subtituloGab);
-        pdfGabarito.text(subtituloGab, (pageWidth - subtituloGabWidth) / 2, yPosGab);
-        yPosGab += 20;
-
-        // Informações do tema
-        pdfGabarito.setFont('helvetica', 'bold');
-        pdfGabarito.setFontSize(10);
-        pdfGabarito.text('Tema:', margin, yPosGab);
-        pdfGabarito.setFont('helvetica', 'normal');
-        pdfGabarito.text(tema || 'Não especificado', margin + 40, yPosGab);
-        
-        pdfGabarito.setFont('helvetica', 'bold');
-        pdfGabarito.text('Data:', pageWidth - 120, yPosGab);
-        pdfGabarito.setFont('helvetica', 'normal');
-        pdfGabarito.text(new Date().toLocaleDateString('pt-BR'), pageWidth - 80, yPosGab);
-        yPosGab += 25;
-
-        // Linha separadora
-        pdfGabarito.setDrawColor(0, 0, 0);
-        pdfGabarito.setLineWidth(1);
-        pdfGabarito.line(margin, yPosGab, pageWidth - margin, yPosGab);
-        yPosGab += 30;
-
-        // Título da seção de respostas
-        pdfGabarito.setFont('helvetica', 'bold');
-        pdfGabarito.setFontSize(12);
-        pdfGabarito.setTextColor(30, 41, 59); // slate-800
-        pdfGabarito.text('RESPOSTAS', margin, yPosGab);
-        yPosGab += 20;
-
-        // Respostas em colunas
-        pdfGabarito.setFont('helvetica', 'normal');
-        pdfGabarito.setFontSize(11);
-        pdfGabarito.setTextColor(51, 65, 85); // slate-700
-        
-        const colunas = 4;
-        const questoesPorColuna = Math.ceil(questoes.length / colunas);
-        const larguraColuna = contentWidth / colunas;
-
-        for (let col = 0; col < colunas; col++) {
-          const inicioColuna = col * questoesPorColuna;
-          const fimColuna = Math.min(inicioColuna + questoesPorColuna, questoes.length);
-          const xColuna = margin + (col * larguraColuna);
-          let yColuna = yPosGab;
-
-          for (let i = inicioColuna; i < fimColuna; i++) {
-            const questao = questoes[i];
-            // Usar gabarito extraído ou gerar alternativa padrão
-            const resposta = questao.gabarito || String.fromCharCode(97 + (i % 5));
-            pdfGabarito.text(`${questao.numero}. ${resposta})`, xColuna, yColuna);
-            yColuna += 18;
-          }
-        }
-
-        // Salvar gabarito
-        const nomeGabarito = `gabarito_${disciplina}_${timestamp}.pdf`;
-        pdfGabarito.save(nomeGabarito);
-      }, 800);
-
       toast({
-        title: "PDFs gerados com sucesso!",
-        description: "Atividade e gabarito salvos em arquivos separados com layout profissional.",
+        title: "PDF gerado com sucesso!",
+        description: "Atividade salva com layout profissional.",
       });
       
     } catch (error) {
@@ -1317,159 +543,143 @@ export default function GeradorAtividades() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                
-                {/* Tema */}
-                <div className="space-y-2">
-                  <Label htmlFor="tema" className="text-sm font-semibold text-slate-700">
-                    Tema da Atividade *
-                  </Label>
-                  <ValidatedTextarea
-                    id="tema"
-                    placeholder="Ex: Frações, Sistema Solar, Brasil Colônia..."
+                {/* Configuração do Tema */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium text-slate-700">Tema da Atividade</label>
+                  <Textarea
+                    placeholder="Ex: Frações no cotidiano, Revolução Industrial, Sistema Solar..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
-                    className="min-h-[80px] resize-none"
-                    validationContext="educational"
-                    showValidation={true}
-                    autoCorrect={false}
-                    rows={3}
+                    className="min-h-[80px] border-slate-300 focus:border-blue-500"
                   />
-
-
-                  {/* Análise BNCC em tempo real */}
-                  {isAnalyzing && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 animate-pulse">
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600"></div>
-                        <span className="text-sm font-medium text-amber-800">Analisando tema...</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {temaAnalysis && !isAnalyzing && (
-                    <div className={`border rounded-lg p-4 ${temaAnalysis.conformeRegulasBNCC 
-                      ? 'bg-emerald-50 border-emerald-200' 
-                      : 'bg-red-50 border-red-200'
-                    }`}>
-                      <div className="flex items-start gap-2 mb-3">
-                        {temaAnalysis.conformeRegulasBNCC ? (
-                          <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                        ) : (
-                          <Target className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                        )}
-                        <div className="flex-1">
-                          <h4 className={`font-semibold text-sm ${temaAnalysis.conformeRegulasBNCC 
-                            ? 'text-emerald-800' 
-                            : 'text-red-800'
-                          }`}>
-                            {temaAnalysis.conformeRegulasBNCC 
-                              ? 'Tema alinhado à BNCC' 
-                              : 'Atenção: Verificar alinhamento'
-                            }
-                          </h4>
-                          <div className={`text-xs mt-2 space-y-1 ${temaAnalysis.conformeRegulasBNCC 
-                            ? 'text-emerald-700' 
-                            : 'text-red-700'
-                          }`}>
-                            <p><strong>Disciplina:</strong> {temaAnalysis.disciplina}</p>
-                            <p><strong>Ano/Série:</strong> {temaAnalysis.anoSerie}</p>
-                            {temaAnalysis.observacoes && (
-                              <p className="mt-2 text-xs leading-relaxed">
-                                <strong>Observações:</strong> {temaAnalysis.observacoes}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <TextEncodingValidator text={tema} />
                 </div>
 
-                {/* Tipo de Atividade */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700">
-                    Tipo de Atividade *
-                  </Label>
-                  <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="lista-multipla-escolha">Lista de exercícios múltipla escolha</SelectItem>
-                      <SelectItem value="lista-dissertativa">Lista de exercícios dissertativa</SelectItem>
-                      <SelectItem value="avaliacao-multipla-escolha">Avaliação múltipla escolha</SelectItem>
-                      <SelectItem value="avaliacao-dissertativa">Avaliação dissertativa</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Configurações Básicas */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Matéria</label>
+                    <Select value={materia} onValueChange={setMateria}>
+                      <SelectTrigger className="border-slate-300">
+                        <SelectValue placeholder="Selecione a matéria" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Matemática">Matemática</SelectItem>
+                        <SelectItem value="Português">Português</SelectItem>
+                        <SelectItem value="Ciências">Ciências</SelectItem>
+                        <SelectItem value="História">História</SelectItem>
+                        <SelectItem value="Geografia">Geografia</SelectItem>
+                        <SelectItem value="Física">Física</SelectItem>
+                        <SelectItem value="Química">Química</SelectItem>
+                        <SelectItem value="Biologia">Biologia</SelectItem>
+                        <SelectItem value="Inglês">Inglês</SelectItem>
+                        <SelectItem value="Educação Física">Educação Física</SelectItem>
+                        <SelectItem value="Arte">Arte</SelectItem>
+                        <SelectItem value="Ensino Religioso">Ensino Religioso</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Série</label>
+                    <Select value={serie} onValueChange={setSerie}>
+                      <SelectTrigger className="border-slate-300">
+                        <SelectValue placeholder="Selecione a série" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1º Ano Fund">1º Ano - Fundamental</SelectItem>
+                        <SelectItem value="2º Ano Fund">2º Ano - Fundamental</SelectItem>
+                        <SelectItem value="3º Ano Fund">3º Ano - Fundamental</SelectItem>
+                        <SelectItem value="4º Ano Fund">4º Ano - Fundamental</SelectItem>
+                        <SelectItem value="5º Ano Fund">5º Ano - Fundamental</SelectItem>
+                        <SelectItem value="6º Ano Fund">6º Ano - Fundamental</SelectItem>
+                        <SelectItem value="7º Ano Fund">7º Ano - Fundamental</SelectItem>
+                        <SelectItem value="8º Ano Fund">8º Ano - Fundamental</SelectItem>
+                        <SelectItem value="9º Ano Fund">9º Ano - Fundamental</SelectItem>
+                        <SelectItem value="1º Ano Médio">1º Ano - Ensino Médio</SelectItem>
+                        <SelectItem value="2º Ano Médio">2º Ano - Ensino Médio</SelectItem>
+                        <SelectItem value="3º Ano Médio">3º Ano - Ensino Médio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                {/* Quantidade de Questões */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-slate-700">
-                    Quantidade de Questões: {quantidadeQuestoes[0]}
-                  </Label>
-                  <Slider
-                    value={quantidadeQuestoes}
-                    onValueChange={setQuantidadeQuestoes}
-                    max={20}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-slate-500">
-                    <span>1 questão</span>
-                    <span>20 questões</span>
+                {/* Configurações da Atividade */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Quantidade de Questões</label>
+                    <Select value={quantidadeQuestoes.toString()} onValueChange={(value) => setQuantidadeQuestoes(parseInt(value))}>
+                      <SelectTrigger className="border-slate-300">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5 questões</SelectItem>
+                        <SelectItem value="10">10 questões</SelectItem>
+                        <SelectItem value="15">15 questões</SelectItem>
+                        <SelectItem value="20">20 questões</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Tipo de Atividade</label>
+                    <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
+                      <SelectTrigger className="border-slate-300">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Múltipla Escolha">Múltipla Escolha</SelectItem>
+                        <SelectItem value="Dissertativa">Dissertativa</SelectItem>
+                        <SelectItem value="Mista">Mista</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
                 {/* Nível de Dificuldade */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700">
-                    Nível de Dificuldade *
-                  </Label>
+                  <label className="text-sm font-medium text-slate-700">Nível de Dificuldade</label>
                   <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o nível" />
+                    <SelectTrigger className="border-slate-300">
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="basico">Básico</SelectItem>
-                      <SelectItem value="intermediario">Intermediário</SelectItem>
-                      <SelectItem value="avancado">Avançado</SelectItem>
+                      <SelectItem value="Fácil">Fácil</SelectItem>
+                      <SelectItem value="Médio">Médio</SelectItem>
+                      <SelectItem value="Difícil">Difícil</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
-                {/* Incluir Gabarito */}
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label className="text-sm font-medium text-slate-700">
-                      Incluir Gabarito
-                    </Label>
-                    <p className="text-xs text-slate-500">
-                      Adicionar respostas e explicações
-                    </p>
+                {/* Opções Adicionais */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="gabarito"
+                      checked={incluirGabarito}
+                      onCheckedChange={setIncluirGabarito}
+                    />
+                    <label htmlFor="gabarito" className="text-sm text-slate-700 cursor-pointer">
+                      Incluir gabarito separado
+                    </label>
                   </div>
-                  <Switch
-                    checked={incluirGabarito}
-                    onCheckedChange={setIncluirGabarito}
-                  />
                 </div>
 
                 {/* Botão Gerar */}
                 <Button 
-                  onClick={gerarAtividade}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-6 text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+                  onClick={gerarAtividade} 
+                  disabled={isLoading || !tema.trim()}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3"
                 >
                   {isLoading ? (
                     <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                      Gerando Atividade...
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Gerando atividade...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-5 w-5 mr-2" />
-                      Gerar Atividade com IA
+                      <Wand2 className="h-4 w-4 mr-2" />
+                      Gerar Atividade
                     </>
                   )}
                 </Button>
@@ -1604,51 +814,21 @@ export default function GeradorAtividades() {
                   {/* Área de visualização da atividade */}
                   <div className="activity-container bg-white">
                     <div 
-                      className="activity-content p-12 max-h-[800px] overflow-y-auto"
-                      style={{
-                        maxWidth: '21cm',
-                        margin: '0 auto',
-                        fontFamily: '"Times New Roman", serif',
-                        fontSize: '16px',
-                        lineHeight: '1.6',
-                        color: '#000000',
-                        backgroundColor: '#ffffff'
+                      className="p-6 prose prose-slate max-w-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: DOMPurify.sanitize(processarConteudoAtividade(atividadeGerada.conteudo))
                       }}
-                    >
-                      <div dangerouslySetInnerHTML={{ 
-                        __html: processarConteudoAtividade(atividadeGerada.conteudo) 
-                      }} />
-                    </div>
+                    />
                   </div>
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
-                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="p-6 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl mb-6">
-                    <BookOpen className="h-16 w-16 text-emerald-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-800 mb-2">
-                    Pronto para Criar Atividades Incríveis?
-                  </h3>
-                  <p className="text-slate-600 max-w-md mb-6">
-                    Configure o tema e as opções desejadas, depois clique em "Gerar Atividade com IA" para criar conteúdo educacional personalizado.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-lg">
-                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
-                      <Target className="h-5 w-5 text-emerald-600" />
-                      <span className="text-sm text-slate-700">Detecção Automática BNCC</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
-                      <Clock className="h-5 w-5 text-blue-600" />
-                      <span className="text-sm text-slate-700">Geração Rápida</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
-                      <Zap className="h-5 w-5 text-purple-600" />
-                      <span className="text-sm text-slate-700">IA Avançada</span>
-                    </div>
-                  </div>
-                </CardContent>
+              <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl h-96 flex items-center justify-center">
+                <div className="text-center text-slate-600">
+                  <FileText className="h-16 w-16 mx-auto mb-4 text-slate-400" />
+                  <h3 className="text-lg font-medium mb-2">Nenhuma atividade gerada ainda</h3>
+                  <p className="text-sm">Configure os parâmetros e clique em "Gerar Atividade" para começar.</p>
+                </div>
               </Card>
             )}
           </div>
