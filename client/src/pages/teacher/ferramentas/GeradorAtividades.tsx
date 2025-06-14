@@ -13,7 +13,11 @@ import {
   Target,
   Zap,
   CheckCircle,
-  Settings
+  Settings,
+  User,
+  GraduationCap,
+  Calendar,
+  Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/AuthContext";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import DOMPurify from 'dompurify';
@@ -45,6 +50,7 @@ interface AtividadeGerada {
 
 export default function GeradorAtividades() {
   const { toast } = useToast();
+  const { user } = useAuth();
   
   // Estados principais
   const [tema, setTema] = useState("");
@@ -311,13 +317,28 @@ export default function GeradorAtividades() {
     }
   };
 
-  // Função para copiar conteúdo
+  // Função para copiar conteúdo limpo (sem formatação markdown)
   const copiarConteudo = () => {
     if (atividadeGerada) {
-      navigator.clipboard.writeText(atividadeGerada.conteudo);
+      // Remove formatação HTML e markdown para texto limpo
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(processarConteudoAtividade(atividadeGerada.conteudo), 'text/html');
+      let textoLimpo = doc.body.textContent || doc.body.innerText || '';
+      
+      // Remove caracteres de formatação markdown
+      textoLimpo = textoLimpo
+        .replace(/###\s*/g, '')
+        .replace(/####\s*/g, '')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*]+)\*/g, '$1')
+        .replace(/---+/g, '')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      
+      navigator.clipboard.writeText(textoLimpo);
       toast({
         title: "Conteúdo copiado!",
-        description: "Atividade copiada para a área de transferência.",
+        description: "Atividade copiada para a área de transferência sem formatação.",
       });
     }
   };
@@ -1460,60 +1481,120 @@ export default function GeradorAtividades() {
           <div className="lg:col-span-2">
             {atividadeGerada ? (
               <Card className="bg-white/70 backdrop-blur-sm border-slate-200/50 shadow-xl">
-                <CardHeader className="border-b border-slate-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                      <CardTitle className="text-xl text-slate-800">
-                        {atividadeGerada.titulo}
-                      </CardTitle>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <Badge variant="default" className="text-xs">
-                          {atividadeGerada.materia}
-                        </Badge>
-                        <Badge variant="default" className="text-xs">
-                          {atividadeGerada.serie}
-                        </Badge>
-                        <Badge variant="default" className="text-xs">
+                <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+                  {/* Header profissional com informações do usuário */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-white rounded-lg border border-slate-200 shadow-sm">
+                    {/* Informações da Escola/Professor */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <GraduationCap className="h-5 w-5 text-blue-600" />
+                        <span className="font-semibold">Instituição de Ensino</span>
+                      </div>
+                      <div className="ml-7 space-y-1">
+                        <p className="text-sm text-slate-600">Nome: ________________________________</p>
+                        <p className="text-sm text-slate-600">Endereço: _____________________________</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-slate-700 mt-4">
+                        <User className="h-5 w-5 text-green-600" />
+                        <span className="font-semibold">Professor(a) Responsável</span>
+                      </div>
+                      <div className="ml-7 space-y-1">
+                        <p className="text-sm text-slate-800 font-medium">
+                          {user?.firstName} {user?.lastName}
+                        </p>
+                        <p className="text-sm text-slate-600">{user?.email}</p>
+                      </div>
+                    </div>
+
+                    {/* Informações da Atividade */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <FileText className="h-5 w-5 text-purple-600" />
+                        <span className="font-semibold">Dados da Atividade</span>
+                      </div>
+                      <div className="ml-7 space-y-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Disciplina</p>
+                            <p className="text-sm font-medium text-slate-800">{temaAnalysis?.disciplina || atividadeGerada.materia}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Série/Ano</p>
+                            <p className="text-sm font-medium text-slate-800">{temaAnalysis?.anoSerie || atividadeGerada.serie}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Turma</p>
+                            <p className="text-sm text-slate-600">__________</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Data</p>
+                            <p className="text-sm text-slate-600">___/___/______</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-slate-700 mt-4">
+                        <Calendar className="h-5 w-5 text-orange-600" />
+                        <span className="font-semibold">Detalhes</span>
+                      </div>
+                      <div className="ml-7 flex flex-wrap gap-2">
+                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
                           {atividadeGerada.tipoAtividade}
                         </Badge>
-                        <Badge variant="default" className="text-xs">
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                           {atividadeGerada.quantidadeQuestoes} questões
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800">
+                          {atividadeGerada.nivelDificuldade}
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={copiarConteudo}>
-                        <Copy className="h-4 w-4 mr-1" />
-                        Copiar
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={baixarPDF}>
-                        <Download className="h-4 w-4 mr-1" />
-                        PDF
-                      </Button>
-                    </div>
+                  </div>
+
+                  {/* Título da Atividade */}
+                  <div className="text-center py-4">
+                    <h1 className="text-2xl font-bold text-slate-900 mb-2">
+                      {atividadeGerada.titulo}
+                    </h1>
+                    <div className="w-32 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
-                  {/* Barra de ações superior */}
-                  <div className="border-b border-slate-200 p-4 bg-slate-50">
+                  {/* Barra de ações única */}
+                  <div className="border-b border-slate-200 p-4 bg-gradient-to-r from-slate-50 to-slate-100">
                     <div className="flex items-center justify-between">
-                      <div className="text-sm text-slate-700 font-medium">
+                      <div className="text-sm text-slate-700 font-medium flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
                         Atividade pronta para uso em sala de aula
                       </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={copiarConteudo}>
+                      <div className="flex gap-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={copiarConteudo}
+                          className="bg-white hover:bg-slate-50 border-slate-300"
+                        >
                           <Copy className="h-4 w-4 mr-2" />
                           Copiar
                         </Button>
-                        <Button variant="outline" size="sm" onClick={baixarPDF}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={baixarPDF}
+                          className="bg-white hover:bg-slate-50 border-slate-300"
+                        >
                           <Download className="h-4 w-4 mr-2" />
                           PDF
                         </Button>
                         <Button 
                           size="sm" 
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                           onClick={() => window.print()}
                         >
+                          <Printer className="h-4 w-4 mr-2" />
                           Imprimir
                         </Button>
                       </div>
