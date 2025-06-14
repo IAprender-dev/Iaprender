@@ -280,6 +280,16 @@ export default function PlanejamentoAula() {
       const contentWidth = pageWidth - (margin * 2);
       let yPos = margin;
 
+      // Função para texto seguro com acentos corrigidos
+      const textoSeguro = (texto: string): string => {
+        return PDFAccentCorrector.toPDFSafeText(texto || '');
+      };
+
+      // Função para títulos de seção corrigidos
+      const tituloSecao = (titulo: string): string => {
+        return PDFAccentCorrector.correctSectionTitle(titulo || '');
+      };
+
       // Função para verificar quebra de página
       const verificarQuebraPagina = (alturaMinima: number) => {
         if (yPos + alturaMinima > pageHeight - margin - 20) {
@@ -315,7 +325,7 @@ export default function PlanejamentoAula() {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
         pdf.setTextColor(79, 70, 229);
-        pdf.text('1. Identificação', margin, yPos);
+        pdf.text(tituloSecao('1. Identificação'), margin, yPos);
         yPos += 20;
 
         // Linha abaixo do título
@@ -354,12 +364,12 @@ export default function PlanejamentoAula() {
         itensEsquerda.forEach(([key, value]) => {
           pdf.setFont('helvetica', 'bold');
           const subtitulo = key.replace(/([A-Z])/g, ' $1').toLowerCase();
-          const subtituloFormatado = `${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`;
+          const subtituloFormatado = textoSeguro(`${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`);
           pdf.text(subtituloFormatado, margin, yPosEsquerda);
           yPosEsquerda += 12;
 
           pdf.setFont('helvetica', 'normal');
-          const texto = String(value);
+          const texto = textoSeguro(String(value));
           const linhas = pdf.splitTextToSize(texto, colunaEsquerda);
           pdf.text(linhas, margin, yPosEsquerda);
           yPosEsquerda += linhas.length * 12 + 8;
@@ -369,12 +379,12 @@ export default function PlanejamentoAula() {
         itensDireita.forEach(([key, value]) => {
           pdf.setFont('helvetica', 'bold');
           const subtitulo = key.replace(/([A-Z])/g, ' $1').toLowerCase();
-          const subtituloFormatado = `${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`;
+          const subtituloFormatado = textoSeguro(`${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`);
           pdf.text(subtituloFormatado, margin + colunaEsquerda + espacoEntreColunas, yPosDireita);
           yPosDireita += 12;
 
           pdf.setFont('helvetica', 'normal');
-          const texto = String(value);
+          const texto = textoSeguro(String(value));
           const linhas = pdf.splitTextToSize(texto, colunaDireita);
           pdf.text(linhas, margin + colunaEsquerda + espacoEntreColunas, yPosDireita);
           yPosDireita += linhas.length * 12 + 8;
@@ -392,7 +402,7 @@ export default function PlanejamentoAula() {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(14);
         pdf.setTextColor(79, 70, 229); // Cor azul
-        pdf.text(`${numero}. ${titulo}`, margin, yPos);
+        pdf.text(tituloSecao(`${numero}. ${titulo}`), margin, yPos);
         yPos += 20;
 
         // Linha abaixo do título
@@ -414,7 +424,7 @@ export default function PlanejamentoAula() {
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(10);
             const subtitulo = key.replace(/([A-Z])/g, ' $1').toLowerCase();
-            pdf.text(`${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`, margin, yPos);
+            pdf.text(textoSeguro(`${subtitulo.charAt(0).toUpperCase()}${subtitulo.slice(1)}:`), margin, yPos);
             yPos += 15;
 
             // Conteúdo do subtítulo
@@ -424,20 +434,20 @@ export default function PlanejamentoAula() {
                 verificarQuebraPagina(20);
                 if (typeof item === 'object') {
                   Object.entries(item).forEach(([subKey, subValue]) => {
-                    const texto = `• ${subKey}: ${String(subValue)}`;
+                    const texto = textoSeguro(`• ${subKey}: ${String(subValue)}`);
                     const linhas = pdf.splitTextToSize(texto, contentWidth - 20);
                     pdf.text(linhas, margin + 15, yPos);
                     yPos += linhas.length * 12 + 5;
                   });
                 } else {
-                  const texto = `• ${String(item)}`;
+                  const texto = textoSeguro(`• ${String(item)}`);
                   const linhas = pdf.splitTextToSize(texto, contentWidth - 20);
                   pdf.text(linhas, margin + 15, yPos);
                   yPos += linhas.length * 12 + 5;
                 }
               });
             } else {
-              const texto = String(value);
+              const texto = textoSeguro(String(value));
               const linhas = pdf.splitTextToSize(texto, contentWidth - 20);
               pdf.text(linhas, margin + 15, yPos);
               yPos += linhas.length * 12 + 8;
@@ -445,7 +455,7 @@ export default function PlanejamentoAula() {
             yPos += 10;
           });
         } else {
-          const texto = String(conteudo);
+          const texto = textoSeguro(String(conteudo));
           const linhas = pdf.splitTextToSize(texto, contentWidth);
           pdf.text(linhas, margin, yPos);
           yPos += linhas.length * 12 + 15;
@@ -464,42 +474,42 @@ export default function PlanejamentoAula() {
 
       // Alinhamento BNCC
       if (planoData.alinhamentoBNCC) {
-        adicionarSecao("2", "Alinhamento BNCC", planoData.alinhamentoBNCC);
+        adicionarSecao("2", tituloSecao("Alinhamento BNCC"), planoData.alinhamentoBNCC);
       }
 
       // Tema da Aula
       if (planoData.temaDaAula) {
-        adicionarSecao("3", "Tema da Aula", planoData.temaDaAula);
+        adicionarSecao("3", tituloSecao("Tema da Aula"), planoData.temaDaAula);
       }
 
       // Objetivos de Aprendizagem
       if (planoData.objetivosAprendizagem) {
-        adicionarSecao("4", "Objetivos de Aprendizagem", planoData.objetivosAprendizagem);
+        adicionarSecao("4", tituloSecao("Objetivos de Aprendizagem"), planoData.objetivosAprendizagem);
       }
 
       // Conteúdos
       if (planoData.conteudos) {
-        adicionarSecao("5", "Conteúdos", planoData.conteudos);
+        adicionarSecao("5", tituloSecao("Conteúdos"), planoData.conteudos);
       }
 
       // Metodologia
       if (planoData.metodologia) {
-        adicionarSecao("6", "Metodologia", planoData.metodologia);
+        adicionarSecao("6", tituloSecao("Metodologia"), planoData.metodologia);
       }
 
       // Sequência Didática
       if (planoData.sequenciaDidatica) {
-        adicionarSecao("7", "Sequência Didática", planoData.sequenciaDidatica);
+        adicionarSecao("7", tituloSecao("Sequência Didática"), planoData.sequenciaDidatica);
       }
 
       // Recursos Didáticos
       if (planoData.recursosDidaticos) {
-        adicionarSecao("8", "Recursos Didáticos", planoData.recursosDidaticos);
+        adicionarSecao("8", tituloSecao("Recursos Didáticos"), planoData.recursosDidaticos);
       }
 
       // Avaliação
       if (planoData.avaliacao) {
-        adicionarSecao("9", "Avaliação", planoData.avaliacao);
+        adicionarSecao("9", tituloSecao("Avaliação"), planoData.avaliacao);
       }
 
       // Seções adicionais
