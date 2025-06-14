@@ -225,12 +225,12 @@ export default function Auth() {
                     <CardContent className="space-y-6 px-8 pb-8">
                       <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-6">
                         <div className="space-y-3">
-                          <Label htmlFor="email" className="text-slate-700 font-semibold text-base">Email</Label>
+                          <Label htmlFor="email" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Email</Label>
                           <Input
                             id="email"
                             type="email"
                             placeholder="Digite seu email"
-                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
                             {...loginForm.register("email")}
                           />
                           {loginForm.formState.errors.email && (
@@ -243,7 +243,7 @@ export default function Auth() {
                         
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <Label htmlFor="password" className="text-slate-700 font-semibold text-base">Senha</Label>
+                            <Label htmlFor="password" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Senha</Label>
                             <Button 
                               variant="link" 
                               className="p-0 h-auto text-blue-600 hover:text-blue-700 font-medium"
@@ -256,7 +256,7 @@ export default function Auth() {
                             id="password"
                             type="password"
                             placeholder="Digite sua senha"
-                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
                             {...loginForm.register("password")}
                           />
                           {loginForm.formState.errors.password && (
@@ -301,11 +301,11 @@ export default function Auth() {
                       <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-3">
-                            <Label htmlFor="firstName" className="text-slate-700 font-semibold text-base">Nome</Label>
+                            <Label htmlFor="firstName" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Nome</Label>
                             <Input
                               id="firstName"
                               placeholder="Digite seu nome"
-                              className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium"
+                              className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
                               {...registerForm.register("firstName")}
                             />
                             {registerForm.formState.errors.firstName && (
@@ -316,11 +316,11 @@ export default function Auth() {
                             )}
                           </div>
                           <div className="space-y-3">
-                            <Label htmlFor="lastName" className="text-slate-700 font-semibold text-base">Sobrenome</Label>
+                            <Label htmlFor="lastName" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Sobrenome</Label>
                             <Input
                               id="lastName"
                               placeholder="Digite seu sobrenome"
-                              className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium"
+                              className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
                               {...registerForm.register("lastName")}
                             />
                             {registerForm.formState.errors.lastName && (
@@ -333,12 +333,12 @@ export default function Auth() {
                         </div>
                         
                         <div className="space-y-3">
-                          <Label htmlFor="email" className="text-slate-700 font-semibold text-base">Email</Label>
+                          <Label htmlFor="email" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Email</Label>
                           <Input
                             id="email"
                             type="email"
                             placeholder="Digite seu email"
-                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
                             {...registerForm.register("email")}
                           />
                           {registerForm.formState.errors.email && (
@@ -350,12 +350,12 @@ export default function Auth() {
                         </div>
                         
                         <div className="space-y-3">
-                          <Label htmlFor="password" className="text-slate-700 font-semibold text-base">Senha</Label>
+                          <Label htmlFor="password" className="text-slate-800 font-bold text-sm tracking-wide uppercase">Senha</Label>
                           <Input
                             id="password"
                             type="password"
                             placeholder="Mínimo 6 caracteres"
-                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium"
+                            className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
                             {...registerForm.register("password")}
                           />
                           {registerForm.formState.errors.password && (
