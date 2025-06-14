@@ -511,18 +511,18 @@ Gere o conteúdo em HTML bem formatado.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <Helmet>
         <title>Gerador de Atividades - AIverse</title>
       </Helmet>
       
       {/* Header */}
-      <div className="bg-slate-900/95 backdrop-blur-xl border-b border-cyan-500/20 sticky top-0 z-50 shadow-xl">
+      <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/professor/dashboard">
-                <Button size="sm" className="gap-2 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white shadow-lg border-0">
+                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white shadow-lg border-0">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
@@ -534,8 +534,8 @@ Gere o conteúdo em HTML bem formatado.`;
                   className="w-10 h-10 object-contain"
                 />
                 <div>
-                  <h1 className="text-lg md:text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Gerador de Atividades</h1>
-                  <p className="text-sm text-slate-300">Crie atividades educacionais personalizadas</p>
+                  <h1 className="text-lg md:text-xl font-bold text-slate-900">Gerador de Atividades</h1>
+                  <p className="text-sm text-slate-600">Crie atividades educacionais personalizadas</p>
                 </div>
               </div>
             </div>
@@ -548,22 +548,22 @@ Gere o conteúdo em HTML bem formatado.`;
           
           {/* Painel de Configuração */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/30 shadow-2xl">
+            <Card className="bg-white/80 backdrop-blur-sm border-slate-200/50 shadow-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <FileText className="h-5 w-5 text-cyan-400" />
+                <CardTitle className="flex items-center gap-2 text-slate-800">
+                  <FileText className="h-5 w-5 text-blue-600" />
                   Configurações da Atividade
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Configuração do Tema */}
                 <div className="space-y-3">
-                  <label className="text-sm font-medium text-slate-200">Tema da Atividade</label>
+                  <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Tema da Atividade</label>
                   <Textarea
                     placeholder="Ex: Frações no cotidiano, Revolução Industrial, Sistema Solar..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
-                    className="min-h-[80px] bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-cyan-500 focus:ring-cyan-500/20"
+                    className="min-h-[80px] border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
                   />
                   {/* Simple validation for Portuguese characters */}
                   {tema && !/^[\w\s\u00C0-\u017F\u0100-\u024F\u1E00-\u1EFF.,!?;:()\-"']*$/.test(tema) && (
@@ -576,9 +576,9 @@ Gere o conteúdo em HTML bem formatado.`;
                 {/* Configurações Básicas */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">Matéria</label>
+                    <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Matéria</label>
                     <Select value={materia} onValueChange={setMateria}>
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                      <SelectTrigger className="border-2 border-slate-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
                         <SelectValue placeholder="Selecione a matéria" />
                       </SelectTrigger>
                       <SelectContent>
@@ -599,9 +599,9 @@ Gere o conteúdo em HTML bem formatado.`;
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">Série</label>
+                    <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Série</label>
                     <Select value={serie} onValueChange={setSerie}>
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                      <SelectTrigger className="border-2 border-slate-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
                         <SelectValue placeholder="Selecione a série" />
                       </SelectTrigger>
                       <SelectContent>
@@ -625,7 +625,7 @@ Gere o conteúdo em HTML bem formatado.`;
                 {/* Configurações da Atividade */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">Quantidade de Questões</label>
+                    <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Quantidade de Questões</label>
                     <div className="relative">
                       <input
                         type="number"
@@ -633,20 +633,20 @@ Gere o conteúdo em HTML bem formatado.`;
                         max="50"
                         value={quantidadeQuestoes}
                         onChange={(e) => setQuantidadeQuestoes(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
-                        className="w-full px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-md text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                        className="w-full px-3 py-2 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium rounded-md"
                         placeholder="Digite o número de questões (1-50)"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                        <span className="text-sm text-slate-400">questões</span>
+                        <span className="text-sm text-slate-600">questões</span>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-400">Mínimo: 1 questão | Máximo: 50 questões</p>
+                    <p className="text-xs text-slate-500">Mínimo: 1 questão | Máximo: 50 questões</p>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-200">Tipo de Atividade</label>
+                    <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Tipo de Atividade</label>
                     <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white">
+                      <SelectTrigger className="border-2 border-slate-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -712,74 +712,74 @@ Gere o conteúdo em HTML bem formatado.`;
           {/* Resultado */}
           <div className="lg:col-span-2">
             {atividadeGerada ? (
-              <Card className="bg-slate-800/90 backdrop-blur-sm border-cyan-500/30 shadow-2xl">
-                <CardHeader className="border-b border-cyan-500/20 bg-gradient-to-r from-slate-800/50 to-slate-700/50">
+              <Card className="bg-white/80 backdrop-blur-sm border-slate-200/50 shadow-xl">
+                <CardHeader className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
                   {/* Header profissional com informações do usuário */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-slate-700/50 rounded-lg border border-cyan-500/20 shadow-sm">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 bg-white rounded-lg border border-slate-200 shadow-sm">
                     {/* Informações da Escola/Professor */}
                     <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-slate-200">
-                        <GraduationCap className="h-5 w-5 text-cyan-400" />
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <GraduationCap className="h-5 w-5 text-blue-600" />
                         <span className="font-semibold">Instituição de Ensino</span>
                       </div>
                       <div className="ml-7 space-y-1">
-                        <p className="text-sm text-slate-300">Nome: ________________________________</p>
-                        <p className="text-sm text-slate-300">Endereço: _____________________________</p>
+                        <p className="text-sm text-slate-600">Nome: ________________________________</p>
+                        <p className="text-sm text-slate-600">Endereço: _____________________________</p>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-slate-200 mt-4">
-                        <User className="h-5 w-5 text-green-400" />
+                      <div className="flex items-center gap-2 text-slate-700 mt-4">
+                        <User className="h-5 w-5 text-green-600" />
                         <span className="font-semibold">Professor(a) Responsável</span>
                       </div>
                       <div className="ml-7 space-y-1">
-                        <p className="text-sm text-white font-medium">
+                        <p className="text-sm text-slate-800 font-medium">
                           {user?.firstName} {user?.lastName}
                         </p>
-                        <p className="text-sm text-slate-300">{user?.email}</p>
+                        <p className="text-sm text-slate-600">{user?.email}</p>
                       </div>
                     </div>
 
                     {/* Informações da Atividade */}
                     <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-slate-200">
-                        <FileText className="h-5 w-5 text-purple-400" />
+                      <div className="flex items-center gap-2 text-slate-700">
+                        <FileText className="h-5 w-5 text-purple-600" />
                         <span className="font-semibold">Dados da Atividade</span>
                       </div>
                       <div className="ml-7 space-y-2">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-xs text-slate-400 uppercase tracking-wide">Disciplina</p>
-                            <p className="text-sm font-medium text-white">{temaAnalysis?.disciplina || atividadeGerada.materia}</p>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Disciplina</p>
+                            <p className="text-sm font-medium text-slate-800">{temaAnalysis?.disciplina || atividadeGerada.materia}</p>
                           </div>
                           <div>
-                            <p className="text-xs text-slate-400 uppercase tracking-wide">Série/Ano</p>
-                            <p className="text-sm font-medium text-white">{temaAnalysis?.anoSerie || atividadeGerada.serie}</p>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Série/Ano</p>
+                            <p className="text-sm font-medium text-slate-800">{temaAnalysis?.anoSerie || atividadeGerada.serie}</p>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-xs text-slate-400 uppercase tracking-wide">Turma</p>
-                            <p className="text-sm text-slate-300">__________</p>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Turma</p>
+                            <p className="text-sm text-slate-600">__________</p>
                           </div>
                           <div>
-                            <p className="text-xs text-slate-400 uppercase tracking-wide">Data</p>
-                            <p className="text-sm text-slate-300">___/___/______</p>
+                            <p className="text-xs text-slate-500 uppercase tracking-wide">Data</p>
+                            <p className="text-sm text-slate-600">___/___/______</p>
                           </div>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-slate-200 mt-4">
-                        <Calendar className="h-5 w-5 text-orange-400" />
+                      <div className="flex items-center gap-2 text-slate-700 mt-4">
+                        <Calendar className="h-5 w-5 text-orange-600" />
                         <span className="font-semibold">Detalhes</span>
                       </div>
                       <div className="ml-7 flex flex-wrap gap-2">
-                        <Badge variant="secondary" className="text-xs bg-cyan-500/20 text-cyan-300 border-cyan-400/30">
+                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
                           {atividadeGerada.tipoAtividade}
                         </Badge>
-                        <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-300 border-green-400/30">
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
                           {atividadeGerada.quantidadeQuestoes} questões
                         </Badge>
-                        <Badge variant="secondary" className="text-xs bg-purple-500/20 text-purple-300 border-purple-400/30">
+                        <Badge variant="secondary" className="text-xs bg-purple-100 text-purple-800">
                           {atividadeGerada.nivelDificuldade}
                         </Badge>
                       </div>
@@ -788,18 +788,18 @@ Gere o conteúdo em HTML bem formatado.`;
 
                   {/* Título da Atividade */}
                   <div className="text-center py-4">
-                    <h1 className="text-2xl font-bold text-white mb-2">
+                    <h1 className="text-2xl font-bold text-slate-900 mb-2">
                       {atividadeGerada.titulo}
                     </h1>
-                    <div className="w-32 h-1 bg-gradient-to-r from-cyan-400 to-purple-400 mx-auto rounded-full"></div>
+                    <div className="w-32 h-1 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
                   {/* Barra de ações única */}
-                  <div className="border-b border-cyan-500/20 p-4 bg-gradient-to-r from-slate-700/50 to-slate-600/50">
+                  <div className="border-b border-slate-200 p-4 bg-gradient-to-r from-slate-50 to-slate-100">
                     <div className="flex items-center justify-between">
-                      <div className="text-sm text-slate-200 font-medium flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-green-400" />
+                      <div className="text-sm text-slate-700 font-medium flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
                         Atividade pronta para uso em sala de aula
                       </div>
                       <div className="flex gap-3">
@@ -807,7 +807,7 @@ Gere o conteúdo em HTML bem formatado.`;
                           variant="outline" 
                           size="sm" 
                           onClick={copiarConteudo}
-                          className="bg-slate-600/50 hover:bg-slate-500/50 border-cyan-400/30 text-white hover:text-cyan-200"
+                          className="bg-white hover:bg-slate-50 border-slate-300"
                         >
                           <Copy className="h-4 w-4 mr-2" />
                           Copiar
@@ -816,14 +816,14 @@ Gere o conteúdo em HTML bem formatado.`;
                           variant="outline" 
                           size="sm" 
                           onClick={baixarPDF}
-                          className="bg-slate-600/50 hover:bg-slate-500/50 border-purple-400/30 text-white hover:text-purple-200"
+                          className="bg-white hover:bg-slate-50 border-slate-300"
                         >
                           <Download className="h-4 w-4 mr-2" />
                           PDF
                         </Button>
                         <Button 
                           size="sm" 
-                          className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                           onClick={() => window.print()}
                         >
                           <Printer className="h-4 w-4 mr-2" />
