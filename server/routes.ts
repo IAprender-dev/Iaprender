@@ -1528,31 +1528,76 @@ Estrutura JSON obrigatória:
   }
 }`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY!,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514', // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
-          max_tokens: 8000,
-          system: comprehensivePrompt,
-          messages: [
-            {
-              role: 'user',
-              content: `Crie um plano de aula completo e profissional seguindo todas as diretrizes da BNCC e metodologias pedagógicas contemporâneas para o tema "${tema}" em ${disciplina} para ${anoSerie} (${etapaEnsino}) com duração de ${duracao} minutos. Retorne APENAS o JSON válido conforme a estrutura especificada.`
-            }
-          ]
-        })
-      });
+      let fetchResponse: globalThis.Response | undefined;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          fetchResponse = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': process.env.ANTHROPIC_API_KEY!,
+              'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-20250514', // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
+              max_tokens: 8000,
+              system: comprehensivePrompt,
+              messages: [
+                {
+                  role: 'user',
+                  content: `Crie um plano de aula completo e profissional seguindo todas as diretrizes da BNCC e metodologias pedagógicas contemporâneas para o tema "${tema}" em ${disciplina} para ${anoSerie} (${etapaEnsino}) com duração de ${duracao} minutos. Retorne APENAS o JSON válido conforme a estrutura especificada.`
+                }
+              ]
+            }),
+            signal: AbortSignal.timeout(120000) // 2 minute timeout
+          });
 
-      if (!response.ok) {
-        throw new Error('Falha na API do Anthropic');
+          if (!fetchResponse.ok) {
+            if (fetchResponse.status === 429) {
+              throw new Error('Limite de requisições excedido. Tente novamente em alguns segundos.');
+            } else if (fetchResponse.status === 401) {
+              throw new Error('Erro de autenticação com o serviço de IA. Verifique as configurações.');
+            } else {
+              throw new Error(`Erro na API: ${fetchResponse.status} - ${fetchResponse.statusText}`);
+            }
+          }
+          
+          break; // Success, exit retry loop
+          
+        } catch (error: any) {
+          retryCount++;
+          
+          if (error.name === 'TimeoutError') {
+            console.error(`Tentativa ${retryCount}: Timeout na requisição`);
+          } else if (error.code === 'ECONNRESET' || error.cause?.code === 'ECONNRESET') {
+            console.error(`Tentativa ${retryCount}: Conexão perdida durante a requisição`);
+          } else {
+            console.error(`Tentativa ${retryCount}: Erro na requisição:`, error.message);
+          }
+          
+          if (retryCount >= maxRetries) {
+            if (error.name === 'TimeoutError') {
+              throw new Error('A geração do plano está demorando muito. Tente novamente com um tema mais específico ou reduza a duração da aula.');
+            } else if (error.code === 'ECONNRESET' || error.cause?.code === 'ECONNRESET') {
+              throw new Error('Problema de conexão com o serviço de IA. Verifique sua conexão com a internet e tente novamente.');
+            } else {
+              throw error;
+            }
+          }
+          
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+        }
       }
 
-      const data = await response.json();
+      if (!fetchResponse) {
+        throw new Error('Falha na conexão após múltiplas tentativas. Tente novamente mais tarde.');
+      }
+
+      const data = await fetchResponse.json();
       const content = data.content[0].text;
       
       try {

@@ -223,7 +223,21 @@ export default function PlanejamentoAula() {
       });
 
       if (!response.ok) {
-        throw new Error('Erro na geração do plano');
+        let errorMessage = 'Erro na geração do plano';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (parseError) {
+          // If we can't parse the error response, use default message
+          if (response.status === 500) {
+            errorMessage = 'Erro interno do servidor. Tente novamente em alguns momentos.';
+          } else if (response.status === 429) {
+            errorMessage = 'Muitas requisições. Aguarde alguns segundos e tente novamente.';
+          } else if (response.status === 401) {
+            errorMessage = 'Erro de autenticação. Faça login novamente.';
+          }
+        }
+        throw new Error(errorMessage);
       }
 
       const planoData = await response.json();
@@ -240,9 +254,18 @@ export default function PlanejamentoAula() {
       }, 500);
     } catch (error: any) {
       console.error('Erro na geração do plano:', error);
+      
+      let userMessage = "Verifique sua conexão e tente novamente.";
+      
+      if (error.message) {
+        userMessage = error.message;
+      } else if (error.name === 'TypeError' && error.message?.includes('fetch')) {
+        userMessage = "Problema de conexão. Verifique sua internet e tente novamente.";
+      }
+      
       toast({
         title: "Erro ao gerar plano",
-        description: error.message || "Verifique sua conexão e tente novamente.",
+        description: userMessage,
         variant: "destructive"
       });
     } finally {
