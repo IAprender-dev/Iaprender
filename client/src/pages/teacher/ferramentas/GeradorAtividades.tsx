@@ -440,46 +440,114 @@ Gere o conteúdo em HTML bem formatado.`;
       pdf.text(atividadeGerada.titulo.toUpperCase(), pageWidth / 2, yPos, { align: 'center' });
       yPos += 30;
 
-      // Process content line by line with proper formatting
-      linhasConteudo.forEach((linha, index) => {
-        // Verificar quebra de página
-        if (yPos + 80 > pageHeight - margin) {
+      // Process content with proper question grouping to prevent page breaks
+      let currentQuestion = '';
+      let currentAlternatives: string[] = [];
+      let isInGabarito = false;
+      
+      const processQuestion = (questionText: string, alternatives: string[]) => {
+        // Calculate total height needed for this question
+        const questionLines = pdf.splitTextToSize(questionText, contentWidth);
+        const alternativeLines = alternatives.map(alt => pdf.splitTextToSize('    ' + alt, contentWidth));
+        const totalLines = questionLines.length + alternativeLines.reduce((acc, lines) => acc + lines.length, 0);
+        const totalHeight = totalLines * 12 + 40; // Add extra spacing
+        
+        // Check if we need a new page for this complete question
+        if (yPos + totalHeight > pageHeight - margin - 50) {
           pdf.addPage();
-          yPos = margin;
+          yPos = margin + 20;
         }
         
-        // Check if it's a question number (starts with number and period)
-        if (/^\d+\./.test(linha.trim())) {
-          pdf.setFont('helvetica', 'bold');
-          pdf.setFontSize(12);
-          pdf.setTextColor(30, 41, 59);
-          yPos += 10; // Extra space before questions
-        } 
-        // Check if it's an alternative (starts with letter and parenthesis)
-        else if (/^[a-e]\)/.test(linha.trim())) {
+        // Add question
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(12);
+        pdf.setTextColor(30, 41, 59);
+        pdf.text(questionLines, margin, yPos);
+        yPos += questionLines.length * 15 + 8;
+        
+        // Add alternatives
+        alternatives.forEach(alt => {
           pdf.setFont('helvetica', 'normal');
           pdf.setFontSize(10);
           pdf.setTextColor(71, 85, 105);
-          linha = '    ' + linha; // Indent alternatives
-        }
-        // Check if it's a header or section
-        else if (linha.includes('GABARITO') || linha.includes('Atividade:')) {
+          const altLines = pdf.splitTextToSize('    ' + alt, contentWidth);
+          pdf.text(altLines, margin, yPos);
+          yPos += altLines.length * 12 + 4;
+        });
+        
+        yPos += 15; // Space after question
+      };
+      
+      linhasConteudo.forEach((linha, index) => {
+        const trimmedLine = linha.trim();
+        
+        // Check for gabarito section
+        if (trimmedLine.includes('GABARITO')) {
+          // Process any pending question
+          if (currentQuestion && currentAlternatives.length > 0) {
+            processQuestion(currentQuestion, currentAlternatives);
+            currentQuestion = '';
+            currentAlternatives = [];
+          }
+          
+          // Add gabarito header
+          if (yPos + 60 > pageHeight - margin) {
+            pdf.addPage();
+            yPos = margin + 20;
+          }
+          
           pdf.setFont('helvetica', 'bold');
           pdf.setFontSize(14);
           pdf.setTextColor(30, 41, 59);
-          yPos += 15; // Extra space before headers
-        }
-        // Regular text
-        else {
-          pdf.setFont('helvetica', 'normal');
-          pdf.setFontSize(10);
-          pdf.setTextColor(71, 85, 105);
+          pdf.text(trimmedLine, margin, yPos);
+          yPos += 25;
+          isInGabarito = true;
+          return;
         }
         
-        const linhasTexto = pdf.splitTextToSize(linha, contentWidth);
-        pdf.text(linhasTexto, margin, yPos);
-        yPos += linhasTexto.length * 12 + 8;
+        // Handle gabarito items
+        if (isInGabarito && trimmedLine) {
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(11);
+          pdf.setTextColor(71, 85, 105);
+          pdf.text(trimmedLine, margin + 10, yPos);
+          yPos += 14;
+          return;
+        }
+        
+        // Skip empty lines
+        if (!trimmedLine) return;
+        
+        // Check if it's a question number
+        if (/^\d+\./.test(trimmedLine)) {
+          // Process previous question if exists
+          if (currentQuestion && currentAlternatives.length > 0) {
+            processQuestion(currentQuestion, currentAlternatives);
+          }
+          
+          // Start new question
+          currentQuestion = trimmedLine;
+          currentAlternatives = [];
+        }
+        // Check if it's an alternative
+        else if (/^[a-e]\)/.test(trimmedLine)) {
+          currentAlternatives.push(trimmedLine);
+        }
+        // Handle header (Atividade title)
+        else if (trimmedLine.includes('Atividade:')) {
+          pdf.setFont('helvetica', 'bold');
+          pdf.setFontSize(14);
+          pdf.setTextColor(30, 41, 59);
+          const titleLines = pdf.splitTextToSize(trimmedLine, contentWidth);
+          pdf.text(titleLines, margin, yPos);
+          yPos += titleLines.length * 16 + 15;
+        }
       });
+      
+      // Process final question if exists
+      if (currentQuestion && currentAlternatives.length > 0) {
+        processQuestion(currentQuestion, currentAlternatives);
+      }
 
       // Rodapé
       pdf.setFont('helvetica', 'italic');
