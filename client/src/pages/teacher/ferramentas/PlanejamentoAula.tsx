@@ -305,7 +305,7 @@ export default function PlanejamentoAula() {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(18);
         pdf.setTextColor(79, 70, 229);
-        const tituloPlano = `Plano de Aula - ${formData.tema}`;
+        const tituloPlano = textoSeguro(`Plano de Aula - ${formData.tema}`);
         const tituloWidth = pdf.getTextWidth(tituloPlano);
         pdf.text(tituloPlano, (pageWidth - tituloWidth) / 2, yPos);
         yPos += 25;
@@ -516,8 +516,8 @@ export default function PlanejamentoAula() {
       let numeroSecao = 10;
       Object.entries(planoData).forEach(([secao, conteudo]) => {
         if (!['identificacao', 'alinhamentoBNCC', 'temaDaAula', 'objetivosAprendizagem', 'conteudos', 'metodologia', 'sequenciaDidatica', 'recursosDidaticos', 'avaliacao'].includes(secao)) {
-          const tituloSecao = secao.replace(/([A-Z])/g, ' $1').toLowerCase();
-          const tituloFormatado = tituloSecao.charAt(0).toUpperCase() + tituloSecao.slice(1);
+          const tituloSecaoRaw = secao.replace(/([A-Z])/g, ' $1').toLowerCase();
+          const tituloFormatado = tituloSecao(tituloSecaoRaw.charAt(0).toUpperCase() + tituloSecaoRaw.slice(1));
           adicionarSecao(String(numeroSecao), tituloFormatado, conteudo);
           numeroSecao++;
         }
@@ -531,7 +531,7 @@ export default function PlanejamentoAula() {
       
       const nomeCompleto = user ? `${user.firstName} ${user.lastName}` : 'Professor';
       const emailProfessor = user?.email || '';
-      const rodape = `Plano gerado em ${new Date().toLocaleDateString('pt-BR')} por ${nomeCompleto} (${emailProfessor}) - AIverse Educacional`;
+      const rodape = textoSeguro(`Plano gerado em ${new Date().toLocaleDateString('pt-BR')} por ${nomeCompleto} (${emailProfessor}) - AIverse Educacional`);
       const rodapeWidth = pdf.getTextWidth(rodape);
       pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
 
