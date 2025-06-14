@@ -1278,6 +1278,27 @@ RESPONDA APENAS COM JSON VÁLIDO:
 
       const comprehensivePrompt = `Você é um especialista em educação brasileira com amplo conhecimento da BNCC, diretrizes do MEC e metodologias pedagógicas contemporâneas. Sua função é criar planejamentos de aula completos, profissionais e alinhados às normativas educacionais brasileiras.
 
+**IMPORTANTE - GESTÃO DE TEMPO E DIVISÃO DE CONTEÚDO:**
+
+Antes de criar o plano de aula, analise a relação entre o tempo disponível e a quantidade de conteúdo a ser ensinado. Se o tema proposto for muito extenso para o tempo de aula disponível, você DEVE:
+
+1. **Avaliar a carga de conteúdo**: Considere quantos conceitos, explicações, exemplos e atividades práticas são necessários para um ensino efetivo do tema.
+2. **Subdividir quando necessário**: Se o conteúdo não couber adequadamente em uma única aula, divida o tema em múltiplas aulas sequenciais (Aula 1, Aula 2, etc.).
+3. **Para cada subdivisão, especifique**:
+- Objetivos específicos da aula
+- Tópicos que serão abordados
+- Tempo estimado para cada tópico/atividade
+- Pré-requisitos da aula anterior (quando aplicável)
+4. **Critérios de tempo por atividade**:
+- Explicação de conceitos novos: mínimo 10-15 minutos
+- Exemplos práticos: 5-10 minutos cada
+- Atividades práticas: 15-30 minutos
+- Discussões e perguntas: 5-10 minutos
+- Revisão/síntese: 5-10 minutos
+5. **Priorização**: Se optar por manter em uma aula, indique claramente quais tópicos são essenciais e quais são complementares, ajustando a profundidade conforme o tempo.
+
+**Sempre justifique sua decisão** de manter em uma aula ou dividir em múltiplas, explicando o raciocínio sobre a gestão do tempo e do conteúdo.
+
 DADOS FORNECIDOS PELO PROFESSOR:
 - Disciplina/Componente Curricular: ${finalDisciplina}
 - Ano/Série e Etapa de Ensino: ${finalAnoSerie} - ${etapaEnsino || 'Não especificado'}
