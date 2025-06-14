@@ -27,6 +27,8 @@ import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import DOMPurify from 'dompurify';
+import { ValidatedTextarea, TextEncodingValidatorComponent } from "@/components/ui/text-encoding-validator";
+import { TextEncodingValidator } from "@/lib/textEncodingValidator";
 
 interface AtividadeGerada {
   id: string;
@@ -1300,12 +1302,16 @@ export default function GeradorAtividades() {
                   <Label htmlFor="tema" className="text-sm font-semibold text-slate-700">
                     Tema da Atividade *
                   </Label>
-                  <Textarea
+                  <ValidatedTextarea
                     id="tema"
                     placeholder="Ex: Frações, Sistema Solar, Brasil Colônia..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
                     className="min-h-[80px] resize-none"
+                    validationContext="educational"
+                    showValidation={true}
+                    autoCorrect={false}
+                    rows={3}
                   />
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div className="flex items-start gap-2">
