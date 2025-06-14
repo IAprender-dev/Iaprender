@@ -35,6 +35,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/AuthContext";
+import jsPDF from 'jspdf';
+import { PDFAccentCorrector } from "@/lib/pdfAccentCorrector";
 
 interface LessonPlanData {
   identificacao?: Record<string, any>;
@@ -264,9 +266,6 @@ export default function PlanejamentoAula() {
     }
 
     try {
-      // Importar jsPDF dinamicamente
-      const { default: jsPDF } = await import('jspdf');
-      
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
@@ -274,9 +273,6 @@ export default function PlanejamentoAula() {
         putOnlyUsedFonts: true,
         compress: true
       });
-
-      // Configurar codificação UTF-8 para caracteres acentuados
-      pdf.internal.pageSize.getWidth();
 
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
