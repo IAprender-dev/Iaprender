@@ -863,7 +863,7 @@ export default function PlanejamentoAula() {
                     placeholder="Descreva os objetivos específicos que pretende alcançar com esta aula..."
                     value={formData.objetivosEspecificos}
                     onChange={(e) => handleFormChange('objetivosEspecificos', e.target.value)}
-                    className="min-h-[80px] resize-none border-slate-300 focus:border-blue-500"
+                    className="min-h-[80px] resize-none border-2 border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 bg-white text-amber-900"
                   />
                 </div>
 
@@ -871,7 +871,7 @@ export default function PlanejamentoAula() {
                 <Button 
                   onClick={gerarPlano}
                   disabled={isGenerating || !formData.tema.trim() || !formData.duracao || !formData.escola || !formData.numeroAlunos || !temaAnalysis}
-                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg"
                 >
                   {isGenerating ? (
                     <>
