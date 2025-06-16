@@ -102,6 +102,9 @@ function Router() {
       <Route path="/professor/ferramentas/modelos-planejamento" component={ModelosPlanejamento} />
       <Route path="/professor/ferramentas/analise-documentos" component={AnaliseDocumentos} />
       
+      {/* Logo Showcase */}
+      <Route path="/logo-showcase" component={LogoShowcase} />
+      
       {/* Student routes */}
       <Route path="/student/dashboard" component={StudentDashboard} />
       <Route path="/student/courses" component={StudentCourses} />

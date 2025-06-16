@@ -270,6 +270,25 @@ export default function TeacherDashboard() {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link href="/logo-showcase">
+              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-teal-50 to-blue-50 hover:from-teal-100 hover:to-blue-100">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-gradient-to-br from-teal-500 to-blue-500 rounded-xl">
+                      <Palette className="h-6 w-6 text-white" />
+                    </div>
+                    <Badge className="bg-teal-100 text-teal-700 border-teal-200">Novo</Badge>
+                  </div>
+                  <h3 className="font-bold text-lg text-slate-900 mb-2">Logo IAprender</h3>
+                  <p className="text-sm text-slate-600">Veja o logo gerado com IA</p>
+                  <div className="mt-4 flex items-center text-teal-600 group-hover:text-teal-700">
+                    <span className="text-sm font-medium">Visualizar</span>
+                    <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Dicas de IA para Educadores */}
