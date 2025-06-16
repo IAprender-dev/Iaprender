@@ -908,14 +908,10 @@ export default function IAprenderLanding() {
               Junte-se à revolução educacional. O futuro está aqui, e ele fala português.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 px-10 py-6 text-lg font-semibold shadow-xl">
-                Começar Agora
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 px-10 py-6 text-lg font-semibold">
                 <MessageSquare className="mr-2 h-5 w-5" />
-                Falar com Especialista
+                Fale Conosco
               </Button>
             </div>
           </div>
