@@ -176,7 +176,7 @@ export default function ResumosBNCC() {
         <title>Resumos BNCC - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 overflow-x-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 overflow-x-hidden">
         {/* Header */}
         <div className="border-b border-slate-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
@@ -184,14 +184,14 @@ export default function ResumosBNCC() {
               <Link href="/professor/dashboard">
                 <Button 
                   size="sm"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+                  className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Voltar
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg">
                   <GraduationCap className="h-5 w-5 text-white" />
                 </div>
                 <div>

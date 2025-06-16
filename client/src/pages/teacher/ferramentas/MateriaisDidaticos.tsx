@@ -499,14 +499,14 @@ export default function ResumosDidaticos() {
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center gap-3">
             <Link href="/professor/dashboard">
-              <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+              <Button size="sm" className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl">
-                <BookOpenCheck className="h-5 w-5 text-blue-600" />
+              <div className="p-2 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl">
+                <BookOpenCheck className="h-5 w-5 text-white" />
               </div>
               <div>
                 <h1 className="text-lg md:text-xl font-bold text-slate-800">Resumos Didáticos</h1>
