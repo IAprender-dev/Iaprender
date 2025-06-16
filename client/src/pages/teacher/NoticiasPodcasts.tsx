@@ -298,7 +298,7 @@ export default function NoticiasPodcasts() {
         <title>Notícias e Podcasts - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50/30">
         <div className="container mx-auto px-6 pt-4 pb-8 max-w-7xl">
           {/* Header with Logo and Back Button */}
           <div className="flex items-center justify-between mb-6">
@@ -312,7 +312,7 @@ export default function NoticiasPodcasts() {
             
             {/* Back Button */}
             <Link href="/professor/dashboard">
-              <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+              <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
@@ -326,8 +326,8 @@ export default function NoticiasPodcasts() {
               onClick={() => setActiveTab('news')}
               className={`gap-2 h-10 px-5 rounded-lg font-medium ${
                 activeTab === 'news' 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg' 
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg' 
+                  : 'border-orange-300 text-orange-700 hover:bg-orange-50'
               }`}
             >
               <Newspaper className="h-4 w-4" />
@@ -337,11 +337,11 @@ export default function NoticiasPodcasts() {
               onClick={() => setActiveTab('podcasts')}
               className={`gap-2 h-10 px-5 rounded-lg font-medium ${
                 activeTab === 'podcasts' 
-                  ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-lg border-0' 
-                  : 'border border-gray-300 text-gray-700 hover:bg-gray-50 bg-white'
+                  ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-lg border-0' 
+                  : 'border border-red-300 text-red-700 hover:bg-red-50 bg-white'
               }`}
             >
-              <Headphones className={`h-4 w-4 ${activeTab === 'podcasts' ? 'text-white' : 'text-gray-700'}`} />
+              <Headphones className={`h-4 w-4 ${activeTab === 'podcasts' ? 'text-white' : 'text-red-700'}`} />
               Podcasts
             </Button>
           </div>
