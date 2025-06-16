@@ -181,7 +181,7 @@ export default function ImagemEducacional() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-teal-50">
       <Helmet>
         <title>Criar Imagem Educacional - IAverse</title>
       </Helmet>
@@ -192,13 +192,13 @@ export default function ImagemEducacional() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/professor/dashboard">
-                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                <Button size="sm" className="gap-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl">
+                <div className="p-2 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl">
                   <ImageIcon className="h-4 w-4 text-white" />
                 </div>
                 <div>
@@ -219,7 +219,7 @@ export default function ImagemEducacional() {
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-xl rounded-3xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-purple-600" />
+                  <Settings className="h-5 w-5 text-green-600" />
                   Configurar Imagem
                 </CardTitle>
               </CardHeader>
@@ -261,7 +261,7 @@ export default function ImagemEducacional() {
                 <Button 
                   onClick={gerarImagem}
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 rounded-xl transition-all duration-200 shadow-lg"
+                  className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium py-3 rounded-xl transition-all duration-200 shadow-lg"
                 >
                   {isLoading ? (
                     <div className="flex items-center gap-2">

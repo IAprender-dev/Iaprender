@@ -579,7 +579,7 @@ Gere o conteúdo em HTML bem formatado.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
       <Helmet>
         <title>Gerador de Atividades - AIverse</title>
       </Helmet>
@@ -590,7 +590,7 @@ Gere o conteúdo em HTML bem formatado.`;
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/professor/dashboard">
-                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white shadow-lg border-0">
+                <Button size="sm" className="gap-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg border-0">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
