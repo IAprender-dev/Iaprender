@@ -47,10 +47,23 @@ export default function ResumosDidaticos() {
   const [resumosGerados, setResumosGerados] = useState<ResumoGerado[]>([]);
   const [resumoSelecionado, setResumoSelecionado] = useState<ResumoGerado | null>(null);
 
-  // Garantir que a página sempre inicie no topo
+  // Garantir que a página sempre inicie no topo com animação suave
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  }, []);
+    const scrollToTop = () => {
+      window.scrollTo({ 
+        top: 0, 
+        left: 0, 
+        behavior: 'smooth' 
+      });
+    };
+    
+    scrollToTop();
+    
+    // Também rolar para o topo quando um resumo for gerado
+    if (resumoSelecionado) {
+      setTimeout(scrollToTop, 100);
+    }
+  }, [resumoSelecionado]);
   
   // Função para gerar resumos
   const gerarResumo = async () => {

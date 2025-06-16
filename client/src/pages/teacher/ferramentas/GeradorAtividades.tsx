@@ -65,6 +65,24 @@ export default function GeradorAtividades() {
   const [atividadeGerada, setAtividadeGerada] = useState<AtividadeGerada | null>(null);
   const [temaAnalysis, setTemaAnalysis] = useState<TemaAnalysis | null>(null);
 
+  // Garantir que a página sempre inicie no topo com animação suave
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo({ 
+        top: 0, 
+        left: 0, 
+        behavior: 'smooth' 
+      });
+    };
+    
+    scrollToTop();
+    
+    // Também rolar para o topo quando a atividade for gerada
+    if (atividadeGerada) {
+      setTimeout(scrollToTop, 100);
+    }
+  }, [atividadeGerada]);
+
   // Função para processar o conteúdo da atividade
   const processarConteudoAtividade = (conteudo: string): string => {
     return conteudo
@@ -669,7 +687,7 @@ Gere o conteúdo em HTML bem formatado.`;
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Série</label>
                     <Select value={serie} onValueChange={setSerie}>
-                      <SelectTrigger className="border-2 border-slate-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                      <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
                         <SelectValue placeholder="Selecione a série" />
                       </SelectTrigger>
                       <SelectContent>
@@ -714,7 +732,7 @@ Gere o conteúdo em HTML bem formatado.`;
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Tipo de Atividade</label>
                     <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
-                      <SelectTrigger className="border-2 border-slate-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                      <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -730,7 +748,7 @@ Gere o conteúdo em HTML bem formatado.`;
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700">Nível de Dificuldade</label>
                   <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
-                    <SelectTrigger className="border-slate-300">
+                    <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -759,7 +777,7 @@ Gere o conteúdo em HTML bem formatado.`;
                 <Button 
                   onClick={gerarAtividade} 
                   disabled={isLoading || !tema.trim()}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-3"
                 >
                   {isLoading ? (
                     <>
