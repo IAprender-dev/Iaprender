@@ -118,10 +118,23 @@ export default function PlanejamentoAula() {
   const [temaAnalysis, setTemaAnalysis] = useState<any>(null);
   const [planoGerado, setPlanoGerado] = useState<LessonPlanData | null>(null);
 
-  // Garantir que a página sempre inicie no topo
+  // Garantir que a página sempre inicie no topo com animação suave
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  }, []);
+    const scrollToTop = () => {
+      window.scrollTo({ 
+        top: 0, 
+        left: 0, 
+        behavior: 'smooth' 
+      });
+    };
+    
+    scrollToTop();
+    
+    // Também rolar para o topo quando o plano for gerado
+    if (planoGerado) {
+      setTimeout(scrollToTop, 100);
+    }
+  }, [planoGerado]);
 
   // Handle form data changes
   const handleFormChange = (field: string, value: string) => {
@@ -747,7 +760,7 @@ export default function PlanejamentoAula() {
                           handleFormChange('numeroAlunos', value);
                         }
                       }}
-                      className="border-slate-300 focus:border-blue-500"
+                      className="border-2 border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 bg-white text-amber-900"
                     />
                   </div>
                 </div>
@@ -763,7 +776,7 @@ export default function PlanejamentoAula() {
                     value={formData.tema}
                     onChange={(e) => handleFormChange('tema', e.target.value)}
                     rows={3}
-                    className="border-slate-300 focus:border-blue-500 resize-none"
+                    className="border-2 border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 bg-white text-amber-900 resize-none"
                   />
                   {isAnalyzing && (
                     <div className="flex items-center gap-2 text-blue-600 text-sm">

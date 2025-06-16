@@ -631,7 +631,7 @@ Gere o conteúdo em HTML bem formatado.`;
                     placeholder="Ex: Frações no cotidiano, Revolução Industrial, Sistema Solar..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
-                    className="min-h-[80px] border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
+                    className="min-h-[80px] border-2 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500/20 focus:ring-4 transition-all duration-300 bg-white text-emerald-900 placeholder:text-emerald-600 placeholder:font-medium font-medium"
                   />
                   {/* Simple validation for Portuguese characters */}
                   {tema && !/^[\w\s\u00C0-\u017F\u0100-\u024F\u1E00-\u1EFF.,!?;:()\-"']*$/.test(tema) && (
@@ -646,7 +646,7 @@ Gere o conteúdo em HTML bem formatado.`;
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Matéria</label>
                     <Select value={materia} onValueChange={setMateria}>
-                      <SelectTrigger className="border-2 border-slate-200 focus:border-blue-500 transition-all duration-300 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                      <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
                         <SelectValue placeholder="Selecione a matéria" />
                       </SelectTrigger>
                       <SelectContent>
@@ -701,7 +701,7 @@ Gere o conteúdo em HTML bem formatado.`;
                         max="50"
                         value={quantidadeQuestoes}
                         onChange={(e) => setQuantidadeQuestoes(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
-                        className="w-full px-3 py-2 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium rounded-md"
+                        className="w-full px-3 py-2 border-2 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500/20 focus:ring-4 transition-all duration-300 bg-white placeholder:text-emerald-600 placeholder:font-medium text-emerald-900 font-medium rounded-md"
                         placeholder="Digite o número de questões (1-50)"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3">
