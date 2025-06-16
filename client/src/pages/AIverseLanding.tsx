@@ -665,10 +665,9 @@ export default function IAprenderLanding() {
                     <BarChart className="h-5 w-5 text-purple-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Analytics de Aprendizagem</h4>
+                    <h4 className="font-semibold text-gray-900 mb-2">Acesso às Ferramentas de IA</h4>
                     <p className="text-gray-600">
-                      Acompanhe o progresso individual e coletivo com insights profundos 
-                      sobre o desenvolvimento dos alunos.
+                      Acesse as mais modernas ferramentas de IA disponíveis. Versões avançadas do ChatGPT, Claude e os mais novos lançamentos.
                     </p>
                   </div>
                 </div>
