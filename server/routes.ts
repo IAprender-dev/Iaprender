@@ -131,6 +131,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // DOWNLOAD ROUTE
+  app.get("/download/iaverse-servidor.tar.gz", (_req, res) => {
+    const filePath = path.join(process.cwd(), "iaverse-servidor.tar.gz");
+    if (fs.existsSync(filePath)) {
+      res.download(filePath, "iaverse-servidor.tar.gz");
+    } else {
+      res.status(404).json({ error: "Arquivo não encontrado" });
+    }
+  });
+
+  // DOCUMENTATION ROUTE
+  app.get("/INSTALACAO_SERVIDOR.md", (_req, res) => {
+    const filePath = path.join(process.cwd(), "INSTALACAO_SERVIDOR.md");
+    if (fs.existsSync(filePath)) {
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      res.sendFile(filePath);
+    } else {
+      res.status(404).json({ error: "Documentação não encontrada" });
+    }
+  });
+
   // AUTH ROUTES
   // Register
   app.post("/api/auth/register", async (req, res) => {
