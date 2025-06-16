@@ -40,10 +40,23 @@ export default function ResumosBNCC() {
   const [resumoGerado, setResumoGerado] = useState<ResumoGerado | null>(null);
   const [historico, setHistorico] = useState<ResumoGerado[]>([]);
 
-  // Garantir que a página sempre comece no topo em dispositivos móveis
+  // Garantir que a página sempre inicie no topo com animação suave
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  }, []);
+    const scrollToTop = () => {
+      window.scrollTo({ 
+        top: 0, 
+        left: 0, 
+        behavior: 'smooth' 
+      });
+    };
+    
+    scrollToTop();
+    
+    // Também rolar para o topo quando um resumo for gerado
+    if (resumoGerado) {
+      setTimeout(scrollToTop, 100);
+    }
+  }, [resumoGerado]);
 
   // Formulário simplificado
   const [assunto, setAssunto] = useState("");
@@ -235,7 +248,7 @@ export default function ResumosBNCC() {
                     <Textarea 
                       id="assunto"
                       placeholder="Ex: Fotossíntese e respiração celular"
-                      className="min-h-[100px] resize-none border-slate-300 focus:border-emerald-500"
+                      className="min-h-[100px] resize-none border-2 border-cyan-200 focus:border-cyan-500 focus:ring-cyan-500/20 focus:ring-4 transition-all duration-300 bg-white text-cyan-900"
                       value={assunto}
                       onChange={(e) => setAssunto(e.target.value)}
                     />
@@ -246,7 +259,7 @@ export default function ResumosBNCC() {
                         <Badge 
                           key={index}
                           variant="outline" 
-                          className="cursor-pointer hover:bg-emerald-50 border-emerald-200 text-emerald-700"
+                          className="cursor-pointer hover:bg-cyan-50 border-cyan-200 text-cyan-700"
                           onClick={() => setAssunto(sugestao)}
                         >
                           {sugestao}
@@ -263,7 +276,7 @@ export default function ResumosBNCC() {
                     <Textarea 
                       id="observacoes"
                       placeholder="Ex: Enfoque em aspectos práticos, adaptação para necessidades especiais..."
-                      className="min-h-[80px] resize-none border-slate-300 focus:border-emerald-500"
+                      className="min-h-[80px] resize-none border-2 border-cyan-200 focus:border-cyan-500 focus:ring-cyan-500/20 focus:ring-4 transition-all duration-300 bg-white text-cyan-900"
                       value={observacoes}
                       onChange={(e) => setObservacoes(e.target.value)}
                     />

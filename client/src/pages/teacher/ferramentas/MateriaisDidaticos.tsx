@@ -556,7 +556,7 @@ export default function ResumosDidaticos() {
                   <Textarea 
                     id="assunto"
                     placeholder="Ex: Fotossíntese e respiração celular"
-                    className="min-h-[100px] resize-none border-slate-300 focus:border-blue-500"
+                    className="min-h-[100px] resize-none border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900"
                     value={assunto}
                     onChange={(e) => setAssunto(e.target.value)}
                   />
@@ -567,7 +567,7 @@ export default function ResumosDidaticos() {
                       <Badge 
                         key={index}
                         variant="outline" 
-                        className="cursor-pointer hover:bg-blue-50 border-blue-200 text-blue-700"
+                        className="cursor-pointer hover:bg-indigo-50 border-indigo-200 text-indigo-700"
                         onClick={() => setAssunto(sugestao)}
                       >
                         {sugestao}
@@ -584,7 +584,7 @@ export default function ResumosDidaticos() {
                   <Textarea 
                     id="contexto"
                     placeholder="Ex: Enfoque em experimentos práticos, adaptação para alunos com dificuldades de aprendizagem..."
-                    className="min-h-[80px] resize-none border-slate-300 focus:border-blue-500"
+                    className="min-h-[80px] resize-none border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900"
                     value={contextoPedagogico}
                     onChange={(e) => setContextoPedagogico(e.target.value)}
                   />
@@ -609,7 +609,7 @@ export default function ResumosDidaticos() {
                 <Button 
                   onClick={gerarResumo}
                   disabled={isLoading || !assunto.trim()}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-12"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 h-12"
                 >
                   {isLoading ? (
                     <>
