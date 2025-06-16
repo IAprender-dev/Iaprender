@@ -121,6 +121,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
   };
 
+  // HEALTH CHECK ROUTE
+  app.get("/api/health", (_req, res) => {
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      service: "IAverse API",
+      version: "1.0.0"
+    });
+  });
+
   // AUTH ROUTES
   // Register
   app.post("/api/auth/register", async (req, res) => {
