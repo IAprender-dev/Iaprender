@@ -411,7 +411,7 @@ aiRouter.post("/openai/activity", authenticate, hasContract, async (req: Request
         <!-- Rodapé -->
         <div style="margin-top: 40px; text-align: center; border-top: 1px solid #cccccc; padding-top: 15px;">
           <p style="margin: 0; font-size: 12px; color: #666666;">
-            Atividade gerada por <strong>AIverse - Seu Universo de IA</strong>
+            Atividade gerada por <strong>IAprender - Seu Universo de IA</strong>
           </p>
         </div>
         
@@ -1279,7 +1279,7 @@ Estruture o resumo em HTML com design moderno e didático:
         </div>
 
         <div class="footer">
-            Gerado por AIverse - Seu Universo de IA
+            Gerado por IAprender - Seu Universo de IA
         </div>
     </div>
 </body>

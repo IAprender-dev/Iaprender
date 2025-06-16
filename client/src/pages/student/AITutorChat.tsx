@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from 'wouter';
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import aiverseLogo from "@assets/Design sem nome (5)_1749568909858.png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 
 interface ChatMessage {
   id: string;
@@ -183,7 +183,7 @@ export default function AITutorChat() {
                   Voltar
                 </Button>
               </Link>
-              <img src={aiverseLogo} alt="IAprender" className="h-8 w-auto" />
+              <img src={iaprenderLogo} alt="IAprender" className="h-8 w-auto" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Tutor IA</h1>
                 <p className="text-sm text-gray-700 font-medium">Assistente educacional inteligente</p>

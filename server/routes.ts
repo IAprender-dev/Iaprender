@@ -2209,7 +2209,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
       });
 
       // Add content to PDF
-      doc.fontSize(20).text('Material de Estudo - AIverse', { align: 'center' });
+      doc.fontSize(20).text('Material de Estudo - IAprender', { align: 'center' });
       doc.moveDown();
       doc.fontSize(14).text(`Aluno: ${studentName}`);
       doc.text(`Série: ${studentGrade}`);

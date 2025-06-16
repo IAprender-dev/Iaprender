@@ -22,7 +22,7 @@ import { User, Bot,
   Calendar,
   Copy
 } from "lucide-react";
-import aiverseLogo from "@assets/Design sem nome (5).png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -326,7 +326,7 @@ export default function CentralIA() {
               
               {/* Logo e Nome */}
               <Link href="/" className="flex items-center space-x-3">
-                <img src={aiverseLogo} alt="IAprender" className="w-10 h-10 object-contain" />
+                <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
                 <div>
                   <span className="text-xl font-bold text-gray-900">IAprender</span>
                   <div className="text-xs text-slate-500">Central de IA</div>

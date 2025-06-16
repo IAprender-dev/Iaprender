@@ -22,7 +22,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
-import aiverseLogoNew from '@assets/IAverse.png';
+import iaprenderLogoNew from '@assets/IAverse.png';
 import { useTextEncodingValidation } from '@/components/ui/text-encoding-validator';
 
 interface AtividadeGerada {
@@ -615,7 +615,7 @@ Gere o conteúdo em HTML bem formatado.`;
               </Link>
               <div className="flex items-center gap-2">
                 <img 
-                  src={aiverseLogoNew} 
+                  src={iaprenderLogoNew} 
                   alt="IAprender Logo" 
                   className="w-10 h-10 object-contain"
                 />

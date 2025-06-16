@@ -15,7 +15,7 @@ import {
   FileText,
   Image as ImageIcon
 } from "lucide-react";
-import aiverseLogo from "@assets/Design sem nome (5).png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -302,7 +302,7 @@ export default function ChatGPTPage() {
           <div className="p-6 border-b border-slate-200 bg-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src={aiverseLogo} alt="IAprender" className="w-8 h-8 object-contain" />
+                <img src={iaprenderLogo} alt="IAprender" className="w-8 h-8 object-contain" />
                 <div>
                   <h2 className="font-semibold text-slate-900">IAprender ChatGPT</h2>
                   <p className="text-sm text-slate-600">

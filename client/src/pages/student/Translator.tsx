@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet";
 import LibreTranslateWidget from "@/components/LibreTranslateWidget";
 import { BackButton } from "@/components/ui/back-button";
-import aiverseLogo from "@assets/Design sem nome (5)_1749147884733.png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 
 export default function Translator() {
   return (
@@ -18,7 +18,7 @@ export default function Translator() {
             
             <div className="flex items-center gap-3">
               <img 
-                src={aiverseLogo} 
+                src={iaprenderLogo} 
                 alt="IAprender Logo" 
                 className="w-8 h-8"
               />

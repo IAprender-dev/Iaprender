@@ -45,7 +45,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import alverseLogo from "@assets/Design sem nome (5).png";
+import alverseLogo from "@assets/iaprender-logo.png";
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();

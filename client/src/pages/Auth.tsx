@@ -181,7 +181,7 @@ export default function Auth() {
                 <div className="flex items-center justify-center space-x-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-blue-200/50 rounded-full blur-lg w-20 h-20"></div>
-                    <img src={aiverseLogo} alt="IAprender" className="relative w-16 h-16" />
+                    <img src={iaprenderLogo} alt="IAprender" className="relative w-16 h-16" />
                   </div>
                   <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">IAprender</span>
                 </div>

@@ -36,7 +36,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-import aiverseLogo from "@assets/Design sem nome (5)_1749568909858.png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 import TodayStudySchedule from "@/components/TodayStudySchedule";
 
 interface StudySession {
@@ -179,7 +179,7 @@ export default function StudentDashboard() {
         {/* Mobile Header */}
         <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-blue-100 p-4 flex items-center justify-between sticky top-0 z-50">
           <div className="flex items-center gap-3">
-            <img src={aiverseLogo} alt="IAprender" className="h-8 w-8" />
+            <img src={iaprenderLogo} alt="IAprender" className="h-8 w-8" />
             <span className="font-bold text-slate-800">IAprender</span>
           </div>
           <Button 
@@ -203,7 +203,7 @@ export default function StudentDashboard() {
               {/* Logo */}
               <div className="p-6 border-b border-blue-100">
                 <div className="flex items-center gap-3">
-                  <img src={aiverseLogo} alt="IAprender" className="h-8 w-8" />
+                  <img src={iaprenderLogo} alt="IAprender" className="h-8 w-8" />
                   <div>
                     <h1 className="font-bold text-slate-800">IAprender</h1>
                     <p className="text-xs text-slate-600">Portal do Aluno</p>

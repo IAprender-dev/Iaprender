@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
-import aiverseLogo from "@assets/Design sem nome (5).png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 import { useAuth } from "@/lib/AuthContext";
 import { 
   ArrowLeft,
@@ -324,7 +324,7 @@ export default function NoticiasPodcasts() {
             </Link>
             
             <div className="flex items-center gap-3">
-              <img src={aiverseLogo} alt="IAprender" className="w-12 h-12 object-contain" />
+              <img src={iaprenderLogo} alt="IAprender" className="w-12 h-12 object-contain" />
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Notícias do Universo</h1>
                 <p className="text-gray-600 text-sm md:text-base">Mantenha-se atualizado com as últimas novidades em IA e educação</p>
