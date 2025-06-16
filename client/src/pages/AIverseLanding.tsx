@@ -841,60 +841,7 @@ export default function IAprenderLanding() {
         </div>
       </section>
 
-      {/* Resources Section */}
-      <section id="recursos" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Recursos e Suporte
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Tudo que você precisa para dominar o IAprender e transformar sua prática educacional
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="landing-card hover:shadow-xl transition-shadow border-2 hover:border-indigo-200">
-              <CardContent className="p-8 text-center">
-                <FileText className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Documentação Completa</h3>
-                <p className="text-gray-600 mb-4">
-                  Guias detalhados, tutoriais e melhores práticas para cada ferramenta
-                </p>
-                <Button variant="outline" className="w-full">
-                  Acessar Documentação
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="landing-card hover:shadow-xl transition-shadow border-2 hover:border-purple-200">
-              <CardContent className="p-8 text-center">
-                <Users className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Comunidade Ativa</h3>
-                <p className="text-gray-600 mb-4">
-                  Conecte-se com educadores do mundo todo compartilhando experiências
-                </p>
-                <Button variant="outline" className="w-full">
-                  Entrar na Comunidade
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="landing-card hover:shadow-xl transition-shadow border-2 hover:border-green-200">
-              <CardContent className="p-8 text-center">
-                <Headphones className="h-12 w-12 text-green-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Suporte Especializado</h3>
-                <p className="text-gray-600 mb-4">
-                  Equipe dedicada pronta para ajudar em português, quando você precisar
-                </p>
-                <Button variant="outline" className="w-full">
-                  Falar com Suporte
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
