@@ -301,7 +301,15 @@ export default function NoticiasPodcasts() {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50/30">
         <div className="container mx-auto px-6 pt-4 pb-8 max-w-7xl">
           {/* Header with Logo and Back Button */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-6 mb-6">
+            {/* Back Button - moved to left */}
+            <Link href="/professor/dashboard">
+              <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
+            </Link>
+            
             <div className="flex items-center gap-3">
               <img src={aiverseLogo} alt="AIverse" className="w-12 h-12 object-contain" />
               <div>
@@ -309,14 +317,6 @@ export default function NoticiasPodcasts() {
                 <p className="text-gray-600 text-sm md:text-base">Mantenha-se atualizado com as últimas novidades em IA e educação</p>
               </div>
             </div>
-            
-            {/* Back Button */}
-            <Link href="/professor/dashboard">
-              <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg">
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-            </Link>
           </div>
 
           {/* Tab Navigation */}

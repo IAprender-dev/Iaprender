@@ -199,16 +199,16 @@ export default function TeacherDashboard() {
             </Link>
 
             <Link href="/professor/ferramentas/imagem-educacional">
-              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-green-50 to-teal-50 hover:from-green-100 hover:to-teal-100">
+              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-violet-50 to-purple-50 hover:from-violet-100 hover:to-purple-100">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl">
+                    <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-500 rounded-xl">
                       <ImageIcon className="h-6 w-6 text-white" />
                     </div>
                   </div>
                   <h3 className="font-bold text-lg text-slate-900 mb-2">Imagens Educacionais</h3>
                   <p className="text-sm text-slate-600">Gere ilustrações para suas aulas</p>
-                  <div className="mt-4 flex items-center text-green-600 group-hover:text-green-700">
+                  <div className="mt-4 flex items-center text-violet-600 group-hover:text-violet-700">
                     <span className="text-sm font-medium">Acessar</span>
                     <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                   </div>
