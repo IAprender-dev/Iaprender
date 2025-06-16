@@ -40,6 +40,7 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import WebSocket, { WebSocketServer } from "ws";
+import { generateLogo } from "./logo-generator";
 
 // Define login schema
 const loginSchema = z.object({
@@ -2389,6 +2390,37 @@ Fale sempre em português brasileiro claro e natural.`,
     } catch (error) {
       console.error('Error creating ephemeral token:', error);
       res.status(500).json({ error: 'Failed to create session' });
+    }
+  });
+
+  // Logo generation endpoint
+  app.post('/api/generate-logo', async (req: Request, res: Response) => {
+    try {
+      const { logoName, description } = req.body;
+      
+      if (!logoName) {
+        return res.status(400).json({ error: 'Logo name is required' });
+      }
+
+      console.log(`Generating logo for: ${logoName}`);
+      
+      const result = await generateLogo(logoName, description);
+      
+      res.json({
+        success: true,
+        logoName,
+        imageUrl: result.url,
+        localPath: result.localPath,
+        message: `Logo "${logoName}" generated successfully`
+      });
+
+    } catch (error) {
+      console.error('Error generating logo:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      res.status(500).json({ 
+        error: 'Failed to generate logo',
+        details: errorMessage
+      });
     }
   });
 
