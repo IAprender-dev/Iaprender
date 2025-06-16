@@ -42,6 +42,7 @@ import ResumosBNCC from "@/pages/teacher/ferramentas/ResumosBNCC";
 import PlanejamentoAula from "@/pages/teacher/ferramentas/PlanejamentoAula";
 import ModelosPlanejamento from "@/pages/teacher/ferramentas/ModelosPlanejamento";
 import AnaliseDocumentos from "@/pages/teacher/AnaliseDocumentos";
+import LogoShowcase from "@/pages/LogoShowcase";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
