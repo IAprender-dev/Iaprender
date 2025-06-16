@@ -7,7 +7,7 @@ export default function Translator() {
   return (
     <>
       <Helmet>
-        <title>Tradutor Educacional - AIverse</title>
+        <title>Tradutor Educacional - IAprender</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -19,10 +19,10 @@ export default function Translator() {
             <div className="flex items-center gap-3">
               <img 
                 src={aiverseLogo} 
-                alt="AIverse Logo" 
+                alt="IAprender Logo" 
                 className="w-8 h-8"
               />
-              <span className="text-sm font-medium text-gray-600">AIverse Tradutor</span>
+              <span className="text-sm font-medium text-gray-600">IAprender Tradutor</span>
             </div>
           </div>
 

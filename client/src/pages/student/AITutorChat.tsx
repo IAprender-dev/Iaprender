@@ -170,7 +170,7 @@ export default function AITutorChat() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <Helmet>
-        <title>Tutor IA - Assistente Educacional - AIverse</title>
+        <title>Tutor IA - Assistente Educacional - IAprender</title>
       </Helmet>
       
       {/* Enhanced Header */}
@@ -183,7 +183,7 @@ export default function AITutorChat() {
                   Voltar
                 </Button>
               </Link>
-              <img src={aiverseLogo} alt="AIverse" className="h-8 w-auto" />
+              <img src={aiverseLogo} alt="IAprender" className="h-8 w-auto" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Tutor IA</h1>
                 <p className="text-sm text-gray-700 font-medium">Assistente educacional inteligente</p>

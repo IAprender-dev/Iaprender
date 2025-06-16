@@ -62,7 +62,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
-export default function AIverseLanding() {
+export default function IAprenderLanding() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
@@ -203,7 +203,7 @@ export default function AIverseLanding() {
 
             <div className="hidden lg:flex items-center space-x-4">
               <Button size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25">
-                Acessar AIverse
+                Acessar IAprender
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -277,7 +277,7 @@ export default function AIverseLanding() {
                   className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-500 hover:scale-105 rounded-xl py-3 font-semibold tracking-wide relative overflow-hidden group"
                   onClick={() => window.location.href = '/auth'}
                 >
-                  <span className="relative z-10">Explorar o AIverse</span>
+                  <span className="relative z-10">Explorar o IAprender</span>
                   <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-12 transition-transform relative z-10" />
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
                 </Button>
@@ -333,7 +333,7 @@ export default function AIverseLanding() {
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-12 py-6 text-lg shadow-xl shadow-indigo-500/25 group"
                 onClick={() => window.location.href = '/auth'}
               >
-                Explorar o AIverse
+                Explorar o IAprender
                 <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
               </Button>
             </div>
@@ -601,7 +601,7 @@ export default function AIverseLanding() {
             <Puzzle className="h-12 w-12 mx-auto mb-4 text-indigo-200" />
             <h3 className="text-2xl font-bold mb-4">O Poder da Integração</h3>
             <p className="text-lg text-indigo-100 max-w-3xl mx-auto">
-              Não são apenas ferramentas isoladas. No AIverse, todas as IAs trabalham em conjunto, 
+              Não são apenas ferramentas isoladas. No IAprender, todas as IAs trabalham em conjunto, 
               criando possibilidades infinitas para professores e alunos explorarem o conhecimento.
             </p>
           </div>
@@ -735,7 +735,7 @@ export default function AIverseLanding() {
                 Educação Verdadeiramente Inclusiva
               </h3>
               <p className="text-lg text-gray-600 mb-8">
-                O AIverse foi construído com acessibilidade em mente. Interface adaptável, 
+                O IAprender foi construído com acessibilidade em mente. Interface adaptável, 
                 suporte multilíngue, recursos para diferentes necessidades de aprendizagem. 
                 Porque acreditamos que todos merecem acesso às melhores ferramentas educacionais.
               </p>
@@ -780,7 +780,7 @@ export default function AIverseLanding() {
               Transformando a Educação Mundial
             </h2>
             <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-              O AIverse está na vanguarda da revolução educacional, democratizando o acesso 
+              O IAprender está na vanguarda da revolução educacional, democratizando o acesso 
               às tecnologias mais avançadas
             </p>
           </div>
@@ -834,7 +834,7 @@ export default function AIverseLanding() {
               <p className="text-lg text-gray-700 leading-relaxed">
                 Democratizar o acesso à inteligência artificial na educação, capacitando cada professor 
                 a se tornar um super-educador e cada aluno a alcançar seu máximo potencial. 
-                O AIverse não é apenas uma plataforma - é um movimento global pela educação do futuro.
+                O IAprender não é apenas uma plataforma - é um movimento global pela educação do futuro.
               </p>
             </div>
           </div>
@@ -849,7 +849,7 @@ export default function AIverseLanding() {
               Recursos e Suporte
             </h2>
             <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Tudo que você precisa para dominar o AIverse e transformar sua prática educacional
+              Tudo que você precisa para dominar o IAprender e transformar sua prática educacional
             </p>
           </div>
 
@@ -931,7 +931,7 @@ export default function AIverseLanding() {
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
                   <Sparkles className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold">AIverse</span>
+                <span className="text-2xl font-bold">IAprender</span>
               </div>
               <p className="text-slate-300 mb-4">
                 A plataforma mundial de inteligência artificial para educação.
@@ -976,7 +976,7 @@ export default function AIverseLanding() {
           <div className="border-t border-slate-700 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-slate-300 text-sm mb-4 md:mb-0">
-                © 2024 AIverse. Todos os direitos reservados.
+                © 2024 IAprender. Todos os direitos reservados.
               </p>
               <div className="flex flex-wrap justify-center gap-6 text-sm">
                 <a href="#" className="text-slate-300 hover:text-white transition-colors">Termos de Uso</a>

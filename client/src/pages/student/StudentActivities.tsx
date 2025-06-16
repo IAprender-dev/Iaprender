@@ -198,14 +198,14 @@ export default function StudentActivities() {
           </Button>
         </div>
 
-        {/* Header com AIverse */}
+        {/* Header com IAprender */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3">
             <div className="p-3 bg-blue-600 rounded-xl">
               <Brain className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">AIverse</h1>
+              <h1 className="text-3xl font-bold text-gray-900">IAprender</h1>
               <p className="text-gray-600">Exercícios Inteligentes</p>
             </div>
           </div>

@@ -13,7 +13,7 @@ import { ArrowLeft, Sparkles, BookOpen, Users, Brain, ChevronDown, User, Graduat
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
-import aiverseLogo from "@assets/Design sem nome (5)_1749599545530.png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -87,7 +87,7 @@ export default function Auth() {
   return (
     <>
       <Helmet>
-        <title>Login - AIverse</title>
+        <title>Login - IAprender</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
@@ -122,11 +122,11 @@ export default function Auth() {
               <div className="space-y-6">
                 <div className="relative inline-block">
                   <div className="absolute inset-0 bg-white/20 rounded-full blur-xl w-32 h-32"></div>
-                  <img src={aiverseLogo} alt="AIverse" className="relative w-28 h-28 drop-shadow-2xl" />
+                  <img src={iaprenderLogo} alt="IAprender" className="relative w-28 h-28 drop-shadow-2xl" />
                 </div>
                 <div className="space-y-4">
                   <h1 className="text-6xl font-black tracking-tight bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-                    AIverse
+                    IAprender
                   </h1>
                   <p className="text-xl text-blue-100/90 font-medium leading-relaxed">
                     Plataforma educacional alimentada por inteligência artificial avançada
@@ -181,9 +181,9 @@ export default function Auth() {
                 <div className="flex items-center justify-center space-x-3">
                   <div className="relative">
                     <div className="absolute inset-0 bg-blue-200/50 rounded-full blur-lg w-20 h-20"></div>
-                    <img src={aiverseLogo} alt="AIverse" className="relative w-16 h-16" />
+                    <img src={aiverseLogo} alt="IAprender" className="relative w-16 h-16" />
                   </div>
-                  <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AIverse</span>
+                  <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">IAprender</span>
                 </div>
               </div>
               

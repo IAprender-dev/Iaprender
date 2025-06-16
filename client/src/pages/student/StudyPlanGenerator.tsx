@@ -326,7 +326,7 @@ export default function StudyPlanGenerator() {
   return (
     <>
       <Helmet>
-        <title>Gerador de Plano de Estudos - AIverse</title>
+        <title>Gerador de Plano de Estudos - IAprender</title>
       </Helmet>
 
       <div className="min-h-screen bg-gray-50">
@@ -884,7 +884,7 @@ export default function StudyPlanGenerator() {
                 <CardHeader className="bg-white border-b border-gray-200 rounded-t-lg">
                   <CardTitle className="flex items-center gap-2 text-lg text-gray-900">
                     <Sparkles className="w-5 h-5 text-indigo-600" />
-                    Dicas do AIverse
+                    Dicas do IAprender
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-3">

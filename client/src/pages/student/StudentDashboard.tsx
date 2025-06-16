@@ -172,15 +172,15 @@ export default function StudentDashboard() {
   return (
     <>
       <Helmet>
-        <title>Dashboard do Aluno - AIverse</title>
+        <title>Dashboard do Aluno - IAprender</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         {/* Mobile Header */}
         <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-blue-100 p-4 flex items-center justify-between sticky top-0 z-50">
           <div className="flex items-center gap-3">
-            <img src={aiverseLogo} alt="AIverse" className="h-8 w-8" />
-            <span className="font-bold text-slate-800">AIverse</span>
+            <img src={aiverseLogo} alt="IAprender" className="h-8 w-8" />
+            <span className="font-bold text-slate-800">IAprender</span>
           </div>
           <Button 
             variant="ghost" 
@@ -203,9 +203,9 @@ export default function StudentDashboard() {
               {/* Logo */}
               <div className="p-6 border-b border-blue-100">
                 <div className="flex items-center gap-3">
-                  <img src={aiverseLogo} alt="AIverse" className="h-8 w-8" />
+                  <img src={aiverseLogo} alt="IAprender" className="h-8 w-8" />
                   <div>
-                    <h1 className="font-bold text-slate-800">AIverse</h1>
+                    <h1 className="font-bold text-slate-800">IAprender</h1>
                     <p className="text-xs text-slate-600">Portal do Aluno</p>
                   </div>
                 </div>

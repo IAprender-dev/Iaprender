@@ -77,8 +77,8 @@ export default function StudentSidebar() {
     <aside className="hidden md:block w-64 bg-white border-r border-neutral-200 h-screen overflow-y-auto">
       <div className="sticky top-0 z-10 bg-white p-4 border-b border-neutral-200">
         <Link href="/" className="flex items-center space-x-3">
-          <img src={aiverseLogo} alt="AIverse" className="w-8 h-8" />
-          <span className="text-2xl font-bold text-gray-900">AIverse</span>
+          <img src={aiverseLogo} alt="IAprender" className="w-8 h-8" />
+          <span className="text-2xl font-bold text-gray-900">IAprender</span>
         </Link>
       </div>
       <nav className="p-4">

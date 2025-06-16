@@ -571,7 +571,7 @@ Gere o conteúdo em HTML bem formatado.`;
       pdf.setFont('helvetica', 'italic');
       pdf.setFontSize(8);
       pdf.setTextColor(100, 116, 139);
-      const rodape = `Gerado em ${new Date().toLocaleDateString('pt-BR')} - AIverse Educacional`;
+      const rodape = `Gerado em ${new Date().toLocaleDateString('pt-BR')} - IAprender Educacional`;
       pdf.text(rodape, margin, pageHeight - 20);
 
       // Salvar PDF
@@ -599,7 +599,7 @@ Gere o conteúdo em HTML bem formatado.`;
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
       <Helmet>
-        <title>Gerador de Atividades - AIverse</title>
+        <title>Gerador de Atividades - IAprender</title>
       </Helmet>
       
       {/* Header */}
@@ -616,7 +616,7 @@ Gere o conteúdo em HTML bem formatado.`;
               <div className="flex items-center gap-2">
                 <img 
                   src={aiverseLogoNew} 
-                  alt="AIverse Logo" 
+                  alt="IAprender Logo" 
                   className="w-10 h-10 object-contain"
                 />
                 <div>

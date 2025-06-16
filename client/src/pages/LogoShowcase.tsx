@@ -38,7 +38,7 @@ export default function LogoShowcase() {
   return (
     <>
       <Helmet>
-        <title>Logo IAprender - Showcase | AIverse</title>
+        <title>Logo IAprender - Showcase | IAprender</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-teal-50">
@@ -58,7 +58,7 @@ export default function LogoShowcase() {
                 </div>
                 <div>
                   <h1 className="text-lg md:text-xl font-bold text-slate-900">Logo IAprender</h1>
-                  <p className="text-slate-600 text-sm">Gerado com IA - AIverse Logo Generator</p>
+                  <p className="text-slate-600 text-sm">Gerado com IA - IAprender Logo Generator</p>
                 </div>
               </div>
             </div>
@@ -193,7 +193,7 @@ export default function LogoShowcase() {
                     <div>
                       <h3 className="font-semibold text-slate-900 mb-2">Gerado com IA</h3>
                       <p className="text-sm text-slate-700">
-                        Este logo foi criado usando a funcionalidade de geração de imagens do AIverse, 
+                        Este logo foi criado usando a funcionalidade de geração de imagens do IAprender, 
                         powered by OpenAI DALL-E 3. O sistema utiliza prompts especializados para criar 
                         logos profissionais adequados para projetos educacionais e tecnológicos.
                       </p>

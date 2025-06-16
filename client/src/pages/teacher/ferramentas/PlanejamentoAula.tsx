@@ -570,7 +570,7 @@ export default function PlanejamentoAula() {
       
       const nomeCompleto = user ? `${user.firstName} ${user.lastName}` : 'Professor';
       const emailProfessor = user?.email || '';
-      const rodape = textoSeguro(`Plano gerado em ${new Date().toLocaleDateString('pt-BR')} por ${nomeCompleto} (${emailProfessor}) - AIverse Educacional`);
+      const rodape = textoSeguro(`Plano gerado em ${new Date().toLocaleDateString('pt-BR')} por ${nomeCompleto} (${emailProfessor}) - IAprender Educacional`);
       const rodapeWidth = pdf.getTextWidth(rodape);
       pdf.text(rodape, (pageWidth - rodapeWidth) / 2, pageHeight - 30);
 
@@ -685,7 +685,7 @@ export default function PlanejamentoAula() {
   return (
     <>
       <Helmet>
-        <title>Planejamento de Aula - AIverse</title>
+        <title>Planejamento de Aula - IAprender</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
@@ -702,7 +702,7 @@ export default function PlanejamentoAula() {
               <div className="flex items-center gap-2">
                 <img 
                   src={aiverseLogoNew} 
-                  alt="AIverse Logo" 
+                  alt="IAprender Logo" 
                   className="w-10 h-10 object-contain"
                 />
                 <div>

@@ -308,7 +308,7 @@ export default function CentralIA() {
   return (
     <>
       <Helmet>
-        <title>Central de IA | AIverse</title>
+        <title>Central de IA | IAprender</title>
       </Helmet>
       
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
@@ -326,9 +326,9 @@ export default function CentralIA() {
               
               {/* Logo e Nome */}
               <Link href="/" className="flex items-center space-x-3">
-                <img src={aiverseLogo} alt="AIverse" className="w-10 h-10 object-contain" />
+                <img src={aiverseLogo} alt="IAprender" className="w-10 h-10 object-contain" />
                 <div>
-                  <span className="text-xl font-bold text-gray-900">AIverse</span>
+                  <span className="text-xl font-bold text-gray-900">IAprender</span>
                   <div className="text-xs text-slate-500">Central de IA</div>
                 </div>
               </Link>
