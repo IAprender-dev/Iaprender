@@ -868,7 +868,7 @@ export default function IAprenderLanding() {
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
@@ -892,16 +892,6 @@ export default function IAprenderLanding() {
                 <li><a href="#" className="hover:text-white transition-colors">Integrações</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Segurança</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Acessibilidade</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold mb-4 text-slate-100">Recursos</h4>
-              <ul className="space-y-2 text-sm text-slate-300">
-                <li><a href="#" className="hover:text-white transition-colors">Documentação</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Tutoriais</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Comunidade</a></li>
               </ul>
             </div>
 
