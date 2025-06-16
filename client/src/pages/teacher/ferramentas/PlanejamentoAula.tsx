@@ -809,7 +809,7 @@ export default function PlanejamentoAula() {
                       Duração da Aula *
                     </Label>
                     <Select value={formData.duracao} onValueChange={(value) => handleFormChange('duracao', value)}>
-                      <SelectTrigger className="border-slate-300 focus:border-blue-500">
+                      <SelectTrigger className="border-2 border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 bg-white text-amber-900 font-medium">
                         <SelectValue placeholder="Selecione a duração" />
                       </SelectTrigger>
                       <SelectContent>
@@ -832,7 +832,7 @@ export default function PlanejamentoAula() {
                       placeholder="Ex: Projetor, computador, laboratório"
                       value={formData.recursos}
                       onChange={(e) => handleFormChange('recursos', e.target.value)}
-                      className="border-slate-300 focus:border-blue-500"
+                      className="border-2 border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 bg-white text-amber-900"
                     />
                   </div>
                 </div>
@@ -849,7 +849,7 @@ export default function PlanejamentoAula() {
                     placeholder="Descreva características especiais, nível socioeconômico, necessidades específicas..."
                     value={formData.perfilTurma}
                     onChange={(e) => handleFormChange('perfilTurma', e.target.value)}
-                    className="min-h-[60px] resize-none border-slate-300 focus:border-blue-500"
+                    className="min-h-[60px] resize-none border-2 border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 bg-white text-amber-900"
                   />
                 </div>
 

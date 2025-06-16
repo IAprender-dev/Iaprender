@@ -59,10 +59,23 @@ export default function NoticiasPodcasts() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
 
-  // Garantir que a página sempre inicie no topo
+  // Garantir que a página sempre inicie no topo com animação suave
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  }, []);
+    const scrollToTop = () => {
+      window.scrollTo({ 
+        top: 0, 
+        left: 0, 
+        behavior: 'smooth' 
+      });
+    };
+    
+    scrollToTop();
+    
+    // Também rolar para o topo quando trocar de aba
+    if (activeTab) {
+      setTimeout(scrollToTop, 100);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     // Simulate loading news and podcasts

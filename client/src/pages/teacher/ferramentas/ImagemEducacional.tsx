@@ -38,10 +38,23 @@ export default function ImagemEducacional() {
   const [isLoading, setIsLoading] = useState(false);
   const [imagemGerada, setImagemGerada] = useState<string | null>(null);
 
-  // Garantir que a página sempre inicie no topo
+  // Garantir que a página sempre inicie no topo com animação suave
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  }, []);
+    const scrollToTop = () => {
+      window.scrollTo({ 
+        top: 0, 
+        left: 0, 
+        behavior: 'smooth' 
+      });
+    };
+    
+    scrollToTop();
+    
+    // Também rolar para o topo quando uma imagem for gerada
+    if (imagemGerada) {
+      setTimeout(scrollToTop, 100);
+    }
+  }, [imagemGerada]);
 
   // Sugestões de prompts educacionais
   const sugestoesTemas = [

@@ -766,8 +766,9 @@ Gere o conteúdo em HTML bem formatado.`;
                       id="gabarito"
                       checked={incluirGabarito}
                       onCheckedChange={(checked) => setIncluirGabarito(checked === true)}
+                      className="border-2 border-emerald-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                     />
-                    <label htmlFor="gabarito" className="text-sm text-slate-700 cursor-pointer">
+                    <label htmlFor="gabarito" className="text-sm text-emerald-700 cursor-pointer font-medium">
                       Incluir gabarito separado
                     </label>
                   </div>
