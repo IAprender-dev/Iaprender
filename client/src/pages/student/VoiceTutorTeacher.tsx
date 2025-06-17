@@ -421,34 +421,20 @@ export default function VoiceTutorTeacher() {
         audioRef.current = new Audio(audioUrl);
         
         audioRef.current.onended = () => {
-          console.log('🎵 Áudio terminou, reiniciando reconhecimento');
+          console.log('🎵 Áudio finalizado');
           setConversationState('idle');
-          // Reiniciar reconhecimento após fala
-          if (recognitionRef.current && isConnected) {
-            setTimeout(() => {
-              try {
-                recognitionRef.current.start();
-                console.log('✅ Reconhecimento reiniciado após áudio');
-              } catch (error) {
-                console.error('❌ Erro ao reiniciar após áudio:', error);
-              }
-            }, 500);
-          }
+          // Reiniciar reconhecimento após síntese
+          setTimeout(() => {
+            restartRecognition();
+          }, 800);
         };
         
         audioRef.current.onerror = (error) => {
-          console.error('❌ Erro na reprodução do áudio:', error);
+          console.error('❌ Erro na reprodução:', error);
           setConversationState('idle');
-          // Tentar reiniciar reconhecimento mesmo com erro
-          if (recognitionRef.current && isConnected) {
-            setTimeout(() => {
-              try {
-                recognitionRef.current.start();
-              } catch (e) {
-                console.error('❌ Erro ao reiniciar após erro de áudio:', e);
-              }
-            }, 1000);
-          }
+          setTimeout(() => {
+            restartRecognition();
+          }, 1500);
         };
         
         if (!isMuted) {
@@ -458,30 +444,16 @@ export default function VoiceTutorTeacher() {
           } catch (playError) {
             console.error('❌ Erro ao reproduzir áudio:', playError);
             setConversationState('idle');
-            // Reiniciar reconhecimento se falhar reprodução
-            if (recognitionRef.current && isConnected) {
-              setTimeout(() => {
-                try {
-                  recognitionRef.current.start();
-                } catch (e) {
-                  console.error('❌ Erro ao reiniciar após falha de reprodução:', e);
-                }
-              }, 500);
-            }
+            setTimeout(() => {
+              restartRecognition();
+            }, 1000);
           }
         } else {
           console.log('🔇 Áudio silenciado');
           setConversationState('idle');
-          // Reiniciar reconhecimento imediatamente se mudo
-          if (recognitionRef.current && isConnected) {
-            setTimeout(() => {
-              try {
-                recognitionRef.current.start();
-              } catch (e) {
-                console.error('❌ Erro ao reiniciar no modo mudo:', e);
-              }
-            }, 500);
-          }
+          setTimeout(() => {
+            restartRecognition();
+          }, 500);
         }
       } else {
         console.error('❌ Erro na síntese ElevenLabs:', response.status, response.statusText);
