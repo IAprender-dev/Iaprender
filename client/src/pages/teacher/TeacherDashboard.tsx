@@ -46,6 +46,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { TokenUsageWidget } from "@/components/tokens/TokenUsageWidget";
 import alverseLogo from "@assets/iaprender-logo.png";
 
 export default function TeacherDashboard() {
@@ -117,6 +118,53 @@ export default function TeacherDashboard() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Seção de Status e Tokens */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Widget de Tokens - Posição destacada */}
+            <div className="lg:col-span-1">
+              <TokenUsageWidget />
+            </div>
+            
+            {/* Cards de Status Rápido */}
+            <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="border-0 bg-gradient-to-br from-emerald-50 to-green-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-emerald-600 font-medium">Atividades Criadas</p>
+                      <p className="text-2xl font-bold text-emerald-900">12</p>
+                    </div>
+                    <CheckSquare className="h-8 w-8 text-emerald-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-blue-600 font-medium">Planos de Aula</p>
+                      <p className="text-2xl font-bold text-blue-900">8</p>
+                    </div>
+                    <CalendarCheck2 className="h-8 w-8 text-blue-500" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-0 bg-gradient-to-br from-violet-50 to-purple-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-violet-600 font-medium">Imagens Geradas</p>
+                      <p className="text-2xl font-bold text-violet-900">25</p>
+                    </div>
+                    <ImageIcon className="h-8 w-8 text-violet-500" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 

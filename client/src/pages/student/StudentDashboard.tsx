@@ -35,6 +35,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { TokenUsageWidget } from "@/components/tokens/TokenUsageWidget";
 
 import iaprenderLogo from "@assets/iaprender-logo.png";
 import TodayStudySchedule from "@/components/TodayStudySchedule";
@@ -281,55 +282,51 @@ export default function StudentDashboard() {
                 <p className="text-slate-700 capitalize">{formattedDate}</p>
               </div>
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-blue-100 text-sm font-medium">Cursos Ativos</p>
-                        <p className="text-3xl font-bold">3</p>
+              {/* Quick Stats and Token Widget */}
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                {/* Token Usage Widget - Primera posição para visibilidade */}
+                <div className="lg:col-span-1">
+                  <TokenUsageWidget />
+                </div>
+                
+                {/* Quick Stats Cards */}
+                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="border-0 bg-gradient-to-br from-blue-500 to-indigo-500 text-white">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-blue-100 text-sm font-medium">Cursos Ativos</p>
+                          <p className="text-3xl font-bold">3</p>
+                        </div>
+                        <BookOpen className="h-10 w-10 text-blue-200" />
                       </div>
-                      <BookOpen className="h-10 w-10 text-blue-200" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-500 text-white">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-green-100 text-sm font-medium">Atividades Concluídas</p>
-                        <p className="text-3xl font-bold">12</p>
+                  <Card className="border-0 bg-gradient-to-br from-green-500 to-emerald-500 text-white">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-green-100 text-sm font-medium">Atividades Concluídas</p>
+                          <p className="text-3xl font-bold">12</p>
+                        </div>
+                        <CheckSquare className="h-10 w-10 text-green-200" />
                       </div>
-                      <CheckSquare className="h-10 w-10 text-green-200" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
 
-                <Card className="border-0 bg-gradient-to-br from-purple-500 to-pink-500 text-white">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-purple-100 text-sm font-medium">Certificados</p>
-                        <p className="text-3xl font-bold">2</p>
+                  <Card className="border-0 bg-gradient-to-br from-purple-500 to-pink-500 text-white">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-purple-100 text-sm font-medium">Certificados</p>
+                          <p className="text-3xl font-bold">2</p>
+                        </div>
+                        <Award className="h-10 w-10 text-purple-200" />
                       </div>
-                      <Award className="h-10 w-10 text-purple-200" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-0 bg-gradient-to-br from-orange-500 to-red-500 text-white">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-orange-100 text-sm font-medium">Horas de Estudo</p>
-                        <p className="text-3xl font-bold">45h</p>
-                      </div>
-                      <Clock className="h-10 w-10 text-orange-200" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
 
               {/* Central de IAs */}
