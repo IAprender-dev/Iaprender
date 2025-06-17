@@ -91,6 +91,7 @@ export default function VoiceTutorTeacher() {
   const connectToRealtimeAPI = useCallback(async () => {
     try {
       setConnectionState('connecting');
+      console.log('Iniciando conexão com Realtime API...');
       
       const sessionResponse = await fetch('/api/realtime/session', {
         method: 'POST',
@@ -100,28 +101,41 @@ export default function VoiceTutorTeacher() {
       });
       
       if (!sessionResponse.ok) {
-        throw new Error('Failed to create session');
+        const errorText = await sessionResponse.text();
+        console.error('Erro na resposta da sessão:', errorText);
+        throw new Error(`Failed to create session: ${errorText}`);
       }
       
-      const { client_secret } = await sessionResponse.json();
+      const sessionData = await sessionResponse.json();
+      console.log('Sessão criada:', sessionData);
       
-      const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01', [
+      if (!sessionData.client_secret?.value) {
+        console.error('Token não encontrado na resposta:', sessionData);
+        throw new Error('Token de acesso não encontrado');
+      }
+      
+      const wsUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01`;
+      console.log('Conectando WebSocket:', wsUrl);
+      
+      const ws = new WebSocket(wsUrl, [
         'realtime',
-        `openai-insecure-api-key.${client_secret.value}`
+        `openai-insecure-api-key.${sessionData.client_secret.value}`
       ]);
 
       wsRef.current = ws;
       
       ws.onopen = () => {
+        console.log('WebSocket conectado com sucesso!');
         setConnectionState('connected');
         setIsConnected(true);
         addMessage('assistant', 'Olá! Sou sua tutora virtual. Como posso ajudar você hoje?');
         
-        ws.send(JSON.stringify({
+        // Configurar sessão da IA
+        const sessionConfig = {
           type: 'session.update',
           session: {
             modalities: ['text', 'audio'],
-            instructions: 'Você é uma tutora virtual especializada em ensino. Seja paciente, didática e adaptativa ao nível do aluno.',
+            instructions: 'Você é uma tutora virtual especializada em ensino brasileiro. Seja paciente, didática e adaptativa ao nível do aluno. Responda em português brasileiro.',
             voice: 'alloy',
             input_audio_format: 'pcm16',
             output_audio_format: 'pcm16',
@@ -131,76 +145,153 @@ export default function VoiceTutorTeacher() {
             tool_choice: 'auto',
             temperature: 0.8,
           }
-        }));
+        };
+        
+        console.log('Enviando configuração da sessão:', sessionConfig);
+        ws.send(JSON.stringify(sessionConfig));
       };
 
       ws.onmessage = (event) => {
         try {
           const message = JSON.parse(event.data);
+          console.log('Mensagem recebida:', message.type, message);
           
-          if (message.type === 'input_audio_buffer.speech_started') {
-            setConversationState('listening');
-          } else if (message.type === 'input_audio_buffer.speech_stopped') {
-            setConversationState('thinking');
-          } else if (message.type === 'response.audio.delta') {
-            setConversationState('speaking');
-          } else if (message.type === 'response.done') {
-            setConversationState('idle');
-          } else if (message.type === 'conversation.item.input_audio_transcription.completed') {
-            if (message.transcript) {
-              addMessage('user', message.transcript, 'audio');
-            }
-          } else if (message.type === 'response.audio_transcript.done') {
-            if (message.transcript) {
-              addMessage('assistant', message.transcript, 'audio');
-            }
+          switch (message.type) {
+            case 'session.created':
+              console.log('Sessão criada com sucesso!');
+              toast({
+                title: "Conectado!",
+                description: "Tutoria iniciada com sucesso. Fale comigo!",
+              });
+              break;
+              
+            case 'input_audio_buffer.speech_started':
+              console.log('Usuário começou a falar');
+              setConversationState('listening');
+              setCurrentTranscript('Escutando...');
+              break;
+              
+            case 'input_audio_buffer.speech_stopped':
+              console.log('Usuário parou de falar');
+              setConversationState('thinking');
+              setCurrentTranscript('Processando...');
+              break;
+              
+            case 'response.audio.delta':
+              setConversationState('speaking');
+              break;
+              
+            case 'response.done':
+              setConversationState('idle');
+              setCurrentTranscript('');
+              break;
+              
+            case 'conversation.item.input_audio_transcription.completed':
+              console.log('Transcrição do usuário:', message.transcript);
+              if (message.transcript) {
+                addMessage('user', message.transcript, 'audio');
+                setCurrentTranscript('');
+              }
+              break;
+              
+            case 'response.audio_transcript.done':
+              console.log('Resposta da IA:', message.transcript);
+              if (message.transcript) {
+                addMessage('assistant', message.transcript, 'audio');
+              }
+              break;
+              
+            case 'conversation.item.input_audio_transcription.delta':
+              if (message.delta) {
+                setCurrentTranscript(prev => prev + message.delta);
+              }
+              break;
+              
+            case 'error':
+              console.error('Erro da API:', message.error);
+              toast({
+                title: "Erro",
+                description: `Erro na API: ${message.error?.message || 'Erro desconhecido'}`,
+                variant: "destructive",
+              });
+              break;
+              
+            default:
+              console.log('Tipo de mensagem não tratado:', message.type);
           }
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error('Erro ao processar mensagem WebSocket:', error);
         }
       };
 
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error('Erro WebSocket:', error);
         setConnectionState('error');
         toast({
           title: "Erro de Conexão",
-          description: "Não foi possível conectar ao serviço de voz.",
+          description: "Falha na conexão WebSocket. Verifique sua internet.",
           variant: "destructive",
         });
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        console.log('WebSocket fechado:', event.code, event.reason);
         setConnectionState('disconnected');
         setIsConnected(false);
         setConversationState('idle');
+        
+        if (event.code !== 1000) {
+          toast({
+            title: "Conexão Perdida",
+            description: `Conexão encerrada: ${event.reason || 'Motivo desconhecido'}`,
+            variant: "destructive",
+          });
+        }
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Configurar captura de áudio
+      console.log('Solicitando permissão de microfone...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          channelCount: 1,
+          sampleRate: 24000,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
       streamRef.current = stream;
+      console.log('Microfone capturado com sucesso');
       
       const audioContext = new AudioContext({ sampleRate: 24000 });
       const source = audioContext.createMediaStreamSource(stream);
       const processor = audioContext.createScriptProcessor(4096, 1, 1);
       
       processor.onaudioprocess = (event) => {
-        if (ws.readyState === WebSocket.OPEN) {
+        if (ws.readyState === WebSocket.OPEN && !isMuted) {
           const inputBuffer = event.inputBuffer.getChannelData(0);
           const outputBuffer = new Int16Array(inputBuffer.length);
           
+          // Converter float32 para int16
           for (let i = 0; i < inputBuffer.length; i++) {
-            outputBuffer[i] = Math.max(-32768, Math.min(32767, inputBuffer[i] * 32768));
+            const sample = Math.max(-1, Math.min(1, inputBuffer[i]));
+            outputBuffer[i] = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
           }
+          
+          // Converter para base64 para envio
+          const base64Audio = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(outputBuffer.buffer))));
           
           ws.send(JSON.stringify({
             type: 'input_audio_buffer.append',
-            audio: Array.from(outputBuffer).map(sample => sample.toString()).join(',')
+            audio: base64Audio
           }));
         }
       };
       
       source.connect(processor);
       processor.connect(audioContext.destination);
+      
+      console.log('Processamento de áudio configurado');
       
     } catch (error) {
       console.error('Connection error:', error);
@@ -326,6 +417,28 @@ export default function VoiceTutorTeacher() {
               </div>
             )}
 
+            {/* Botão de Teste */}
+            {isConnected && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (wsRef.current?.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(JSON.stringify({
+                      type: 'response.create',
+                      response: {
+                        modalities: ['text', 'audio'],
+                        instructions: 'Diga "Olá! Estou funcionando perfeitamente!" em português brasileiro.'
+                      }
+                    }));
+                  }
+                }}
+                className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+              >
+                Testar Voz
+              </Button>
+            )}
+
             {/* Botão Principal */}
             <Button
               onClick={isConnected ? disconnect : connectToRealtimeAPI}
@@ -388,11 +501,32 @@ export default function VoiceTutorTeacher() {
                   Pro Versa - Sua Tutora Virtual
                 </h2>
                 <p className="text-slate-600 leading-relaxed">
-                  {isConnected 
+                  {connectionState === 'connecting' 
+                    ? 'Conectando com a tutora virtual...'
+                    : connectionState === 'error'
+                    ? 'Erro de conexão. Tente novamente.'
+                    : isConnected 
                     ? 'Estou aqui para ajudar! Fale comigo sobre qualquer matéria que você gostaria de aprender ou revisar.'
                     : 'Clique em "Iniciar Tutoria" no menu superior para começarmos uma sessão de aprendizado personalizada.'
                   }
                 </p>
+                
+                {/* Indicador de Status Visual */}
+                <div className="mt-4 flex items-center justify-center space-x-2">
+                  <div className={`w-3 h-3 rounded-full ${getConnectionStatusColor()}`}></div>
+                  <span className="text-sm font-medium text-slate-600">
+                    {getConnectionStatusText()}
+                  </span>
+                </div>
+                
+                {/* Debug Info (apenas quando conectado) */}
+                {isConnected && (
+                  <div className="mt-4 p-3 bg-slate-100 rounded-lg text-xs text-slate-600">
+                    <p>WebSocket: {wsRef.current?.readyState === WebSocket.OPEN ? 'Aberto' : 'Fechado'}</p>
+                    <p>Estado: {conversationState}</p>
+                    <p>Microfone: {isMuted ? 'Silenciado' : 'Ativo'}</p>
+                  </div>
+                )}
               </div>
 
               {isConnected && (
