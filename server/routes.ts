@@ -2464,5 +2464,82 @@ Fale sempre em português brasileiro claro e natural.`,
     }
   });
 
+  // Token usage status endpoint for widgets
+  app.get('/api/tokens/status', authenticate, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user.id;
+      
+      // Get current date and calculate monthly limits
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekAgo = new Date(today);
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      
+      // Default monthly limit (can be customized per user)
+      const monthlyLimit = 50000;
+      
+      try {
+        // Get token usage stats from storage
+        const stats = await storage.getTokenUsageStats(userId);
+        
+        // Calculate current usage and remaining tokens
+        const currentUsage = stats?.monthlyUsage || 0;
+        const remainingTokens = Math.max(0, monthlyLimit - currentUsage);
+        const usagePercentage = (currentUsage / monthlyLimit) * 100;
+        
+        // Determine if user can proceed and warning thresholds
+        const canProceed = currentUsage < monthlyLimit;
+        const warningThreshold = usagePercentage >= 75;
+        
+        // Calculate reset date (first day of next month)
+        const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        
+        const tokenData = {
+          canProceed,
+          currentUsage,
+          monthlyLimit,
+          remainingTokens,
+          resetDate: resetDate.toISOString(),
+          warningThreshold,
+          stats: {
+            totalUsage: stats?.totalUsage || 0,
+            dailyUsage: stats?.dailyUsage || 0,
+            weeklyUsage: stats?.weeklyUsage || 0,
+            monthlyUsage: stats?.monthlyUsage || 0,
+            averageDailyUsage: stats?.averageDailyUsage || 0
+          }
+        };
+        
+        res.json(tokenData);
+      } catch (storageError) {
+        console.error('Error fetching token stats:', storageError);
+        
+        // Return safe defaults if storage fails
+        const tokenData = {
+          canProceed: true,
+          currentUsage: 0,
+          monthlyLimit,
+          remainingTokens: monthlyLimit,
+          resetDate: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
+          warningThreshold: false,
+          stats: {
+            totalUsage: 0,
+            dailyUsage: 0,
+            weeklyUsage: 0,
+            monthlyUsage: 0,
+            averageDailyUsage: 0
+          }
+        };
+        
+        res.json(tokenData);
+      }
+    } catch (error) {
+      console.error('Error in token status endpoint:', error);
+      res.status(500).json({ error: 'Failed to fetch token status' });
+    }
+  });
+
   return httpServer;
 }
