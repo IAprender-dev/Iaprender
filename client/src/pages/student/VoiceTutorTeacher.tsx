@@ -51,50 +51,70 @@ export default function VoiceTutorTeacher() {
 
   const { toast } = useToast();
 
-  // Função para filtrar conteúdo educativo
+  // Função para filtrar apenas exemplos e conteúdo educativo específico
   const filterEducationalContent = (text: string): string => {
     const lines = text.split('\n');
     const educationalLines = lines.filter(line => {
       const cleanLine = line.trim().toLowerCase();
       
-      // Remover linhas conversacionais comuns
+      // Pular linhas vazias ou muito curtas
+      if (!cleanLine || cleanLine.length < 5) return false;
+      
+      // Remover linhas conversacionais e introdutórias
       const conversationalPhrases = [
-        'vou explicar', 'deixe-me explicar', 'vou te mostrar',
-        'agora vou', 'primeiro', 'então', 'assim', 'portanto',
-        'bem', 'ok', 'certo', 'perfeito', 'ótimo', 'entendi',
-        'você pode', 'vamos ver', 'observe que', 'note que',
-        'é importante', 'lembre-se', 'não esqueça'
+        'vou explicar', 'deixe-me explicar', 'vou te mostrar', 'vou demonstrar',
+        'agora vou', 'primeiro', 'então', 'assim', 'portanto', 'dessa forma',
+        'bem', 'ok', 'certo', 'perfeito', 'ótimo', 'entendi', 'muito bem',
+        'você pode', 'vamos ver', 'observe que', 'note que', 'repare que',
+        'é importante', 'lembre-se', 'não esqueça', 'sempre', 'nunca se esqueça',
+        'para você', 'como você', 'se você', 'quando você', 'caso você',
+        'gisele', 'olha', 'veja', 'perceba', 'imagine', 'pense', 'considere',
+        'isso significa', 'ou seja', 'isto é', 'em outras palavras',
+        'basicamente', 'resumindo', 'concluindo', 'finalizando'
       ];
       
       const isConversational = conversationalPhrases.some(phrase => 
-        cleanLine.includes(phrase) && line.length < 100
+        cleanLine.includes(phrase)
       );
       
       if (isConversational) return false;
       
-      // Manter conteúdo educativo específico
+      // Manter apenas exemplos, fórmulas, definições e conteúdo específico
       const educationalPatterns = [
+        /^exemplo/i, // Exemplos
         /^\d+[\.\)]/, // Listas numeradas
-        /^[a-z]\)/, // Listas alfabéticas
+        /^[a-z]\)/, // Listas alfabéticas  
         /^[-•*]/, // Bullet points
-        /=/, // Equações
-        /[A-Z][a-z]*:\s/, // Definições
-        /^\w+\s*[=:]/, // Fórmulas
-        /exemplo/i,
-        /definição/i,
-        /fórmula/i,
-        /conceito/i,
-        /propriedade/i,
-        /característica/i,
-        /\b[A-Z]{2,}\b/, // Siglas
+        /=/, // Equações e fórmulas
+        /[A-Z][a-z]*:\s/, // Definições com dois pontos
+        /^\w+\s*[=:]/, // Fórmulas matemáticas
+        /definição/i, // Definições
+        /fórmula/i, // Fórmulas
+        /conceito/i, // Conceitos
+        /propriedade/i, // Propriedades
+        /característica/i, // Características
+        /\b[A-Z]{2,}\b/, // Siglas e abreviações
         /\d+%/, // Percentuais
         /\d+[°℃℉]/, // Temperaturas/graus
-        /[≤≥<>±∑∆√π]/ // Símbolos matemáticos
+        /[≤≥<>±∑∆√π∞]/, // Símbolos matemáticos
+        /resultado/i, // Resultados
+        /solução/i, // Soluções
+        /resposta/i, // Respostas
+        /aplicação/i, // Aplicações práticas
+        /^[A-Z][^.!?]*[=:]/, // Títulos com dois pontos
+        /^\d+\.?\s*[A-Z]/ // Itens numerados
       ];
       
-      return educationalPatterns.some(pattern => pattern.test(line)) || 
-             (line.length > 20 && line.includes(':')) ||
-             /^[A-Z]/.test(line.trim()) && line.length > 30;
+      // Verificar se contém padrões educativos
+      const hasEducationalPattern = educationalPatterns.some(pattern => pattern.test(line));
+      
+      // Manter linhas que são claramente conteúdo educativo ou exemplos
+      const isEducationalContent = hasEducationalPattern || 
+                                  (line.includes(':') && line.length > 15) ||
+                                  (line.includes('=') && line.length > 10) ||
+                                  (/^[A-Z]/.test(line.trim()) && line.length > 25 && !isConversational);
+      
+      return isEducationalContent;
     });
     
     return educationalLines.join('\n').trim();
