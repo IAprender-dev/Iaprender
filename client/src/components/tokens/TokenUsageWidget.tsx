@@ -24,12 +24,36 @@ interface TokenUsageData {
 }
 
 export function TokenUsageWidget() {
+  const { user } = useAuth();
+  
   const { data: tokenData, isLoading, error } = useQuery<TokenUsageData>({
     queryKey: ["/api/tokens/status"],
     refetchInterval: 60000, // Atualiza a cada 1 minuto
     retry: 1,
     staleTime: 30000, // 30 segundos
+    enabled: !!user, // Só executa quando o usuário está autenticado
   });
+
+  // Se o usuário não está autenticado, não mostra o widget
+  if (!user) {
+    return (
+      <Card className="h-fit">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            Tokens IA
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="text-center space-y-2">
+            <div className="text-sm text-muted-foreground">
+              Faça login para ver seus tokens
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (error) {
     return (
