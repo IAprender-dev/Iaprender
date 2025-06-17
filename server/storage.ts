@@ -97,23 +97,23 @@ export interface IStorage {
   deleteExam(id: number, userId: number): Promise<boolean>;
 }
 
-// In-memory storage implementation
+// In-memory storage implementation (deprecated - use DatabaseStorage)
 export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private courses: Map<number, Course>;
-  private modules: Map<number, CourseModule>;
-  private contents: Map<number, CourseContent>;
-  private userCourses: Map<number, UserCourse>;
-  private activities: Map<number, Activity>;
-  private userActivities: Map<number, UserActivity>;
-  private categories: Map<number, Category>;
-  private lessonPlans: Map<number, LessonPlan>;
-  private aiMessages: Map<number, AIMessage>;
-  private certificates: Map<number, Certificate>;
-  private savedItems: Map<number, SavedItem>;
-  private studyPlans: Map<number, StudyPlan>;
-  private studySchedule: Map<number, StudySchedule>;
-  private exams: Map<number, Exam>;
+  private users: Map<number, User> = new Map();
+  private courses: Map<number, Course> = new Map();
+  private modules: Map<number, CourseModule> = new Map();
+  private contents: Map<number, CourseContent> = new Map();
+  private userCourses: Map<number, UserCourse> = new Map();
+  private activities: Map<number, Activity> = new Map();
+  private userActivities: Map<number, UserActivity> = new Map();
+  private categories: Map<number, Category> = new Map();
+  private lessonPlans: Map<number, LessonPlan> = new Map();
+  private aiMessages: Map<number, AIMessage> = new Map();
+  private certificates: Map<number, Certificate> = new Map();
+  private savedItems: Map<number, SavedItem> = new Map();
+  private studyPlans: Map<number, StudyPlan> = new Map();
+  private studySchedule: Map<number, StudySchedule> = new Map();
+  private exams: Map<number, Exam> = new Map();
   
   private currentIds: {
     users: number;
@@ -439,4 +439,493 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+
+import { db } from "./db";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
+
+// Interface for token storage operations
+export interface ITokenStorage {
+  // Token limits operations
+  getTokenLimits(userId: number): Promise<any>;
+  updateTokenLimits(userId: number, limits: any): Promise<any>;
+  
+  // Token usage operations
+  createTokenUsage(usage: any): Promise<any>;
+  getTokenUsageHistory(userId: number, limit?: number): Promise<any[]>;
+  getTokenUsageStats(userId: number): Promise<any>;
+  
+  // Token alerts operations
+  getTokenAlerts(userId: number): Promise<any[]>;
+  createTokenAlert(alert: any): Promise<any>;
+  markAlertAsRead(alertId: number, userId: number): Promise<boolean>;
+  
+  // Token provider rates operations
+  getProviderRates(): Promise<any[]>;
+  updateProviderRate(provider: string, model: string, rates: any): Promise<any>;
+}
+
+export class DatabaseStorage implements IStorage, ITokenStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, userUpdate: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(userUpdate)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  // Course operations
+  async getCourse(id: number): Promise<Course | undefined> {
+    const [course] = await db.select().from(courses).where(eq(courses.id, id));
+    return course || undefined;
+  }
+
+  async getCoursesByAuthor(authorId: number): Promise<Course[]> {
+    return await db.select().from(courses).where(eq(courses.authorId, authorId));
+  }
+
+  async getAllCourses(): Promise<Course[]> {
+    return await db.select().from(courses);
+  }
+
+  async createCourse(insertCourse: InsertCourse): Promise<Course> {
+    const [course] = await db
+      .insert(courses)
+      .values(insertCourse)
+      .returning();
+    return course;
+  }
+
+  async updateCourse(id: number, courseUpdate: Partial<Course>): Promise<Course | undefined> {
+    const [course] = await db
+      .update(courses)
+      .set(courseUpdate)
+      .where(eq(courses.id, id))
+      .returning();
+    return course || undefined;
+  }
+
+  // Course module operations
+  async getModulesByCourse(courseId: number): Promise<CourseModule[]> {
+    return await db.select().from(courseModules).where(eq(courseModules.courseId, courseId));
+  }
+
+  async createModule(insertModule: InsertModule): Promise<CourseModule> {
+    const [module] = await db
+      .insert(courseModules)
+      .values(insertModule)
+      .returning();
+    return module;
+  }
+
+  // Course content operations
+  async getContentsByModule(moduleId: number): Promise<CourseContent[]> {
+    return await db.select().from(courseContents).where(eq(courseContents.moduleId, moduleId));
+  }
+
+  async createContent(insertContent: InsertContent): Promise<CourseContent> {
+    const [content] = await db
+      .insert(courseContents)
+      .values(insertContent)
+      .returning();
+    return content;
+  }
+
+  // User course operations
+  async getUserCourses(userId: number): Promise<(UserCourse & { course: Course })[]> {
+    return await db
+      .select()
+      .from(userCourses)
+      .leftJoin(courses, eq(userCourses.courseId, courses.id))
+      .where(eq(userCourses.userId, userId))
+      .then(rows => rows.map(row => ({
+        ...row.user_courses,
+        course: row.courses!
+      })));
+  }
+
+  async enrollUserInCourse(insertUserCourse: InsertUserCourse): Promise<UserCourse> {
+    const [userCourse] = await db
+      .insert(userCourses)
+      .values(insertUserCourse)
+      .returning();
+    return userCourse;
+  }
+
+  async updateUserCourseProgress(userId: number, courseId: number, progress: number): Promise<UserCourse | undefined> {
+    const [userCourse] = await db
+      .update(userCourses)
+      .set({ progress })
+      .where(and(eq(userCourses.userId, userId), eq(userCourses.courseId, courseId)))
+      .returning();
+    return userCourse || undefined;
+  }
+
+  // Activity operations
+  async getActivitiesByCourse(courseId: number): Promise<Activity[]> {
+    return await db.select().from(activities).where(eq(activities.courseId, courseId));
+  }
+
+  async getUserActivities(userId: number): Promise<(UserActivity & { activity: Activity })[]> {
+    return await db
+      .select()
+      .from(userActivities)
+      .leftJoin(activities, eq(userActivities.activityId, activities.id))
+      .where(eq(userActivities.userId, userId))
+      .then(rows => rows.map(row => ({
+        ...row.user_activities,
+        activity: row.activities!
+      })));
+  }
+
+  async createActivity(insertActivity: InsertActivity): Promise<Activity> {
+    const [activity] = await db
+      .insert(activities)
+      .values(insertActivity)
+      .returning();
+    return activity;
+  }
+
+  async submitActivity(insertUserActivity: InsertUserActivity): Promise<UserActivity> {
+    const [userActivity] = await db
+      .insert(userActivities)
+      .values(insertUserActivity)
+      .returning();
+    return userActivity;
+  }
+
+  // Category operations
+  async getAllCategories(): Promise<Category[]> {
+    return await db.select().from(categories);
+  }
+
+  async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    const [category] = await db
+      .insert(categories)
+      .values(insertCategory)
+      .returning();
+    return category;
+  }
+
+  // Lesson plan operations
+  async getLessonPlansByAuthor(authorId: number): Promise<LessonPlan[]> {
+    return await db.select().from(lessonPlans).where(eq(lessonPlans.authorId, authorId));
+  }
+
+  async createLessonPlan(insertLessonPlan: InsertLessonPlan): Promise<LessonPlan> {
+    const [lessonPlan] = await db
+      .insert(lessonPlans)
+      .values(insertLessonPlan)
+      .returning();
+    return lessonPlan;
+  }
+
+  // AI message operations
+  async getAIMessagesByUser(userId: number): Promise<AIMessage[]> {
+    return await db.select().from(aiMessages).where(eq(aiMessages.userId, userId)).orderBy(desc(aiMessages.timestamp));
+  }
+
+  async createAIMessage(insertAIMessage: InsertAIMessage): Promise<AIMessage> {
+    const [aiMessage] = await db
+      .insert(aiMessages)
+      .values(insertAIMessage)
+      .returning();
+    return aiMessage;
+  }
+
+  // Certificate operations
+  async getUserCertificates(userId: number): Promise<(Certificate & { course: Course, user: User })[]> {
+    return await db
+      .select()
+      .from(certificates)
+      .leftJoin(courses, eq(certificates.courseId, courses.id))
+      .leftJoin(users, eq(certificates.userId, users.id))
+      .where(eq(certificates.userId, userId))
+      .then(rows => rows.map(row => ({
+        ...row.certificates,
+        course: row.courses!,
+        user: row.users!
+      })));
+  }
+
+  async createCertificate(insertCertificate: InsertCertificate): Promise<Certificate> {
+    const [certificate] = await db
+      .insert(certificates)
+      .values(insertCertificate)
+      .returning();
+    return certificate;
+  }
+
+  // Saved items operations
+  async getSavedItemsByUser(userId: number): Promise<SavedItem[]> {
+    return await db.select().from(savedItems).where(eq(savedItems.userId, userId));
+  }
+
+  async createSavedItem(insertSavedItem: InsertSavedItem): Promise<SavedItem> {
+    const [savedItem] = await db
+      .insert(savedItems)
+      .values(insertSavedItem)
+      .returning();
+    return savedItem;
+  }
+
+  async deleteSavedItem(id: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(savedItems)
+      .where(and(eq(savedItems.id, id), eq(savedItems.userId, userId)));
+    return result.rowCount > 0;
+  }
+
+  // Study plan operations
+  async getStudyPlansByUser(userId: number): Promise<StudyPlan[]> {
+    return await db.select().from(studyPlans).where(eq(studyPlans.userId, userId));
+  }
+
+  async getActiveStudyPlan(userId: number): Promise<StudyPlan | undefined> {
+    const [plan] = await db
+      .select()
+      .from(studyPlans)
+      .where(and(eq(studyPlans.userId, userId), eq(studyPlans.isActive, true)));
+    return plan || undefined;
+  }
+
+  async createStudyPlan(insertStudyPlan: InsertStudyPlan): Promise<StudyPlan> {
+    const [studyPlan] = await db
+      .insert(studyPlans)
+      .values(insertStudyPlan)
+      .returning();
+    return studyPlan;
+  }
+
+  async updateStudyPlan(id: number, studyPlanUpdate: Partial<StudyPlan>): Promise<StudyPlan | undefined> {
+    const [studyPlan] = await db
+      .update(studyPlans)
+      .set(studyPlanUpdate)
+      .where(eq(studyPlans.id, id))
+      .returning();
+    return studyPlan || undefined;
+  }
+
+  async deleteStudyPlan(id: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(studyPlans)
+      .where(and(eq(studyPlans.id, id), eq(studyPlans.userId, userId)));
+    return result.rowCount > 0;
+  }
+
+  // Study schedule operations
+  async getStudyScheduleByPlan(studyPlanId: number): Promise<StudySchedule[]> {
+    return await db.select().from(studySchedule).where(eq(studySchedule.studyPlanId, studyPlanId));
+  }
+
+  async getStudyScheduleByWeek(studyPlanId: number, startDate: Date, endDate: Date): Promise<StudySchedule[]> {
+    return await db
+      .select()
+      .from(studySchedule)
+      .where(
+        and(
+          eq(studySchedule.studyPlanId, studyPlanId),
+          gte(studySchedule.scheduledDate, startDate),
+          lte(studySchedule.scheduledDate, endDate)
+        )
+      );
+  }
+
+  async createStudyScheduleItem(insertStudySchedule: InsertStudySchedule): Promise<StudySchedule> {
+    const [scheduleItem] = await db
+      .insert(studySchedule)
+      .values(insertStudySchedule)
+      .returning();
+    return scheduleItem;
+  }
+
+  async updateStudyScheduleItem(id: number, scheduleUpdate: Partial<StudySchedule>): Promise<StudySchedule | undefined> {
+    const [scheduleItem] = await db
+      .update(studySchedule)
+      .set(scheduleUpdate)
+      .where(eq(studySchedule.id, id))
+      .returning();
+    return scheduleItem || undefined;
+  }
+
+  async deleteStudyScheduleItem(id: number): Promise<boolean> {
+    const result = await db
+      .delete(studySchedule)
+      .where(eq(studySchedule.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Exam operations
+  async getExamsByUser(userId: number): Promise<Exam[]> {
+    return await db.select().from(exams).where(eq(exams.userId, userId));
+  }
+
+  async getUpcomingExams(userId: number): Promise<Exam[]> {
+    return await db
+      .select()
+      .from(exams)
+      .where(and(eq(exams.userId, userId), gte(exams.examDate, new Date())));
+  }
+
+  async createExam(insertExam: InsertExam): Promise<Exam> {
+    const [exam] = await db
+      .insert(exams)
+      .values(insertExam)
+      .returning();
+    return exam;
+  }
+
+  async updateExam(id: number, examUpdate: Partial<Exam>): Promise<Exam | undefined> {
+    const [exam] = await db
+      .update(exams)
+      .set(examUpdate)
+      .where(eq(exams.id, id))
+      .returning();
+    return exam || undefined;
+  }
+
+  async deleteExam(id: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(exams)
+      .where(and(eq(exams.id, id), eq(exams.userId, userId)));
+    return result.rowCount > 0;
+  }
+
+  // Token storage operations
+  async getTokenLimits(userId: number): Promise<any> {
+    const [limits] = await db.select().from(tokenLimits).where(eq(tokenLimits.userId, userId));
+    return limits || {
+      userId,
+      monthlyTokenLimit: 50000,
+      dailyTokenLimit: 2000,
+      warningThreshold: 85,
+      costThreshold: 100.00,
+      resetDate: new Date()
+    };
+  }
+
+  async updateTokenLimits(userId: number, limits: any): Promise<any> {
+    const [updatedLimits] = await db
+      .insert(tokenLimits)
+      .values({ userId, ...limits })
+      .onConflictDoUpdate({
+        target: tokenLimits.userId,
+        set: limits
+      })
+      .returning();
+    return updatedLimits;
+  }
+
+  async createTokenUsage(usage: any): Promise<any> {
+    const [tokenUsage] = await db
+      .insert(tokenUsageHistory)
+      .values(usage)
+      .returning();
+    return tokenUsage;
+  }
+
+  async getTokenUsageHistory(userId: number, limit: number = 50): Promise<any[]> {
+    return await db
+      .select()
+      .from(tokenUsageHistory)
+      .where(eq(tokenUsageHistory.userId, userId))
+      .orderBy(desc(tokenUsageHistory.timestamp))
+      .limit(limit);
+  }
+
+  async getTokenUsageStats(userId: number): Promise<any> {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const monthlyUsage = await db
+      .select()
+      .from(tokenUsageHistory)
+      .where(and(eq(tokenUsageHistory.userId, userId), gte(tokenUsageHistory.timestamp, startOfMonth)));
+
+    const weeklyUsage = await db
+      .select()
+      .from(tokenUsageHistory)
+      .where(and(eq(tokenUsageHistory.userId, userId), gte(tokenUsageHistory.timestamp, startOfWeek)));
+
+    const dailyUsage = await db
+      .select()
+      .from(tokenUsageHistory)
+      .where(and(eq(tokenUsageHistory.userId, userId), gte(tokenUsageHistory.timestamp, startOfDay)));
+
+    return {
+      monthlyUsage: monthlyUsage.reduce((sum, usage) => sum + usage.tokensUsed, 0),
+      weeklyUsage: weeklyUsage.reduce((sum, usage) => sum + usage.tokensUsed, 0),
+      dailyUsage: dailyUsage.reduce((sum, usage) => sum + usage.tokensUsed, 0),
+      totalUsage: monthlyUsage.reduce((sum, usage) => sum + usage.tokensUsed, 0),
+      averageDailyUsage: Math.round(monthlyUsage.reduce((sum, usage) => sum + usage.tokensUsed, 0) / now.getDate())
+    };
+  }
+
+  async getTokenAlerts(userId: number): Promise<any[]> {
+    return await db
+      .select()
+      .from(tokenAlerts)
+      .where(eq(tokenAlerts.userId, userId))
+      .orderBy(desc(tokenAlerts.timestamp));
+  }
+
+  async createTokenAlert(alert: any): Promise<any> {
+    const [tokenAlert] = await db
+      .insert(tokenAlerts)
+      .values(alert)
+      .returning();
+    return tokenAlert;
+  }
+
+  async markAlertAsRead(alertId: number, userId: number): Promise<boolean> {
+    const result = await db
+      .update(tokenAlerts)
+      .set({ isRead: true })
+      .where(and(eq(tokenAlerts.id, alertId), eq(tokenAlerts.userId, userId)));
+    return result.rowCount > 0;
+  }
+
+  async getProviderRates(): Promise<any[]> {
+    return await db.select().from(tokenProviderRates).where(eq(tokenProviderRates.isActive, true));
+  }
+
+  async updateProviderRate(provider: string, model: string, rates: any): Promise<any> {
+    const [updatedRate] = await db
+      .insert(tokenProviderRates)
+      .values({ provider, model, ...rates })
+      .onConflictDoUpdate({
+        target: [tokenProviderRates.provider, tokenProviderRates.model],
+        set: { ...rates, updatedAt: new Date() }
+      })
+      .returning();
+    return updatedRate;
+  }
+}
+
+export const storage = new DatabaseStorage();
