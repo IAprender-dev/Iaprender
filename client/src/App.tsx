@@ -1,5 +1,5 @@
-import { Switch, Route, useRoute, useLocation } from "wouter";
 import React from "react";
+import { Switch, Route, useRoute, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -71,7 +71,6 @@ const ProtectedRoute = ({ component: Component, roles = [], ...rest }: {
 };
 
 function Router() {
-  // Force navigation to landing page on app load
   const [location, setLocation] = useLocation();
   
   React.useEffect(() => {
