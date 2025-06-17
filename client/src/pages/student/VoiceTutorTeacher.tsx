@@ -27,6 +27,8 @@ export default function VoiceTutorTeacher() {
   const [isConnected, setIsConnected] = useState(false);
   const [elevenLabsSession, setElevenLabsSession] = useState<any>(null);
   const [useElevenLabsSpeech, setUseElevenLabsSpeech] = useState(false);
+  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
 
   // Refs
   const recognitionRef = useRef<any>(null);
@@ -36,6 +38,52 @@ export default function VoiceTutorTeacher() {
   const audioChunksRef = useRef<Blob[]>([]);
 
   const { toast } = useToast();
+
+  // Solicitar permissões de microfone e alto-falante ao carregar a página
+  useEffect(() => {
+    const requestPermissions = async () => {
+      try {
+        console.log('🎤 Solicitando permissões de áudio...');
+        
+        // Solicitar permissão do microfone
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          } 
+        });
+        
+        console.log('✅ Permissão do microfone concedida');
+        setMicrophoneStream(stream);
+        setPermissionsGranted(true);
+        
+        toast({
+          title: "Permissões concedidas",
+          description: "Microfone e alto-falante autorizados para uso",
+        });
+        
+      } catch (error) {
+        console.error('❌ Erro ao solicitar permissões:', error);
+        setPermissionsGranted(false);
+        
+        toast({
+          title: "Permissões necessárias",
+          description: "A Pro Versa precisa de acesso ao microfone e alto-falante para funcionar",
+          variant: "destructive",
+        });
+      }
+    };
+
+    requestPermissions();
+    
+    // Cleanup ao desmontar componente
+    return () => {
+      if (microphoneStream) {
+        microphoneStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [toast]);
 
   // Função para adicionar mensagem
   const addMessage = useCallback((type: 'user' | 'assistant', content: string, format: 'text' | 'audio' = 'text') => {
@@ -79,6 +127,16 @@ export default function VoiceTutorTeacher() {
 
   // Função para inicializar reconhecimento de voz nativo
   const initializeSpeechRecognition = useCallback(async () => {
+    if (!permissionsGranted) {
+      console.error('Permissões de áudio não concedidas');
+      toast({
+        title: "Permissões necessárias",
+        description: "Conceda acesso ao microfone para usar a Pro Versa",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       console.error('Reconhecimento de voz não suportado');
       toast({
@@ -111,6 +169,9 @@ export default function VoiceTutorTeacher() {
         if (transcript && transcript.length > 2) {
           setConversationState('thinking');
           processUserInput(transcript);
+        } else {
+          console.log('Transcrição muito curta, tentando novamente...');
+          setTimeout(() => startListening(), 1000);
         }
       };
 
@@ -121,9 +182,10 @@ export default function VoiceTutorTeacher() {
         
         switch (event.error) {
           case 'not-allowed':
+            setPermissionsGranted(false);
             toast({
               title: "Permissão negada",
-              description: "Permita acesso ao microfone para usar a Pro Versa",
+              description: "Recarregue a página e permita acesso ao microfone",
               variant: "destructive",
             });
             break;
@@ -131,7 +193,16 @@ export default function VoiceTutorTeacher() {
             console.log('Nenhuma fala detectada, tentando novamente...');
             setTimeout(() => startListening(), 2000);
             break;
+          case 'network':
+            console.log('Erro de rede, tentando novamente...');
+            setTimeout(() => startListening(), 3000);
+            break;
+          case 'audio-capture':
+            console.log('Erro de captura de áudio, tentando novamente...');
+            setTimeout(() => startListening(), 2000);
+            break;
           default:
+            console.log('Erro desconhecido, tentando novamente...');
             setTimeout(() => startListening(), 3000);
         }
       };
@@ -139,11 +210,7 @@ export default function VoiceTutorTeacher() {
       recognition.onend = () => {
         console.log('🔇 Reconhecimento finalizado');
         isListeningRef.current = false;
-        
-        if (isConnected && conversationState === 'listening') {
-          setConversationState('idle');
-          setTimeout(() => startListening(), 1000);
-        }
+        setConversationState('idle');
       };
 
       recognitionRef.current = recognition;
@@ -157,11 +224,18 @@ export default function VoiceTutorTeacher() {
       });
       return false;
     }
-  }, [isConnected, conversationState, toast]);
+  }, [permissionsGranted, isConnected, conversationState, toast]);
 
   // Função para iniciar escuta
   const startListening = useCallback(() => {
-    if (!recognitionRef.current || !isConnected || conversationState !== 'idle' || isListeningRef.current) {
+    if (!recognitionRef.current || !isConnected || !permissionsGranted || conversationState !== 'idle' || isListeningRef.current) {
+      console.log('Condições não atendidas para iniciar escuta:', {
+        hasRecognition: !!recognitionRef.current,
+        isConnected,
+        permissionsGranted,
+        conversationState,
+        isListening: isListeningRef.current
+      });
       return;
     }
 
@@ -170,12 +244,14 @@ export default function VoiceTutorTeacher() {
       console.log('🎤 Iniciando escuta...');
     } catch (error) {
       const errorMessage = (error as Error).message;
-      if (!errorMessage.includes('already started')) {
-        console.error('Erro ao iniciar reconhecimento:', error);
-        setTimeout(() => startListening(), 2000);
+      if (errorMessage.includes('already started')) {
+        console.log('Reconhecimento já em andamento');
+        return;
       }
+      console.error('Erro ao iniciar reconhecimento:', error);
+      setTimeout(() => startListening(), 2000);
     }
-  }, [recognitionRef, isConnected, conversationState]);
+  }, [recognitionRef, isConnected, permissionsGranted, conversationState]);
 
   // Função para reiniciar reconhecimento
   const restartRecognition = useCallback(() => {
@@ -511,7 +587,7 @@ export default function VoiceTutorTeacher() {
                 onClick={startListening}
                 variant="outline"
                 className="w-full"
-                disabled={!isConnected || conversationState !== 'idle'}
+                disabled={!isConnected || !permissionsGranted || conversationState !== 'idle'}
               >
                 <Mic className="w-4 h-4 mr-2" />
                 {conversationState === 'listening' ? 'Escutando...' : 'Clique para Falar'}
