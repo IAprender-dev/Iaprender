@@ -276,10 +276,10 @@ export default function VoiceTutorTeacher() {
     }
   };
 
-  const connectToRealtimeAPI = useCallback(async () => {
+  const connectToElevenLabs = useCallback(async () => {
     try {
       setConnectionState('connecting');
-      console.log('Iniciando conexão com OpenAI Realtime API...');
+      console.log('Iniciando conexão com ElevenLabs...');
 
       // Verificar se o usuário está autenticado primeiro
       const authResponse = await fetch('/api/auth/me', {
@@ -296,7 +296,7 @@ export default function VoiceTutorTeacher() {
         return;
       }
 
-      const tokenResponse = await fetch('/api/realtime/session', {
+      const sessionResponse = await fetch('/api/elevenlabs/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -304,38 +304,19 @@ export default function VoiceTutorTeacher() {
         credentials: 'include',
       });
 
-      if (!tokenResponse.ok) {
-        const errorText = await tokenResponse.text();
+      if (!sessionResponse.ok) {
+        const errorText = await sessionResponse.text();
         console.error('Erro na resposta da sessão:', errorText);
-        throw new Error(`Failed to get ephemeral token: ${errorText}`);
+        throw new Error(`Failed to get session: ${errorText}`);
       }
 
-      const sessionData = await tokenResponse.json();
-      console.log('Sessão criada:', sessionData);
+      const sessionData = await sessionResponse.json();
+      console.log('Sessão ElevenLabs criada:', sessionData);
 
-      if (!sessionData.client_secret?.value) {
-        console.error('Token não encontrado na resposta:', sessionData);
-        throw new Error('Token de acesso não encontrado');
-      }
-
-      const ephemeralKey = sessionData.client_secret.value;
-
-      const pc = new RTCPeerConnection();
-      peerConnectionRef.current = pc;
-
-      const audioEl = document.createElement('audio');
-      audioEl.autoplay = true;
-      audioElementRef.current = audioEl;
-
-      pc.ontrack = (event) => {
-        console.log('Received remote audio track');
-        audioEl.srcObject = event.streams[0];
-      };
-
-      console.log('Solicitando permissão de microfone...');
+      // Configurar microfone
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          sampleRate: 24000,
+          sampleRate: 16000,
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -343,28 +324,129 @@ export default function VoiceTutorTeacher() {
         }
       });
       streamRef.current = stream;
-      pc.addTrack(stream.getTracks()[0]);
-      console.log('Microfone capturado com sucesso');
 
-      const dc = pc.createDataChannel('oai-events');
-      dataChannelRef.current = dc;
+      // Inicializar WebSocket da ElevenLabs
+      const ws = new WebSocket(`wss://api.elevenlabs.io/v1/text-to-speech/${sessionData.voiceId}/stream-input?model_id=${sessionData.model}`, [
+        'Bearer',
+        sessionData.apiKey
+      ]);
 
-      dc.addEventListener('open', () => {
-        console.log('Data channel opened');
+      dataChannelRef.current = ws;
+
+      ws.onopen = () => {
+        console.log('WebSocket ElevenLabs conectado');
         setConnectionState('connected');
         setIsConnected(true);
         setConversationState('idle');
 
-        // Configurar sessão da IA com instruções específicas para a lousa
-        const sessionConfig = {
-          type: 'session.update',
-          session: {
-            modalities: ['text', 'audio'],
-            instructions: `Você é a Pro Versa, uma tutora virtual especializada em ensino brasileiro. 
+        // Configurar sessão inicial
+        const config = {
+          text: " ",
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.8,
+            style: 0.0,
+            use_speaker_boost: true
+          },
+          generation_config: {
+            chunk_length_schedule: [120, 160, 250, 290]
+          }
+        };
 
-INSTRUÇÕES ESPECIAIS PARA A LOUSA:
-- Use comandos especiais para escrever na lousa durante suas explicações
-- Para adicionar título: mencione "[LOUSA:TITULO|Título do Tópico]"
+        ws.send(JSON.stringify(config));
+        
+        // Saudação inicial da Pro Versa
+        const greeting = `Oi! Eu sou a Pro Versa, sua tutora virtual. O que gostaria de aprender hoje?`;
+        addMessage('assistant', greeting, 'audio');
+        setBoardContent('Bem-vindo à Aula Interativa!\n\nFaça sua pergunta e vou explicar na lousa!');
+
+        toast({
+          title: "Pro Versa conectada!",
+          description: "Sistema de voz ElevenLabs ativo!",
+        });
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Mensagem ElevenLabs:', data);
+          
+          if (data.audio) {
+            // Reproduzir áudio recebido
+            const audioBlob = new Blob([Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))], {
+              type: 'audio/mpeg'
+            });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audio.play();
+          }
+          
+          if (data.isFinal) {
+            setConversationState('idle');
+          }
+        } catch (error) {
+          console.error('Erro ao processar mensagem:', error);
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('Erro WebSocket:', error);
+        setConnectionState('error');
+        toast({
+          title: "Erro de conexão",
+          description: "Falha na conexão com ElevenLabs",
+          variant: "destructive",
+        });
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket fechado');
+        setConnectionState('disconnected');
+        setIsConnected(false);
+      };
+
+      // Configurar reconhecimento de fala
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'pt-BR';
+
+        recognition.onstart = () => {
+          setConversationState('listening');
+        };
+
+        recognition.onresult = (event) => {
+          const current = event.resultIndex;
+          const transcript = event.results[current][0].transcript;
+          
+          if (event.results[current].isFinal) {
+            setCurrentTranscript('');
+            addMessage('user', transcript, 'audio');
+            
+            // Enviar para processamento de IA
+            processUserInput(transcript, sessionData);
+          } else {
+            setCurrentTranscript(transcript);
+          }
+        };
+
+        recognition.onerror = (event) => {
+          console.error('Erro no reconhecimento:', event.error);
+          setConversationState('idle');
+        };
+
+        recognition.onend = () => {
+          setConversationState('idle');
+        };
+
+        // Iniciar reconhecimento automático
+        recognition.start();
+        
+        // Salvar referência para controle
+        (window as any).voiceRecognition = recognition;
 - Para exemplos: mencione "[LOUSA:EXEMPLO|texto do exemplo]" 
 - Para fórmulas: mencione "[LOUSA:FORMULA|equação matemática]"
 - Para mapas mentais: mencione "[LOUSA:MAPA|conceito central -> subtópicos]"
@@ -390,17 +472,15 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
           }
         };
 
-        console.log('Enviando configuração da sessão:', sessionConfig);
-        dc.send(JSON.stringify(sessionConfig));
-
-        addMessage('assistant', 'Olá! Sou a Pro Versa, sua tutora virtual. Como posso ajudar você hoje?');
-        setBoardContent('Bem-vindo à Aula Interativa!\n\nFaça sua pergunta e vou explicar na lousa!');
-
+      } else {
         toast({
-          title: "Pro Versa conectada!",
-          description: "Pronta para ensinar com lousa interativa!",
+          title: "Erro",
+          description: "Seu navegador não suporta reconhecimento de voz",
+          variant: "destructive",
         });
-      });
+        setConnectionState('error');
+        return;
+      }
 
       dc.addEventListener('message', (event) => {
         try {
@@ -833,7 +913,7 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
 
             {/* Botão Principal */}
             <Button
-              onClick={isConnected ? disconnect : connectToRealtimeAPI}
+              onClick={isConnected ? disconnect : connectToElevenLabs}
               disabled={connectionState === 'connecting'}
               className={`px-6 ${
                 isConnected 

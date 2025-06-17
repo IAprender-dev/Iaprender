@@ -2296,6 +2296,41 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     return res.status(200).json(req.session.user);
   });
 
+  // ElevenLabs Voice Session endpoint
+  app.post('/api/elevenlabs/session', authenticate, async (req: Request, res: Response) => {
+    try {
+      const user = req.session?.user;
+      const studentName = user?.firstName || 'estudante';
+      const schoolYear = user?.schoolYear || '9º ano';
+      
+      // Return ElevenLabs configuration
+      res.json({
+        apiKey: 'sk_a50155fffb31a29a1721a3d366cccca81eed78414d0917e6',
+        voiceId: 'pNInz6obpgDQGcFmaJgB', // Adam voice (Portuguese)
+        model: 'eleven_multilingual_v2',
+        studentInfo: {
+          name: studentName,
+          schoolYear: schoolYear
+        },
+        instructions: `Você é a Pro Versa, uma IA tutora educacional especializada em apoiar alunos do 1º ano do ensino fundamental ao 3º ano do ensino médio.
+
+INFORMAÇÕES DO ALUNO:
+- Nome: ${studentName}
+- Ano escolar: ${schoolYear}
+- SEMPRE chame o aluno pelo primeiro nome (${studentName})
+- SEMPRE adapte o conteúdo para o nível do ${schoolYear}
+
+SAUDAÇÃO INICIAL:
+- Comece SEMPRE assim: "Oi, ${studentName}! Eu sou a Pro Versa, sua tutora virtual. O que gostaria de aprender hoje?"
+
+Use a lousa virtual para ilustrar conceitos importantes durante suas explicações!`
+      });
+    } catch (error) {
+      console.error('Error creating ElevenLabs session:', error);
+      res.status(500).json({ error: 'Failed to create session' });
+    }
+  });
+
   // Endpoint for generating ephemeral tokens with user context
   app.post('/api/realtime/session', authenticate, async (req: Request, res: Response) => {
     try {
