@@ -381,31 +381,38 @@ export default function VoiceTutorTeacher() {
     }
   };
 
-  // Função para sintetizar fala com ElevenLabs (WebSocket streaming)
+  // Função para sintetizar fala com ElevenLabs (API direta otimizada)
   const synthesizeSpeech = async (text: string, sessionInfo: any) => {
     try {
       setConversationState('speaking');
-      console.log('🔊 Iniciando síntese de fala via WebSocket...');
+      console.log('🔊 Sintetizando fala com ElevenLabs...');
       
-      const response = await fetch('/api/elevenlabs/websocket-stream', {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${sessionInfo.voiceId}?output_format=mp3_44100_128&optimize_streaming_latency=2`, {
         method: 'POST',
         headers: {
+          'Accept': 'audio/mpeg',
           'Content-Type': 'application/json',
+          'xi-api-key': sessionInfo.apiKey
         },
-        credentials: 'include',
         body: JSON.stringify({
           text: text,
-          voiceId: sessionInfo.voiceId,
-          model: sessionInfo.model
+          model_id: sessionInfo.model || 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.8,
+            style: 0.0,
+            use_speaker_boost: true
+          },
+          apply_text_normalization: 'auto',
+          apply_language_text_normalization: false
         })
       });
 
-      if (response.ok && response.body) {
-        console.log('✅ WebSocket stream de áudio iniciado');
+      if (response.ok) {
+        console.log('✅ Áudio gerado com sucesso');
         
-        // Criar MediaSource para streaming
-        const mediaSource = new MediaSource();
-        const audioUrl = URL.createObjectURL(mediaSource);
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
         
         if (audioRef.current) {
           audioRef.current.pause();
@@ -413,55 +420,24 @@ export default function VoiceTutorTeacher() {
         
         audioRef.current = new Audio(audioUrl);
         
-        mediaSource.addEventListener('sourceopen', async () => {
-          const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
-          const reader = response.body!.getReader();
-          
-          const pump = async () => {
-            try {
-              while (true) {
-                const { done, value } = await reader.read();
-                
-                if (done) {
-                  if (!sourceBuffer.updating) {
-                    mediaSource.endOfStream();
-                  }
-                  break;
-                }
-                
-                if (!sourceBuffer.updating && sourceBuffer.mode === 'segments') {
-                  sourceBuffer.appendBuffer(value);
-                  await new Promise(resolve => {
-                    sourceBuffer.addEventListener('updateend', resolve, { once: true });
-                  });
-                }
-              }
-            } catch (error) {
-              console.error('Erro no pump de áudio:', error);
-            }
-          };
-          
-          pump();
-        });
-        
         audioRef.current.onended = () => {
-          console.log('Áudio terminou, reiniciando reconhecimento');
+          console.log('🎵 Áudio terminou, reiniciando reconhecimento');
           setConversationState('idle');
           // Reiniciar reconhecimento após fala
           if (recognitionRef.current && isConnected) {
             setTimeout(() => {
               try {
                 recognitionRef.current.start();
-                console.log('Reconhecimento reiniciado após áudio');
+                console.log('✅ Reconhecimento reiniciado após áudio');
               } catch (error) {
-                console.error('Erro ao reiniciar após áudio:', error);
+                console.error('❌ Erro ao reiniciar após áudio:', error);
               }
             }, 500);
           }
         };
         
         audioRef.current.onerror = (error) => {
-          console.error('Erro na reprodução do áudio:', error);
+          console.error('❌ Erro na reprodução do áudio:', error);
           setConversationState('idle');
           // Tentar reiniciar reconhecimento mesmo com erro
           if (recognitionRef.current && isConnected) {
@@ -469,18 +445,18 @@ export default function VoiceTutorTeacher() {
               try {
                 recognitionRef.current.start();
               } catch (e) {
-                console.error('Erro ao reiniciar após erro de áudio:', e);
+                console.error('❌ Erro ao reiniciar após erro de áudio:', e);
               }
             }, 1000);
           }
         };
         
         if (!isMuted) {
-          console.log('🔊 Iniciando reprodução de áudio streaming...');
+          console.log('🔊 Reproduzindo áudio...');
           try {
             await audioRef.current.play();
           } catch (playError) {
-            console.error('Erro ao reproduzir áudio:', playError);
+            console.error('❌ Erro ao reproduzir áudio:', playError);
             setConversationState('idle');
             // Reiniciar reconhecimento se falhar reprodução
             if (recognitionRef.current && isConnected) {
@@ -488,7 +464,7 @@ export default function VoiceTutorTeacher() {
                 try {
                   recognitionRef.current.start();
                 } catch (e) {
-                  console.error('Erro ao reiniciar após falha de reprodução:', e);
+                  console.error('❌ Erro ao reiniciar após falha de reprodução:', e);
                 }
               }, 500);
             }
@@ -502,14 +478,14 @@ export default function VoiceTutorTeacher() {
               try {
                 recognitionRef.current.start();
               } catch (e) {
-                console.error('Erro ao reiniciar no modo mudo:', e);
+                console.error('❌ Erro ao reiniciar no modo mudo:', e);
               }
             }, 500);
           }
         }
       } else {
-        console.error('❌ Erro no WebSocket streaming:', response.status, response.statusText);
-        // Fallback para síntese tradicional
+        console.error('❌ Erro na síntese ElevenLabs:', response.status, response.statusText);
+        // Fallback para síntese alternativa
         await synthesizeSpeechFallback(text, sessionInfo);
       }
     } catch (error) {
@@ -538,9 +514,9 @@ export default function VoiceTutorTeacher() {
   // Função de fallback para síntese tradicional
   const synthesizeSpeechFallback = async (text: string, sessionInfo: any) => {
     try {
-      console.log('🔄 Usando síntese tradicional como fallback...');
+      console.log('🔄 Usando síntese direta ElevenLabs...');
       
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${sessionInfo.voiceId}`, {
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${sessionInfo.voiceId}?output_format=mp3_44100_128&optimize_streaming_latency=1`, {
         method: 'POST',
         headers: {
           'Accept': 'audio/mpeg',
@@ -549,13 +525,15 @@ export default function VoiceTutorTeacher() {
         },
         body: JSON.stringify({
           text: text,
-          model_id: sessionInfo.model,
+          model_id: sessionInfo.model || 'eleven_multilingual_v2',
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.8,
             style: 0.0,
             use_speaker_boost: true
-          }
+          },
+          apply_text_normalization: 'auto',
+          apply_language_text_normalization: false
         })
       });
 
