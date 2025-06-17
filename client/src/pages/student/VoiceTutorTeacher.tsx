@@ -170,32 +170,62 @@ export default function VoiceTutorTeacher() {
         recognition.maxAlternatives = 1;
 
         recognition.onresult = (event: any) => {
-          const transcript = event.results[event.results.length - 1][0].transcript;
-          console.log('Transcrição:', transcript);
+          const transcript = event.results[event.results.length - 1][0].transcript.trim();
+          console.log('🎤 Transcrição recebida:', transcript);
           
-          addMessage('user', transcript, 'text');
-          setConversationState('thinking');
-          
-          // Processar entrada do usuário
-          processUserInput(transcript, sessionInfo);
+          if (transcript.length > 2) { // Evitar transcrições muito curtas
+            addMessage('user', transcript, 'text');
+            setConversationState('thinking');
+            
+            // Processar entrada do usuário
+            processUserInput(transcript, sessionInfo);
+          } else {
+            console.log('Transcrição muito curta, ignorando:', transcript);
+          }
         };
 
         recognition.onerror = (event: any) => {
-          console.error('Erro no reconhecimento:', event.error);
+          console.error('❌ Erro no reconhecimento:', event.error);
+          
+          if (event.error === 'not-allowed') {
+            toast({
+              title: "Permissão de microfone negada",
+              description: "Por favor, permita o acesso ao microfone para usar a Pro Versa",
+              variant: "destructive",
+            });
+          } else if (event.error === 'no-speech') {
+            console.log('Nenhuma fala detectada, tentando novamente...');
+            // Não fazer nada, deixar o onend reiniciar
+          } else {
+            console.log('Tentando reiniciar após erro...');
+          }
+          
           setConversationState('idle');
         };
 
+        recognition.onstart = () => {
+          console.log('🎤 Reconhecimento iniciado - Pro Versa está ouvindo');
+          setConversationState('listening');
+        };
+
         recognition.onend = () => {
-          console.log('Reconhecimento encerrado, estado:', conversationState);
+          console.log('🎤 Reconhecimento encerrado, estado atual:', conversationState);
+          
+          // Só reiniciar se não estiver processando ou falando
           if (isConnected && conversationState !== 'speaking' && conversationState !== 'thinking') {
+            console.log('🔄 Preparando para reiniciar reconhecimento...');
             setTimeout(() => {
               try {
-                recognition.start();
-                console.log('Reconhecimento reiniciado');
+                if (recognitionRef.current && isConnected) {
+                  recognition.start();
+                  console.log('✅ Reconhecimento reiniciado');
+                }
               } catch (error) {
-                console.error('Erro ao reiniciar reconhecimento:', error);
+                console.error('❌ Erro ao reiniciar reconhecimento:', error);
               }
-            }, 1000);
+            }, 1500);
+          } else {
+            console.log('⏸️ Aguardando para reiniciar (estado:', conversationState, ')');
           }
         };
 
@@ -219,12 +249,17 @@ export default function VoiceTutorTeacher() {
         if (recognitionRef.current && isConnected) {
           try {
             recognitionRef.current.start();
-            console.log('Reconhecimento inicial iniciado');
+            console.log('🎤 Reconhecimento inicial iniciado');
           } catch (error) {
-            console.error('Erro ao iniciar reconhecimento inicial:', error);
+            console.error('❌ Erro ao iniciar reconhecimento inicial:', error);
+            toast({
+              title: "Erro no microfone",
+              description: "Não foi possível iniciar o reconhecimento de voz. Verifique as permissões.",
+              variant: "destructive",
+            });
           }
         }
-      }, 1000);
+      }, 2000);
 
       toast({
         title: "Pro Versa conectada!",
@@ -509,7 +544,12 @@ export default function VoiceTutorTeacher() {
               </div>
               <Badge variant="outline" className="flex items-center gap-2">
                 {getConversationIcon()}
-                <span className="capitalize">{conversationState}</span>
+                <span className="capitalize">
+                  {conversationState === 'listening' ? 'Ouvindo você...' : 
+                   conversationState === 'thinking' ? 'Processando...' :
+                   conversationState === 'speaking' ? 'Pro Versa falando' : 
+                   'Aguardando'}
+                </span>
               </Badge>
             </div>
           </div>
