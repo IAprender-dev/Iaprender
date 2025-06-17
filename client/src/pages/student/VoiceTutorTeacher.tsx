@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { Bot, Mic, MicOff, ArrowLeft, Phone, PhoneOff, User, Clock, BookOpen, Brain, Heart, Star, Volume2 } from 'lucide-react';
+import { Bot, Mic, MicOff, ArrowLeft, Phone, PhoneOff, User, Clock, BookOpen, Brain, Heart, Star, Volume2, Lightbulb, Target, CheckCircle, Circle, Square, Triangle } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 interface VoiceMessage {
@@ -15,6 +15,22 @@ interface VoiceMessage {
   content: string;
   timestamp: Date;
   format: 'text' | 'audio';
+  blackboardData?: BlackboardContent;
+}
+
+interface BlackboardContent {
+  type: 'text' | 'diagram' | 'exercise' | 'mindmap' | 'equation' | 'drawing';
+  content: any;
+  animate?: boolean;
+}
+
+interface BlackboardElement {
+  id: string;
+  type: string;
+  content: any;
+  position: { x: number; y: number };
+  animate: boolean;
+  timestamp: number;
 }
 
 type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
@@ -33,6 +49,13 @@ export default function VoiceTutorTeacher() {
   const [isMuted, setIsMuted] = useState(false);
   const [conversationTime, setConversationTime] = useState(0);
   const [currentTranscript, setCurrentTranscript] = useState('');
+  const [boardContent, setBoardContent] = useState('');
+  const [isNewTopic, setIsNewTopic] = useState(false);
+
+  // Blackboard states
+  const [blackboardElements, setBlackboardElements] = useState<BlackboardElement[]>([]);
+  const [currentTopic, setCurrentTopic] = useState('');
+  const [blackboardMode, setBlackboardMode] = useState<'explanation' | 'exercise' | 'mindmap'>('explanation');
 
   // WebRTC refs
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
@@ -71,6 +94,74 @@ export default function VoiceTutorTeacher() {
     });
   };
 
+  // Funções da Lousa
+  const addToBlackboard = (type: string, content: any, animate: boolean = true) => {
+    const element: BlackboardElement = {
+      id: Date.now().toString(),
+      type,
+      content,
+      position: { x: Math.random() * 50 + 25, y: Math.random() * 50 + 25 },
+      animate,
+      timestamp: Date.now()
+    };
+
+    setBlackboardElements(prev => [...prev, element]);
+  };
+
+  const clearBlackboard = () => {
+    setBlackboardElements([]);
+  };
+
+  const parseBlackboardCommands = (text: string) => {
+    // Detecta comandos especiais na resposta da IA para adicionar à lousa
+    if (text.includes('[LOUSA:')) {
+      const matches = text.match(/\[LOUSA:(.*?)\]/g);
+      matches?.forEach(match => {
+        const command = match.replace(/\[LOUSA:|\]/g, '');
+        const [type, ...contentParts] = command.split('|');
+        const content = contentParts.join('|');
+
+        switch (type) {
+          case 'TITULO':
+            addToBlackboard('title', content);
+            break;
+          case 'EXEMPLO':
+            addToBlackboard('example', content);
+            break;
+          case 'FORMULA':
+            addToBlackboard('formula', content);
+            break;
+          case 'MAPA':
+            addToBlackboard('mindmap', content);
+            break;
+          case 'EXERCICIO':
+            addToBlackboard('exercise', content);
+            break;
+          case 'LIMPAR':
+            clearBlackboard();
+            break;
+        }
+      });
+    }
+
+    // Auto-detecta conteúdo educacional e adiciona à lousa
+    if (text.includes('exemplo:') || text.includes('por exemplo')) {
+      const lines = text.split('\n').filter(line => 
+        line.toLowerCase().includes('exemplo') || 
+        line.match(/^\d+\./) || 
+        line.includes('=') ||
+        line.includes('+') ||
+        line.includes('-')
+      );
+
+      lines.forEach(line => {
+        if (line.trim()) {
+          addToBlackboard('auto-example', line.trim());
+        }
+      });
+    }
+  };
+
   const addMessage = (type: 'user' | 'assistant', content: string, format: 'text' | 'audio' = 'text') => {
     const message: VoiceMessage = {
       id: Date.now().toString(),
@@ -79,6 +170,24 @@ export default function VoiceTutorTeacher() {
       timestamp: new Date(),
       format
     };
+
+    // Se é uma resposta da IA, processa comandos da lousa
+    if (type === 'assistant') {
+      parseBlackboardCommands(content);
+
+      // Detecta tópico da conversa
+      const topics = ['matemática', 'física', 'química', 'história', 'geografia', 'português', 'inglês', 'biologia'];
+      const detectedTopic = topics.find(topic => 
+        content.toLowerCase().includes(topic)
+      );
+
+      if (detectedTopic && detectedTopic !== currentTopic) {
+        setCurrentTopic(detectedTopic);
+        clearBlackboard();
+        addToBlackboard('topic', detectedTopic);
+      }
+    }
+
     setMessages(prev => [...prev, message]);
   };
 
@@ -87,17 +196,17 @@ export default function VoiceTutorTeacher() {
       dataChannelRef.current.close();
       dataChannelRef.current = null;
     }
-    
+
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
-    
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
-    
+
     if (audioElementRef.current) {
       audioElementRef.current.srcObject = null;
       audioElementRef.current = null;
@@ -108,42 +217,42 @@ export default function VoiceTutorTeacher() {
     try {
       setConnectionState('connecting');
       console.log('Iniciando conexão com OpenAI Realtime API...');
-      
+
       const tokenResponse = await fetch('/api/realtime/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!tokenResponse.ok) {
         const errorText = await tokenResponse.text();
         console.error('Erro na resposta da sessão:', errorText);
         throw new Error(`Failed to get ephemeral token: ${errorText}`);
       }
-      
+
       const sessionData = await tokenResponse.json();
       console.log('Sessão criada:', sessionData);
-      
+
       if (!sessionData.client_secret?.value) {
         console.error('Token não encontrado na resposta:', sessionData);
         throw new Error('Token de acesso não encontrado');
       }
-      
+
       const ephemeralKey = sessionData.client_secret.value;
-      
+
       const pc = new RTCPeerConnection();
       peerConnectionRef.current = pc;
-      
+
       const audioEl = document.createElement('audio');
       audioEl.autoplay = true;
       audioElementRef.current = audioEl;
-      
+
       pc.ontrack = (event) => {
         console.log('Received remote audio track');
         audioEl.srcObject = event.streams[0];
       };
-      
+
       console.log('Solicitando permissão de microfone...');
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -157,22 +266,40 @@ export default function VoiceTutorTeacher() {
       streamRef.current = stream;
       pc.addTrack(stream.getTracks()[0]);
       console.log('Microfone capturado com sucesso');
-      
+
       const dc = pc.createDataChannel('oai-events');
       dataChannelRef.current = dc;
-      
+
       dc.addEventListener('open', () => {
         console.log('Data channel opened');
         setConnectionState('connected');
         setIsConnected(true);
         setConversationState('idle');
-        
-        // Configurar sessão da IA
+
+        // Configurar sessão da IA com instruções específicas para a lousa
         const sessionConfig = {
           type: 'session.update',
           session: {
             modalities: ['text', 'audio'],
-            instructions: 'Você é a Pro Versa, uma tutora virtual especializada em ensino brasileiro. Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em português brasileiro de forma clara e educativa.',
+            instructions: `Você é a Pro Versa, uma tutora virtual especializada em ensino brasileiro. 
+
+INSTRUÇÕES ESPECIAIS PARA A LOUSA:
+- Use comandos especiais para escrever na lousa durante suas explicações
+- Para adicionar título: mencione "[LOUSA:TITULO|Título do Tópico]"
+- Para exemplos: mencione "[LOUSA:EXEMPLO|texto do exemplo]" 
+- Para fórmulas: mencione "[LOUSA:FORMULA|equação matemática]"
+- Para mapas mentais: mencione "[LOUSA:MAPA|conceito central -> subtópicos]"
+- Para exercícios: mencione "[LOUSA:EXERCICIO|enunciado do exercício]"
+- Para limpar a lousa: mencione "[LOUSA:LIMPAR]"
+
+TÉCNICAS DIDÁTICAS:
+- Sempre comece explicações complexas com exemplos visuais na lousa
+- Use mapas mentais para conectar conceitos
+- Crie exercícios práticos após explicações
+- Mantenha a lousa organizada e clara
+- Use analogias visuais quando possível
+
+Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em português brasileiro de forma clara e educativa, utilizando a lousa como ferramenta pedagógica principal.`,
             voice: 'alloy',
             input_audio_format: 'pcm16',
             output_audio_format: 'pcm16',
@@ -183,18 +310,19 @@ export default function VoiceTutorTeacher() {
             temperature: 0.8,
           }
         };
-        
+
         console.log('Enviando configuração da sessão:', sessionConfig);
         dc.send(JSON.stringify(sessionConfig));
-        
+
         addMessage('assistant', 'Olá! Sou a Pro Versa, sua tutora virtual. Como posso ajudar você hoje?');
-        
+        setBoardContent('Bem-vindo à Aula Interativa!\n\nFaça sua pergunta e vou explicar na lousa!');
+
         toast({
           title: "Pro Versa conectada!",
-          description: "Pronta para ensinar. Fale naturalmente!",
+          description: "Pronta para ensinar com lousa interativa!",
         });
       });
-      
+
       dc.addEventListener('message', (event) => {
         try {
           const message = JSON.parse(event.data);
@@ -204,13 +332,13 @@ export default function VoiceTutorTeacher() {
           console.error('Failed to parse data channel message:', error);
         }
       });
-      
+
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      
+
       const baseUrl = 'https://api.openai.com/v1/realtime';
       const model = 'gpt-4o-realtime-preview-2024-12-17';
-      
+
       console.log('Enviando SDP offer para OpenAI...');
       const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
         method: 'POST',
@@ -220,24 +348,24 @@ export default function VoiceTutorTeacher() {
           'Content-Type': 'application/sdp'
         },
       });
-      
+
       if (!sdpResponse.ok) {
         const errorText = await sdpResponse.text();
         console.error('SDP exchange failed:', errorText);
         throw new Error(`SDP exchange failed: ${sdpResponse.status} - ${errorText}`);
       }
-      
+
       const answerSdp = await sdpResponse.text();
       console.log('Received SDP answer from OpenAI');
-      
+
       const answer = {
         type: 'answer' as RTCSdpType,
         sdp: answerSdp,
       };
-      
+
       await pc.setRemoteDescription(answer);
       console.log('WebRTC connection established successfully');
-      
+
     } catch (error) {
       console.error('Connection error:', error);
       setConnectionState('error');
@@ -254,7 +382,7 @@ export default function VoiceTutorTeacher() {
       case 'session.created':
         console.log('Sessão criada com sucesso!');
         break;
-        
+
       case 'conversation.item.input_audio_transcription.completed':
         console.log('Transcrição do usuário:', message.transcript);
         if (message.transcript && message.transcript.trim()) {
@@ -262,13 +390,13 @@ export default function VoiceTutorTeacher() {
           addMessage('user', message.transcript, 'audio');
         }
         break;
-        
+
       case 'response.audio_transcript.delta':
         if (message.delta) {
           setCurrentTranscript(prev => prev + message.delta);
         }
         break;
-        
+
       case 'response.audio_transcript.done':
         console.log('Resposta da IA:', message.transcript);
         if (message.transcript && message.transcript.trim()) {
@@ -276,25 +404,25 @@ export default function VoiceTutorTeacher() {
           setCurrentTranscript('');
         }
         break;
-        
+
       case 'input_audio_buffer.speech_started':
         console.log('Usuário começou a falar');
         setConversationState('listening');
         break;
-        
+
       case 'input_audio_buffer.speech_stopped':
         console.log('Usuário parou de falar');
         setConversationState('thinking');
         break;
-        
+
       case 'response.created':
         setConversationState('thinking');
         break;
-        
+
       case 'response.audio.done':
         setConversationState('idle');
         break;
-        
+
       case 'response.content_part.added':
       case 'response.content_part.done':
       case 'response.output_item.done':
@@ -302,9 +430,8 @@ export default function VoiceTutorTeacher() {
       case 'rate_limits.updated':
       case 'output_audio_buffer.stopped':
       case 'conversation.item.input_audio_transcription.delta':
-        // Mensagens informativas - não precisam de ação específica
         break;
-        
+
       case 'error':
         console.error('Realtime API error:', message);
         toast({
@@ -313,7 +440,7 @@ export default function VoiceTutorTeacher() {
           variant: "destructive",
         });
         break;
-        
+
       default:
         console.log('Tipo de mensagem não tratado:', message.type);
     }
@@ -325,6 +452,7 @@ export default function VoiceTutorTeacher() {
     setIsConnected(false);
     setConversationState('idle');
     setCurrentTranscript('');
+    clearBlackboard();
     addMessage('assistant', 'Sessão finalizada. Até a próxima!');
   }, []);
 
@@ -380,7 +508,7 @@ export default function VoiceTutorTeacher() {
         </div>
       );
     }
-    
+
     if (conversationState === 'thinking') {
       return (
         <div className="relative">
@@ -395,7 +523,7 @@ export default function VoiceTutorTeacher() {
         </div>
       );
     }
-    
+
     if (conversationState === 'speaking') {
       return (
         <div className="relative">
@@ -410,7 +538,7 @@ export default function VoiceTutorTeacher() {
         </div>
       );
     }
-    
+
     return (
       <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-lg">
         <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
@@ -420,9 +548,94 @@ export default function VoiceTutorTeacher() {
     );
   };
 
+  const renderBlackboardElement = (element: BlackboardElement) => {
+    const baseClasses = `absolute transform transition-all duration-1000 ${
+      element.animate ? 'animate-fade-in' : ''
+    }`;
+
+    const style = {
+      left: `${element.position.x}%`,
+      top: `${element.position.y}%`,
+      transform: 'translate(-50%, -50%)'
+    };
+
+    switch (element.type) {
+      case 'title':
+      case 'topic':
+        return (
+          <div key={element.id} className={`${baseClasses} text-center`} style={style}>
+            <div className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg font-bold text-xl max-w-md">
+              {element.content}
+            </div>
+          </div>
+        );
+
+      case 'example':
+      case 'auto-example':
+        return (
+          <div key={element.id} className={baseClasses} style={style}>
+            <div className="bg-green-50 border-2 border-green-200 px-4 py-3 rounded-lg shadow-md max-w-sm">
+              <div className="flex items-center mb-2">
+                <Lightbulb className="w-5 h-5 text-green-600 mr-2" />
+                <span className="font-semibold text-green-800">Exemplo</span>
+              </div>
+              <p className="text-green-700">{element.content}</p>
+            </div>
+          </div>
+        );
+
+      case 'formula':
+        return (
+          <div key={element.id} className={baseClasses} style={style}>
+            <div className="bg-purple-50 border-2 border-purple-200 px-6 py-4 rounded-lg shadow-md">
+              <div className="text-center font-mono text-lg text-purple-800 font-bold">
+                {element.content}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'exercise':
+        return (
+          <div key={element.id} className={baseClasses} style={style}>
+            <div className="bg-orange-50 border-2 border-orange-200 px-4 py-3 rounded-lg shadow-md max-w-md">
+              <div className="flex items-center mb-2">
+                <Target className="w-5 h-5 text-orange-600 mr-2" />
+                <span className="font-semibold text-orange-800">Exercício</span>
+              </div>
+              <p className="text-orange-700">{element.content}</p>
+            </div>
+          </div>
+        );
+
+      case 'mindmap':
+        return (
+          <div key={element.id} className={baseClasses} style={style}>
+            <div className="bg-indigo-50 border-2 border-indigo-200 px-4 py-3 rounded-lg shadow-md max-w-lg">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-indigo-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <p className="text-indigo-800 font-semibold">{element.content}</p>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div key={element.id} className={baseClasses} style={style}>
+            <div className="bg-gray-100 border border-gray-300 px-3 py-2 rounded shadow">
+              <p className="text-gray-700">{element.content}</p>
+            </div>
+          </div>
+        );
+    }
+  };
+
   useEffect(() => {
-    addMessage('assistant', 'Bem-vindo ao Tutor por Voz! Clique em "Iniciar Tutoria" para começar uma sessão de aprendizado interativa.');
-    
+    addMessage('assistant', 'Bem-vindo ao Tutor por Voz! Clique em "Iniciar Tutoria" para começar uma sessão de aprendizado interativa com lousa digital.');
+
     return () => {
       cleanup();
     };
@@ -493,6 +706,15 @@ export default function VoiceTutorTeacher() {
                 >
                   {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                 </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearBlackboard}
+                  className="bg-blue-50 border-blue-200 text-blue-700"
+                >
+                  Limpar Lousa
+                </Button>
               </div>
             )}
 
@@ -522,56 +744,100 @@ export default function VoiceTutorTeacher() {
         </div>
       </div>
 
-      {/* Área Principal - Lousa Virtual */}
+      {/* Área Principal - Lousa Digital */}
       <div className="p-6">
         <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden" style={{ height: '70vh' }}>
           <div className="h-full flex flex-col">
-            {/* Área da Lousa */}
-            <div className="flex-1 bg-gradient-to-br from-slate-50 to-white p-8 flex items-center justify-center">
-              <div className="text-center space-y-6 max-w-2xl w-full">
-                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 shadow-sm">
-                  <Bot className="w-16 h-16 mx-auto mb-4 text-blue-600" />
-                  <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                    Pro Versa - Sua Tutora Virtual
-                  </h2>
-                  <div className="text-slate-600 leading-relaxed">
-                    {connectionState === 'connecting' 
-                      ? 'Conectando com a tutora virtual...'
-                      : connectionState === 'error'
-                      ? 'Erro de conexão. Tente novamente.'
-                      : isConnected 
-                      ? 'Estou aqui para ajudar! Fale comigo sobre qualquer matéria que você gostaria de aprender ou revisar.'
-                      : 'Clique em "Iniciar Tutoria" no menu superior para começarmos uma sessão de aprendizado personalizada.'
-                    }
-                  </div>
-                  
-                  {/* Indicadores de Status */}
-                  {isConnected && (
-                    <div className="mt-4 flex items-center justify-center space-x-2">
-                      <span className="text-sm font-medium text-slate-600">
-                        {getConversationStateText()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {isConnected && (
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                      <Mic className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                      <div className="text-sm font-medium text-slate-700">Fale Naturalmente</div>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-xl border border-green-100">
-                      <Bot className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                      <div className="text-sm font-medium text-slate-700">IA Especializada</div>
-                    </div>
-                    <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
-                      <User className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-                      <div className="text-sm font-medium text-slate-700">Aprendizado Personalizado</div>
-                    </div>
-                  </div>
-                )}
+            {/* Cabeçalho da Lousa */}
+            <div className="bg-slate-800 text-white px-6 py-3 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                <span className="ml-4 font-semibold">Lousa Digital - Pro Versa</span>
               </div>
+
+              {currentTopic && (
+                <Badge variant="secondary" className="bg-white/20 text-white">
+                  {currentTopic}
+                </Badge>
+              )}
+
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="flex space-x-1">
+                  <Circle className="w-4 h-4" />
+                  <Square className="w-4 h-4" />
+                  <Triangle className="w-4 h-4" />
+                </div>
+                <span>Elementos: {blackboardElements.length}</span>
+              </div>
+            </div>
+
+            {/* Área da Lousa */}
+            <div className="flex-1 relative bg-gradient-to-br from-green-800 to-green-900 overflow-hidden p-6">
+              {/* Grid de fundo da lousa */}
+              <div 
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)
+                  `,
+                  backgroundSize: '40px 40px'
+                }}
+              />
+
+              {/* Elementos da Lousa */}
+              {blackboardElements.map(element => renderBlackboardElement(element))}
+
+              {/* Estado inicial da lousa */}
+              {blackboardElements.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center space-y-6 max-w-2xl w-full">
+                    <div className="p-8 bg-white/80 backdrop-blur-sm rounded-2xl border border-green-200 shadow-lg">
+                      <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                        <BookOpen className="w-12 h-12 text-white" />
+                      </div>
+
+                      <h2 className="text-3xl font-bold text-slate-800 mb-4">
+                        Lousa Digital Interativa
+                      </h2>
+
+                      <div className="text-slate-600 leading-relaxed mb-6">
+                        {connectionState === 'connecting' 
+                          ? 'Preparando a lousa para sua aula...'
+                          : connectionState === 'error'
+                          ? 'Erro na conexão. Tente reconectar.'
+                          : isConnected 
+                          ? 'A lousa está pronta! Faça uma pergunta e vou explicar usando elementos visuais.'
+                          : 'Conecte-se com a Pro Versa para começar uma aula visual e interativa.'
+                        }
+                      </div>
+
+                      {isConnected && (
+                        <div className="grid grid-cols-4 gap-4 text-center">
+                          <div className="p-3 bg-blue-50 rounded-xl border border-blue-100">
+                            <Lightbulb className="w-6 h-6 mx-auto mb-1 text-blue-600" />
+                            <div className="text-xs font-medium text-slate-700">Exemplos</div>
+                          </div>
+                          <div className="p-3 bg-purple-50 rounded-xl border border-purple-100">
+                            <Target className="w-6 h-6 mx-auto mb-1 text-purple-600" />
+                            <div className="text-xs font-medium text-slate-700">Exercícios</div>
+                          </div>
+                          <div className="p-3 bg-green-50 rounded-xl border border-green-100">
+                            <Brain className="w-6 h-6 mx-auto mb-1 text-green-600" />
+                            <div className="text-xs font-medium text-slate-700">Mapas Mentais</div>
+                          </div>
+                          <div className="p-3 bg-orange-50 rounded-xl border border-orange-100">
+                            <CheckCircle className="w-6 h-6 mx-auto mb-1 text-orange-600" />
+                            <div className="text-xs font-medium text-slate-700">Fórmulas</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -590,7 +856,7 @@ export default function VoiceTutorTeacher() {
                 {messages.length} mensagens
               </Badge>
             </div>
-            
+
             <ScrollArea className="h-32">
               <div className="p-4 space-y-3">
                 {messages.length === 0 && !isConnected && (
@@ -602,7 +868,7 @@ export default function VoiceTutorTeacher() {
                     <div className="text-slate-600 text-sm">Conecte-se com a Pro Versa para começar a aprender!</div>
                   </div>
                 )}
-                
+
                 {messages.length === 0 && isConnected && (
                   <div className="text-center py-4">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center mx-auto mb-3 animate-pulse">
@@ -612,7 +878,7 @@ export default function VoiceTutorTeacher() {
                     <div className="text-slate-600 text-sm">Fale naturalmente para começar a conversa</div>
                   </div>
                 )}
-                
+
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -633,11 +899,13 @@ export default function VoiceTutorTeacher() {
                           {formatMessageTime(message.timestamp)}
                         </span>
                       </div>
-                      <p className="leading-relaxed">{message.content}</p>
+                      <p className="leading-relaxed">
+                        {message.content.replace(/\[LOUSA:.*?\]/g, '').trim()}
+                      </p>
                     </div>
                   </div>
                 ))}
-                
+
                 {currentTranscript && (
                   <div className="flex justify-start">
                     <div className="max-w-[80%] px-3 py-2 rounded-lg bg-gray-50 border-2 border-dashed border-gray-200 text-sm">
@@ -649,13 +917,30 @@ export default function VoiceTutorTeacher() {
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
           </CardContent>
         </Card>
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+          }
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 }
