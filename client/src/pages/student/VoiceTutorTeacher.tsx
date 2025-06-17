@@ -295,6 +295,16 @@ export default function VoiceTutorTeacher() {
         setConversationState('idle');
         break;
         
+      case 'response.content_part.added':
+      case 'response.content_part.done':
+      case 'response.output_item.done':
+      case 'response.done':
+      case 'rate_limits.updated':
+      case 'output_audio_buffer.stopped':
+      case 'conversation.item.input_audio_transcription.delta':
+        // Mensagens informativas - não precisam de ação específica
+        break;
+        
       case 'error':
         console.error('Realtime API error:', message);
         toast({
@@ -513,53 +523,55 @@ export default function VoiceTutorTeacher() {
       </div>
 
       {/* Área Principal - Lousa Virtual */}
-      <div className="flex-1 bg-white m-6 rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
-        <div className="h-full flex flex-col">
-          {/* Área da Lousa */}
-          <div className="flex-1 bg-gradient-to-br from-slate-50 to-white p-8 flex items-center justify-center">
-            <div className="text-center space-y-6 max-w-2xl">
-              <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
-                <Bot className="w-16 h-16 mx-auto mb-4 text-blue-600" />
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                  Pro Versa - Sua Tutora Virtual
-                </h2>
-                <p className="text-slate-600 leading-relaxed">
-                  {connectionState === 'connecting' 
-                    ? 'Conectando com a tutora virtual...'
-                    : connectionState === 'error'
-                    ? 'Erro de conexão. Tente novamente.'
-                    : isConnected 
-                    ? 'Estou aqui para ajudar! Fale comigo sobre qualquer matéria que você gostaria de aprender ou revisar.'
-                    : 'Clique em "Iniciar Tutoria" no menu superior para começarmos uma sessão de aprendizado personalizada.'
-                  }
-                </p>
-                
-                {/* Indicadores de Status */}
+      <div className="flex-1 mx-6 mb-4">
+        <div className="h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          <div className="h-full flex flex-col">
+            {/* Área da Lousa */}
+            <div className="flex-1 bg-gradient-to-br from-slate-50 to-white p-8 flex items-center justify-center min-h-96">
+              <div className="text-center space-y-6 max-w-2xl w-full">
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+                  <Bot className="w-16 h-16 mx-auto mb-4 text-blue-600" />
+                  <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                    Pro Versa - Sua Tutora Virtual
+                  </h2>
+                  <div className="text-slate-600 leading-relaxed">
+                    {connectionState === 'connecting' 
+                      ? 'Conectando com a tutora virtual...'
+                      : connectionState === 'error'
+                      ? 'Erro de conexão. Tente novamente.'
+                      : isConnected 
+                      ? 'Estou aqui para ajudar! Fale comigo sobre qualquer matéria que você gostaria de aprender ou revisar.'
+                      : 'Clique em "Iniciar Tutoria" no menu superior para começarmos uma sessão de aprendizado personalizada.'
+                    }
+                  </div>
+                  
+                  {/* Indicadores de Status */}
+                  {isConnected && (
+                    <div className="mt-4 flex items-center justify-center space-x-2">
+                      <span className="text-sm font-medium text-slate-600">
+                        {getConversationStateText()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
                 {isConnected && (
-                  <div className="mt-4 flex items-center justify-center space-x-2">
-                    <span className="text-sm font-medium text-slate-600">
-                      {getConversationStateText()}
-                    </span>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="p-4 bg-blue-50 rounded-xl">
+                      <Mic className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                      <div className="text-sm font-medium text-slate-700">Fale Naturalmente</div>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-xl">
+                      <Bot className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                      <div className="text-sm font-medium text-slate-700">IA Especializada</div>
+                    </div>
+                    <div className="p-4 bg-purple-50 rounded-xl">
+                      <User className="w-8 h-8 mx-auto mb-2 text-purple-600" />
+                      <div className="text-sm font-medium text-slate-700">Aprendizado Personalizado</div>
+                    </div>
                   </div>
                 )}
               </div>
-
-              {isConnected && (
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div className="p-4 bg-blue-50 rounded-xl">
-                    <Mic className="w-8 h-8 mx-auto mb-2 text-blue-600" />
-                    <p className="text-sm font-medium text-slate-700">Fale Naturalmente</p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-xl">
-                    <Bot className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                    <p className="text-sm font-medium text-slate-700">IA Especializada</p>
-                  </div>
-                  <div className="p-4 bg-purple-50 rounded-xl">
-                    <User className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-                    <p className="text-sm font-medium text-slate-700">Aprendizado Personalizado</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -586,8 +598,8 @@ export default function VoiceTutorTeacher() {
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center mx-auto mb-3">
                       <Heart className="h-6 w-6 text-white" />
                     </div>
-                    <h4 className="font-medium text-slate-800 mb-1">Olá, {user?.firstName}!</h4>
-                    <p className="text-slate-600 text-sm">Conecte-se com a Pro Versa para começar a aprender!</p>
+                    <div className="font-medium text-slate-800 mb-1">Olá, {user?.firstName}!</div>
+                    <div className="text-slate-600 text-sm">Conecte-se com a Pro Versa para começar a aprender!</div>
                   </div>
                 )}
                 
@@ -596,8 +608,8 @@ export default function VoiceTutorTeacher() {
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center mx-auto mb-3 animate-pulse">
                       <Mic className="h-6 w-6 text-white" />
                     </div>
-                    <h4 className="font-medium text-slate-800 mb-1">Pro Versa está ouvindo...</h4>
-                    <p className="text-slate-600 text-sm">Fale naturalmente para começar a conversa</p>
+                    <div className="font-medium text-slate-800 mb-1">Pro Versa está ouvindo...</div>
+                    <div className="text-slate-600 text-sm">Fale naturalmente para começar a conversa</div>
                   </div>
                 )}
                 
