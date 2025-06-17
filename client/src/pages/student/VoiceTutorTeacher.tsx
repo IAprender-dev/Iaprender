@@ -473,38 +473,50 @@ export default function VoiceTutorTeacher() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Lousa Virtual */}
             <div className="lg:col-span-2">
-              <Card className="h-[600px] shadow-xl border-2 border-gray-200">
-                <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-t-lg">
-                  <CardTitle className="flex items-center gap-2">
+              <Card className="h-[600px] shadow-xl border-4 border-gray-800">
+                <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-t-lg py-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
                     <BookOpen className="w-5 h-5" />
-                    Lousa Interativa
+                    Lousa Interativa - Pro Versa
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="h-full p-0">
-                  <div className="h-full bg-gradient-to-br from-slate-900 to-slate-800 rounded-b-lg relative overflow-hidden">
-                    {/* Grid da lousa */}
+                  <div 
+                    className="h-full rounded-b-lg relative overflow-hidden"
+                    style={{
+                      background: 'linear-gradient(135deg, #1a4d3a 0%, #2d6b4f 50%, #1a4d3a 100%)',
+                      boxShadow: 'inset 0 0 100px rgba(0,0,0,0.3)'
+                    }}
+                  >
+                    {/* Textura da lousa */}
                     <div 
-                      className="absolute inset-0 opacity-10"
+                      className="absolute inset-0 opacity-20"
                       style={{
                         backgroundImage: `
-                          linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                          linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+                          radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1) 1px, transparent 1px),
+                          radial-gradient(circle at 75% 75%, rgba(255,255,255,0.05) 1px, transparent 1px),
+                          linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)
                         `,
-                        backgroundSize: '20px 20px'
+                        backgroundSize: '50px 50px, 30px 30px, 20px 20px, 20px 20px'
                       }}
                     />
                     
+                    {/* Borda interna da lousa */}
+                    <div className="absolute inset-4 border-2 border-white border-opacity-20 rounded-lg"></div>
+                    
                     {/* Conteúdo da lousa */}
-                    <ScrollArea className="h-full p-6">
+                    <ScrollArea className="h-full p-8">
                       {boardContent ? (
-                        <div className="text-white space-y-4">
+                        <div className="text-white space-y-6">
                           {boardContent.split('\n').map((line, index) => (
                             <div
                               key={index}
-                              className="animate-fade-in font-mono text-lg leading-relaxed"
+                              className="animate-fade-in font-mono text-xl leading-relaxed tracking-wide"
                               style={{
-                                animationDelay: `${index * 0.1}s`,
-                                textShadow: '0 0 10px rgba(255,255,255,0.3)'
+                                animationDelay: `${index * 0.2}s`,
+                                textShadow: '2px 2px 4px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.3)',
+                                fontFamily: 'monospace, Courier New'
                               }}
                             >
                               {line}
@@ -513,18 +525,26 @@ export default function VoiceTutorTeacher() {
                         </div>
                       ) : (
                         <div className="flex items-center justify-center h-full">
-                          <div className="text-center text-gray-400">
-                            <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                            <p className="text-xl font-medium mb-2">
-                              Lousa Vazia
+                          <div className="text-center text-white text-opacity-70">
+                            <BookOpen className="w-20 h-20 mx-auto mb-6 opacity-60" />
+                            <p className="text-2xl font-medium mb-3 font-mono" style={{
+                              textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                            }}>
+                              Lousa Pronta
                             </p>
-                            <p className="text-sm">
-                              Faça uma pergunta para ver a explicação aqui
+                            <p className="text-lg font-mono opacity-80">
+                              Faça sua pergunta e vou explicar aqui!
                             </p>
                           </div>
                         </div>
                       )}
                     </ScrollArea>
+                    
+                    {/* Reflexo da lousa */}
+                    <div 
+                      className="absolute top-4 left-4 w-32 h-16 bg-white opacity-5 rounded-full blur-xl"
+                      style={{ transform: 'rotate(-15deg)' }}
+                    ></div>
                   </div>
                 </CardContent>
               </Card>
@@ -640,16 +660,31 @@ export default function VoiceTutorTeacher() {
           @keyframes fade-in {
             from {
               opacity: 0;
-              transform: translateY(10px);
+              transform: translateY(20px) scale(0.95);
             }
             to {
               opacity: 1;
-              transform: translateY(0);
+              transform: translateY(0) scale(1);
+            }
+          }
+          
+          @keyframes chalk-write {
+            from {
+              opacity: 0;
+              transform: translateX(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
             }
           }
           
           .animate-fade-in {
-            animation: fade-in 0.5s ease-out forwards;
+            animation: fade-in 0.8s ease-out forwards;
+          }
+          
+          .chalk-text {
+            animation: chalk-write 0.6s ease-out forwards;
           }
         `}
       </style>
