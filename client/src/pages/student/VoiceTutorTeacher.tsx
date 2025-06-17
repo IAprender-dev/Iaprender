@@ -52,6 +52,69 @@ export default function VoiceTutorTeacher() {
   const [boardContent, setBoardContent] = useState('');
   const [isNewTopic, setIsNewTopic] = useState(false);
 
+  // Função para filtrar apenas conteúdo educativo relevante para a lousa
+  const filterEducationalContent = (text: string) => {
+    if (!text || text.trim().length === 0) return '';
+    
+    // Frases que devem ser removidas completamente
+    const skipPhrases = [
+      'olá', 'oi', 'bem-vindo', 'como posso ajudar', 'que bom', 'perfeito', 'ótimo',
+      'entendo', 'claro', 'sem problema', 'vamos lá', 'tudo bem', 'certo',
+      'espero ter ajudado', 'precisa de mais', 'posso ajudar', 'algo mais',
+      'fico feliz', 'que legal', 'interessante', 'bacana', 'legal',
+      'vou explicar', 'deixe-me explicar', 'bem', 'então', 'agora'
+    ];
+    
+    // Palavras que indicam conteúdo educativo importante
+    const educationalIndicators = [
+      'exemplo:', 'por exemplo', 'vamos ver', 'imagine que', 'suponha que',
+      'conceito', 'definição', 'fórmula', 'equação', 'teoria', 'lei',
+      'propriedade', 'característica', 'regra', 'princípio',
+      'função', 'método', 'processo', 'técnica', 'estratégia',
+      'significa', 'é quando', 'consiste em', 'pode ser definido como',
+      'ou seja', 'isto é', 'em outras palavras', 'resumindo',
+      'passo', 'etapa', 'primeiro', 'segundo', 'terceiro', 'finalmente'
+    ];
+    
+    // Dividir texto em sentenças
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 10);
+    
+    // Filtrar sentenças educativas
+    const educationalSentences = sentences.filter(sentence => {
+      const cleanSentence = sentence.toLowerCase().trim();
+      
+      // Pular sentenças muito curtas
+      if (cleanSentence.length < 25) return false;
+      
+      // Pular frases conversacionais
+      if (skipPhrases.some(phrase => cleanSentence.includes(phrase))) return false;
+      
+      // Incluir se contém indicadores educativos
+      if (educationalIndicators.some(indicator => cleanSentence.includes(indicator))) return true;
+      
+      // Incluir se contém elementos matemáticos/científicos
+      if (/[\d+\-=×÷%<>]/.test(cleanSentence)) return true;
+      
+      // Incluir definições (sentenças que explicam o que algo "é")
+      if (cleanSentence.includes(' é ') || cleanSentence.includes(' são ')) return true;
+      
+      // Incluir comparações e relações
+      if (cleanSentence.includes('diferença') || cleanSentence.includes('relação') || 
+          cleanSentence.includes('comparando') || cleanSentence.includes('enquanto')) return true;
+      
+      return false;
+    });
+    
+    // Juntar sentenças filtradas
+    let result = educationalSentences.join('. ').trim();
+    
+    // Limpar texto adicional
+    result = result.replace(/^[,.\s]+/, ''); // Remove pontuação no início
+    result = result.replace(/\s+/g, ' '); // Remove espaços extras
+    
+    return result;
+  };
+
   // Blackboard states
   const [blackboardElements, setBlackboardElements] = useState<BlackboardElement[]>([]);
   const [currentTopic, setCurrentTopic] = useState('');
@@ -405,8 +468,11 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
         if (message.delta) {
           setCurrentTranscript(prev => {
             const newText = prev + message.delta;
-            // Atualizar conteúdo da lousa progressivamente
-            setBoardContent(newText);
+            // Filtrar e atualizar apenas conteúdo educativo na lousa
+            const filteredContent = filterEducationalContent(newText);
+            if (filteredContent) {
+              setBoardContent(filteredContent);
+            }
             return newText;
           });
         }
@@ -416,7 +482,16 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
         console.log('Resposta da IA:', message.transcript);
         if (message.transcript && message.transcript.trim()) {
           addMessage('assistant', message.transcript, 'audio');
-          setBoardContent(message.transcript);
+          
+          // Filtrar apenas conteúdo educativo para a lousa
+          const filteredContent = filterEducationalContent(message.transcript);
+          if (filteredContent && filteredContent.length > 0) {
+            setBoardContent(filteredContent);
+          } else {
+            // Se não há conteúdo educativo relevante, manter lousa limpa
+            setBoardContent('');
+          }
+          
           setCurrentTranscript('');
           
           // Detectar mudança de tópico e limpar após 5 segundos
@@ -820,18 +895,42 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
               />
 
               {/* Conteúdo da Lousa */}
-              {boardContent || currentTranscript ? (
+              {boardContent && boardContent.length > 0 ? (
                 <div className="absolute inset-0 p-6 flex items-start justify-center">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8 max-w-4xl w-full max-h-full overflow-y-auto">
-                    <div className="text-slate-800 text-lg leading-relaxed font-medium whitespace-pre-wrap">
-                      {boardContent || currentTranscript}
-                      {currentTranscript && (
-                        <span className="inline-block w-2 h-6 bg-blue-500 animate-pulse ml-1"></span>
-                      )}
+                  <div className="bg-white/95 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8 max-w-4xl w-full max-h-full overflow-y-auto">
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span className="text-sm font-medium text-slate-600">Conteúdo Educativo</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBoardContent('')}
+                        className="text-slate-500 hover:text-slate-700"
+                      >
+                        Limpar
+                      </Button>
+                    </div>
+                    <div className="text-slate-800 text-lg leading-relaxed font-medium whitespace-pre-wrap border-t border-slate-200 pt-4">
+                      {boardContent}
                     </div>
                   </div>
                 </div>
-              ) : blackboardElements.length === 0 && (
+              ) : currentTranscript && filterEducationalContent(currentTranscript) ? (
+                <div className="absolute inset-0 p-6 flex items-start justify-center">
+                  <div className="bg-blue-50/90 backdrop-blur-sm rounded-2xl border border-blue-200/50 shadow-xl p-8 max-w-4xl w-full max-h-full overflow-y-auto">
+                    <div className="mb-4 flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-medium text-blue-700">Processando...</span>
+                    </div>
+                    <div className="text-blue-800 text-lg leading-relaxed font-medium whitespace-pre-wrap border-t border-blue-200 pt-4">
+                      {filterEducationalContent(currentTranscript)}
+                      <span className="inline-block w-2 h-6 bg-blue-500 animate-pulse ml-1"></span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center space-y-6 max-w-2xl w-full">
                     <div className="p-8 bg-white/80 backdrop-blur-sm rounded-2xl border border-green-200 shadow-lg">
