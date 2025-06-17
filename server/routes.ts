@@ -2288,6 +2288,14 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
   const httpServer = createServer(app);
   
+  // Check authentication status
+  app.get("/api/auth/me", (req, res) => {
+    if (!req.session.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    return res.status(200).json(req.session.user);
+  });
+
   // Endpoint for generating ephemeral tokens with user context
   app.post('/api/realtime/session', authenticate, async (req: Request, res: Response) => {
     try {

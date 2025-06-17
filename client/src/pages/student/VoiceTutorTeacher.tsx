@@ -281,11 +281,27 @@ export default function VoiceTutorTeacher() {
       setConnectionState('connecting');
       console.log('Iniciando conexão com OpenAI Realtime API...');
 
+      // Verificar se o usuário está autenticado primeiro
+      const authResponse = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
+
+      if (!authResponse.ok) {
+        toast({
+          title: "Erro de Autenticação",
+          description: "Faça login para usar o tutor de voz",
+          variant: "destructive",
+        });
+        setConnectionState('error');
+        return;
+      }
+
       const tokenResponse = await fetch('/api/realtime/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
 
       if (!tokenResponse.ok) {
