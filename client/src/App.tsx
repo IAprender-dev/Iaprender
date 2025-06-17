@@ -1,4 +1,5 @@
-import { Switch, Route, useRoute } from "wouter";
+import { Switch, Route, useRoute, useLocation } from "wouter";
+import React from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -70,6 +71,28 @@ const ProtectedRoute = ({ component: Component, roles = [], ...rest }: {
 };
 
 function Router() {
+  // Force navigation to landing page on app load
+  const [location, setLocation] = useLocation();
+  
+  React.useEffect(() => {
+    // Only redirect if we're on a protected route without authentication
+    if (location !== "/" && location !== "/auth" && location !== "/cursos" && !location.startsWith("/curso/")) {
+      const checkAuth = async () => {
+        try {
+          const response = await fetch('/api/auth/me', { credentials: 'include' });
+          if (!response.ok) {
+            // Not authenticated, redirect to landing page
+            setLocation('/');
+          }
+        } catch {
+          // Error checking auth, redirect to landing page
+          setLocation('/');
+        }
+      };
+      checkAuth();
+    }
+  }, [location, setLocation]);
+
   return (
     <Switch>
       {/* Public routes */}
