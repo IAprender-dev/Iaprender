@@ -429,9 +429,9 @@ export default function VoiceTutorTeacher() {
   }, []);
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header Superior */}
-      <div className="bg-white/90 backdrop-blur-sm shadow-lg border-b border-slate-200 px-6 py-4">
+      <div className="bg-white/90 backdrop-blur-sm shadow-lg border-b border-slate-200 px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           {/* Logo e Navegação */}
           <div className="flex items-center space-x-4">
@@ -523,13 +523,13 @@ export default function VoiceTutorTeacher() {
       </div>
 
       {/* Área Principal - Lousa Virtual */}
-      <div className="flex-1 mx-6 mb-4">
-        <div className="h-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+      <div className="p-6">
+        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden" style={{ height: '70vh' }}>
           <div className="h-full flex flex-col">
             {/* Área da Lousa */}
-            <div className="flex-1 bg-gradient-to-br from-slate-50 to-white p-8 flex items-center justify-center min-h-96">
+            <div className="flex-1 bg-gradient-to-br from-slate-50 to-white p-8 flex items-center justify-center">
               <div className="text-center space-y-6 max-w-2xl w-full">
-                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+                <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 shadow-sm">
                   <Bot className="w-16 h-16 mx-auto mb-4 text-blue-600" />
                   <h2 className="text-2xl font-bold text-slate-800 mb-2">
                     Pro Versa - Sua Tutora Virtual
@@ -557,15 +557,15 @@ export default function VoiceTutorTeacher() {
 
                 {isConnected && (
                   <div className="grid grid-cols-3 gap-4 text-center">
-                    <div className="p-4 bg-blue-50 rounded-xl">
+                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
                       <Mic className="w-8 h-8 mx-auto mb-2 text-blue-600" />
                       <div className="text-sm font-medium text-slate-700">Fale Naturalmente</div>
                     </div>
-                    <div className="p-4 bg-green-50 rounded-xl">
+                    <div className="p-4 bg-green-50 rounded-xl border border-green-100">
                       <Bot className="w-8 h-8 mx-auto mb-2 text-green-600" />
                       <div className="text-sm font-medium text-slate-700">IA Especializada</div>
                     </div>
-                    <div className="p-4 bg-purple-50 rounded-xl">
+                    <div className="p-4 bg-purple-50 rounded-xl border border-purple-100">
                       <User className="w-8 h-8 mx-auto mb-2 text-purple-600" />
                       <div className="text-sm font-medium text-slate-700">Aprendizado Personalizado</div>
                     </div>
