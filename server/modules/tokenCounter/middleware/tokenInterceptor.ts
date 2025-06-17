@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import TokenLimiter from "../services/tokenLimiter";
 import TokenCalculator from "../services/tokenCalculator";
-import { detectAIRequest } from "../utils/apiDetector";
+import { detectAIRequest } from "../utils/apiDetector.js";
 
 export interface TokenInterceptorRequest extends Request {
   tokenUsage?: {

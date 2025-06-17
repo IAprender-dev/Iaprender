@@ -2279,6 +2279,13 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     }
   });
 
+  // Apply token monitoring middleware to AI routes
+  app.use('/api/ai', tokenAlertMiddleware);
+  app.use('/api/ai', tokenInterceptor);
+  
+  // Register token management routes
+  registerTokenRoutes(app);
+
   const httpServer = createServer(app);
   
   // Endpoint for generating ephemeral tokens with user context

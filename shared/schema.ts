@@ -329,9 +329,7 @@ export const tokenProviderRates = pgTable("token_provider_rates", {
   outputTokenRate: doublePrecision("output_token_rate").notNull(), // preço por 1000 tokens de saída
   isActive: boolean("is_active").default(true).notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  providerModelKey: primaryKey({ columns: [table.provider, table.model] })
-}));
+});
 
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
