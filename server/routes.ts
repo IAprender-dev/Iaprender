@@ -2331,97 +2331,53 @@ Use a lousa virtual para ilustrar conceitos importantes durante suas explicaçõ
     }
   });
 
-  // Endpoint para streaming de áudio ElevenLabs via WebSocket
-  app.post('/api/elevenlabs/websocket-stream', authenticate, async (req: Request, res: Response) => {
+  // Endpoint para transcrição de áudio via ElevenLabs
+  app.post('/api/elevenlabs/transcribe', authenticate, upload.single('audio'), async (req: Request, res: Response) => {
     try {
-      const { text, voiceId, model } = req.body;
+      if (!req.file) {
+        return res.status(400).json({ message: 'Arquivo de áudio é obrigatório' });
+      }
+
       const elevenLabsApiKey = process.env.ELEVENLABS_API_KEY || 'sk_a50155fffb31a29a1721a3d366cccca81eed78414d0917e6';
 
-      if (!text || !voiceId) {
-        return res.status(400).json({ message: 'Texto e voz são obrigatórios' });
-      }
-
-      // Configurar headers para streaming
-      res.setHeader('Content-Type', 'audio/mpeg');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
-      res.setHeader('Transfer-Encoding', 'chunked');
-
-      // Inicializar WebSocket connection com ElevenLabs
-      const WebSocket = require('ws');
-      const wsUrl = `wss://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream-input?model_id=${model || 'eleven_multilingual_v2'}&enable_logging=true&auto_mode=true`;
+      // Preparar FormData para ElevenLabs Speech-to-Text
+      const FormData = require('form-data');
+      const formData = new FormData();
       
-      const ws = new WebSocket(wsUrl, {
+      formData.append('audio', req.file.buffer, {
+        filename: 'audio.wav',
+        contentType: 'audio/wav'
+      });
+      formData.append('model', 'eleven_multilingual_v2');
+      formData.append('language_code', 'pt');
+
+      const response = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+        method: 'POST',
         headers: {
-          'xi-api-key': elevenLabsApiKey
-        }
+          'xi-api-key': elevenLabsApiKey,
+          ...formData.getHeaders()
+        },
+        body: formData
       });
 
-      ws.on('open', () => {
-        console.log('WebSocket conectado ao ElevenLabs');
-        
-        // Inicializar conexão
-        ws.send(JSON.stringify({
-          text: " ",
-          voice_settings: {
-            speed: 1,
-            stability: 0.5,
-            similarity_boost: 0.8
-          },
-          xi_api_key: elevenLabsApiKey
-        }));
-
-        // Enviar texto para síntese
-        ws.send(JSON.stringify({
-          text: text,
-          try_trigger_generation: true
-        }));
-
-        // Finalizar stream
-        ws.send(JSON.stringify({
-          text: ""
-        }));
-      });
-
-      ws.on('message', (data: Buffer) => {
-        try {
-          const message = JSON.parse(data.toString());
-          
-          if (message.audio) {
-            // Decodificar base64 e enviar áudio
-            const audioBuffer = Buffer.from(message.audio, 'base64');
-            res.write(audioBuffer);
-          }
-          
-          if (message.isFinal) {
-            res.end();
-            ws.close();
-          }
-        } catch (error) {
-          console.error('Erro ao processar mensagem WebSocket:', error);
-        }
-      });
-
-      ws.on('error', (error: Error) => {
-        console.error('Erro WebSocket:', error);
-        if (!res.headersSent) {
-          res.status(500).json({ message: 'Erro no WebSocket' });
-        }
-        ws.close();
-      });
-
-      ws.on('close', () => {
-        console.log('WebSocket ElevenLabs fechado');
-        if (!res.headersSent) {
-          res.end();
-        }
-      });
+      if (response.ok) {
+        const result = await response.json();
+        res.json({
+          transcript: result.text || result.transcript || '',
+          confidence: result.confidence || 0.9
+        });
+      } else {
+        const errorText = await response.text();
+        console.error('Erro na transcrição ElevenLabs:', response.status, errorText);
+        res.status(response.status).json({ 
+          message: 'Erro na transcrição',
+          error: errorText 
+        });
+      }
 
     } catch (error) {
-      console.error('Erro no WebSocket streaming ElevenLabs:', error);
-      if (!res.headersSent) {
-        res.status(500).json({ message: 'Erro interno do servidor' });
-      }
+      console.error('Erro no endpoint de transcrição:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   });
 
