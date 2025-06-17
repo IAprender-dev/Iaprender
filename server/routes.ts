@@ -2467,7 +2467,11 @@ Fale sempre em português brasileiro claro e natural.`,
   // Token usage status endpoint for widgets
   app.get('/api/tokens/status', authenticate, async (req: Request, res: Response) => {
     try {
-      const userId = req.session.user.id;
+      const userId = req.session.user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
       
       // Get current date and calculate monthly limits
       const now = new Date();

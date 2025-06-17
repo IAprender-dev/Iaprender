@@ -55,7 +55,8 @@ export const getQueryFn = (options: QueryFnOptions = {}) => async ({
       if (response.status === 401 && options.on401 === 'returnNull') {
         return null;
       }
-      throw new Error(`API Error: ${response.status}`);
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`${response.status}: ${errorText}`);
     }
     
     return response.json();

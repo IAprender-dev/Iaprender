@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Zap, TrendingUp, AlertTriangle, Info, Settings } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/lib/AuthContext";
 
 interface TokenUsageData {
   canProceed: boolean;
@@ -23,10 +24,35 @@ interface TokenUsageData {
 }
 
 export function TokenUsageWidget() {
-  const { data: tokenData, isLoading } = useQuery<TokenUsageData>({
+  const { data: tokenData, isLoading, error } = useQuery<TokenUsageData>({
     queryKey: ["/api/tokens/status"],
     refetchInterval: 60000, // Atualiza a cada 1 minuto
+    retry: 1,
+    staleTime: 30000, // 30 segundos
   });
+
+  if (error) {
+    return (
+      <Card className="h-fit">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+            Tokens IA
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="text-center space-y-2">
+            <div className="text-sm text-muted-foreground">
+              Erro ao carregar dados
+            </div>
+            <div className="text-xs text-red-600">
+              {error.message}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading || !tokenData) {
     return (
