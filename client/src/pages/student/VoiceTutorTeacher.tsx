@@ -381,39 +381,64 @@ export default function VoiceTutorTeacher() {
     }
   };
 
-  // Função para sintetizar fala com ElevenLabs
+  // Função para sintetizar fala com ElevenLabs (streaming)
   const synthesizeSpeech = async (text: string, sessionInfo: any) => {
     try {
       setConversationState('speaking');
+      console.log('🔊 Iniciando síntese de fala streaming...');
       
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${sessionInfo.voiceId}`, {
+      const response = await fetch('/api/elevenlabs/stream', {
         method: 'POST',
         headers: {
-          'Accept': 'audio/mpeg',
           'Content-Type': 'application/json',
-          'xi-api-key': sessionInfo.apiKey
         },
+        credentials: 'include',
         body: JSON.stringify({
           text: text,
-          model_id: sessionInfo.model,
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.8,
-            style: 0.0,
-            use_speaker_boost: true
-          }
+          voiceId: sessionInfo.voiceId,
+          model: sessionInfo.model
         })
       });
 
-      if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
+      if (response.ok && response.body) {
+        console.log('✅ Stream de áudio iniciado');
+        
+        // Criar MediaSource para streaming
+        const mediaSource = new MediaSource();
+        const audioUrl = URL.createObjectURL(mediaSource);
         
         if (audioRef.current) {
           audioRef.current.pause();
         }
         
         audioRef.current = new Audio(audioUrl);
+        
+        mediaSource.addEventListener('sourceopen', async () => {
+          const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+          const reader = response.body!.getReader();
+          
+          const pump = async () => {
+            while (true) {
+              const { done, value } = await reader.read();
+              
+              if (done) {
+                if (!sourceBuffer.updating) {
+                  mediaSource.endOfStream();
+                }
+                break;
+              }
+              
+              if (!sourceBuffer.updating) {
+                sourceBuffer.appendBuffer(value);
+                await new Promise(resolve => {
+                  sourceBuffer.addEventListener('updateend', resolve, { once: true });
+                });
+              }
+            }
+          };
+          
+          pump().catch(console.error);
+        });
         
         audioRef.current.onended = () => {
           console.log('Áudio terminou, reiniciando reconhecimento');
@@ -447,7 +472,7 @@ export default function VoiceTutorTeacher() {
         };
         
         if (!isMuted) {
-          console.log('Reproduzindo áudio...');
+          console.log('🔊 Iniciando reprodução de áudio streaming...');
           try {
             await audioRef.current.play();
           } catch (playError) {
@@ -465,7 +490,7 @@ export default function VoiceTutorTeacher() {
             }
           }
         } else {
-          console.log('Áudio silenciado');
+          console.log('🔇 Áudio silenciado');
           setConversationState('idle');
           // Reiniciar reconhecimento imediatamente se mudo
           if (recognitionRef.current && isConnected) {
@@ -479,23 +504,101 @@ export default function VoiceTutorTeacher() {
           }
         }
       } else {
-        console.error('Erro na API ElevenLabs:', response.status, response.statusText);
-        throw new Error(`Falha na síntese de fala: ${response.status}`);
+        console.error('❌ Erro no streaming de áudio:', response.status, response.statusText);
+        // Fallback para síntese tradicional
+        await synthesizeSpeechFallback(text, sessionInfo);
       }
     } catch (error) {
-      console.error('Erro na síntese de fala:', error);
-      setConversationState('idle');
-      // Reiniciar reconhecimento em caso de erro
-      if (recognitionRef.current && isConnected) {
-        setTimeout(() => {
-          try {
-            recognitionRef.current.start();
-            console.log('Reconhecimento reiniciado após erro de síntese');
-          } catch (e) {
-            console.error('Erro ao reiniciar após erro de síntese:', e);
-          }
-        }, 1000);
+      console.error('❌ Erro na síntese de fala:', error);
+      // Tentar fallback
+      try {
+        await synthesizeSpeechFallback(text, sessionInfo);
+      } catch (fallbackError) {
+        console.error('❌ Fallback também falhou:', fallbackError);
+        setConversationState('idle');
+        // Reiniciar reconhecimento em caso de erro
+        if (recognitionRef.current && isConnected) {
+          setTimeout(() => {
+            try {
+              recognitionRef.current.start();
+              console.log('Reconhecimento reiniciado após erro de síntese');
+            } catch (e) {
+              console.error('Erro ao reiniciar após erro de síntese:', e);
+            }
+          }, 1000);
+        }
       }
+    }
+  };
+
+  // Função de fallback para síntese tradicional
+  const synthesizeSpeechFallback = async (text: string, sessionInfo: any) => {
+    try {
+      console.log('🔄 Usando síntese tradicional como fallback...');
+      
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${sessionInfo.voiceId}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': sessionInfo.apiKey
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: sessionInfo.model,
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.8,
+            style: 0.0,
+            use_speaker_boost: true
+          }
+        })
+      });
+
+      if (response.ok) {
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        
+        if (audioRef.current) {
+          audioRef.current.pause();
+        }
+        
+        audioRef.current = new Audio(audioUrl);
+        
+        audioRef.current.onended = () => {
+          console.log('🎵 Áudio tradicional terminou');
+          setConversationState('idle');
+          if (recognitionRef.current && isConnected) {
+            setTimeout(() => {
+              try {
+                recognitionRef.current.start();
+              } catch (e) {
+                console.error('Erro ao reiniciar após áudio tradicional:', e);
+              }
+            }, 500);
+          }
+        };
+        
+        if (!isMuted) {
+          await audioRef.current.play();
+        } else {
+          setConversationState('idle');
+          if (recognitionRef.current && isConnected) {
+            setTimeout(() => {
+              try {
+                recognitionRef.current.start();
+              } catch (e) {
+                console.error('Erro ao reiniciar no modo mudo tradicional:', e);
+              }
+            }, 500);
+          }
+        }
+      } else {
+        throw new Error(`Fallback falhou: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('❌ Erro no fallback:', error);
+      throw error;
     }
   };
 
