@@ -499,6 +499,57 @@ export default function VoiceTutorTeacher() {
     }
   };
 
+
+
+  // Função para testar microfone manualmente
+  const testMicrophone = async () => {
+    try {
+      console.log('🎤 Testando microfone...');
+      
+      // Verificar permissões
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('✅ Permissões OK');
+      
+      // Parar stream
+      stream.getTracks().forEach(track => track.stop());
+      
+      // Testar reconhecimento
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      
+      setTimeout(() => {
+        if (recognitionRef.current && isConnected) {
+          try {
+            recognitionRef.current.start();
+            console.log('🎤 Teste de reconhecimento iniciado');
+            
+            toast({
+              title: "Teste iniciado",
+              description: "Fale algo agora para testar o microfone",
+              duration: 3000,
+            });
+          } catch (error) {
+            console.error('❌ Erro no teste:', error);
+            toast({
+              title: "Erro no teste",
+              description: "Problema ao iniciar reconhecimento de voz",
+              variant: "destructive",
+            });
+          }
+        }
+      }, 500);
+      
+    } catch (error) {
+      console.error('❌ Erro nas permissões:', error);
+      toast({
+        title: "Permissão negada",
+        description: "Clique no ícone do microfone na URL e permita o acesso",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Função para desconectar
   const disconnect = useCallback(() => {
     if (recognitionRef.current) {
