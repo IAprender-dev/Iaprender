@@ -41,6 +41,8 @@ import path from "path";
 import os from "os";
 import WebSocket, { WebSocketServer } from "ws";
 import { generateLogo } from "./logo-generator";
+import { tokenInterceptor, tokenAlertMiddleware } from "./modules/tokenCounter/middleware/tokenInterceptor";
+import { registerTokenRoutes } from "./modules/tokenCounter/routes/tokenRoutes";
 
 // Define login schema
 const loginSchema = z.object({

@@ -13,7 +13,10 @@ import {
   SavedItem, InsertSavedItem,
   StudyPlan, InsertStudyPlan,
   StudySchedule, InsertStudySchedule,
-  Exam, InsertExam
+  Exam, InsertExam,
+  UserTokenLimit, InsertUserTokenLimit,
+  TokenUsageLog, InsertTokenUsageLog,
+  TokenProviderRate, InsertTokenProviderRate
 } from "@shared/schema";
 
 // Storage interface definition

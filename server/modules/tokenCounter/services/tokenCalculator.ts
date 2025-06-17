@@ -74,8 +74,8 @@ export class TokenCalculator {
       // Usar taxas padrão
       const providerRates = this.DEFAULT_RATES[config.provider as keyof typeof this.DEFAULT_RATES];
       if (providerRates) {
-        const modelRates = providerRates[config.model as keyof typeof providerRates];
-        if (modelRates) {
+        const modelRates = providerRates[config.model as keyof typeof providerRates] as any;
+        if (modelRates && typeof modelRates === 'object' && 'input' in modelRates && 'output' in modelRates) {
           estimatedCost = (
             (promptTokens / 1000) * modelRates.input +
             (completionTokens / 1000) * modelRates.output
