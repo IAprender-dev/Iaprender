@@ -2305,7 +2305,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
       
       // Return ElevenLabs configuration
       res.json({
-        apiKey: 'sk_a50155fffb31a29a1721a3d366cccca81eed78414d0917e6',
+        apiKey: process.env.ELEVENLABS_API_KEY || 'sk_a50155fffb31a29a1721a3d366cccca81eed78414d0917e6',
         voiceId: 'pNInz6obpgDQGcFmaJgB', // Adam voice (Portuguese)
         model: 'eleven_multilingual_v2',
         studentInfo: {
@@ -2327,7 +2327,7 @@ Use a lousa virtual para ilustrar conceitos importantes durante suas explicaçõ
       });
     } catch (error) {
       console.error('Error creating ElevenLabs session:', error);
-      res.status(500).json({ error: 'Failed to create session' });
+      res.status(500).json({ error: 'Failed to create ElevenLabs session' });
     }
   });
 
