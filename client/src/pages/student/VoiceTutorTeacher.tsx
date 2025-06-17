@@ -162,25 +162,59 @@ export default function VoiceTutorTeacher() {
       // Configurar reconhecimento de voz
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+        
+        // Verificar permissões do microfone primeiro
+        try {
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log('✅ Permissão de microfone concedida');
+        } catch (permError) {
+          console.error('❌ Erro de permissão de microfone:', permError);
+          toast({
+            title: "Microfone bloqueado",
+            description: "Clique no ícone do cadeado na barra de endereços e permita o acesso ao microfone",
+            variant: "destructive",
+          });
+          return;
+        }
+
         const recognition = new SpeechRecognition();
         
         recognition.continuous = true;
-        recognition.interimResults = false;
+        recognition.interimResults = true;
         recognition.lang = 'pt-BR';
         recognition.maxAlternatives = 1;
 
         recognition.onresult = (event: any) => {
-          const transcript = event.results[event.results.length - 1][0].transcript.trim();
-          console.log('🎤 Transcrição recebida:', transcript);
+          const lastResultIndex = event.results.length - 1;
+          const lastResult = event.results[lastResultIndex];
           
-          if (transcript.length > 2) { // Evitar transcrições muito curtas
-            addMessage('user', transcript, 'text');
-            setConversationState('thinking');
+          if (lastResult.isFinal) {
+            const transcript = lastResult[0].transcript.trim();
+            console.log('🎤 Transcrição final recebida:', transcript);
             
-            // Processar entrada do usuário
-            processUserInput(transcript, sessionInfo);
+            if (transcript.length > 3) { // Evitar transcrições muito curtas
+              addMessage('user', transcript, 'text');
+              setConversationState('thinking');
+              
+              // Processar entrada do usuário
+              processUserInput(transcript, sessionInfo);
+            } else {
+              console.log('Transcrição muito curta, ignorando:', transcript);
+              // Continuar ouvindo se transcrição for muito curta
+              setTimeout(() => {
+                if (recognitionRef.current && isConnected) {
+                  try {
+                    recognitionRef.current.start();
+                  } catch (e) {
+                    console.error('Erro ao reiniciar após transcrição curta:', e);
+                  }
+                }
+              }, 500);
+            }
           } else {
-            console.log('Transcrição muito curta, ignorando:', transcript);
+            // Resultado interim (parcial)
+            const interimTranscript = lastResult[0].transcript;
+            console.log('🎤 Transcrição parcial:', interimTranscript);
           }
         };
 
@@ -206,6 +240,11 @@ export default function VoiceTutorTeacher() {
         recognition.onstart = () => {
           console.log('🎤 Reconhecimento iniciado - Pro Versa está ouvindo');
           setConversationState('listening');
+          toast({
+            title: "Microfone ativo",
+            description: "Pro Versa está ouvindo você. Fale agora!",
+            duration: 2000,
+          });
         };
 
         recognition.onend = () => {
@@ -245,21 +284,23 @@ export default function VoiceTutorTeacher() {
       await synthesizeSpeech(greeting, sessionInfo);
 
       // Iniciar reconhecimento após um breve delay
-      setTimeout(() => {
+      setTimeout(async () => {
         if (recognitionRef.current && isConnected) {
           try {
+            // Verificar novamente as permissões antes de iniciar
+            await navigator.mediaDevices.getUserMedia({ audio: true });
             recognitionRef.current.start();
-            console.log('🎤 Reconhecimento inicial iniciado');
+            console.log('🎤 Reconhecimento inicial iniciado com sucesso');
           } catch (error) {
             console.error('❌ Erro ao iniciar reconhecimento inicial:', error);
             toast({
-              title: "Erro no microfone",
-              description: "Não foi possível iniciar o reconhecimento de voz. Verifique as permissões.",
+              title: "Problema com microfone",
+              description: "Clique no ícone do microfone na barra de endereços e permita o acesso",
               variant: "destructive",
             });
           }
         }
-      }, 2000);
+      }, 3000);
 
       toast({
         title: "Pro Versa conectada!",
@@ -582,17 +623,29 @@ export default function VoiceTutorTeacher() {
             </Button>
 
             {isConnected && (
-              <Button
-                onClick={toggleMute}
-                variant="outline"
-                className="px-4"
-              >
-                {isMuted ? (
-                  <VolumeX className="w-4 h-4" />
-                ) : (
-                  <Volume2 className="w-4 h-4" />
-                )}
-              </Button>
+              <>
+                <Button
+                  onClick={toggleMute}
+                  variant="outline"
+                  className="px-4"
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-4 h-4" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </Button>
+                
+                <Button
+                  onClick={testMicrophone}
+                  variant="outline"
+                  className="px-4"
+                  disabled={conversationState === 'listening'}
+                >
+                  <Mic className="w-4 h-4 mr-2" />
+                  Testar Microfone
+                </Button>
+              </>
             )}
           </div>
         </div>
