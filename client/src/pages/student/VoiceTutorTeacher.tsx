@@ -186,9 +186,15 @@ export default function VoiceTutorTeacher() {
         };
 
         recognition.onend = () => {
-          if (isConnected && conversationState === 'idle') {
+          console.log('Reconhecimento encerrado, estado:', conversationState);
+          if (isConnected && conversationState !== 'speaking' && conversationState !== 'thinking') {
             setTimeout(() => {
-              recognition.start();
+              try {
+                recognition.start();
+                console.log('Reconhecimento reiniciado');
+              } catch (error) {
+                console.error('Erro ao reiniciar reconhecimento:', error);
+              }
             }, 1000);
           }
         };
@@ -208,10 +214,17 @@ export default function VoiceTutorTeacher() {
       // Reproduzir saudação
       await synthesizeSpeech(greeting, sessionInfo);
 
-      // Iniciar reconhecimento
-      if (recognitionRef.current) {
-        recognitionRef.current.start();
-      }
+      // Iniciar reconhecimento após um breve delay
+      setTimeout(() => {
+        if (recognitionRef.current && isConnected) {
+          try {
+            recognitionRef.current.start();
+            console.log('Reconhecimento inicial iniciado');
+          } catch (error) {
+            console.error('Erro ao iniciar reconhecimento inicial:', error);
+          }
+        }
+      }, 1000);
 
       toast({
         title: "Pro Versa conectada!",
@@ -327,31 +340,86 @@ export default function VoiceTutorTeacher() {
         audioRef.current = new Audio(audioUrl);
         
         audioRef.current.onended = () => {
+          console.log('Áudio terminou, reiniciando reconhecimento');
           setConversationState('idle');
           // Reiniciar reconhecimento após fala
           if (recognitionRef.current && isConnected) {
             setTimeout(() => {
-              recognitionRef.current.start();
+              try {
+                recognitionRef.current.start();
+                console.log('Reconhecimento reiniciado após áudio');
+              } catch (error) {
+                console.error('Erro ao reiniciar após áudio:', error);
+              }
             }, 500);
           }
         };
         
-        audioRef.current.onerror = () => {
-          console.error('Erro na reprodução do áudio');
+        audioRef.current.onerror = (error) => {
+          console.error('Erro na reprodução do áudio:', error);
           setConversationState('idle');
+          // Tentar reiniciar reconhecimento mesmo com erro
+          if (recognitionRef.current && isConnected) {
+            setTimeout(() => {
+              try {
+                recognitionRef.current.start();
+              } catch (e) {
+                console.error('Erro ao reiniciar após erro de áudio:', e);
+              }
+            }, 1000);
+          }
         };
         
         if (!isMuted) {
-          await audioRef.current.play();
+          console.log('Reproduzindo áudio...');
+          try {
+            await audioRef.current.play();
+          } catch (playError) {
+            console.error('Erro ao reproduzir áudio:', playError);
+            setConversationState('idle');
+            // Reiniciar reconhecimento se falhar reprodução
+            if (recognitionRef.current && isConnected) {
+              setTimeout(() => {
+                try {
+                  recognitionRef.current.start();
+                } catch (e) {
+                  console.error('Erro ao reiniciar após falha de reprodução:', e);
+                }
+              }, 500);
+            }
+          }
         } else {
+          console.log('Áudio silenciado');
           setConversationState('idle');
+          // Reiniciar reconhecimento imediatamente se mudo
+          if (recognitionRef.current && isConnected) {
+            setTimeout(() => {
+              try {
+                recognitionRef.current.start();
+              } catch (e) {
+                console.error('Erro ao reiniciar no modo mudo:', e);
+              }
+            }, 500);
+          }
         }
       } else {
-        throw new Error('Falha na síntese de fala');
+        console.error('Erro na API ElevenLabs:', response.status, response.statusText);
+        throw new Error(`Falha na síntese de fala: ${response.status}`);
       }
     } catch (error) {
       console.error('Erro na síntese de fala:', error);
       setConversationState('idle');
+      // Reiniciar reconhecimento em caso de erro
+      if (recognitionRef.current && isConnected) {
+        setTimeout(() => {
+          try {
+            recognitionRef.current.start();
+            console.log('Reconhecimento reiniciado após erro de síntese');
+          } catch (e) {
+            console.error('Erro ao reiniciar após erro de síntese:', e);
+          }
+        }, 1000);
+      }
     }
   };
 
