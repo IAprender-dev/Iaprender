@@ -1,0 +1,347 @@
+Adicionar sistema de monitoramento e controle de tokens de APIs na plataforma já em desenvolvimento, SEM quebrar funcionalidades existentes.
+📋 INSTRUÇÕES PARA IMPLEMENTAÇÃO
+PASSO 1: Análise da Estrutura Atual
+bash# Execute primeiro para mapear a arquitetura existente
+# Documente os achados antes de começar
+
+1. Identificar estrutura de pastas atual
+2. Localizar sistema de autenticação/usuários
+3. Encontrar onde ficam as chamadas de API
+4. Verificar banco de dados usado (JSON, SQLite, MongoDB, etc.)
+5. Identificar padrão de rotas/endpoints
+6. Verificar framework frontend (React, Vue, vanilla JS, etc.)
+PASSO 2: Criar Estrutura Modular
+// Adicionar estas pastas SEM modificar estrutura existente
+/src
+  /modules
+    /tokenCounter
+      /services
+        tokenCalculator.js
+        tokenLimiter.js
+        userTokenService.js
+      /middleware
+        tokenInterceptor.js
+      /routes
+        tokenRoutes.js
+      /components
+        TokenWidget.jsx
+        TokenDashboard.jsx
+        AdminTokenPanel.jsx
+      /utils
+        apiDetector.js
+        dateHelper.js
+      /data
+        tokenProviders.json
+        userTokenLimits.json (se usando JSON)
+PASSO 3: Implementar Interceptor de APIs
+javascript// modules/tokenCounter/middleware/tokenInterceptor.js
+// ADAPTE PARA SUA ARQUITETURA ATUAL
+
+// Se usando Express.js:
+const tokenInterceptor = (req, res, next) => {
+  // 1. Pegar usuário do sistema existente
+  const userId = req.user?.id || req.session?.userId;
+  
+  // 2. Detectar se é chamada para API de IA
+  const isAIRequest = detectAIRequest(req);
+  
+  if (!isAIRequest) return next();
+  
+  // 3. Verificar limite ANTES de processar
+  checkTokenLimit(userId)
+    .then(canProceed => {
+      if (!canProceed) {
+        return res.status(429).json({
+          error: 'Limite de tokens excedido',
+          resetDate: getNextResetDate(userId)
+        });
+      }
+      
+      // 4. Continuar com requisição original
+      interceptResponse(res, userId, req);
+      next();
+    });
+};
+
+// Se usando outro framework, adapte o padrão
+PASSO 4: Serviços de Cálculo de Tokens
+javascript// modules/tokenCounter/services/tokenCalculator.js
+
+const TokenCalculators = {
+  openai: {
+    'gpt-4': (prompt, completion) => {
+      // Implementar cálculo específico GPT-4
+      const promptTokens = Math.ceil(prompt.length / 4);
+      const completionTokens = Math.ceil((completion || '').length / 4);
+      return { promptTokens, completionTokens, total: promptTokens + completionTokens };
+    },
+    'gpt-3.5-turbo': (prompt, completion) => {
+      // Implementar cálculo específico GPT-3.5
+      const promptTokens = Math.ceil(prompt.length / 4);
+      const completionTokens = Math.ceil((completion || '').length / 4);
+      return { promptTokens, completionTokens, total: promptTokens + completionTokens };
+    }
+  },
+  anthropic: {
+    'claude-3': (prompt, completion) => {
+      // Implementar cálculo específico Claude
+      const promptTokens = Math.ceil(prompt.length / 3.5);
+      const completionTokens = Math.ceil((completion || '').length / 3.5);
+      return { promptTokens, completionTokens, total: promptTokens + completionTokens };
+    }
+  },
+  google: {
+    'gemini-pro': (prompt, completion) => {
+      // Implementar cálculo específico Gemini
+      const promptTokens = Math.ceil(prompt.length / 4);
+      const completionTokens = Math.ceil((completion || '').length / 4);
+      return { promptTokens, completionTokens, total: promptTokens + completionTokens };
+    }
+  }
+};
+
+module.exports = TokenCalculators;
+PASSO 5: Sistema de Dados (Adaptável)
+javascript// modules/tokenCounter/data/userTokenLimits.json
+// Se usando JSON (adapte para seu banco atual)
+{
+  "users": {
+    "user123": {
+      "monthlyLimit": 100000,
+      "currentUsage": 15000,
+      "periodStartDate": "2025-01-17",
+      "isActive": true
+    }
+  }
+}
+
+// modules/tokenCounter/data/tokenUsage.json
+{
+  "logs": [
+    {
+      "id": "log_001",
+      "userId": "user123",
+      "provider": "openai",
+      "model": "gpt-4",
+      "tokensUsed": 150,
+      "timestamp": "2025-06-17T10:30:00Z",
+      "requestId": "req_abc123"
+    }
+  ]
+}
+
+// Se usando banco SQL, criar estas tabelas:
+/*
+CREATE TABLE user_token_limits (
+  user_id VARCHAR PRIMARY KEY,
+  monthly_limit INTEGER DEFAULT 10000,
+  current_usage INTEGER DEFAULT 0,
+  period_start_date DATE,
+  is_active BOOLEAN DEFAULT true
+);
+
+CREATE TABLE token_usage_logs (
+  id VARCHAR PRIMARY KEY,
+  user_id VARCHAR,
+  provider VARCHAR,
+  model VARCHAR,
+  tokens_used INTEGER,
+  timestamp DATETIME,
+  request_metadata JSON
+);
+*/
+PASSO 6: Componentes Frontend
+jsx// modules/tokenCounter/components/TokenWidget.jsx
+// ADAPTE PARA SEU FRAMEWORK FRONTEND
+
+import React, { useState, useEffect } from 'react';
+
+const TokenWidget = ({ userId }) => {
+  const [tokenData, setTokenData] = useState(null);
+  
+  useEffect(() => {
+    // Buscar dados do usuário usando API existente da plataforma
+    fetchUserTokenData(userId).then(setTokenData);
+  }, [userId]);
+  
+  if (!tokenData) return <div>Carregando...</div>;
+  
+  const percentage = (tokenData.currentUsage / tokenData.monthlyLimit) * 100;
+  const remainingDays = calculateRemainingDays(tokenData.periodStartDate);
+  
+  return (
+    <div className="token-widget">
+      <h3>Uso de Tokens</h3>
+      <div className="progress-bar">
+        <div 
+          className="progress-fill" 
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <p>{tokenData.currentUsage.toLocaleString()} / {tokenData.monthlyLimit.toLocaleString()}</p>
+      <p>Renovação em {remainingDays} dias</p>
+    </div>
+  );
+};
+
+export default TokenWidget;
+PASSO 7: Integração com Painel Admin
+jsx// modules/tokenCounter/components/AdminTokenPanel.jsx
+
+const AdminTokenPanel = () => {
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+  
+  // Buscar usuários do sistema existente
+  useEffect(() => {
+    fetchUsersWithTokenData().then(setUsers);
+  }, []);
+  
+  const updateUserLimit = async (userId, newLimit) => {
+    await updateTokenLimit(userId, newLimit);
+    // Atualizar lista
+    fetchUsersWithTokenData().then(setUsers);
+  };
+  
+  return (
+    <div className="admin-token-panel">
+      <h2>Gerenciamento de Tokens</h2>
+      
+      {/* Estatísticas gerais */}
+      <div className="stats-grid">
+        <div className="stat-card">
+          <h3>Total de Tokens Usados</h3>
+          <p>{calculateTotalUsage()}</p>
+        </div>
+        <div className="stat-card">
+          <h3>Usuários Ativos</h3>
+          <p>{users.filter(u => u.isActive).length}</p>
+        </div>
+      </div>
+      
+      {/* Lista de usuários */}
+      <div className="users-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>Uso Atual</th>
+              <th>Limite</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map(user => (
+              <tr key={user.id}>
+                <td>{user.name}</td>
+                <td>{user.currentUsage}</td>
+                <td>{user.monthlyLimit}</td>
+                <td>{user.status}</td>
+                <td>
+                  <button onClick={() => setSelectedUser(user)}>
+                    Editar Limite
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Modal para editar limite */}
+      {selectedUser && (
+        <EditLimitModal 
+          user={selectedUser}
+          onSave={updateUserLimit}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+    </div>
+  );
+};
+PASSO 8: Sistema de Reset Automático
+javascript// modules/tokenCounter/services/resetService.js
+
+// Função para executar diariamente (usando cron ou timer)
+const resetExpiredPeriods = async () => {
+  const users = await getAllUsersWithTokenData();
+  
+  for (const user of users) {
+    const daysSinceStart = daysBetween(user.periodStartDate, new Date());
+    
+    if (daysSinceStart >= 30) {
+      // Reset do usuário
+      await resetUserTokenPeriod(user.id);
+      console.log(`Reset realizado para usuário ${user.id}`);
+    }
+  }
+};
+
+// Executar a cada 24 horas
+setInterval(resetExpiredPeriods, 24 * 60 * 60 * 1000);
+🚀 ROTEIRO DE IMPLEMENTAÇÃO
+Fase 1 - Base (1-2 dias)
+
+✅ Criar estrutura de pastas modular
+✅ Implementar interceptor básico
+✅ Criar sistema de dados (JSON ou adaptar banco)
+✅ Implementar cálculo de tokens para uma API (OpenAI)
+
+Fase 2 - Interface (2-3 dias)
+
+✅ Criar widget de usuário
+✅ Integrar widget no dashboard existente
+✅ Criar painel administrativo básico
+✅ Implementar sistema de limites
+
+Fase 3 - Expansão (2-3 dias)
+
+✅ Adicionar suporte para múltiplas APIs
+✅ Implementar sistema de reset automático
+✅ Criar gráficos de uso
+✅ Adicionar alertas e notificações
+
+🔧 CHECKLIST DE INTEGRAÇÃO
+Antes de Começar
+
+ Backup completo da plataforma atual
+ Documentar estrutura existente
+ Identificar pontos de integração
+ Definir estratégia de dados
+
+Durante Desenvolvimento
+
+ Testar cada módulo isoladamente
+ Verificar compatibilidade com código existente
+ Manter funcionalidades originais intactas
+ Implementar logs detalhados
+
+Após Implementação
+
+ Testes completos da plataforma
+ Verificar performance
+ Documentar novas funcionalidades
+ Treinar usuários administrativos
+
+⚠️ CUIDADOS IMPORTANTES
+
+NÃO modifique arquivos existentes diretamente
+USE hooks/middlewares para interceptar funcionalidades
+TESTE incrementalmente cada funcionalidade
+MANTENHA compatibilidade com sistema de usuários atual
+IMPLEMENTE gradualmente - comece simples e expanda
+
+🧪 TESTES RECOMENDADOS
+javascript// Testes básicos para verificar integração
+const tests = [
+  'Usuário consegue fazer login normalmente',
+  'Funcionalidades existentes ainda funcionam',
+  'Contador de tokens registra uso corretamente',
+  'Limites são respeitados',
+  'Reset automático funciona',
+  'Painel admin é acessível',
+  'Performance não degradou'
+];
+
+💡 DICA: Comece implementando apenas para uma API (ex: OpenAI) e depois expanda. Mantenha sempre uma versão funcional da plataforma durante o desenvolvimento.

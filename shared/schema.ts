@@ -291,6 +291,48 @@ export const exams = pgTable("exams", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// User Token Limits - Controle de limites de tokens por usuário
+export const userTokenLimits = pgTable("user_token_limits", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  monthlyLimit: integer("monthly_limit").default(100000).notNull(), // limite mensal de tokens
+  currentUsage: integer("current_usage").default(0).notNull(), // uso atual no período
+  periodStartDate: date("period_start_date").defaultNow().notNull(), // início do período atual
+  isActive: boolean("is_active").default(true).notNull(),
+  alertThreshold: integer("alert_threshold").default(80).notNull(), // % para alertas
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Token Usage Logs - Log detalhado de uso de tokens
+export const tokenUsageLogs = pgTable("token_usage_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  provider: text("provider").notNull(), // 'openai', 'anthropic', 'perplexity'
+  model: text("model").notNull(), // 'gpt-4', 'claude-3', etc.
+  promptTokens: integer("prompt_tokens").default(0).notNull(),
+  completionTokens: integer("completion_tokens").default(0).notNull(),
+  totalTokens: integer("total_tokens").notNull(),
+  requestType: text("request_type").notNull(), // 'chat', 'image', 'search', etc.
+  cost: doublePrecision("cost").default(0).notNull(), // custo estimado em USD
+  requestId: text("request_id"), // ID da requisição original
+  requestMetadata: jsonb("request_metadata"), // dados adicionais da requisição
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
+// Token Provider Rates - Taxas e preços dos provedores
+export const tokenProviderRates = pgTable("token_provider_rates", {
+  id: serial("id").primaryKey(),
+  provider: text("provider").notNull(),
+  model: text("model").notNull(),
+  inputTokenRate: doublePrecision("input_token_rate").notNull(), // preço por 1000 tokens de entrada
+  outputTokenRate: doublePrecision("output_token_rate").notNull(), // preço por 1000 tokens de saída
+  isActive: boolean("is_active").default(true).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  providerModelKey: primaryKey({ columns: [table.provider, table.model] })
+}));
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -412,6 +454,22 @@ export const insertExamSchema = createInsertSchema(exams).omit({
   createdAt: true,
 });
 
+export const insertUserTokenLimitSchema = createInsertSchema(userTokenLimits).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTokenUsageLogSchema = createInsertSchema(tokenUsageLogs).omit({
+  id: true,
+  timestamp: true,
+});
+
+export const insertTokenProviderRateSchema = createInsertSchema(tokenProviderRates).omit({
+  id: true,
+  updatedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -481,3 +539,12 @@ export type StudySchedule = typeof studySchedule.$inferSelect;
 
 export type InsertExam = z.infer<typeof insertExamSchema>;
 export type Exam = typeof exams.$inferSelect;
+
+export type InsertUserTokenLimit = z.infer<typeof insertUserTokenLimitSchema>;
+export type UserTokenLimit = typeof userTokenLimits.$inferSelect;
+
+export type InsertTokenUsageLog = z.infer<typeof insertTokenUsageLogSchema>;
+export type TokenUsageLog = typeof tokenUsageLogs.$inferSelect;
+
+export type InsertTokenProviderRate = z.infer<typeof insertTokenProviderRateSchema>;
+export type TokenProviderRate = typeof tokenProviderRates.$inferSelect;
