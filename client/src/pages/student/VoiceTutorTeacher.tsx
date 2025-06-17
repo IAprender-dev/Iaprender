@@ -381,13 +381,13 @@ export default function VoiceTutorTeacher() {
     }
   };
 
-  // Função para sintetizar fala com ElevenLabs (streaming)
+  // Função para sintetizar fala com ElevenLabs (WebSocket streaming)
   const synthesizeSpeech = async (text: string, sessionInfo: any) => {
     try {
       setConversationState('speaking');
-      console.log('🔊 Iniciando síntese de fala streaming...');
+      console.log('🔊 Iniciando síntese de fala via WebSocket...');
       
-      const response = await fetch('/api/elevenlabs/stream', {
+      const response = await fetch('/api/elevenlabs/websocket-stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -401,7 +401,7 @@ export default function VoiceTutorTeacher() {
       });
 
       if (response.ok && response.body) {
-        console.log('✅ Stream de áudio iniciado');
+        console.log('✅ WebSocket stream de áudio iniciado');
         
         // Criar MediaSource para streaming
         const mediaSource = new MediaSource();
@@ -418,26 +418,30 @@ export default function VoiceTutorTeacher() {
           const reader = response.body!.getReader();
           
           const pump = async () => {
-            while (true) {
-              const { done, value } = await reader.read();
-              
-              if (done) {
-                if (!sourceBuffer.updating) {
-                  mediaSource.endOfStream();
+            try {
+              while (true) {
+                const { done, value } = await reader.read();
+                
+                if (done) {
+                  if (!sourceBuffer.updating) {
+                    mediaSource.endOfStream();
+                  }
+                  break;
                 }
-                break;
+                
+                if (!sourceBuffer.updating && sourceBuffer.mode === 'segments') {
+                  sourceBuffer.appendBuffer(value);
+                  await new Promise(resolve => {
+                    sourceBuffer.addEventListener('updateend', resolve, { once: true });
+                  });
+                }
               }
-              
-              if (!sourceBuffer.updating) {
-                sourceBuffer.appendBuffer(value);
-                await new Promise(resolve => {
-                  sourceBuffer.addEventListener('updateend', resolve, { once: true });
-                });
-              }
+            } catch (error) {
+              console.error('Erro no pump de áudio:', error);
             }
           };
           
-          pump().catch(console.error);
+          pump();
         });
         
         audioRef.current.onended = () => {
@@ -504,7 +508,7 @@ export default function VoiceTutorTeacher() {
           }
         }
       } else {
-        console.error('❌ Erro no streaming de áudio:', response.status, response.statusText);
+        console.error('❌ Erro no WebSocket streaming:', response.status, response.statusText);
         // Fallback para síntese tradicional
         await synthesizeSpeechFallback(text, sessionInfo);
       }
