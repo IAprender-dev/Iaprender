@@ -1,17 +1,7 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryFunction } from '@tanstack/react-query';
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 type QueryFnOptions = { on401?: 'throw' | 'returnNull' };
-
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutos
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
 
 export const apiRequest = async (
   method: HttpMethod, 
@@ -26,7 +16,7 @@ export const apiRequest = async (
       ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
       ...options.headers,
     },
-    credentials: 'include', // Para enviar cookies com a requisição
+    credentials: 'include',
     ...(data && method !== 'GET' ? { body: JSON.stringify(data) } : {}),
     ...options,
   };
@@ -34,14 +24,13 @@ export const apiRequest = async (
   return fetch(url, opts);
 };
 
-export const getQueryFn = (options: QueryFnOptions = {}) => async ({ 
-  queryKey, 
-  signal 
-}: { 
-  queryKey: any[], 
-  signal?: AbortSignal 
-}) => {
+export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async (context) => {
+  const { queryKey, signal } = context;
   const [endpoint] = queryKey;
+  
+  if (typeof endpoint !== 'string') {
+    throw new Error('Query key must start with a string endpoint');
+  }
   
   try {
     const response = await apiRequest(
@@ -61,7 +50,6 @@ export const getQueryFn = (options: QueryFnOptions = {}) => async ({
     
     return response.json();
   } catch (error) {
-    // Ignorar erros de cancelamento
     if (error instanceof Error && error.name === 'AbortError') {
       console.log('Request aborted', queryKey);
       return null;
@@ -69,3 +57,14 @@ export const getQueryFn = (options: QueryFnOptions = {}) => async ({
     throw error;
   }
 };
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryFn: getQueryFn(),
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
