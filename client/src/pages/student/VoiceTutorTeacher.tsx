@@ -388,12 +388,27 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
         if (message.transcript && message.transcript.trim()) {
           setCurrentTranscript('');
           addMessage('user', message.transcript, 'audio');
+          
+          // Limpar lousa para nova pergunta
+          if (message.transcript.includes('?') || 
+              message.transcript.toLowerCase().includes('explica') ||
+              message.transcript.toLowerCase().includes('como') ||
+              message.transcript.toLowerCase().includes('que é') ||
+              message.transcript.toLowerCase().includes('outra') ||
+              message.transcript.toLowerCase().includes('nova')) {
+            setBoardContent('');
+          }
         }
         break;
 
       case 'response.audio_transcript.delta':
         if (message.delta) {
-          setCurrentTranscript(prev => prev + message.delta);
+          setCurrentTranscript(prev => {
+            const newText = prev + message.delta;
+            // Atualizar conteúdo da lousa progressivamente
+            setBoardContent(newText);
+            return newText;
+          });
         }
         break;
 
@@ -401,7 +416,14 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
         console.log('Resposta da IA:', message.transcript);
         if (message.transcript && message.transcript.trim()) {
           addMessage('assistant', message.transcript, 'audio');
+          setBoardContent(message.transcript);
           setCurrentTranscript('');
+          
+          // Detectar mudança de tópico e limpar após 5 segundos
+          const changeKeywords = ['agora vamos', 'próximo', 'próxima', 'outro tema', 'nova explicação', 'vamos falar sobre'];
+          if (changeKeywords.some(keyword => message.transcript.toLowerCase().includes(keyword))) {
+            setTimeout(() => setBoardContent(''), 5000);
+          }
         }
         break;
 
@@ -757,19 +779,29 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
                 <span className="ml-4 font-semibold">Lousa Digital - Pro Versa</span>
               </div>
 
-              {currentTopic && (
-                <Badge variant="secondary" className="bg-white/20 text-white">
-                  {currentTopic}
-                </Badge>
-              )}
-
-              <div className="flex items-center space-x-2 text-sm">
-                <div className="flex space-x-1">
-                  <Circle className="w-4 h-4" />
-                  <Square className="w-4 h-4" />
-                  <Triangle className="w-4 h-4" />
+              <div className="flex items-center space-x-4">
+                {boardContent && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBoardContent('')}
+                    className="text-white hover:bg-white/20"
+                  >
+                    🧽 Limpar Lousa
+                  </Button>
+                )}
+                
+                <div className="text-sm text-white/80">
+                  {boardContent ? `${boardContent.length} caracteres` : 'Lousa vazia'}
                 </div>
-                <span>Elementos: {blackboardElements.length}</span>
+                
+                {conversationState !== 'idle' && (
+                  <Badge variant="secondary" className="bg-white/20 text-white animate-pulse">
+                    {conversationState === 'listening' && '🎧 Escutando'}
+                    {conversationState === 'thinking' && '🤔 Processando'}
+                    {conversationState === 'speaking' && '📝 Escrevendo'}
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -787,11 +819,19 @@ Seja paciente, didática e adaptativa ao nível do aluno. Responda sempre em por
                 }}
               />
 
-              {/* Elementos da Lousa */}
-              {blackboardElements.map(element => renderBlackboardElement(element))}
-
-              {/* Estado inicial da lousa */}
-              {blackboardElements.length === 0 && (
+              {/* Conteúdo da Lousa */}
+              {boardContent || currentTranscript ? (
+                <div className="absolute inset-0 p-6 flex items-start justify-center">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl border border-white/50 shadow-xl p-8 max-w-4xl w-full max-h-full overflow-y-auto">
+                    <div className="text-slate-800 text-lg leading-relaxed font-medium whitespace-pre-wrap">
+                      {boardContent || currentTranscript}
+                      {currentTranscript && (
+                        <span className="inline-block w-2 h-6 bg-blue-500 animate-pulse ml-1"></span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : blackboardElements.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center space-y-6 max-w-2xl w-full">
                     <div className="p-8 bg-white/80 backdrop-blur-sm rounded-2xl border border-green-200 shadow-lg">
