@@ -26,7 +26,7 @@ export default function VoiceTutorTeacher() {
   const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [elevenLabsSession, setElevenLabsSession] = useState<any>(null);
-  const [useElevenLabsSpeech, setUseElevenLabsSpeech] = useState(true);
+  const [useElevenLabsSpeech, setUseElevenLabsSpeech] = useState(false);
 
   // Refs
   const recognitionRef = useRef<any>(null);
@@ -77,199 +77,50 @@ export default function VoiceTutorTeacher() {
     return educationalLines.join('\n').trim();
   };
 
-  // Função para inicializar reconhecimento de voz (ElevenLabs ou Nativo)
+  // Função para inicializar reconhecimento de voz nativo
   const initializeSpeechRecognition = useCallback(async () => {
-    if (useElevenLabsSpeech) {
-      return await initializeElevenLabsRecognition();
-    } else {
-      return initializeNativeRecognition();
-    }
-  }, [useElevenLabsSpeech]);
-
-  // Reconhecimento via ElevenLabs
-  const initializeElevenLabsRecognition = useCallback(async () => {
-    try {
-      // Verificar suporte a MediaRecorder
-      if (!MediaRecorder.isTypeSupported('audio/wav')) {
-        console.warn('WAV não suportado, usando WebM');
-      }
-
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          sampleRate: 16000,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true
-        }
-      });
-
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/wav') ? 'audio/wav' : 'audio/webm'
-      });
-
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        console.log('🎤 Gravação finalizada, enviando para transcrição...');
-        
-        const audioBlob = new Blob(audioChunksRef.current, { 
-          type: 'audio/wav' 
-        });
-        
-        audioChunksRef.current = [];
-        
-        if (audioBlob.size > 1000) { // Apenas se tiver conteúdo significativo
-          await transcribeWithElevenLabs(audioBlob);
-        }
-      };
-
-      return true;
-    } catch (error) {
-      console.error('Erro ao inicializar ElevenLabs Recognition:', error);
-      toast({
-        title: "Erro no reconhecimento ElevenLabs",
-        description: "Tentando usar reconhecimento nativo do navegador",
-        variant: "destructive",
-      });
-      setUseElevenLabsSpeech(false);
-      return initializeNativeRecognition();
-    }
-  }, []);
-
-  // Transcrição via ElevenLabs
-  const transcribeWithElevenLabs = useCallback(async (audioBlob: Blob) => {
-    try {
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.wav');
-
-      const response = await fetch('/api/elevenlabs/transcribe', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.transcript && result.transcript.trim().length > 2) {
-          console.log('🗣️ Transcrição ElevenLabs:', result.transcript);
-          processUserInput(result.transcript.trim());
-        } else {
-          console.log('Transcrição vazia, continuando a ouvir...');
-          setTimeout(() => startElevenLabsListening(), 1000);
-        }
-      } else {
-        console.error('Erro na transcrição ElevenLabs:', response.status);
-        setTimeout(() => startElevenLabsListening(), 2000);
-      }
-    } catch (error) {
-      console.error('Erro ao transcrever áudio:', error);
-      setTimeout(() => startElevenLabsListening(), 2000);
-    }
-  }, []);
-
-  // Iniciar escuta com ElevenLabs
-  const startElevenLabsListening = useCallback(() => {
-    if (!mediaRecorderRef.current || conversationState !== 'idle') {
-      return;
-    }
-
-    try {
-      setConversationState('listening');
-      isListeningRef.current = true;
-      mediaRecorderRef.current.start();
-      console.log('🎤 Iniciando gravação ElevenLabs...');
-      
-      // Parar gravação após alguns segundos para processar
-      setTimeout(() => {
-        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-          mediaRecorderRef.current.stop();
-          isListeningRef.current = false;
-        }
-      }, 3000);
-      
-    } catch (error) {
-      console.error('Erro ao iniciar gravação:', error);
-      isListeningRef.current = false;
-    }
-  }, [conversationState]);
-
-  // Reconhecimento nativo do navegador (fallback)
-  const initializeNativeRecognition = useCallback(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       console.error('Reconhecimento de voz não suportado');
+      toast({
+        title: "Navegador não suportado",
+        description: "Use Chrome, Edge ou Safari para reconhecimento de voz",
+        variant: "destructive",
+      });
       return false;
     }
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
       
-      recognition.continuous = true;
-      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.interimResults = false;
       recognition.lang = 'pt-BR';
       recognition.maxAlternatives = 1;
 
-      let silenceTimer: NodeJS.Timeout | null = null;
-
       recognition.onstart = () => {
-        console.log('🎤 Reconhecimento nativo ativo');
-        isListeningRef.current = true;
+        console.log('🎤 Reconhecimento ativo');
         setConversationState('listening');
+        isListeningRef.current = true;
       };
 
-      recognition.onresult = (event) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-          silenceTimer = null;
-        }
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript.trim();
-          
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        if (finalTranscript && finalTranscript.length > 2) {
-          console.log('🗣️ Fala reconhecida (nativo):', finalTranscript);
-          recognition.stop();
-          processUserInput(finalTranscript);
-        } else if (interimTranscript && interimTranscript.length > 2) {
-          silenceTimer = setTimeout(() => {
-            if (interimTranscript.trim().length > 2) {
-              console.log('🗣️ Fala por silêncio (nativo):', interimTranscript.trim());
-              recognition.stop();
-              processUserInput(interimTranscript.trim());
-            }
-          }, 2000);
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Erro no reconhecimento nativo:', event.error);
-        isListeningRef.current = false;
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.trim();
+        console.log('🗣️ Fala reconhecida:', transcript);
         
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-          silenceTimer = null;
+        if (transcript && transcript.length > 2) {
+          setConversationState('thinking');
+          processUserInput(transcript);
         }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Erro no reconhecimento:', event.error);
+        setConversationState('idle');
+        isListeningRef.current = false;
         
         switch (event.error) {
           case 'not-allowed':
-            setConnectionState('error');
             toast({
               title: "Permissão negada",
               description: "Permita acesso ao microfone para usar a Pro Versa",
@@ -277,63 +128,66 @@ export default function VoiceTutorTeacher() {
             });
             break;
           case 'no-speech':
-            setTimeout(() => restartRecognition(), 1000);
-            break;
-          case 'network':
-            setTimeout(() => restartRecognition(), 3000);
+            console.log('Nenhuma fala detectada, tentando novamente...');
+            setTimeout(() => startListening(), 2000);
             break;
           default:
-            setTimeout(() => restartRecognition(), 2000);
+            setTimeout(() => startListening(), 3000);
         }
       };
 
       recognition.onend = () => {
-        console.log('🔇 Reconhecimento nativo finalizado');
+        console.log('🔇 Reconhecimento finalizado');
         isListeningRef.current = false;
         
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-          silenceTimer = null;
-        }
-        
         if (isConnected && conversationState === 'listening') {
-          setTimeout(() => restartRecognition(), 500);
+          setConversationState('idle');
+          setTimeout(() => startListening(), 1000);
         }
       };
 
       recognitionRef.current = recognition;
       return true;
     } catch (error) {
-      console.error('Erro ao inicializar reconhecimento nativo:', error);
+      console.error('Erro ao inicializar reconhecimento:', error);
+      toast({
+        title: "Erro no reconhecimento",
+        description: "Falha ao inicializar sistema de voz",
+        variant: "destructive",
+      });
       return false;
     }
-  }, [isConnected, conversationState]);
+  }, [isConnected, conversationState, toast]);
 
-  // Função para reiniciar reconhecimento
-  const restartRecognition = useCallback(() => {
-    if (!isConnected || conversationState !== 'idle' || isListeningRef.current) {
+  // Função para iniciar escuta
+  const startListening = useCallback(() => {
+    if (!recognitionRef.current || !isConnected || conversationState !== 'idle' || isListeningRef.current) {
       return;
     }
 
-    if (useElevenLabsSpeech) {
-      startElevenLabsListening();
-    } else if (recognitionRef.current) {
-      try {
-        recognitionRef.current.start();
-        console.log('🔄 Reconhecimento nativo reiniciado');
-      } catch (error) {
-        const errorMessage = (error as Error).message;
-        if (!errorMessage.includes('already started')) {
-          console.error('Erro ao reiniciar reconhecimento nativo:', error);
-          setTimeout(() => restartRecognition(), 2000);
-        }
+    try {
+      recognitionRef.current.start();
+      console.log('🎤 Iniciando escuta...');
+    } catch (error) {
+      const errorMessage = (error as Error).message;
+      if (!errorMessage.includes('already started')) {
+        console.error('Erro ao iniciar reconhecimento:', error);
+        setTimeout(() => startListening(), 2000);
       }
     }
-  }, [isConnected, conversationState, useElevenLabsSpeech, startElevenLabsListening]);
+  }, [recognitionRef, isConnected, conversationState]);
+
+  // Função para reiniciar reconhecimento
+  const restartRecognition = useCallback(() => {
+    setTimeout(() => {
+      startListening();
+    }, 500);
+  }, [startListening]);
 
   // Função para processar entrada do usuário
   const processUserInput = useCallback(async (transcript: string) => {
-    if (!transcript.trim() || conversationState !== 'listening') {
+    if (!transcript.trim()) {
+      startListening();
       return;
     }
 
@@ -377,7 +231,7 @@ export default function VoiceTutorTeacher() {
           await synthesizeSpeech(tutorResponse);
         } else {
           setConversationState('idle');
-          setTimeout(() => restartRecognition(), 1000);
+          setTimeout(() => startListening(), 1000);
         }
       } else {
         throw new Error(`Erro HTTP: ${response.status}`);
@@ -391,10 +245,10 @@ export default function VoiceTutorTeacher() {
         await synthesizeSpeech(errorMessage);
       } else {
         setConversationState('idle');
-        setTimeout(() => restartRecognition(), 2000);
+        setTimeout(() => startListening(), 2000);
       }
     }
-  }, [conversationState, addMessage, messages, elevenLabsSession, restartRecognition]);
+  }, [addMessage, messages, elevenLabsSession, startListening]);
 
   // Função para sintetizar fala
   const synthesizeSpeech = useCallback(async (text: string) => {
@@ -437,13 +291,13 @@ export default function VoiceTutorTeacher() {
         audioRef.current.onended = () => {
           console.log('🎵 Áudio finalizado');
           setConversationState('idle');
-          setTimeout(() => restartRecognition(), 800);
+          setTimeout(() => startListening(), 800);
         };
         
         audioRef.current.onerror = (error) => {
           console.error('Erro na reprodução:', error);
           setConversationState('idle');
-          setTimeout(() => restartRecognition(), 1500);
+          setTimeout(() => startListening(), 1500);
         };
         
         if (!isMuted) {
@@ -451,7 +305,7 @@ export default function VoiceTutorTeacher() {
           console.log('🔊 Áudio reproduzindo');
         } else {
           setConversationState('idle');
-          setTimeout(() => restartRecognition(), 500);
+          setTimeout(() => startListening(), 500);
         }
       } else {
         throw new Error(`Erro na síntese: ${response.status}`);
@@ -459,9 +313,9 @@ export default function VoiceTutorTeacher() {
     } catch (error) {
       console.error('Erro na síntese de fala:', error);
       setConversationState('idle');
-      setTimeout(() => restartRecognition(), 1000);
+      setTimeout(() => startListening(), 1000);
     }
-  }, [elevenLabsSession, isMuted, restartRecognition]);
+  }, [elevenLabsSession, isMuted, startListening]);
 
   // Função para conectar
   const connectToElevenLabs = useCallback(async () => {
@@ -498,15 +352,22 @@ export default function VoiceTutorTeacher() {
       setConnectionState('connected');
 
       // Inicializar reconhecimento
-      if (initializeSpeechRecognition()) {
+      const speechInitialized = await initializeSpeechRecognition();
+      if (speechInitialized) {
         console.log('✅ Reconhecimento de voz inicializado');
         
         // Saudação inicial
-        const welcomeMessage = `Oi! Eu sou a Pro Versa, sua tutora virtual com tecnologia ElevenLabs ${useElevenLabsSpeech ? 'completa' : 'de síntese'}. O que gostaria de aprender hoje?`;
+        const welcomeMessage = `Oi! Eu sou a Pro Versa, sua tutora virtual. O que gostaria de aprender hoje?`;
         addMessage('assistant', welcomeMessage);
         
+        // Reproduzir saudação e iniciar reconhecimento
         setTimeout(async () => {
           await synthesizeSpeech(welcomeMessage);
+          
+          // Iniciar reconhecimento após saudação
+          setTimeout(() => {
+            startListening();
+          }, 1000);
         }, 1000);
         
         toast({
@@ -645,24 +506,15 @@ export default function VoiceTutorTeacher() {
                 )}
               </Button>
 
-              {/* Toggle tipo de reconhecimento */}
+              {/* Botão manual para escutar */}
               <Button
-                onClick={() => setUseElevenLabsSpeech(!useElevenLabsSpeech)}
+                onClick={startListening}
                 variant="outline"
                 className="w-full"
-                disabled={isConnected}
+                disabled={!isConnected || conversationState !== 'idle'}
               >
-                {useElevenLabsSpeech ? (
-                  <>
-                    <Mic className="w-4 h-4 mr-2" />
-                    ElevenLabs Speech
-                  </>
-                ) : (
-                  <>
-                    <MicOff className="w-4 h-4 mr-2" />
-                    Browser Speech
-                  </>
-                )}
+                <Mic className="w-4 h-4 mr-2" />
+                {conversationState === 'listening' ? 'Escutando...' : 'Clique para Falar'}
               </Button>
 
               {/* Status */}
