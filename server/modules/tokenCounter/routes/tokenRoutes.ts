@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { storage } from "../../storage";
+import { storage } from "../../../storage";
 
 interface TokenStatus {
   canProceed: boolean;
