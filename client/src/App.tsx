@@ -43,6 +43,7 @@ import PlanejamentoAula from "@/pages/teacher/ferramentas/PlanejamentoAula";
 import ModelosPlanejamento from "@/pages/teacher/ferramentas/ModelosPlanejamento";
 import AnaliseDocumentos from "@/pages/teacher/AnaliseDocumentos";
 import LogoShowcase from "@/pages/LogoShowcase";
+import TokenDashboard from "@/pages/TokenDashboard";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -104,6 +105,9 @@ function Router() {
       
       {/* Logo Showcase */}
       <Route path="/logo-showcase" component={LogoShowcase} />
+      
+      {/* Token Dashboard */}
+      <Route path="/tokens" component={TokenDashboard} />
       
       {/* Student routes */}
       <Route path="/student/dashboard" component={StudentDashboard} />
