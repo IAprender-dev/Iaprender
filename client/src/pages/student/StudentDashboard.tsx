@@ -636,7 +636,7 @@ export default function StudentDashboard() {
             </div>
           </main>
         </div>
-
+        
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div 
