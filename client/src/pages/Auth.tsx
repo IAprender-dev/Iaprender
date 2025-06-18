@@ -440,7 +440,7 @@ export default function Auth() {
                                   <div className="mb-3">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Fundamental I</p>
                                   </div>
-                                  <SelectItem value="1º ano" className="py-3 px-3 hover:bg-pink-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                  <SelectItem value="1º ano fundamental" className="py-3 px-3 hover:bg-pink-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
                                         🎨
@@ -448,7 +448,7 @@ export default function Auth() {
                                       <span className="font-medium text-slate-800">1º ano - Mundo das Cores</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="2º ano" className="py-3 px-3 hover:bg-green-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                  <SelectItem value="2º ano fundamental" className="py-3 px-3 hover:bg-green-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
                                         📚
@@ -456,12 +456,28 @@ export default function Auth() {
                                       <span className="font-medium text-slate-800">2º ano - Aventura das Letras</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="3º ano" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                  <SelectItem value="3º ano fundamental" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
                                         🔢
                                       </div>
                                       <span className="font-medium text-slate-800">3º ano - Universo dos Números</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="4º ano fundamental" className="py-3 px-3 hover:bg-orange-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                        🌟
+                                      </div>
+                                      <span className="font-medium text-slate-800">4º ano - Explorando Ciências</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="5º ano fundamental" className="py-3 px-3 hover:bg-cyan-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                        🌍
+                                      </div>
+                                      <span className="font-medium text-slate-800">5º ano - Descobrindo o Mundo</span>
                                     </div>
                                   </SelectItem>
                                   
@@ -497,19 +513,19 @@ export default function Auth() {
                                   <div className="mb-3 mt-4">
                                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Médio</p>
                                   </div>
-                                  <SelectItem value="1º ano" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                  <SelectItem value="1º ano médio" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-purple-500 to-purple-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">1</div>
                                       <span className="font-medium text-slate-800">1º ano (Ensino Médio)</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="2º ano" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                  <SelectItem value="2º ano médio" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg flex items-center justify-center text-white font-bold text-sm">2</div>
                                       <span className="font-medium text-slate-800">2º ano (Ensino Médio)</span>
                                     </div>
                                   </SelectItem>
-                                  <SelectItem value="3º ano" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150">
+                                  <SelectItem value="3º ano médio" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150">
                                     <div className="flex items-center space-x-3">
                                       <div className="w-7 h-7 bg-gradient-to-br from-purple-700 to-purple-900 rounded-lg flex items-center justify-center text-white font-bold text-sm">3</div>
                                       <span className="font-medium text-slate-800">3º ano (Ensino Médio)</span>
