@@ -202,9 +202,9 @@ export function DownloadsPanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-blue-200" />
-        <Button variant="outline" size="sm" className="w-full border-2 border-blue-600 text-blue-700 font-semibold hover:bg-blue-600 hover:text-white transition-all">
+        <button className="w-full h-8 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 hover:text-blue-800 text-xs font-medium rounded-md transition-all">
           Ver todos os downloads
-        </Button>
+        </button>
       </CardContent>
     </Card>
   );
@@ -305,9 +305,9 @@ export function FavoritesPanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-pink-200" />
-        <Button variant="outline" size="sm" className="w-full border-2 border-pink-600 text-pink-700 font-semibold hover:bg-pink-600 hover:text-white transition-all">
+        <button className="w-full h-8 bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 hover:text-pink-800 text-xs font-medium rounded-md transition-all">
           Gerenciar favoritos
-        </Button>
+        </button>
       </CardContent>
     </Card>
   );
@@ -385,9 +385,9 @@ export function SummariesPanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-emerald-200" />
-        <Button variant="outline" size="sm" className="w-full border-2 border-emerald-600 text-emerald-700 font-semibold hover:bg-emerald-600 hover:text-white transition-all">
+        <button className="w-full h-8 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 hover:text-emerald-800 text-xs font-medium rounded-md transition-all">
           Ver todos os resumos
-        </Button>
+        </button>
       </CardContent>
     </Card>
   );
@@ -496,9 +496,9 @@ export function StudentPerformancePanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-amber-200" />
-        <Button variant="outline" size="sm" className="w-full border-2 border-amber-600 text-amber-700 font-semibold hover:bg-amber-600 hover:text-white transition-all">
+        <button className="w-full h-8 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 hover:text-amber-800 text-xs font-medium rounded-md transition-all">
           Ver relatório completo
-        </Button>
+        </button>
       </CardContent>
     </Card>
   );

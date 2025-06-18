@@ -232,10 +232,10 @@ export function TokenUsageWidget() {
         {/* Link para dashboard completo */}
         <div className="pt-2 border-t border-violet-200">
           <Link href="/tokens">
-            <Button variant="outline" size="sm" className="w-full text-xs font-semibold border-2 border-violet-600 text-violet-700 hover:bg-violet-600 hover:text-white transition-all">
-              <Settings className="h-3 w-3 mr-1" />
+            <button className="w-full h-8 bg-violet-50 hover:bg-violet-100 border border-violet-200 text-violet-700 hover:text-violet-800 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1">
+              <Settings className="h-2.5 w-2.5" />
               Ver detalhes completos
-            </Button>
+            </button>
           </Link>
         </div>
       </CardContent>
