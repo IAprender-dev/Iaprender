@@ -149,12 +149,34 @@ export class DatabaseStorage implements IStorage, ITokenStorage {
   }
 
   async updateUser(id: number, userUpdate: Partial<User>): Promise<User | undefined> {
-    const [user] = await db
-      .update(users)
-      .set(userUpdate)
-      .where(eq(users.id, id))
-      .returning();
-    return user || undefined;
+    try {
+      console.log('Storage: Updating user with data:', { id, userUpdate });
+      
+      // Adicionar updated_at explicitamente
+      const updateData = {
+        ...userUpdate,
+        updatedAt: new Date()
+      };
+      
+      console.log('Storage: Final update data:', updateData);
+      
+      const [user] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, id))
+        .returning();
+        
+      console.log('Storage: Updated user result:', user);
+      
+      if (!user) {
+        console.warn('Storage: No user found or updated for id:', id);
+      }
+      
+      return user || undefined;
+    } catch (error) {
+      console.error('Storage: Error updating user:', error);
+      throw error;
+    }
   }
 
   async getCourse(id: number): Promise<Course | undefined> {
