@@ -202,7 +202,11 @@ export default function IAprenderLanding() {
             </div>
 
             <div className="hidden lg:flex items-center space-x-4">
-              <Button size="sm" className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25">
+              <Button 
+                size="sm" 
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
+                onClick={() => window.location.href = '/auth'}
+              >
                 Acessar IAprender
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
