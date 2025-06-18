@@ -302,7 +302,7 @@ export default function VoiceTutorTeacher() {
       ws.onopen = () => {
         console.log('✅ WebSocket conectado à OpenAI Realtime');
         
-        // Configurar sessão
+        // Configurar sessão com configurações mais robustas
         ws.send(JSON.stringify({
           type: 'session.update',
           session: {
@@ -316,12 +316,17 @@ export default function VoiceTutorTeacher() {
             },
             turn_detection: {
               type: 'server_vad',
-              threshold: 0.5,
+              threshold: 0.6,
               prefix_padding_ms: 300,
-              silence_duration_ms: 500
-            }
+              silence_duration_ms: 800
+            },
+            temperature: 0.8,
+            max_response_output_tokens: 4096
           }
         }));
+        
+        // Definir o WebSocket como conectado
+        setWsConnection(ws);
       };
 
       ws.onmessage = (event) => {
@@ -372,8 +377,13 @@ export default function VoiceTutorTeacher() {
         }
       };
 
+      // Configurar handlers de erro e fechamento fora da Promise
+      const originalOnError = ws.onerror;
+      const originalOnClose = ws.onclose;
+      
       ws.onerror = (error) => {
         console.error('❌ Erro no WebSocket:', error);
+        if (originalOnError) originalOnError.call(ws, error);
         toast({
           title: "Erro de conexão",
           description: "Falha na conexão com OpenAI Realtime",
@@ -383,23 +393,78 @@ export default function VoiceTutorTeacher() {
 
       ws.onclose = (event) => {
         console.log('🔌 WebSocket fechado:', event.code, event.reason);
+        if (originalOnClose) originalOnClose.call(ws, event);
+        
         setWsConnection(null);
         setIsConnected(false);
         setConversationState('idle');
         setConnectionState('disconnected');
         
-        // Não reconectar automaticamente
-        if (event.code !== 1000) { // 1000 = fechamento normal
+        // Códigos de erro específicos
+        let errorMessage = "WebSocket foi fechado";
+        if (event.code === 1006) {
+          errorMessage = "Conexão perdida inesperadamente";
+        } else if (event.code === 1011) {
+          errorMessage = "Erro interno do servidor";
+        } else if (event.code === 1008) {
+          errorMessage = "Política violada - verifique autenticação";
+        } else if (event.code !== 1000) {
+          errorMessage = `Erro de conexão (código: ${event.code})`;
+        }
+        
+        if (event.code !== 1000) {
           toast({
             title: "Conexão perdida",
-            description: "WebSocket foi fechado inesperadamente",
+            description: errorMessage,
             variant: "destructive",
           });
         }
       };
 
-      setWsConnection(ws);
-      return true;
+      // Aguardar conexão estabelecer
+      return new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          resolve(false);
+        }, 10000); // Timeout de 10 segundos
+
+        ws.onopen = () => {
+          clearTimeout(timeout);
+          console.log('✅ WebSocket conectado à OpenAI Realtime');
+          
+          // Configurar sessão com configurações mais robustas
+          ws.send(JSON.stringify({
+            type: 'session.update',
+            session: {
+              modalities: ['text', 'audio'],
+              instructions: 'Você é a Pro Versa, uma tutora virtual educacional brasileira. Seja amigável, educativa e responda em português. Mantenha as respostas concisas e didáticas.',
+              voice: 'alloy',
+              input_audio_format: 'pcm16',
+              output_audio_format: 'pcm16',
+              input_audio_transcription: {
+                model: 'whisper-1'
+              },
+              turn_detection: {
+                type: 'server_vad',
+                threshold: 0.6,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 800
+              },
+              temperature: 0.8,
+              max_response_output_tokens: 4096
+            }
+          }));
+          
+          // Definir o WebSocket como conectado
+          setWsConnection(ws);
+          resolve(true);
+        };
+
+        ws.onerror = (error) => {
+          clearTimeout(timeout);
+          console.error('❌ Erro no WebSocket:', error);
+          resolve(false);
+        };
+      });
 
     } catch (error) {
       console.error('Erro ao inicializar WebSocket:', error);
@@ -432,13 +497,17 @@ export default function VoiceTutorTeacher() {
         throw new Error('Falha ao conectar WebSocket');
       }
 
+      // Aguardar o WebSocket estar disponível
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Depois inicializar sistema de áudio com o WebSocket
-      const currentWs = wsConnection;
-      if (currentWs) {
-        const audioInitialized = await initializeAudioSystem(currentWs);
+      if (wsConnection) {
+        const audioInitialized = await initializeAudioSystem(wsConnection);
         if (!audioInitialized) {
           throw new Error('Falha ao inicializar sistema de áudio');
         }
+      } else {
+        throw new Error('WebSocket não disponível para inicializar áudio');
       }
 
       setIsConnected(true);
@@ -448,12 +517,16 @@ export default function VoiceTutorTeacher() {
       const welcomeMessage = 'Oi! Eu sou a Pro Versa, sua tutora virtual com OpenAI Realtime. O que gostaria de aprender hoje?';
       addMessage('assistant', welcomeMessage);
       
-      // Aguardar um momento antes de ativar escuta
+      // Aguardar estabilização da conexão
       setTimeout(() => {
-        if (isConnected) {
+        if (isConnected && wsConnection && wsConnection.readyState === WebSocket.OPEN) {
           console.log('Sistema pronto para conversação');
+          toast({
+            title: "Sistema ativo",
+            description: "Use o botão 'Clique para Falar' para interagir"
+          });
         }
-      }, 1000);
+      }, 2000);
 
       toast({
         title: "Pro Versa conectada!",
