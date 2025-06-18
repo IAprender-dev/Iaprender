@@ -523,7 +523,10 @@ export default function StudentProfile() {
                     <Input
                       id="firstName"
                       value={formData.firstName}
-                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                      onChange={(e) => {
+                        console.log('Alterando firstName:', e.target.value);
+                        setFormData(prev => ({...prev, firstName: e.target.value}));
+                      }}
                       className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
@@ -543,7 +546,10 @@ export default function StudentProfile() {
                     <Input
                       id="lastName"
                       value={formData.lastName}
-                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                      onChange={(e) => {
+                        console.log('Alterando lastName:', e.target.value);
+                        setFormData(prev => ({...prev, lastName: e.target.value}));
+                      }}
                       className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
@@ -564,7 +570,10 @@ export default function StudentProfile() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => {
+                        console.log('Alterando email:', e.target.value);
+                        setFormData(prev => ({...prev, email: e.target.value}));
+                      }}
                       className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
@@ -605,7 +614,10 @@ export default function StudentProfile() {
                   {isEditing ? (
                     <Select 
                       value={formData.schoolYear} 
-                      onValueChange={(value) => setFormData({...formData, schoolYear: value})}
+                      onValueChange={(value) => {
+                        console.log('Alterando schoolYear:', value);
+                        setFormData(prev => ({...prev, schoolYear: value}));
+                      }}
                     >
                       <SelectTrigger className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold">
                         <SelectValue placeholder="Selecione o ano escolar" />
@@ -728,7 +740,10 @@ export default function StudentProfile() {
                       id="dateOfBirth"
                       type="date"
                       value={formData.dateOfBirth}
-                      onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+                      onChange={(e) => {
+                        console.log('Alterando dateOfBirth:', e.target.value);
+                        setFormData(prev => ({...prev, dateOfBirth: e.target.value}));
+                      }}
                       className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
