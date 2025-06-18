@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -37,7 +38,10 @@ import {
   ClipboardList,
   Wand2,
   FilePlus,
-  Palette
+  Palette,
+  Zap,
+  AlertTriangle,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'wouter';
 import alverseLogo from '@/assets/aiverse-logo-new.png';
@@ -63,6 +67,22 @@ interface DashboardMetrics {
   };
 }
 
+interface TokenUsageData {
+  canProceed: boolean;
+  currentUsage: number;
+  monthlyLimit: number;
+  remainingTokens: number;
+  resetDate: string;
+  warningThreshold: boolean;
+  stats: {
+    totalUsage: number;
+    dailyUsage: number;
+    weeklyUsage: number;
+    monthlyUsage: number;
+    averageDailyUsage: number;
+  };
+}
+
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
@@ -77,6 +97,13 @@ export default function TeacherDashboard() {
     schoolYear: user?.schoolYear || '',
     specialization: (user as any)?.specialization || '',
     bio: (user as any)?.bio || ''
+  });
+
+  // Buscar dados de consumo de tokens
+  const { data: tokenData, isLoading: isTokenLoading } = useQuery<TokenUsageData>({
+    queryKey: ['/api/tokens/status'],
+    enabled: !!user,
+    refetchInterval: 30000, // Atualiza a cada 30 segundos
   });
 
   // Auto-format phone number
@@ -437,67 +464,145 @@ export default function TeacherDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-blue-100 mb-2">Planos Criados</p>
-                        <p className="text-3xl font-bold text-white mb-1">24</p>
-                        <p className="text-sm text-blue-200">Este mês</p>
+              {/* Token Usage Bar */}
+              <div className="mb-8">
+                {isTokenLoading ? (
+                  <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-slate-200 rounded-xl animate-pulse">
+                          <Zap className="h-6 w-6 text-slate-400" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-slate-200 rounded animate-pulse w-1/4"></div>
+                          <div className="h-2 bg-slate-200 rounded animate-pulse"></div>
+                          <div className="h-3 bg-slate-200 rounded animate-pulse w-1/3"></div>
+                        </div>
                       </div>
-                      <div className="p-3 bg-white/20 rounded-lg">
-                        <BookOpen className="h-6 w-6 text-white" />
+                    </CardContent>
+                  </Card>
+                ) : tokenData ? (
+                  <Card className={`border-0 shadow-lg ${
+                    tokenData.warningThreshold 
+                      ? 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200' 
+                      : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
+                  }`}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-xl ${
+                            tokenData.warningThreshold 
+                              ? 'bg-gradient-to-br from-red-500 to-orange-500' 
+                              : 'bg-gradient-to-br from-blue-500 to-indigo-500'
+                          }`}>
+                            <Zap className="h-6 w-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                              Consumo de Tokens IA
+                              {tokenData.warningThreshold && (
+                                <Badge variant="destructive" className="flex items-center gap-1">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  Limite Próximo
+                                </Badge>
+                              )}
+                            </h3>
+                            <p className="text-sm text-slate-600">
+                              Monitoramento do uso mensal de inteligência artificial
+                            </p>
+                          </div>
+                        </div>
+                        <Link href="/tokens">
+                          <Button variant="outline" className="gap-2 hover:bg-slate-100">
+                            <BarChart3 className="h-4 w-4" />
+                            Ver Detalhes
+                          </Button>
+                        </Link>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-gradient-to-br from-emerald-600 to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-emerald-100 mb-2">Alunos Ativos</p>
-                        <p className="text-3xl font-bold text-white mb-1">156</p>
-                        <p className="text-sm text-emerald-200">Online agora</p>
+                      
+                      <div className="space-y-4">
+                        {/* Progress Bar */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-slate-700">
+                              {tokenData.currentUsage.toLocaleString()} / {tokenData.monthlyLimit.toLocaleString()} tokens
+                            </span>
+                            <span className={`text-sm font-bold ${
+                              tokenData.warningThreshold ? 'text-red-600' : 'text-blue-600'
+                            }`}>
+                              {((tokenData.currentUsage / tokenData.monthlyLimit) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={(tokenData.currentUsage / tokenData.monthlyLimit) * 100} 
+                            className={`h-3 ${
+                              tokenData.warningThreshold ? 'text-red-500' : 'text-blue-500'
+                            }`}
+                          />
+                        </div>
+                        
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-600 font-medium">Tokens Restantes</p>
+                              <p className="text-lg font-bold text-slate-900">{tokenData.remainingTokens.toLocaleString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                              <Calendar className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-600 font-medium">Uso Diário</p>
+                              <p className="text-lg font-bold text-slate-900">{tokenData.stats.dailyUsage.toLocaleString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                              <BarChart3 className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-600 font-medium">Média Diária</p>
+                              <p className="text-lg font-bold text-slate-900">{tokenData.stats.averageDailyUsage.toLocaleString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
+                            <div className="p-2 bg-orange-100 rounded-lg">
+                              <Calendar className="h-4 w-4 text-orange-600" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-slate-600 font-medium">Reset em</p>
+                              <p className="text-lg font-bold text-slate-900">
+                                {Math.ceil((new Date(tokenData.resetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} dias
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="p-3 bg-white/20 rounded-lg">
-                        <Users className="h-6 w-6 text-white" />
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-slate-300 rounded-xl">
+                          <Zap className="h-6 w-6 text-slate-600" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-slate-900">Dados de Tokens Indisponíveis</h3>
+                          <p className="text-sm text-slate-600">Não foi possível carregar as informações de consumo</p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-gradient-to-br from-violet-600 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-violet-100 mb-2">Tokens Usados</p>
-                        <p className="text-3xl font-bold text-white mb-1">2,847</p>
-                        <p className="text-sm text-violet-200">Este mês</p>
-                      </div>
-                      <div className="p-3 bg-white/20 rounded-lg">
-                        <Sparkles className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card className="bg-gradient-to-br from-orange-600 to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-orange-100 mb-2">Avaliações</p>
-                        <p className="text-3xl font-bold text-white mb-1">42</p>
-                        <p className="text-sm text-orange-200">Pendentes</p>
-                      </div>
-                      <div className="p-3 bg-white/20 rounded-lg">
-                        <BarChart3 className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               {/* Quick Access Tools */}
