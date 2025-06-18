@@ -303,6 +303,20 @@ export default function StudentDashboard() {
                       </Button>
                     </Link>
                   ))}
+                  
+                  {/* Logout Button */}
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-3 text-red-600 hover:bg-red-50 hover:text-red-700 mt-4 border-t border-slate-200 pt-4"
+                    onClick={() => {
+                      logout();
+                      setLocation("/");
+                      setIsSidebarOpen(false);
+                    }}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    Sair
+                  </Button>
                 </nav>
               </ScrollArea>
 
@@ -311,7 +325,10 @@ export default function StudentDashboard() {
                 <Button
                   variant="ghost"
                   className="w-full justify-start gap-3 text-slate-700 hover:bg-red-50 hover:text-red-700"
-                  onClick={handleLogout}
+                  onClick={() => {
+                    logout();
+                    setLocation("/");
+                  }}
                 >
                   <LogOut className="h-5 w-5" />
                   Sair
