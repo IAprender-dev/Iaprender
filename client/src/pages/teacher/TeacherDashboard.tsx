@@ -49,6 +49,8 @@ import { Separator } from "@/components/ui/separator";
 import { TokenUsageWidget } from "@/components/tokens/TokenUsageWidget";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { MiniAreaChart, MiniBarChart } from "@/components/dashboard/MiniChart";
+import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
+import { DownloadsPanel, FavoritesPanel } from "@/components/dashboard/InteractiveElements";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
 import alverseLogo from "@assets/iaprender-logo.png";
 
@@ -112,27 +114,12 @@ export default function TeacherDashboard() {
 
         {/* Main Dashboard Content */}
         <main className="p-4 space-y-6">
-          {/* Welcome Section */}
-          <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-3xl"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-bold mb-2">
-                    {getGreeting()}, {user?.firstName}!
-                  </h2>
-                  <p className="text-blue-100 text-base md:text-lg">
-                    Transforme sua educação com o poder da Inteligência Artificial
-                  </p>
-                </div>
-                <div className="hidden md:block">
-                  <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <GraduationCap className="h-12 w-12 lg:h-16 lg:w-16 text-white/80" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Welcome Section - Nova Central Tecnológica */}
+          <WelcomeCard
+            downloads={15}
+            favorites={12}
+            onlineStudents={28}
+          />
 
           {/* Seção de Métricas e Tokens */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -223,6 +210,12 @@ export default function TeacherDashboard() {
                 ) : undefined}
               />
             </div>
+          </div>
+
+          {/* Seção Interativa - Downloads e Favoritos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <DownloadsPanel />
+            <FavoritesPanel />
           </div>
 
           {/* Ferramentas de IA */}

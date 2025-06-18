@@ -1110,6 +1110,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get notifications for user
+  app.get("/api/notifications", authenticate, async (req, res) => {
+    try {
+      const userId = req.session.user.id;
+      
+      // Mock notifications - replace with real database calls when implemented
+      const notifications = [
+        {
+          id: 1,
+          title: "Nova Atualização do Sistema",
+          message: "O sistema de IA foi atualizado com novas funcionalidades",
+          type: "info",
+          read: false,
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 2,
+          title: "Plano de Aula Aprovado",
+          message: "Seu plano de aula de Matemática foi aprovado pela coordenação",
+          type: "success",
+          read: false,
+          createdAt: new Date(Date.now() - 3600000).toISOString()
+        },
+        {
+          id: 3,
+          title: "Lembrrete: Reunião Pedagógica",
+          message: "Reunião pedagógica hoje às 15h na sala de professores",
+          type: "warning",
+          read: true,
+          createdAt: new Date(Date.now() - 7200000).toISOString()
+        }
+      ];
+      
+      return res.status(200).json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
   // Get recent AI usage for teacher
   app.get("/api/dashboard/recent-ai-usage", authenticate, async (req, res) => {
     try {
