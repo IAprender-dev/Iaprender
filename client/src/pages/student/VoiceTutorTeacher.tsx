@@ -387,13 +387,13 @@ export default function VoiceTutorTeacher() {
     if (conversationState === 'listening') {
       return (
         <div className="relative">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-lg">
-            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
-              <BookOpen className="h-12 w-12 text-white" />
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+              <BookOpen className="h-6 w-6 text-white" />
             </div>
           </div>
-          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-pulse">
-            <Mic className="h-4 w-4 text-white" />
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-pulse">
+            <Mic className="h-2 w-2 text-white" />
           </div>
         </div>
       );
@@ -402,13 +402,13 @@ export default function VoiceTutorTeacher() {
     if (conversationState === 'thinking') {
       return (
         <div className="relative">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
-            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
-              <Brain className="h-12 w-12 text-white animate-pulse" />
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+              <Brain className="h-6 w-6 text-white animate-pulse" />
             </div>
           </div>
-          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center shadow-lg">
-            <div className="w-2 h-2 rounded-full bg-white animate-bounce" />
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-orange-500 flex items-center justify-center shadow-lg">
+            <div className="w-1 h-1 rounded-full bg-white animate-bounce" />
           </div>
         </div>
       );
@@ -417,22 +417,22 @@ export default function VoiceTutorTeacher() {
     if (conversationState === 'speaking') {
       return (
         <div className="relative">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg">
-            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
-              <Volume2 className="h-12 w-12 text-white animate-pulse" />
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+              <Volume2 className="h-6 w-6 text-white animate-pulse" />
             </div>
           </div>
-          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center shadow-lg">
-            <Star className="h-4 w-4 text-white animate-spin" />
+          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center shadow-lg">
+            <Star className="h-2 w-2 text-white animate-spin" />
           </div>
         </div>
       );
     }
     
     return (
-      <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-lg">
-        <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
-          <Heart className="h-12 w-12 text-white" />
+      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-lg">
+        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+          <Heart className="h-6 w-6 text-white" />
         </div>
       </div>
     );
@@ -475,129 +475,126 @@ export default function VoiceTutorTeacher() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Teacher Avatar & Status */}
-          <div className="lg:col-span-1">
-            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-xl">
-              <CardContent className="p-8 text-center">
-                <div className="mb-6 flex justify-center">
-                  {getTeacherAvatar()}
-                </div>
-                
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                  Pro Versa
-                </h2>
-                <p className="text-gray-600 mb-6">
-                  {!isConnected && "Clique em conectar para começar a conversa"}
-                  {isConnected && conversationState === 'listening' && "Estou ouvindo você..."}
-                  {isConnected && conversationState === 'thinking' && "Pensando na melhor explicação..."}
-                  {isConnected && conversationState === 'speaking' && "Explicando o conteúdo..."}
-                  {isConnected && conversationState === 'idle' && "Pronta para ensinar!"}
-                </p>
-                
-                {!isConnected ? (
-                  <Button 
-                    onClick={connectToRealtime}
-                    disabled={connectionState === 'connecting'}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg"
-                    size="lg"
-                  >
-                    {connectionState === 'connecting' ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        Conectando...
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="h-5 w-5 mr-2" />
-                        Conectar com Pro Versa
-                      </>
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Control Panel - Compact */}
+          <div className="lg:col-span-3">
+            <Card className="bg-white/90 backdrop-blur-sm border-white/30 shadow-lg">
+              <CardContent className="p-4">
+                {/* Teacher Status */}
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex-shrink-0">
+                    {getTeacherAvatar()}
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold text-gray-800">Pro Versa</h2>
+                    <p className="text-sm text-gray-600">
+                      {!isConnected && "Pronta para começar"}
+                      {isConnected && conversationState === 'listening' && "🎧 Escutando..."}
+                      {isConnected && conversationState === 'thinking' && "🤔 Pensando..."}
+                      {isConnected && conversationState === 'speaking' && "🗣️ Falando..."}
+                      {isConnected && conversationState === 'idle' && "😊 Pronta!"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isConnected && (
+                      <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+                        Online
+                      </Badge>
                     )}
-                  </Button>
-                ) : (
-                  <div className="space-y-3">
-                    <Button
-                      onClick={toggleMute}
-                      variant={isMuted ? "destructive" : "secondary"}
-                      className="w-full"
-                      size="lg"
+                  </div>
+                </div>
+
+                {/* Controls */}
+                <div className="flex gap-2">
+                  {!isConnected ? (
+                    <Button 
+                      onClick={connectToRealtime}
+                      disabled={connectionState === 'connecting'}
+                      className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white"
                     >
-                      {isMuted ? (
+                      {connectionState === 'connecting' ? (
                         <>
-                          <MicOff className="h-5 w-5 mr-2" />
-                          Ativar Microfone
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                          Conectando...
                         </>
                       ) : (
                         <>
-                          <Mic className="h-5 w-5 mr-2" />
-                          Silenciar
+                          <Mic className="h-4 w-4 mr-2" />
+                          Conectar
                         </>
                       )}
                     </Button>
-                    
-                    <Button
-                      onClick={disconnect}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Finalizar Aula
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Quick Tips */}
-            <Card className="mt-6 bg-white/50 backdrop-blur-sm border-white/20">
-              <CardContent className="p-6">
-                <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
-                  <Star className="h-4 w-4 mr-2 text-yellow-500" />
-                  Dicas para Aprender
-                </h3>
-                <div className="space-y-3 text-sm text-gray-600">
-                  <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-indigo-400 mt-2" />
-                    <p>Fale claramente e em português</p>
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-pink-400 mt-2" />
-                    <p>Pergunte sobre qualquer matéria</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-400 mt-2" />
-                    <p>Não tenha medo de errar!</p>
-                  </div>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={toggleMute}
+                        variant={isMuted ? "destructive" : "secondary"}
+                        className="flex-1"
+                      >
+                        {isMuted ? (
+                          <>
+                            <MicOff className="h-4 w-4 mr-2" />
+                            Ativar Mic
+                          </>
+                        ) : (
+                          <>
+                            <Mic className="h-4 w-4 mr-2" />
+                            Silenciar
+                          </>
+                        )}
+                      </Button>
+                      
+                      <Button
+                        onClick={disconnect}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        Finalizar
+                      </Button>
+                    </>
+                  )}
                 </div>
+
+                {/* Tips - Collapsible */}
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+                    💡 Dicas de Uso
+                  </summary>
+                  <div className="mt-2 space-y-1 text-xs text-gray-600">
+                    <p>• Fale claramente em português</p>
+                    <p>• Pergunte sobre qualquer matéria</p>
+                    <p>• A lousa mostrará conceitos importantes</p>
+                  </div>
+                </details>
               </CardContent>
             </Card>
           </div>
 
-          {/* Green Chalkboard */}
-          <div className="lg:col-span-1">
-            <Card className="h-[700px] bg-gradient-to-br from-green-800 to-green-900 border-green-700 shadow-xl">
-              <CardContent className="p-6 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Presentation className="h-5 w-5 text-green-100" />
-                    <h3 className="font-semibold text-green-100">Lousa Digital</h3>
+          {/* Green Chalkboard - Maximum Size */}
+          <div className="lg:col-span-7">
+            <Card className="h-[calc(100vh-200px)] min-h-[600px] bg-gradient-to-br from-green-800 to-green-900 border-green-700 shadow-2xl">
+              <CardContent className="p-4 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3 pb-3 border-b border-green-600/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center">
+                      <Presentation className="h-5 w-5 text-green-100" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-green-100 text-lg">Lousa Digital</h3>
+                      <p className="text-green-300 text-xs">Conceitos importantes da aula</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => setShowChalkboard(!showChalkboard)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-green-100 hover:bg-green-700/50"
-                    >
-                      {showChalkboard ? 'Ocultar' : 'Mostrar'}
-                    </Button>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className="text-green-200 border-green-400 bg-green-800/50">
+                      {chalkboardContent.length} itens
+                    </Badge>
                     {chalkboardContent.length > 0 && (
                       <Button
                         onClick={clearChalkboard}
                         variant="ghost"
                         size="sm"
-                        className="text-green-100 hover:bg-green-700/50"
+                        className="text-green-200 hover:bg-green-700/50 h-7 px-2"
                       >
                         Limpar
                       </Button>
@@ -605,66 +602,84 @@ export default function VoiceTutorTeacher() {
                   </div>
                 </div>
                 
-                {showChalkboard && (
-                  <ScrollArea className="flex-1 pr-4">
-                    <div className="space-y-4">
-                      {chalkboardContent.length === 0 ? (
-                        <div className="text-center py-16">
-                          <div className="w-16 h-16 rounded-full bg-green-700/50 flex items-center justify-center mx-auto mb-4">
-                            <Presentation className="h-8 w-8 text-green-200" />
-                          </div>
-                          <h4 className="font-medium text-green-100 mb-2">Lousa Pronta</h4>
-                          <p className="text-green-200 text-sm">
-                            A Pro Versa vai apresentar conceitos importantes aqui durante a aula
-                          </p>
+                <ScrollArea className="flex-1 pr-2">
+                  <div className="space-y-3">
+                    {chalkboardContent.length === 0 ? (
+                      <div className="text-center py-20">
+                        <div className="w-20 h-20 rounded-full bg-green-700/30 flex items-center justify-center mx-auto mb-6 border-2 border-dashed border-green-500/50">
+                          <Presentation className="h-10 w-10 text-green-200" />
                         </div>
-                      ) : (
-                        chalkboardContent.map((item) => (
-                          <div
-                            key={item.id}
-                            className={`p-4 rounded-lg border-2 border-dashed ${getChalkboardColor(item.type)} bg-opacity-90`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <h4 className="font-bold text-green-100 mb-3 text-xl">Lousa Pronta para Ensinar</h4>
+                        <p className="text-green-300 text-sm max-w-md mx-auto leading-relaxed">
+                          Conceitos, fórmulas, exemplos e pontos importantes aparecerão aqui durante a conversa com a Pro Versa
+                        </p>
+                        <div className="mt-6 flex justify-center gap-4 text-green-400">
+                          <div className="flex items-center gap-2 text-xs">
+                            <Lightbulb className="h-4 w-4" />
+                            <span>Exemplos</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <Target className="h-4 w-4" />
+                            <span>Fórmulas</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs">
+                            <Star className="h-4 w-4" />
+                            <span>Importantes</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      chalkboardContent.map((item, index) => (
+                        <div
+                          key={item.id}
+                          className="relative group"
+                        >
+                          {/* Chalk-like border effect */}
+                          <div className="absolute inset-0 bg-green-600/20 rounded-xl transform rotate-1 group-hover:rotate-0 transition-transform duration-300"></div>
+                          <div className="relative bg-green-700/40 border-2 border-green-500/50 rounded-xl p-5 backdrop-blur-sm hover:bg-green-700/50 transition-all duration-300">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-green-600/50 flex items-center justify-center border border-green-400/50">
                                 {getChalkboardIcon(item.type)}
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-semibold text-gray-800 mb-1 flex items-center gap-2">
-                                  {item.title}
-                                  <Badge variant="outline" className="text-xs">
-                                    {item.type}
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h4 className="font-bold text-green-100 text-lg">{item.title}</h4>
+                                  <Badge variant="outline" className="text-xs bg-green-800/50 text-green-200 border-green-400/50">
+                                    {item.type === 'example' && '💡 Exemplo'}
+                                    {item.type === 'formula' && '🧮 Fórmula'}
+                                    {item.type === 'concept' && '📚 Conceito'}
+                                    {item.type === 'important' && '⭐ Importante'}
+                                    {item.type === 'mindmap' && '🗺️ Mapa Mental'}
+                                    {item.type === 'summary' && '📝 Resumo'}
                                   </Badge>
-                                </h4>
-                                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                                  {item.content}
-                                </p>
-                                <p className="text-xs text-gray-500 mt-2">
-                                  {formatTime(item.timestamp)}
-                                </p>
+                                </div>
+                                <div className="bg-green-900/50 rounded-lg p-4 border border-green-600/30">
+                                  <p className="text-green-100 leading-relaxed whitespace-pre-wrap font-medium">
+                                    {item.content}
+                                  </p>
+                                </div>
+                                {item.subject && (
+                                  <div className="mt-2 flex items-center gap-2">
+                                    <BookOpen className="h-3 w-3 text-green-400" />
+                                    <span className="text-xs text-green-300">{item.subject}</span>
+                                    <span className="text-xs text-green-400">• {formatTime(item.timestamp)}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
-                        ))
-                      )}
-                    </div>
-                  </ScrollArea>
-                )}
-                
-                {!showChalkboard && (
-                  <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                      <Presentation className="h-12 w-12 text-green-400 mx-auto mb-3" />
-                      <p className="text-green-200 text-sm">Lousa oculta</p>
-                    </div>
+                        </div>
+                      ))
+                    )}
                   </div>
-                )}
+                </ScrollArea>
               </CardContent>
             </Card>
           </div>
 
-          {/* Conversation */}
+          {/* Conversation - Compact */}
           <div className="lg:col-span-2">
-            <Card className="h-[700px] bg-white/70 backdrop-blur-sm border-white/20 shadow-xl">
+            <Card className="h-[calc(100vh-200px)] min-h-[600px] bg-white/90 backdrop-blur-sm border-white/30 shadow-lg">
               <CardContent className="p-6 h-full flex flex-col">
                 <div className="flex items-center gap-2 mb-4">
                   <BookOpen className="h-5 w-5 text-indigo-600" />
