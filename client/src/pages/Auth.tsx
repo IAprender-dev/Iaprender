@@ -13,7 +13,7 @@ import { ArrowLeft, Sparkles, BookOpen, Users, Brain, ChevronDown, User, Graduat
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262542315.png";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
