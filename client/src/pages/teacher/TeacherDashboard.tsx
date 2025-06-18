@@ -47,19 +47,30 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { TokenUsageWidget } from "@/components/tokens/TokenUsageWidget";
+import { MetricCard } from "@/components/dashboard/MetricCard";
+import { MiniAreaChart, MiniBarChart } from "@/components/dashboard/MiniChart";
+import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
 import alverseLogo from "@assets/iaprender-logo.png";
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
 
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, []);
 
-  // Get current date
+  // Get current date and time-based greeting
   const currentDate = new Date();
+  const currentHour = currentDate.getHours();
+  const getGreeting = () => {
+    if (currentHour < 12) return "Bom dia";
+    if (currentHour < 18) return "Boa tarde";
+    return "Boa noite";
+  };
+
   const formattedDate = currentDate.toLocaleDateString('pt-BR', {
     weekday: 'long',
     year: 'numeric',
@@ -102,69 +113,115 @@ export default function TeacherDashboard() {
         {/* Main Dashboard Content */}
         <main className="p-4 space-y-6">
           {/* Welcome Section */}
-          <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-3xl p-8 text-white relative overflow-hidden">
+          <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-3xl p-6 md:p-8 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-3xl"></div>
             <div className="relative z-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-3xl font-bold mb-2">Olá, {user?.firstName}! 👋</h2>
-                  <p className="text-blue-100 text-lg">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-2">
+                    {getGreeting()}, {user?.firstName}!
+                  </h2>
+                  <p className="text-blue-100 text-base md:text-lg">
                     Transforme sua educação com o poder da Inteligência Artificial
                   </p>
                 </div>
                 <div className="hidden md:block">
-                  <div className="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <GraduationCap className="h-16 w-16 text-white/80" />
+                  <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <GraduationCap className="h-12 w-12 lg:h-16 lg:w-16 text-white/80" />
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Seção de Status e Tokens */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Seção de Métricas e Tokens */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
             {/* Widget de Tokens - Posição destacada */}
             <div className="lg:col-span-1">
               <TokenUsageWidget />
             </div>
             
-            {/* Cards de Status Rápido */}
-            <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="border-0 bg-gradient-to-br from-emerald-50 to-green-50">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-emerald-600 font-medium">Atividades Criadas</p>
-                      <p className="text-2xl font-bold text-emerald-900">12</p>
-                    </div>
-                    <CheckSquare className="h-8 w-8 text-emerald-500" />
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Cards de Métricas com Gráficos */}
+            <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MetricCard
+                title="Atividades Criadas"
+                value={metricsLoading ? "..." : metrics?.activitiesCreated || 0}
+                icon={<CheckSquare className="h-5 w-5 text-white" />}
+                gradient="bg-gradient-to-br from-emerald-50 to-green-50"
+                iconColor="bg-gradient-to-br from-emerald-500 to-green-500"
+                textColor="text-emerald-900"
+                trend={{
+                  value: metrics?.weeklyTrend.activities || 0,
+                  isPositive: (metrics?.weeklyTrend.activities || 0) >= 0,
+                  period: "esta semana"
+                }}
+                chart={metrics?.chartData.activities ? (
+                  <MiniBarChart 
+                    data={metrics.chartData.activities} 
+                    color="#10b981" 
+                  />
+                ) : undefined}
+              />
               
-              <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-blue-600 font-medium">Planos de Aula</p>
-                      <p className="text-2xl font-bold text-blue-900">8</p>
-                    </div>
-                    <CalendarCheck2 className="h-8 w-8 text-blue-500" />
-                  </div>
-                </CardContent>
-              </Card>
+              <MetricCard
+                title="Planos de Aula"
+                value={metricsLoading ? "..." : metrics?.lessonPlans || 0}
+                icon={<CalendarCheck2 className="h-5 w-5 text-white" />}
+                gradient="bg-gradient-to-br from-blue-50 to-indigo-50"
+                iconColor="bg-gradient-to-br from-blue-500 to-indigo-500"
+                textColor="text-blue-900"
+                trend={{
+                  value: metrics?.weeklyTrend.lessonPlans || 0,
+                  isPositive: (metrics?.weeklyTrend.lessonPlans || 0) >= 0,
+                  period: "esta semana"
+                }}
+                chart={metrics?.chartData.lessonPlans ? (
+                  <MiniAreaChart 
+                    data={metrics.chartData.lessonPlans} 
+                    color="#3b82f6" 
+                  />
+                ) : undefined}
+              />
               
-              <Card className="border-0 bg-gradient-to-br from-violet-50 to-purple-50">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-violet-600 font-medium">Imagens Geradas</p>
-                      <p className="text-2xl font-bold text-violet-900">25</p>
-                    </div>
-                    <ImageIcon className="h-8 w-8 text-violet-500" />
-                  </div>
-                </CardContent>
-              </Card>
+              <MetricCard
+                title="Imagens Geradas"
+                value={metricsLoading ? "..." : metrics?.imagesGenerated || 0}
+                icon={<ImageIcon className="h-5 w-5 text-white" />}
+                gradient="bg-gradient-to-br from-violet-50 to-purple-50"
+                iconColor="bg-gradient-to-br from-violet-500 to-purple-500"
+                textColor="text-violet-900"
+                trend={{
+                  value: metrics?.weeklyTrend.images || 0,
+                  isPositive: (metrics?.weeklyTrend.images || 0) >= 0,
+                  period: "esta semana"
+                }}
+                chart={metrics?.chartData.images ? (
+                  <MiniBarChart 
+                    data={metrics.chartData.images} 
+                    color="#8b5cf6" 
+                  />
+                ) : undefined}
+              />
+              
+              <MetricCard
+                title="Documentos Analisados"
+                value={metricsLoading ? "..." : metrics?.documentsAnalyzed || 0}
+                icon={<FileText className="h-5 w-5 text-white" />}
+                gradient="bg-gradient-to-br from-orange-50 to-amber-50"
+                iconColor="bg-gradient-to-br from-orange-500 to-amber-500"
+                textColor="text-orange-900"
+                trend={{
+                  value: metrics?.weeklyTrend.documents || 0,
+                  isPositive: (metrics?.weeklyTrend.documents || 0) >= 0,
+                  period: "esta semana"
+                }}
+                chart={metrics?.chartData.documents ? (
+                  <MiniAreaChart 
+                    data={metrics.chartData.documents} 
+                    color="#f59e0b" 
+                  />
+                ) : undefined}
+              />
             </div>
           </div>
 
