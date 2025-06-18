@@ -764,7 +764,10 @@ export default function StudentProfile() {
                   <Input
                     id="address"
                     value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    onChange={(e) => {
+                      console.log('Alterando address:', e.target.value);
+                      setFormData(prev => ({...prev, address: e.target.value}));
+                    }}
                     className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     placeholder="Rua, número, bairro, cidade"
                   />

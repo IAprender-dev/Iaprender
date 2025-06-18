@@ -150,31 +150,61 @@ export class DatabaseStorage implements IStorage, ITokenStorage {
 
   async updateUser(id: number, userUpdate: Partial<User>): Promise<User | undefined> {
     try {
-      console.log('Storage: Updating user with data:', { id, userUpdate });
+      console.log('Storage: Chamando função do banco para atualizar usuário:', { id, userUpdate });
       
-      // Adicionar updated_at explicitamente
-      const updateData = {
-        ...userUpdate,
-        updatedAt: new Date()
-      };
+      // Usar função específica do banco de dados
+      const result = await pool.query(`
+        SELECT * FROM update_user_profile(
+          $1, $2, $3, $4, $5, $6, $7, $8
+        )
+      `, [
+        id,
+        userUpdate.firstName || null,
+        userUpdate.lastName || null,
+        userUpdate.email || null,
+        userUpdate.phone || null,
+        userUpdate.address || null,
+        userUpdate.schoolYear || null,
+        userUpdate.dateOfBirth || null
+      ]);
       
-      console.log('Storage: Final update data:', updateData);
+      const updatedUser = result.rows[0];
+      console.log('Storage: Resultado da função do banco:', updatedUser);
       
-      const [user] = await db
-        .update(users)
-        .set(updateData)
-        .where(eq(users.id, id))
-        .returning();
-        
-      console.log('Storage: Updated user result:', user);
-      
-      if (!user) {
-        console.warn('Storage: No user found or updated for id:', id);
+      if (!updatedUser) {
+        console.warn('Storage: Nenhum usuário retornado pela função do banco');
+        return undefined;
       }
       
-      return user || undefined;
+      // Converter snake_case para camelCase para compatibilidade
+      const formattedUser = {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        firstName: updatedUser.first_name,
+        lastName: updatedUser.last_name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        address: updatedUser.address,
+        schoolYear: updatedUser.school_year,
+        dateOfBirth: updatedUser.date_of_birth,
+        updatedAt: updatedUser.updated_at,
+        createdAt: updatedUser.created_at,
+        // Campos que não estão sendo atualizados mas são necessários
+        role: 'student', // Será mantido do registro existente
+        status: 'active',
+        firstLogin: true,
+        forcePasswordChange: false,
+        profileImage: null,
+        contractId: null,
+        lastLoginAt: null,
+        password: '' // Não retornamos a senha por segurança
+      };
+      
+      console.log('Storage: Usuário formatado para retorno:', formattedUser);
+      return formattedUser as User;
+      
     } catch (error) {
-      console.error('Storage: Error updating user:', error);
+      console.error('Storage: Erro ao atualizar usuário via função do banco:', error);
       throw error;
     }
   }
