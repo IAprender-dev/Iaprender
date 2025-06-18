@@ -50,7 +50,7 @@ import { TokenUsageWidget } from "@/components/tokens/TokenUsageWidget";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { MiniAreaChart, MiniBarChart } from "@/components/dashboard/MiniChart";
 import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
-import { DownloadsPanel, FavoritesPanel } from "@/components/dashboard/InteractiveElements";
+import { DownloadsPanel, FavoritesPanel, SummariesPanel, StudentPerformancePanel } from "@/components/dashboard/InteractiveElements";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
 import alverseLogo from "@assets/iaprender-logo.png";
 
@@ -212,10 +212,12 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* Seção Interativa - Downloads e Favoritos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Seção Interativa - Painéis de Dados */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
             <DownloadsPanel />
             <FavoritesPanel />
+            <SummariesPanel />
+            <StudentPerformancePanel />
           </div>
 
           {/* Ferramentas de IA */}
