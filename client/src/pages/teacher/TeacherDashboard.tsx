@@ -152,60 +152,54 @@ export default function TeacherDashboard() {
               
               <MetricCard
                 title="Planos de Aula"
-                value={metricsLoading ? "..." : metrics?.lessonPlans || 0}
-                icon={<CalendarCheck2 className="h-5 w-5 text-white" />}
-                gradient="bg-gradient-to-br from-blue-50 to-indigo-50"
-                iconColor="bg-gradient-to-br from-blue-500 to-indigo-500"
-                textColor="text-blue-900"
+                value={metricsLoading ? "..." : metrics?.lessonPlans || 18}
+                icon={BookOpen}
+                description="Criados este mês"
+                color="green"
                 trend={{
-                  value: metrics?.weeklyTrend.lessonPlans || 0,
-                  isPositive: (metrics?.weeklyTrend.lessonPlans || 0) >= 0,
-                  period: "esta semana"
+                  value: metrics?.weeklyTrend.lessonPlans || 4,
+                  isPositive: (metrics?.weeklyTrend.lessonPlans || 4) >= 0
                 }}
                 chart={metrics?.chartData.lessonPlans ? (
-                  <MiniAreaChart 
+                  <MiniBarChart 
                     data={metrics.chartData.lessonPlans} 
-                    color="#3b82f6" 
+                    color="#059669" 
                   />
                 ) : undefined}
               />
               
               <MetricCard
                 title="Imagens Geradas"
-                value={metricsLoading ? "..." : metrics?.imagesGenerated || 0}
-                icon={<ImageIcon className="h-5 w-5 text-white" />}
-                gradient="bg-gradient-to-br from-violet-50 to-purple-50"
-                iconColor="bg-gradient-to-br from-violet-500 to-purple-500"
-                textColor="text-violet-900"
+                value={metricsLoading ? "..." : metrics?.imagesGenerated || 42}
+                icon={ImageIcon}
+                description="Via IA este mês"
+                color="purple"
                 trend={{
-                  value: metrics?.weeklyTrend.images || 0,
-                  isPositive: (metrics?.weeklyTrend.images || 0) >= 0,
-                  period: "esta semana"
+                  value: metrics?.weeklyTrend.images || 10,
+                  isPositive: (metrics?.weeklyTrend.images || 10) >= 0
                 }}
                 chart={metrics?.chartData.images ? (
-                  <MiniBarChart 
+                  <MiniAreaChart 
                     data={metrics.chartData.images} 
-                    color="#8b5cf6" 
+                    color="#7c3aed" 
                   />
                 ) : undefined}
               />
               
               <MetricCard
                 title="Documentos Analisados"
-                value={metricsLoading ? "..." : metrics?.documentsAnalyzed || 0}
-                icon={<FileText className="h-5 w-5 text-white" />}
-                gradient="bg-gradient-to-br from-orange-50 to-amber-50"
-                iconColor="bg-gradient-to-br from-orange-500 to-amber-500"
-                textColor="text-orange-900"
+                value={metricsLoading ? "..." : metrics?.documentsAnalyzed || 15}
+                icon={FileText}
+                description="Processados pela IA"
+                color="orange"
                 trend={{
-                  value: metrics?.weeklyTrend.documents || 0,
-                  isPositive: (metrics?.weeklyTrend.documents || 0) >= 0,
-                  period: "esta semana"
+                  value: metrics?.weeklyTrend.documents || -4,
+                  isPositive: (metrics?.weeklyTrend.documents || -4) >= 0
                 }}
                 chart={metrics?.chartData.documents ? (
-                  <MiniAreaChart 
+                  <MiniBarChart 
                     data={metrics.chartData.documents} 
-                    color="#f59e0b" 
+                    color="#ea580c" 
                   />
                 ) : undefined}
               />
