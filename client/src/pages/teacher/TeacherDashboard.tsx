@@ -67,7 +67,6 @@ export default function TeacherDashboard() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [activeForm, setActiveForm] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -78,30 +77,6 @@ export default function TeacherDashboard() {
     schoolYear: user?.schoolYear || '',
     specialization: (user as any)?.specialization || '',
     bio: (user as any)?.bio || ''
-  });
-  const [lessonPlanData, setLessonPlanData] = useState({
-    title: '',
-    subject: '',
-    grade: '',
-    duration: '',
-    objectives: '',
-    content: '',
-    activities: '',
-    evaluation: ''
-  });
-  const [activityData, setActivityData] = useState({
-    title: '',
-    subject: '',
-    type: '',
-    difficulty: '',
-    instructions: '',
-    questions: ''
-  });
-  const [documentData, setDocumentData] = useState({
-    title: '',
-    type: '',
-    content: '',
-    keywords: ''
   });
 
   // Auto-format phone number
@@ -526,12 +501,9 @@ export default function TeacherDashboard() {
               </div>
 
               {/* Quick Access Tools */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div>
-                  <Card 
-                    className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 to-purple-700 text-white"
-                    onClick={() => setActiveForm(activeForm === 'central-ia' ? null : 'central-ia')}
-                  >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <Link href="/central-ia">
+                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-white/20 rounded-lg">
@@ -545,51 +517,15 @@ export default function TeacherDashboard() {
                       <h3 className="font-semibold text-lg text-white mb-2">Central de IAs</h3>
                       <p className="text-sm text-white/80">ChatGPT, Claude e Gemini em um só lugar</p>
                       <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">
-                          {activeForm === 'central-ia' ? 'Fechar' : 'Configurar'}
-                        </span>
-                        <ArrowRight className={`h-4 w-4 ml-1 transition-transform ${activeForm === 'central-ia' ? 'rotate-90' : ''}`} />
+                        <span className="text-sm font-medium">Acessar</span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </CardContent>
                   </Card>
-                  
-                  {activeForm === 'central-ia' && (
-                    <Card className="mt-4 bg-white border border-slate-200 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="text-lg text-slate-900">Configuração da Central de IAs</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <Label className="text-sm font-medium text-slate-700">Modelo Preferido</Label>
-                          <select className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option>ChatGPT-4</option>
-                            <option>Claude 3.5</option>
-                            <option>Gemini Pro</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-slate-700">Contexto Educacional</Label>
-                          <textarea 
-                            placeholder="Ex: Ensino Fundamental, 3º ano, foco em matemática básica..."
-                            className="mt-1 w-full p-2 min-h-[80px] border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                          />
-                        </div>
-                        <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
-                          <Link href="/central-ia" className="flex items-center gap-2">
-                            <Bot className="h-4 w-4" />
-                            Acessar Central de IAs
-                          </Link>
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+                </Link>
 
-                <div>
-                  <Card 
-                    className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 to-teal-700 text-white"
-                    onClick={() => setActiveForm(activeForm === 'activity' ? null : 'activity')}
-                  >
+                <Link href="/teacher/activities">
+                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-white/20 rounded-lg">
@@ -600,99 +536,15 @@ export default function TeacherDashboard() {
                       <h3 className="font-semibold text-lg text-white mb-2">Gerador de Atividades</h3>
                       <p className="text-sm text-white/80">Criação automática de exercícios</p>
                       <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">
-                          {activeForm === 'activity' ? 'Fechar' : 'Criar'}
-                        </span>
-                        <ArrowRight className={`h-4 w-4 ml-1 transition-transform ${activeForm === 'activity' ? 'rotate-90' : ''}`} />
+                        <span className="text-sm font-medium">Acessar</span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </CardContent>
                   </Card>
+                </Link>
 
-                  {activeForm === 'activity' && (
-                    <Card className="mt-4 bg-white border border-slate-200 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="text-lg text-slate-900">Criar Nova Atividade</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Título</Label>
-                            <input 
-                              type="text"
-                              value={activityData.title}
-                              onChange={(e) => setActivityData({...activityData, title: e.target.value})}
-                              placeholder="Ex: Exercícios de Adição"
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Matéria</Label>
-                            <select 
-                              value={activityData.subject}
-                              onChange={(e) => setActivityData({...activityData, subject: e.target.value})}
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                            >
-                              <option value="">Selecione...</option>
-                              <option value="matematica">Matemática</option>
-                              <option value="portugues">Português</option>
-                              <option value="ciencias">Ciências</option>
-                              <option value="historia">História</option>
-                              <option value="geografia">Geografia</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Tipo</Label>
-                            <select 
-                              value={activityData.type}
-                              onChange={(e) => setActivityData({...activityData, type: e.target.value})}
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                            >
-                              <option value="">Selecione...</option>
-                              <option value="exercicio">Exercício</option>
-                              <option value="quiz">Quiz</option>
-                              <option value="atividade-pratica">Atividade Prática</option>
-                              <option value="projeto">Projeto</option>
-                            </select>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Dificuldade</Label>
-                            <select 
-                              value={activityData.difficulty}
-                              onChange={(e) => setActivityData({...activityData, difficulty: e.target.value})}
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                            >
-                              <option value="">Selecione...</option>
-                              <option value="facil">Fácil</option>
-                              <option value="medio">Médio</option>
-                              <option value="dificil">Difícil</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-slate-700">Instruções</Label>
-                          <textarea 
-                            value={activityData.instructions}
-                            onChange={(e) => setActivityData({...activityData, instructions: e.target.value})}
-                            placeholder="Descreva as instruções da atividade..."
-                            className="mt-1 w-full p-2 min-h-[60px] border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                          />
-                        </div>
-                        <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
-                          <PenTool className="h-4 w-4 mr-2" />
-                          Gerar Atividade com IA
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                <div>
-                  <Card 
-                    className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-blue-600 to-cyan-700 text-white"
-                    onClick={() => setActiveForm(activeForm === 'lesson-plan' ? null : 'lesson-plan')}
-                  >
+                <Link href="/teacher/lesson-plans">
+                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-blue-600 to-cyan-700 text-white">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-white/20 rounded-lg">
@@ -703,101 +555,15 @@ export default function TeacherDashboard() {
                       <h3 className="font-semibold text-lg text-white mb-2">Planos de Aula</h3>
                       <p className="text-sm text-white/80">Planejamento inteligente com IA</p>
                       <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">
-                          {activeForm === 'lesson-plan' ? 'Fechar' : 'Criar'}
-                        </span>
-                        <ArrowRight className={`h-4 w-4 ml-1 transition-transform ${activeForm === 'lesson-plan' ? 'rotate-90' : ''}`} />
+                        <span className="text-sm font-medium">Acessar</span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </CardContent>
                   </Card>
+                </Link>
 
-                  {activeForm === 'lesson-plan' && (
-                    <Card className="mt-4 bg-white border border-slate-200 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="text-lg text-slate-900">Criar Plano de Aula</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Título da Aula</Label>
-                            <input 
-                              type="text"
-                              value={lessonPlanData.title}
-                              onChange={(e) => setLessonPlanData({...lessonPlanData, title: e.target.value})}
-                              placeholder="Ex: Frações e Números Decimais"
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Matéria</Label>
-                            <select 
-                              value={lessonPlanData.subject}
-                              onChange={(e) => setLessonPlanData({...lessonPlanData, subject: e.target.value})}
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Selecione...</option>
-                              <option value="matematica">Matemática</option>
-                              <option value="portugues">Português</option>
-                              <option value="ciencias">Ciências</option>
-                              <option value="historia">História</option>
-                              <option value="geografia">Geografia</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Série/Ano</Label>
-                            <select 
-                              value={lessonPlanData.grade}
-                              onChange={(e) => setLessonPlanData({...lessonPlanData, grade: e.target.value})}
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Selecione...</option>
-                              <option value="1ano">1º Ano</option>
-                              <option value="2ano">2º Ano</option>
-                              <option value="3ano">3º Ano</option>
-                              <option value="4ano">4º Ano</option>
-                              <option value="5ano">5º Ano</option>
-                            </select>
-                          </div>
-                          <div>
-                            <Label className="text-sm font-medium text-slate-700">Duração</Label>
-                            <select 
-                              value={lessonPlanData.duration}
-                              onChange={(e) => setLessonPlanData({...lessonPlanData, duration: e.target.value})}
-                              className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="">Selecione...</option>
-                              <option value="30min">30 minutos</option>
-                              <option value="45min">45 minutos</option>
-                              <option value="60min">1 hora</option>
-                              <option value="90min">1h 30min</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-slate-700">Objetivos de Aprendizagem</Label>
-                          <textarea 
-                            value={lessonPlanData.objectives}
-                            onChange={(e) => setLessonPlanData({...lessonPlanData, objectives: e.target.value})}
-                            placeholder="Descreva os objetivos que os alunos devem alcançar..."
-                            className="mt-1 w-full p-2 min-h-[60px] border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          />
-                        </div>
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
-                          <BookOpen className="h-4 w-4 mr-2" />
-                          Gerar Plano de Aula
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
-
-                <div>
-                  <Card 
-                    className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-orange-600 to-red-700 text-white"
-                    onClick={() => setActiveForm(activeForm === 'document' ? null : 'document')}
-                  >
+                <Link href="/teacher/document-analysis">
+                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-orange-600 to-red-700 text-white">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <div className="p-3 bg-white/20 rounded-lg">
@@ -808,60 +574,31 @@ export default function TeacherDashboard() {
                       <h3 className="font-semibold text-lg text-white mb-2">Análise de Documentos</h3>
                       <p className="text-sm text-white/80">Extraia insights de PDFs e textos</p>
                       <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">
-                          {activeForm === 'document' ? 'Fechar' : 'Analisar'}
-                        </span>
-                        <ArrowRight className={`h-4 w-4 ml-1 transition-transform ${activeForm === 'document' ? 'rotate-90' : ''}`} />
+                        <span className="text-sm font-medium">Analisar</span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </CardContent>
                   </Card>
+                </Link>
 
-                  {activeForm === 'document' && (
-                    <Card className="mt-4 bg-white border border-slate-200 shadow-lg">
-                      <CardHeader>
-                        <CardTitle className="text-lg text-slate-900">Análise de Documentos</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <Label className="text-sm font-medium text-slate-700">Upload de Arquivo</Label>
-                          <div className="mt-1 border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-orange-400 transition-colors">
-                            <Search className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                            <p className="text-sm text-slate-600">Clique para fazer upload ou arraste arquivos aqui</p>
-                            <p className="text-xs text-slate-400 mt-1">PDF, DOC, DOCX, TXT (máx. 10MB)</p>
-                          </div>
+                <Link href="/tokens">
+                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-purple-600 to-pink-700 text-white">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white/20 rounded-lg">
+                          <Sparkles className="h-6 w-6 text-white" />
                         </div>
-                        <div>
-                          <Label className="text-sm font-medium text-slate-700">Tipo de Análise</Label>
-                          <select 
-                            value={documentData.type}
-                            onChange={(e) => setDocumentData({...documentData, type: e.target.value})}
-                            className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                          >
-                            <option value="">Selecione...</option>
-                            <option value="resumo">Resumo Automático</option>
-                            <option value="questoes">Gerar Questões</option>
-                            <option value="conceitos">Extrair Conceitos</option>
-                            <option value="atividades">Sugerir Atividades</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium text-slate-700">Palavras-chave (opcional)</Label>
-                          <input 
-                            type="text"
-                            value={documentData.keywords}
-                            onChange={(e) => setDocumentData({...documentData, keywords: e.target.value})}
-                            placeholder="Ex: matemática, frações, geometria"
-                            className="mt-1 w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                          />
-                        </div>
-                        <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white">
-                          <Search className="h-4 w-4 mr-2" />
-                          Analisar Documento
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+                        <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white border-0 font-semibold">Controle</Badge>
+                      </div>
+                      <h3 className="font-semibold text-lg text-white mb-2">Gerenciar Tokens</h3>
+                      <p className="text-sm text-white/80">Controle e monitore seu uso de IA</p>
+                      <div className="mt-4 flex items-center text-white">
+                        <span className="text-sm font-medium">Gerenciar</span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               </div>
 
               {/* Interactive Panels */}
