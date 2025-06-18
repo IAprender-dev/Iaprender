@@ -103,9 +103,16 @@ export function KidsLayout({ userName, children }: KidsLayoutProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mb-4">
-            <h1 className="text-4xl lg:text-6xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2 animate-pulse">
-              {getGreeting()}, {userName}! 🌟
-            </h1>
+            <div className="flex justify-center items-center gap-4 mb-4">
+              <h1 className="text-4xl lg:text-6xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2 animate-pulse">
+                {getGreeting()}, {userName}! 🌟
+              </h1>
+              <Link href="/student/profile">
+                <Button className="bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-500 hover:to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all">
+                  👤 Meu Perfil
+                </Button>
+              </Link>
+            </div>
             <p className="text-xl lg:text-2xl font-bold text-slate-700 mb-4">
               Pronto para uma nova aventura de aprendizado?
             </p>

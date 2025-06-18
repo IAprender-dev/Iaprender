@@ -174,6 +174,7 @@ export default function StudentDashboard() {
     { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
     { icon: CheckSquare, label: "Atividades", href: "/student/activities", isActive: location === "/student/activities" },
     { icon: Calendar, label: "Planejamento", href: "/aluno/planejamento", isActive: location === "/aluno/planejamento" },
+    { icon: User, label: "Meu Perfil", href: "/student/profile", isActive: location === "/student/profile" },
     { icon: BookOpen, label: "Wikipedia", href: "/student/wikipedia", isActive: location === "/student/wikipedia" },
   ];
 
