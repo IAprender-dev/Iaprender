@@ -120,14 +120,25 @@ export function TokenUsageWidget() {
   };
 
   return (
-    <Card className="h-fit">
+    <Card className="h-fit border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-purple-100 shadow-sm hover:shadow-md transition-all duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Zap className="h-4 w-4" />
+          <CardTitle className="text-sm font-bold flex items-center gap-2 text-slate-800">
+            <div className="p-2 bg-violet-600 rounded-lg">
+              <Zap className="h-4 w-4 text-white" />
+            </div>
             Tokens IA
           </CardTitle>
-          <Badge variant={getStatusVariant()} className="text-xs">
+          <Badge 
+            variant="secondary" 
+            className={`text-xs font-semibold ${
+              !tokenData.canProceed 
+                ? "bg-red-100 text-red-800 border-red-200" 
+                : tokenData.warningThreshold 
+                  ? "bg-amber-100 text-amber-800 border-amber-200"
+                  : "bg-green-100 text-green-800 border-green-200"
+            }`}
+          >
             {!tokenData.canProceed ? (
               <>
                 <AlertTriangle className="h-3 w-3 mr-1" />
@@ -150,39 +161,36 @@ export function TokenUsageWidget() {
       
       <CardContent className="space-y-4">
         {/* Indicador visual principal */}
-        <div className="text-center space-y-2">
-          <div className="text-2xl font-bold text-primary">
+        <div className="text-center space-y-3 bg-white/70 rounded-xl p-4 border border-violet-200">
+          <div className="text-3xl font-bold text-slate-900">
             {formatNumber(tokenData.remainingTokens)}
           </div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-sm text-slate-600 font-medium">
             tokens disponíveis
           </div>
           
           <Progress 
             value={usagePercentage} 
-            className="h-2"
-            style={{
-              backgroundColor: 'hsl(var(--muted))',
-            }}
+            className="h-3 bg-slate-200"
           />
           
-          <div className="flex justify-between text-xs text-muted-foreground">
+          <div className="flex justify-between text-xs text-slate-600 font-medium">
             <span>{formatNumber(tokenData.currentUsage)} usado</span>
             <span>{formatNumber(tokenData.monthlyLimit)} total</span>
           </div>
         </div>
 
         {/* Estatísticas rápidas */}
-        <div className="grid grid-cols-2 gap-3 text-center text-xs">
-          <div className="space-y-1">
-            <div className="text-muted-foreground">Hoje</div>
-            <div className="font-semibold">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center space-y-1 bg-white/60 rounded-lg p-3 border border-violet-100">
+            <div className="text-xs text-slate-600 font-medium">Hoje</div>
+            <div className="text-lg font-bold text-slate-900">
               {formatNumber(tokenData.stats.dailyUsage)}
             </div>
           </div>
-          <div className="space-y-1">
-            <div className="text-muted-foreground">Esta semana</div>
-            <div className="font-semibold">
+          <div className="text-center space-y-1 bg-white/60 rounded-lg p-3 border border-violet-100">
+            <div className="text-xs text-slate-600 font-medium">Esta semana</div>
+            <div className="text-lg font-bold text-slate-900">
               {formatNumber(tokenData.stats.weeklyUsage)}
             </div>
           </div>
@@ -190,14 +198,14 @@ export function TokenUsageWidget() {
 
         {/* Aviso se necessário */}
         {!tokenData.canProceed && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+              <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
               <div className="text-xs">
-                <div className="font-medium text-destructive mb-1">
+                <div className="font-bold text-red-800 mb-1">
                   Limite mensal atingido
                 </div>
-                <div className="text-muted-foreground">
+                <div className="text-red-700 font-medium">
                   Aguarde a renovação automática ou entre em contato com suporte.
                 </div>
               </div>
@@ -206,14 +214,14 @@ export function TokenUsageWidget() {
         )}
 
         {tokenData.warningThreshold && tokenData.canProceed && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-3">
             <div className="flex items-start gap-2">
-              <Info className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+              <Info className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="text-xs">
-                <div className="font-medium text-yellow-800 mb-1">
+                <div className="font-bold text-amber-800 mb-1">
                   Uso elevado detectado
                 </div>
-                <div className="text-yellow-700">
+                <div className="text-amber-700 font-medium">
                   Você está próximo do limite mensal. Use com moderação.
                 </div>
               </div>
@@ -222,9 +230,9 @@ export function TokenUsageWidget() {
         )}
 
         {/* Link para dashboard completo */}
-        <div className="pt-2 border-t">
+        <div className="pt-2 border-t border-violet-200">
           <Link href="/tokens">
-            <Button variant="ghost" size="sm" className="w-full text-xs">
+            <Button variant="outline" size="sm" className="w-full text-xs font-semibold border-2 border-violet-600 text-violet-700 hover:bg-violet-600 hover:text-white transition-all">
               <Settings className="h-3 w-3 mr-1" />
               Ver detalhes completos
             </Button>
