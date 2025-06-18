@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
+import { KidsLayout } from "@/components/dashboard/student/KidsLayout";
 import { 
   Book, 
   CheckSquare, 

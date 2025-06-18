@@ -44,7 +44,11 @@ export default function StudentProfile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/user/profile', 'PATCH', data),
+    mutationFn: (data: any) => fetch('/api/user/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).then(res => res.json()),
     onSuccess: (updatedUser) => {
       updateUser(updatedUser);
       setIsEditing(false);
