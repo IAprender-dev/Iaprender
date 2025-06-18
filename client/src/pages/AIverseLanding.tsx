@@ -61,6 +61,7 @@ import {
   Languages
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function IAprenderLanding() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -127,9 +128,11 @@ export default function IAprenderLanding() {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-white" />
-              </div>
+              <img 
+                src={iAprenderLogo} 
+                alt="IAprender" 
+                className="w-10 h-10 object-contain"
+              />
               <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 IAprender
               </span>
@@ -874,9 +877,11 @@ export default function IAprenderLanding() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-                  <Sparkles className="h-6 w-6 text-white" />
-                </div>
+                <img 
+                  src={iAprenderLogo} 
+                  alt="IAprender" 
+                  className="w-10 h-10 object-contain"
+                />
                 <span className="text-2xl font-bold">IAprender</span>
               </div>
               <p className="text-slate-300 mb-4">
