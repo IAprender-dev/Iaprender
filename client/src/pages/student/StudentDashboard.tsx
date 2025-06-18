@@ -45,7 +45,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262542315.png";
 import TodayStudySchedule from "@/components/TodayStudySchedule";
 
 interface StudySession {
