@@ -2592,5 +2592,100 @@ Fale sempre em português brasileiro claro e natural.`,
     }
   });
 
+  // Update user profile (optimized with database trigger)
+  app.patch('/api/user/profile', authenticate, async (req: Request, res: Response) => {
+    let userId: number | undefined;
+    
+    try {
+      userId = req.session.user?.id;
+      if (!userId) {
+        console.warn('Tentativa de atualização sem autenticação');
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
+      // Validação de entrada
+      if (!req.body || typeof req.body !== 'object') {
+        console.warn('Dados inválidos recebidos para atualização:', req.body);
+        return res.status(400).json({ message: 'Dados inválidos' });
+      }
+
+      console.log('Updating user profile:', { userId, data: req.body });
+
+      // Validações específicas de campos
+      const { firstName, lastName, email, phone, address, schoolYear, dateOfBirth } = req.body;
+
+      if (firstName !== undefined && (!firstName || typeof firstName !== 'string' || !firstName.trim())) {
+        return res.status(400).json({ message: 'Nome é obrigatório' });
+      }
+
+      if (lastName !== undefined && (!lastName || typeof lastName !== 'string' || !lastName.trim())) {
+        return res.status(400).json({ message: 'Sobrenome é obrigatório' });
+      }
+
+      if (email !== undefined) {
+        if (!email || typeof email !== 'string' || !email.trim()) {
+          return res.status(400).json({ message: 'Email é obrigatório' });
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          return res.status(400).json({ message: 'Formato de email inválido' });
+        }
+      }
+
+      if (phone !== undefined && phone !== '' && typeof phone === 'string') {
+        const phoneNumbers = phone.replace(/\D/g, '');
+        if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
+          return res.status(400).json({ message: 'Telefone deve ter entre 10 e 11 dígitos' });
+        }
+      }
+
+      // O trigger no banco de dados fará validações adicionais automaticamente
+      const updatedUser = await storage.updateUser(userId, req.body);
+      
+      if (!updatedUser) {
+        console.warn('Usuário não encontrado para atualização:', userId);
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      console.log('Profile updated successfully:', updatedUser);
+      
+      // Garantir que a resposta seja sempre JSON
+      res.setHeader('Content-Type', 'application/json');
+      res.json(updatedUser);
+
+    } catch (error: any) {
+      console.error('Error updating profile:', {
+        userId,
+        error: error.message,
+        stack: error.stack,
+        body: req.body
+      });
+      
+      // Captura erros de validação do trigger
+      if (error.message.includes('Telefone deve ter') || error.message.includes('Formato de email')) {
+        return res.status(400).json({ message: error.message });
+      }
+
+      // Erro de banco de dados
+      if (error.code && (error.code.startsWith('23') || error.code.startsWith('42'))) {
+        console.error('Database constraint error:', error);
+        return res.status(400).json({ message: 'Dados inválidos ou duplicados' });
+      }
+
+      // Erro de conexão com banco
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        console.error('Database connection error:', error);
+        return res.status(503).json({ message: 'Serviço temporariamente indisponível' });
+      }
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).json({ 
+        message: error.message || 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   return httpServer;
 }

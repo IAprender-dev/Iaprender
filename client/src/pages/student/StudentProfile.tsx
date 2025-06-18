@@ -53,88 +53,302 @@ export default function StudentProfile() {
   });
 
   const updateProfileMutation = useMutation({
-    mutationFn: (data: any) => fetch('/api/user/profile', {
-      method: 'PATCH',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(data),
-    }).then(async (res) => {
-      const contentType = res.headers.get('content-type');
-      
-      if (!res.ok) {
-        let errorMessage = 'Falha ao atualizar perfil';
-        
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            const error = await res.json();
-            errorMessage = error.message || errorMessage;
-          } catch (e) {
-            console.error('Erro ao fazer parse do JSON de erro:', e);
-          }
-        } else {
-          const textResponse = await res.text();
-          console.error('Resposta não-JSON recebida:', textResponse);
-          errorMessage = 'Erro no servidor - resposta inválida';
+    mutationFn: async (data: any) => {
+      try {
+        // Validação de entrada
+        if (!data || typeof data !== 'object') {
+          throw new Error('Dados inválidos para atualização');
         }
-        throw new Error(errorMessage);
+
+        // Log para debug
+        console.log('Enviando dados para atualização:', data);
+
+        const response = await fetch('/api/user/profile', {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(data),
+        });
+
+        // Validação de resposta do servidor
+        const contentType = response.headers.get('content-type');
+        console.log('Content-Type da resposta:', contentType);
+        
+        if (!response.ok) {
+          let errorMessage = 'Falha ao atualizar perfil';
+          
+          try {
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.json();
+              errorMessage = errorData.message || errorData.error || errorMessage;
+            } else {
+              const textResponse = await response.text();
+              console.error('Resposta de erro não-JSON:', textResponse);
+              errorMessage = `Erro ${response.status}: Resposta inválida do servidor`;
+            }
+          } catch (parseError) {
+            console.error('Erro ao processar resposta de erro:', parseError);
+            errorMessage = `Erro ${response.status}: Falha na comunicação com servidor`;
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
+        // Processamento de resposta de sucesso
+        try {
+          if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            console.log('Perfil atualizado com sucesso:', result);
+            return result;
+          } else {
+            const textResponse = await response.text();
+            console.error('Resposta de sucesso não é JSON:', textResponse);
+            throw new Error('Servidor retornou formato inválido');
+          }
+        } catch (parseError) {
+          console.error('Erro ao processar resposta de sucesso:', parseError);
+          throw new Error('Falha ao processar dados atualizados');
+        }
+
+      } catch (networkError) {
+        console.error('Erro de rede ou processamento:', networkError);
+        
+        // Verificar se é erro de rede
+        if (networkError instanceof TypeError && networkError.message.includes('fetch')) {
+          throw new Error('Erro de conexão - verifique sua internet');
+        }
+        
+        // Repassar outros erros
+        throw networkError;
       }
-      
-      if (contentType && contentType.includes('application/json')) {
-        return res.json();
-      } else {
-        const textResponse = await res.text();
-        console.error('Resposta de sucesso não é JSON:', textResponse);
-        throw new Error('Resposta do servidor inválida');
-      }
-    }),
+    },
     onSuccess: (updatedUser) => {
-      if (updateUser) {
-        updateUser(updatedUser);
+      try {
+        console.log('Processando sucesso da atualização:', updatedUser);
+        
+        // Validar dados recebidos
+        if (!updatedUser || typeof updatedUser !== 'object') {
+          throw new Error('Dados de usuário inválidos recebidos');
+        }
+
+        // Atualizar contexto de autenticação
+        if (updateUser && typeof updateUser === 'function') {
+          updateUser(updatedUser);
+        }
+
+        // Resetar modo de edição
+        setIsEditing(false);
+
+        // Mostrar notificação de sucesso
+        toast({
+          title: "Perfil atualizado!",
+          description: "Suas informações foram salvas com sucesso.",
+        });
+
+        // Invalidar cache
+        try {
+          queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+        } catch (cacheError) {
+          console.warn('Erro ao invalidar cache:', cacheError);
+        }
+
+      } catch (successError) {
+        console.error('Erro ao processar sucesso:', successError);
+        toast({
+          title: "Aviso",
+          description: "Perfil atualizado, mas houve um problema menor. Recarregue a página se necessário.",
+          variant: "destructive",
+        });
       }
-      setIsEditing(false);
-      toast({
-        title: "Perfil atualizado!",
-        description: "Suas informações foram salvas com sucesso.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Erro ao atualizar",
-        description: error.message || "Não foi possível atualizar o perfil.",
-        variant: "destructive",
-      });
+      try {
+        console.error('Erro na atualização do perfil:', error);
+        
+        // Garantir que error.message existe
+        const errorMessage = error?.message || error?.toString() || "Erro desconhecido ao atualizar perfil";
+        
+        // Categorizar tipos de erro
+        let userFriendlyMessage = errorMessage;
+        if (errorMessage.includes('rede') || errorMessage.includes('conexão')) {
+          userFriendlyMessage = "Problema de conexão. Verifique sua internet e tente novamente.";
+        } else if (errorMessage.includes('servidor')) {
+          userFriendlyMessage = "Erro no servidor. Tente novamente em alguns instantes.";
+        } else if (errorMessage.includes('Telefone') || errorMessage.includes('email')) {
+          userFriendlyMessage = errorMessage; // Manter mensagens de validação
+        }
+
+        toast({
+          title: "Erro ao atualizar",
+          description: userFriendlyMessage,
+          variant: "destructive",
+        });
+
+      } catch (errorHandlingError) {
+        console.error('Erro crítico ao processar erro:', errorHandlingError);
+        toast({
+          title: "Erro crítico",
+          description: "Ocorreu um erro inesperado. Recarregue a página.",
+          variant: "destructive",
+        });
+      }
     }
   });
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
-    setFormData({...formData, phone: formatted});
+    try {
+      const inputValue = e.target.value || '';
+      console.log('Alterando telefone:', inputValue);
+      
+      // Validar entrada
+      if (inputValue.length > 15) {
+        toast({
+          title: "Limite de caracteres",
+          description: "Telefone não pode ter mais de 15 caracteres.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const formatted = formatPhone(inputValue);
+      
+      setFormData(prevData => ({
+        ...prevData, 
+        phone: formatted
+      }));
+
+    } catch (phoneError) {
+      console.error('Erro ao formatar telefone:', phoneError);
+      toast({
+        title: "Erro de formatação",
+        description: "Erro ao formatar telefone. Digite apenas números.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSave = () => {
-    // Remove a formatação do telefone antes de enviar
-    const phoneNumbers = formData.phone?.replace(/\D/g, '') || '';
-    const dataToSend = {
-      ...formData,
-      phone: phoneNumbers
-    };
-    updateProfileMutation.mutate(dataToSend);
+    try {
+      console.log('Iniciando salvamento do perfil...');
+      
+      // Validações de entrada
+      if (!formData.firstName?.trim()) {
+        toast({
+          title: "Campo obrigatório",
+          description: "Nome é obrigatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formData.lastName?.trim()) {
+        toast({
+          title: "Campo obrigatório", 
+          description: "Sobrenome é obrigatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formData.email?.trim()) {
+        toast({
+          title: "Campo obrigatório",
+          description: "Email é obrigatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast({
+          title: "Email inválido",
+          description: "Por favor, insira um email válido.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Processar telefone
+      let processedPhone = '';
+      if (formData.phone?.trim()) {
+        processedPhone = formData.phone.replace(/\D/g, '');
+        
+        // Validar telefone se fornecido
+        if (processedPhone && (processedPhone.length < 10 || processedPhone.length > 11)) {
+          toast({
+            title: "Telefone inválido",
+            description: "Telefone deve ter 10 ou 11 dígitos (incluindo DDD).",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Preparar dados para envio
+      const dataToSend = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: processedPhone,
+        address: formData.address?.trim() || '',
+        schoolYear: formData.schoolYear || '',
+        dateOfBirth: formData.dateOfBirth || ''
+      };
+
+      console.log('Dados preparados para envio:', dataToSend);
+      
+      // Executar mutação
+      updateProfileMutation.mutate(dataToSend);
+
+    } catch (saveError) {
+      console.error('Erro ao preparar salvamento:', saveError);
+      toast({
+        title: "Erro de validação",
+        description: "Erro ao processar dados. Verifique os campos e tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCancel = () => {
-    setFormData({
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      email: user?.email || '',
-      phone: user?.phone ? formatPhone(user.phone) : '',
-      address: user?.address || '',
-      schoolYear: user?.schoolYear || '',
-      dateOfBirth: user?.dateOfBirth || ''
-    });
-    setIsEditing(false);
+    try {
+      console.log('Cancelando edição e restaurando dados originais...');
+      
+      // Restaurar dados originais com validação
+      const originalData = {
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email: user?.email || '',
+        phone: user?.phone ? formatPhone(user.phone) : '',
+        address: user?.address || '',
+        schoolYear: user?.schoolYear || '',
+        dateOfBirth: user?.dateOfBirth || ''
+      };
+
+      setFormData(originalData);
+      setIsEditing(false);
+
+      toast({
+        title: "Edição cancelada",
+        description: "Alterações descartadas.",
+      });
+
+    } catch (cancelError) {
+      console.error('Erro ao cancelar edição:', cancelError);
+      
+      // Forçar saída do modo de edição mesmo com erro
+      setIsEditing(false);
+      
+      toast({
+        title: "Aviso",
+        description: "Edição cancelada, mas alguns dados podem não ter sido restaurados.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getInitials = () => {
