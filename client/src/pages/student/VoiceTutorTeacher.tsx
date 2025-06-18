@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Mic, MicOff, ArrowLeft, BookOpen, Brain, Heart, Star, Volume2 } from "lucide-react";
+import { Mic, MicOff, ArrowLeft, BookOpen, Brain, Heart, Star, Volume2, Presentation, Lightbulb, Target, MapPin } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -20,6 +20,15 @@ interface Message {
   format: 'text' | 'audio';
 }
 
+interface ChalkboardContent {
+  id: string;
+  type: 'example' | 'concept' | 'formula' | 'mindmap' | 'important' | 'summary';
+  title: string;
+  content: string;
+  timestamp: Date;
+  subject?: string;
+}
+
 export default function VoiceTutorTeacher() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -30,6 +39,8 @@ export default function VoiceTutorTeacher() {
   const [isMuted, setIsMuted] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentTranscript, setCurrentTranscript] = useState('');
+  const [chalkboardContent, setChalkboardContent] = useState<ChalkboardContent[]>([]);
+  const [showChalkboard, setShowChalkboard] = useState(true);
   
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
@@ -45,6 +56,60 @@ export default function VoiceTutorTeacher() {
       format
     };
     setMessages(prev => [...prev, message]);
+    
+    // Analyze AI response for chalkboard content
+    if (type === 'assistant' && format === 'text') {
+      analyzeForChalkboardContent(content);
+    }
+  };
+
+  const addChalkboardContent = (type: ChalkboardContent['type'], title: string, content: string, subject?: string) => {
+    const chalkboardItem: ChalkboardContent = {
+      id: Date.now().toString(),
+      type,
+      title,
+      content,
+      timestamp: new Date(),
+      subject
+    };
+    setChalkboardContent(prev => [...prev, chalkboardItem]);
+  };
+
+  const analyzeForChalkboardContent = (content: string) => {
+    // Simple keyword-based analysis to extract educational content
+    const lowerContent = content.toLowerCase();
+    
+    // Look for examples
+    if (lowerContent.includes('exemplo') || lowerContent.includes('por exemplo')) {
+      const exampleMatch = content.match(/(?:exemplo|por exemplo)[:\-]?\s*([^.!?]*[.!?])/i);
+      if (exampleMatch) {
+        addChalkboardContent('example', 'Exemplo', exampleMatch[1].trim());
+      }
+    }
+    
+    // Look for formulas or equations
+    if (content.includes('=') || lowerContent.includes('fórmula')) {
+      const formulaMatch = content.match(/([^.!?]*[=][^.!?]*)/);
+      if (formulaMatch) {
+        addChalkboardContent('formula', 'Fórmula', formulaMatch[1].trim());
+      }
+    }
+    
+    // Look for important concepts
+    if (lowerContent.includes('importante') || lowerContent.includes('lembre-se')) {
+      const importantMatch = content.match(/(?:importante|lembre-se)[:\-]?\s*([^.!?]*[.!?])/i);
+      if (importantMatch) {
+        addChalkboardContent('important', 'Importante', importantMatch[1].trim());
+      }
+    }
+    
+    // Look for definitions
+    if (lowerContent.includes('é definido como') || lowerContent.includes('significa')) {
+      const conceptMatch = content.match(/([^.!?]*(?:é definido como|significa)[^.!?]*[.!?])/i);
+      if (conceptMatch) {
+        addChalkboardContent('concept', 'Conceito', conceptMatch[1].trim());
+      }
+    }
   };
 
   const connectToRealtime = useCallback(async () => {
@@ -244,6 +309,48 @@ export default function VoiceTutorTeacher() {
     });
   };
 
+  const getChalkboardIcon = (type: ChalkboardContent['type']) => {
+    switch (type) {
+      case 'example':
+        return <Lightbulb className="h-4 w-4" />;
+      case 'formula':
+        return <Target className="h-4 w-4" />;
+      case 'concept':
+        return <BookOpen className="h-4 w-4" />;
+      case 'important':
+        return <Star className="h-4 w-4" />;
+      case 'mindmap':
+        return <MapPin className="h-4 w-4" />;
+      case 'summary':
+        return <Brain className="h-4 w-4" />;
+      default:
+        return <Presentation className="h-4 w-4" />;
+    }
+  };
+
+  const getChalkboardColor = (type: ChalkboardContent['type']) => {
+    switch (type) {
+      case 'example':
+        return 'border-yellow-400 bg-yellow-50';
+      case 'formula':
+        return 'border-blue-400 bg-blue-50';
+      case 'concept':
+        return 'border-purple-400 bg-purple-50';
+      case 'important':
+        return 'border-red-400 bg-red-50';
+      case 'mindmap':
+        return 'border-green-400 bg-green-50';
+      case 'summary':
+        return 'border-indigo-400 bg-indigo-50';
+      default:
+        return 'border-gray-400 bg-gray-50';
+    }
+  };
+
+  const clearChalkboard = () => {
+    setChalkboardContent([]);
+  };
+
   const getTeacherAvatar = () => {
     if (conversationState === 'listening') {
       return (
@@ -336,8 +443,8 @@ export default function VoiceTutorTeacher() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Teacher Avatar & Status */}
           <div className="lg:col-span-1">
             <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-xl">
