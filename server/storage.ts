@@ -141,11 +141,24 @@ export class DatabaseStorage implements IStorage, ITokenStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+    try {
+      console.log('Storage: Criando usuário com dados:', insertUser);
+      
+      const [user] = await db
+        .insert(users)
+        .values({
+          ...insertUser,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+        
+      console.log('Storage: Usuário criado com sucesso:', user);
+      return user;
+    } catch (error) {
+      console.error('Storage: Erro ao criar usuário:', error);
+      throw error;
+    }
   }
 
   async updateUser(id: number, userUpdate: Partial<User>): Promise<User | undefined> {
