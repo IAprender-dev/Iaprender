@@ -59,6 +59,13 @@ interface StudyPlan {
   isActive: boolean;
 }
 
+// Helper function to check if user is in grades 1-3
+const isElementaryGrades123 = (schoolYear: string) => {
+  return schoolYear?.includes('1º ano fundamental') || 
+         schoolYear?.includes('2º ano fundamental') || 
+         schoolYear?.includes('3º ano fundamental');
+};
+
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
@@ -167,8 +174,25 @@ export default function StudentDashboard() {
     { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
     { icon: CheckSquare, label: "Atividades", href: "/student/activities", isActive: location === "/student/activities" },
     { icon: Calendar, label: "Planejamento", href: "/aluno/planejamento", isActive: location === "/aluno/planejamento" },
-    { icon: Book, label: "Wikipedia", href: "/student/wikipedia", isActive: location === "/student/wikipedia" },
+    { icon: BookOpen, label: "Wikipedia", href: "/student/wikipedia", isActive: location === "/student/wikipedia" },
   ];
+
+  // Check if user is in elementary grades 1-3 for special layout
+  const isKidsLayout = user?.schoolYear && isElementaryGrades123(user.schoolYear);
+
+  // If kids layout, return the special interface
+  if (isKidsLayout) {
+    return (
+      <>
+        <Helmet>
+          <title>Meu Cantinho de Aprender - IAprender</title>
+        </Helmet>
+        <KidsLayout userName={user?.firstName || 'pequeno estudante'}>
+          {/* Additional kid-specific content can go here */}
+        </KidsLayout>
+      </>
+    );
+  }
 
   return (
     <>
