@@ -1,79 +1,43 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Power, PowerOff, Volume2, VolumeX, Mic, MicOff, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useRef, useCallback } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Mic, MicOff, ArrowLeft, BookOpen, Brain, Heart, Star, Volume2 } from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
-interface VoiceMessage {
+type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
+type ConversationState = 'idle' | 'listening' | 'thinking' | 'speaking';
+type MessageType = 'user' | 'assistant';
+
+interface Message {
   id: string;
-  type: 'user' | 'assistant';
+  type: MessageType;
   content: string;
   timestamp: Date;
   format: 'text' | 'audio';
 }
 
-type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
-type ConversationState = 'idle' | 'listening' | 'thinking' | 'speaking';
-
 export default function VoiceTutorTeacher() {
-  // Estados principais
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
   const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected');
   const [conversationState, setConversationState] = useState<ConversationState>('idle');
-  const [messages, setMessages] = useState<VoiceMessage[]>([]);
-  const [blackboardContent, setBlackboardContent] = useState('');
-  const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [permissionsGranted, setPermissionsGranted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentTranscript, setCurrentTranscript] = useState('');
+  
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  // Refs para reconhecimento de voz e síntese
-  const recognitionRef = useRef<any>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const isListeningRef = useRef(false);
-
-  const { toast } = useToast();
-
-  // Solicitar permissões de microfone ao carregar a página
-  useEffect(() => {
-    const requestPermissions = async () => {
-      try {
-        console.log('🎤 Solicitando permissões de áudio...');
-        
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          } 
-        });
-        
-        console.log('✅ Permissão do microfone concedida');
-        stream.getTracks().forEach(track => track.stop()); // Parar stream inicial
-        setPermissionsGranted(true);
-        
-        toast({
-          title: "Permissões concedidas",
-          description: "Microfone autorizado para uso",
-        });
-        
-      } catch (error) {
-        console.error('❌ Erro ao solicitar permissões:', error);
-        setPermissionsGranted(false);
-        
-        toast({
-          title: "Permissões necessárias",
-          description: "A Pro Versa precisa de acesso ao microfone para funcionar",
-          variant: "destructive",
-        });
-      }
-    };
-
-    requestPermissions();
-  }, [toast]);
-
-  // Função para adicionar mensagem
-  const addMessage = useCallback((type: 'user' | 'assistant', content: string, format: 'text' | 'audio' = 'text') => {
-    const message: VoiceMessage = {
+  const addMessage = (type: MessageType, content: string, format: 'text' | 'audio') => {
+    const message: Message = {
       id: Date.now().toString(),
       type,
       content,
@@ -81,455 +45,486 @@ export default function VoiceTutorTeacher() {
       format
     };
     setMessages(prev => [...prev, message]);
-
-    // Atualizar quadro se for conteúdo educacional
-    if (type === 'assistant') {
-      const educationalContent = filterContentForBlackboard(content);
-      if (educationalContent) {
-        setBlackboardContent(prev => prev + '\n' + educationalContent);
-      }
-    }
-  }, []);
-
-  // Função para filtrar conteúdo para o quadro
-  const filterContentForBlackboard = (content: string): string => {
-    const lines = content.split('\n');
-    const educationalLines: string[] = [];
-    
-    for (const line of lines) {
-      const cleanLine = line.trim();
-      if (cleanLine.includes('=') || // Equações
-          cleanLine.includes('→') || // Setas de reação
-          cleanLine.includes('°C') || // Temperaturas
-          cleanLine.includes('%') || // Porcentagens
-          /^\d+\./.test(cleanLine) || // Listas numeradas
-          /^[A-Z][a-z]+:/.test(cleanLine) || // Definições
-          cleanLine.includes('Fórmula:') || // Fórmulas
-          cleanLine.includes('Exemplo:') || // Exemplos
-          cleanLine.includes('pH') || // pH
-          cleanLine.includes('mol') || // mol
-          /\b[A-Z][a-z]?\d*\b/.test(cleanLine) // Elementos químicos
-      ) {
-        educationalLines.push(cleanLine);
-      }
-    }
-    
-    return educationalLines.join('\n').trim();
   };
 
-  // Função para inicializar reconhecimento de voz
-  const initializeSpeechRecognition = useCallback(() => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      console.error('Reconhecimento de voz não suportado');
+  const connectToRealtime = useCallback(async () => {
+    try {
+      setConnectionState('connecting');
+      
+      const tokenResponse = await fetch('/api/realtime/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!tokenResponse.ok) {
+        throw new Error('Failed to get ephemeral token');
+      }
+      
+      const sessionData = await tokenResponse.json();
+      const ephemeralKey = sessionData.client_secret.value;
+      
+      const pc = new RTCPeerConnection();
+      peerConnectionRef.current = pc;
+      
+      const audioEl = document.createElement('audio');
+      audioEl.autoplay = true;
+      audioElementRef.current = audioEl;
+      
+      pc.ontrack = (event) => {
+        console.log('Received remote audio track');
+        audioEl.srcObject = event.streams[0];
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: 24000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      });
+      streamRef.current = stream;
+      pc.addTrack(stream.getTracks()[0]);
+      
+      const dc = pc.createDataChannel('oai-events');
+      dataChannelRef.current = dc;
+      
+      dc.addEventListener('open', () => {
+        console.log('Data channel opened');
+        setConnectionState('connected');
+        setIsConnected(true);
+        setConversationState('listening');
+        
+        toast({
+          title: "Pro Versa conectada!",
+          description: "Pronta para ensinar. Fale naturalmente!",
+          variant: "default",
+        });
+      });
+      
+      dc.addEventListener('message', (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          handleRealtimeMessage(message);
+        } catch (error) {
+          console.error('Failed to parse data channel message:', error);
+        }
+      });
+      
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      
+      const baseUrl = 'https://api.openai.com/v1/realtime';
+      const model = 'gpt-4o-realtime-preview-2024-12-17';
+      
+      const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+        method: 'POST',
+        body: offer.sdp,
+        headers: {
+          'Authorization': `Bearer ${ephemeralKey}`,
+          'Content-Type': 'application/sdp'
+        },
+      });
+      
+      if (!sdpResponse.ok) {
+        throw new Error(`SDP exchange failed: ${sdpResponse.status}`);
+      }
+      
+      const answerSdp = await sdpResponse.text();
+      const answer = {
+        type: 'answer' as RTCSdpType,
+        sdp: answerSdp,
+      };
+      
+      await pc.setRemoteDescription(answer);
+      
+    } catch (error) {
+      console.error('Failed to connect:', error);
+      setConnectionState('error');
       toast({
-        title: "Não suportado",
-        description: "Seu navegador não suporta reconhecimento de voz",
+        title: "Erro de conexão",
+        description: "Não foi possível conectar com a Pro Versa.",
         variant: "destructive",
       });
-      return false;
     }
+  }, [toast]);
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognitionRef.current = new SpeechRecognition();
+  const handleRealtimeMessage = (message: any) => {
+    console.log('Received message:', message.type);
     
-    recognitionRef.current.continuous = true;
-    recognitionRef.current.interimResults = false;
-    recognitionRef.current.lang = 'pt-BR';
-    recognitionRef.current.maxAlternatives = 1;
-
-    recognitionRef.current.onstart = () => {
-      console.log('🎤 Reconhecimento iniciado');
-      setConversationState('listening');
-      isListeningRef.current = true;
-    };
-
-    recognitionRef.current.onresult = async (event: any) => {
-      const transcript = event.results[event.results.length - 1][0].transcript.trim();
-      
-      if (transcript) {
-        console.log('🗣️ Texto reconhecido:', transcript);
-        addMessage('user', transcript);
+    switch (message.type) {
+      case 'conversation.item.input_audio_transcription.completed':
+        if (message.transcript && message.transcript.trim()) {
+          setCurrentTranscript('');
+          addMessage('user', message.transcript, 'text');
+        }
+        break;
         
+      case 'response.audio_transcript.delta':
+        setCurrentTranscript(prev => prev + (message.delta || ''));
+        break;
+        
+      case 'response.audio_transcript.done':
+        if (message.transcript && message.transcript.trim()) {
+          addMessage('assistant', message.transcript, 'text');
+          setCurrentTranscript('');
+        }
+        break;
+        
+      case 'input_audio_buffer.speech_started':
+        setConversationState('listening');
+        break;
+        
+      case 'input_audio_buffer.speech_stopped':
         setConversationState('thinking');
+        break;
         
-        // Enviar para IA e processar resposta
-        try {
-          const response = await fetch('/api/ai/tutor-chat', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              message: transcript,
-              context: 'voice_tutor'
-            })
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            addMessage('assistant', data.response);
-            
-            // Sintetizar resposta
-            if (!isMuted) {
-              await synthesizeSpeech(data.response);
-            } else {
-              setConversationState('idle');
-              setTimeout(() => startListening(), 1000);
-            }
-          } else {
-            throw new Error('Erro na resposta da IA');
-          }
-        } catch (error) {
-          console.error('Erro ao processar resposta:', error);
-          setConversationState('idle');
-          setTimeout(() => startListening(), 2000);
-        }
-      }
-    };
-
-    recognitionRef.current.onerror = (event: any) => {
-      console.error('Erro no reconhecimento:', event.error);
-      setConversationState('idle');
-      isListeningRef.current = false;
-      
-      setTimeout(() => {
-        if (isConnected) {
-          startListening();
-        }
-      }, 2000);
-    };
-
-    recognitionRef.current.onend = () => {
-      console.log('🔇 Reconhecimento finalizado');
-      isListeningRef.current = false;
-      
-      if (conversationState === 'listening' && isConnected) {
-        setTimeout(() => startListening(), 1000);
-      }
-    };
-
-    return true;
-  }, [addMessage, conversationState, isConnected, isMuted, toast]);
-
-  // Função para iniciar escuta
-  const startListening = useCallback(() => {
-    if (!recognitionRef.current || !isConnected || !permissionsGranted || isListeningRef.current) {
-      return;
+      case 'response.created':
+        setConversationState('thinking');
+        break;
+        
+      case 'response.audio.done':
+        setConversationState('listening');
+        break;
+        
+      case 'error':
+        console.error('Realtime API error:', message);
+        toast({
+          title: "Erro na conversa",
+          description: message.error?.message || "Erro desconhecido",
+          variant: "destructive",
+        });
+        break;
     }
+  };
 
-    try {
-      recognitionRef.current.start();
-      console.log('🎤 Iniciando escuta...');
-    } catch (error) {
-      console.error('Erro ao iniciar reconhecimento:', error);
+  const disconnect = useCallback(() => {
+    if (dataChannelRef.current) {
+      dataChannelRef.current.close();
+      dataChannelRef.current = null;
     }
-  }, [isConnected, permissionsGranted]);
+    
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    if (audioElementRef.current) {
+      audioElementRef.current.srcObject = null;
+      audioElementRef.current = null;
+    }
+    
+    setConnectionState('disconnected');
+    setIsConnected(false);
+    setConversationState('idle');
+    setCurrentTranscript('');
+  }, []);
 
-  // Função para parar escuta
-  const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListeningRef.current) {
-      recognitionRef.current.stop();
-      isListeningRef.current = false;
-      setConversationState('idle');
+  const toggleMute = useCallback(() => {
+    if (streamRef.current) {
+      const audioTrack = streamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+      }
     }
   }, []);
 
-  // Função para sintetizar fala
-  const synthesizeSpeech = useCallback(async (text: string) => {
-    if (isMuted || !text) return;
-
-    try {
-      setConversationState('speaking');
-      console.log('🔊 Sintetizando fala...');
-      
-      // Usar Speech Synthesis API nativa
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'pt-BR';
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
-      utterance.volume = 1.0;
-
-      // Tentar encontrar uma voz em português
-      const voices = speechSynthesis.getVoices();
-      const portugueseVoice = voices.find(voice => voice.lang.includes('pt'));
-      if (portugueseVoice) {
-        utterance.voice = portugueseVoice;
-      }
-
-      utterance.onend = () => {
-        console.log('🎵 Síntese finalizada');
-        setConversationState('idle');
-        setTimeout(() => startListening(), 1000);
-      };
-
-      utterance.onerror = (error) => {
-        console.error('Erro na síntese:', error);
-        setConversationState('idle');
-        setTimeout(() => startListening(), 1500);
-      };
-
-      speechSynthesis.speak(utterance);
-      
-    } catch (error) {
-      console.error('Erro na síntese de fala:', error);
-      setConversationState('idle');
-      setTimeout(() => startListening(), 1000);
-    }
-  }, [isMuted, startListening]);
-
-  // Função para conectar
-  const connectToSystem = useCallback(async () => {
-    if (!permissionsGranted) {
-      toast({
-        title: "Permissões necessárias",
-        description: "Primeiro conceda acesso ao microfone",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setConnectionState('connecting');
-      console.log('🔄 Conectando...');
-
-      // Inicializar reconhecimento de voz
-      const speechInitialized = initializeSpeechRecognition();
-      if (!speechInitialized) {
-        throw new Error('Falha ao inicializar reconhecimento de voz');
-      }
-
-      // Aguardar carregamento das vozes
-      if (speechSynthesis.getVoices().length === 0) {
-        await new Promise(resolve => {
-          speechSynthesis.onvoiceschanged = resolve;
-          setTimeout(resolve, 1000); // Fallback timeout
-        });
-      }
-
-      setIsConnected(true);
-      setConnectionState('connected');
-      
-      // Saudação inicial
-      const welcomeMessage = 'Oi! Eu sou a Pro Versa, sua tutora virtual. O que gostaria de aprender hoje?';
-      addMessage('assistant', welcomeMessage);
-      
-      setTimeout(async () => {
-        await synthesizeSpeech(welcomeMessage);
-      }, 1000);
-      
-      toast({
-        title: "Pro Versa conectada!",
-        description: "Sistema de voz ativo - pode falar!"
-      });
-
-    } catch (error) {
-      console.error('Erro na conexão:', error);
-      setConnectionState('error');
-      toast({
-        title: "Erro na conexão",
-        description: "Não foi possível conectar à Pro Versa",
-        variant: "destructive",
-      });
-    }
-  }, [permissionsGranted, initializeSpeechRecognition, addMessage, synthesizeSpeech, toast]);
-
-  // Função para desconectar
-  const disconnect = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
-    
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-
-    speechSynthesis.cancel();
-    
-    setConnectionState('disconnected');
-    setConversationState('idle');
-    setIsConnected(false);
-    isListeningRef.current = false;
-    
-    toast({
-      title: "Desconectado",
-      description: "Pro Versa foi desconectada"
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
     });
-  }, [toast]);
+  };
+
+  const getTeacherAvatar = () => {
+    if (conversationState === 'listening') {
+      return (
+        <div className="relative">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-lg">
+            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
+              <BookOpen className="h-12 w-12 text-white" />
+            </div>
+          </div>
+          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shadow-lg animate-pulse">
+            <Mic className="h-4 w-4 text-white" />
+          </div>
+        </div>
+      );
+    }
+    
+    if (conversationState === 'thinking') {
+      return (
+        <div className="relative">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
+            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
+              <Brain className="h-12 w-12 text-white animate-pulse" />
+            </div>
+          </div>
+          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center shadow-lg">
+            <div className="w-2 h-2 rounded-full bg-white animate-bounce" />
+          </div>
+        </div>
+      );
+    }
+    
+    if (conversationState === 'speaking') {
+      return (
+        <div className="relative">
+          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg">
+            <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
+              <Volume2 className="h-12 w-12 text-white animate-pulse" />
+            </div>
+          </div>
+          <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center shadow-lg">
+            <Star className="h-4 w-4 text-white animate-spin" />
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-lg">
+        <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center">
+          <Heart className="h-12 w-12 text-white" />
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Pro Versa</h1>
-          <p className="text-lg text-gray-600">Sua Tutora Virtual Inteligente</p>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/student/dashboard">
+              <Button variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar
+              </Button>
+            </Link>
+            
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-800">Pro Versa</h1>
+              <p className="text-sm text-gray-600">Sua tutora com voz por IA</p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {isConnected && (
+                <>
+                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
+                    Online
+                  </Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {conversationState === 'listening' && '🎧 Escutando'}
+                    {conversationState === 'thinking' && '🤔 Pensando'}
+                    {conversationState === 'speaking' && '🗣️ Falando'}
+                    {conversationState === 'idle' && '😊 Pronta'}
+                  </Badge>
+                </>
+              )}
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Quadro virtual */}
-          <div className="lg:col-span-2">
-            <Card className="h-96 bg-green-800 border-8 border-amber-900 shadow-2xl relative overflow-hidden">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-white text-center text-xl">Quadro Virtual</CardTitle>
-              </CardHeader>
-              <CardContent className="h-full">
-                <div className="bg-green-700 h-full rounded-lg p-4 font-mono text-white text-sm whitespace-pre-wrap overflow-y-auto">
-                  {blackboardContent || 'Aguardando conteúdo educacional...'}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Teacher Avatar & Status */}
+          <div className="lg:col-span-1">
+            <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-xl">
+              <CardContent className="p-8 text-center">
+                <div className="mb-6 flex justify-center">
+                  {getTeacherAvatar()}
+                </div>
+                
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  Pro Versa
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  {!isConnected && "Clique em conectar para começar a conversa"}
+                  {isConnected && conversationState === 'listening' && "Estou ouvindo você..."}
+                  {isConnected && conversationState === 'thinking' && "Pensando na melhor explicação..."}
+                  {isConnected && conversationState === 'speaking' && "Explicando o conteúdo..."}
+                  {isConnected && conversationState === 'idle' && "Pronta para ensinar!"}
+                </p>
+                
+                {!isConnected ? (
+                  <Button 
+                    onClick={connectToRealtime}
+                    disabled={connectionState === 'connecting'}
+                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg"
+                    size="lg"
+                  >
+                    {connectionState === 'connecting' ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        Conectando...
+                      </>
+                    ) : (
+                      <>
+                        <Mic className="h-5 w-5 mr-2" />
+                        Conectar com Pro Versa
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <div className="space-y-3">
+                    <Button
+                      onClick={toggleMute}
+                      variant={isMuted ? "destructive" : "secondary"}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {isMuted ? (
+                        <>
+                          <MicOff className="h-5 w-5 mr-2" />
+                          Ativar Microfone
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="h-5 w-5 mr-2" />
+                          Silenciar
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={disconnect}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Finalizar Aula
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Quick Tips */}
+            <Card className="mt-6 bg-white/50 backdrop-blur-sm border-white/20">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+                  <Star className="h-4 w-4 mr-2 text-yellow-500" />
+                  Dicas para Aprender
+                </h3>
+                <div className="space-y-3 text-sm text-gray-600">
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 rounded-full bg-indigo-400 mt-2" />
+                    <p>Fale claramente e em português</p>
+                  </div>
+
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 rounded-full bg-pink-400 mt-2" />
+                    <p>Pergunte sobre qualquer matéria</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-400 mt-2" />
+                    <p>Não tenha medo de errar!</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Painel de controle */}
-          <div className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mic className="w-5 h-5" />
-                  Sistema de Voz
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Status de permissões */}
-                {!permissionsGranted && (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                    <div className="flex items-center space-x-2">
-                      <AlertTriangle className="w-5 h-5 text-amber-600" />
-                      <div>
-                        <p className="text-sm font-medium text-amber-800">Permissões necessárias</p>
-                        <p className="text-xs text-amber-600">Microfone é obrigatório</p>
+          {/* Conversation */}
+          <div className="lg:col-span-2">
+            <Card className="h-[700px] bg-white/70 backdrop-blur-sm border-white/20 shadow-xl">
+              <CardContent className="p-6 h-full flex flex-col">
+                <div className="flex items-center gap-2 mb-4">
+                  <BookOpen className="h-5 w-5 text-indigo-600" />
+                  <h3 className="font-semibold text-gray-800">Nossa Conversa</h3>
+                </div>
+                
+                <ScrollArea className="flex-1 pr-4">
+                  <div className="space-y-4">
+                    {messages.length === 0 && !isConnected && (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center mx-auto mb-4">
+                          <Heart className="h-8 w-8 text-white" />
+                        </div>
+                        <h4 className="font-medium text-gray-800 mb-2">Olá, {user?.firstName}!</h4>
+                        <p className="text-gray-600">Conecte-se com a Pro Versa para começar a aprender!</p>
                       </div>
-                    </div>
+                    )}
+                    
+                    {messages.length === 0 && isConnected && (
+                      <div className="text-center py-12">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                          <Mic className="h-8 w-8 text-white" />
+                        </div>
+                        <h4 className="font-medium text-gray-800 mb-2">Pro Versa está ouvindo...</h4>
+                        <p className="text-gray-600">Fale naturalmente para começar a conversa</p>
+                      </div>
+                    )}
+                    
+                    {messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`max-w-[85%] ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
+                          <div
+                            className={`rounded-2xl p-4 shadow-md ${
+                              message.type === 'user'
+                                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
+                                : 'bg-white text-gray-800 border border-gray-100'
+                            }`}
+                          >
+                            <p className="text-sm leading-relaxed">{message.content}</p>
+                            <p className={`text-xs mt-2 ${
+                              message.type === 'user' ? 'text-indigo-100' : 'text-gray-500'
+                            }`}>
+                              {message.type === 'user' ? 'Você' : 'Pro Versa'} • {formatTime(message.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className={`flex-shrink-0 ${message.type === 'user' ? 'order-1 mr-3' : 'order-2 ml-3'}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            message.type === 'user' 
+                              ? 'bg-gradient-to-br from-indigo-400 to-purple-500' 
+                              : 'bg-gradient-to-br from-pink-400 to-indigo-500'
+                          }`}>
+                            {message.type === 'user' ? (
+                              <div className="w-4 h-4 rounded-full bg-white/80" />
+                            ) : (
+                              <BookOpen className="h-4 w-4 text-white" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {currentTranscript && (
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] order-1">
+                          <div className="rounded-2xl p-4 bg-gray-50 border-2 border-dashed border-gray-200">
+                            <p className="text-sm text-gray-700 leading-relaxed">{currentTranscript}</p>
+                            <p className="text-xs text-gray-500 mt-2 flex items-center">
+                              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2" />
+                              Pro Versa está falando...
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex-shrink-0 order-2 ml-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center animate-pulse">
+                            <Volume2 className="h-4 w-4 text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-
-                {/* Botão de conexão */}
-                <div className="space-y-3">
-                  {!isConnected ? (
-                    <Button
-                      onClick={connectToSystem}
-                      disabled={connectionState === 'connecting' || !permissionsGranted}
-                      className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
-                    >
-                      {connectionState === 'connecting' ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Conectando...
-                        </>
-                      ) : (
-                        <>
-                          <Power className="w-4 h-4 mr-2" />
-                          Conectar à Pro Versa
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={disconnect}
-                      className="w-full bg-red-600 hover:bg-red-700"
-                    >
-                      <PowerOff className="w-4 h-4 mr-2" />
-                      Desconectar
-                    </Button>
-                  )}
-                </div>
-
-                {/* Controle de áudio */}
-                <Button
-                  onClick={() => setIsMuted(!isMuted)}
-                  variant={isMuted ? "destructive" : "default"}
-                  className="w-full"
-                  disabled={!isConnected}
-                >
-                  {isMuted ? (
-                    <>
-                      <VolumeX className="w-4 h-4 mr-2" />
-                      Som Desligado
-                    </>
-                  ) : (
-                    <>
-                      <Volume2 className="w-4 h-4 mr-2" />
-                      Som Ligado
-                    </>
-                  )}
-                </Button>
-
-                {/* Botão manual para escutar */}
-                <Button
-                  onClick={startListening}
-                  variant="outline"
-                  className="w-full"
-                  disabled={!isConnected || !permissionsGranted || conversationState !== 'idle'}
-                >
-                  <Mic className="w-4 h-4 mr-2" />
-                  {conversationState === 'listening' ? 'Escutando...' : 'Clique para Falar'}
-                </Button>
-
-                {/* Status */}
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium">Status do Sistema:</p>
-                  <div className="space-y-1 text-xs">
-                    <p className={`${permissionsGranted ? 'text-green-600' : 'text-red-600'}`}>
-                      🎛️ Permissões: {permissionsGranted ? 'Concedidas' : 'Negadas'}
-                    </p>
-                    <p className={`${connectionState === 'connected' ? 'text-green-600' : 'text-gray-500'}`}>
-                      🔗 Conexão: {connectionState === 'connected' ? 'Conectada' : 'Desconectada'}
-                    </p>
-                    <p className={`${conversationState === 'listening' ? 'text-blue-600' : 'text-gray-500'}`}>
-                      🎤 Microfone: {conversationState === 'listening' ? 'Ativo' : 'Inativo'}
-                    </p>
-                    <p className={`${conversationState === 'speaking' ? 'text-purple-600' : 'text-gray-500'}`}>
-                      🔊 Síntese: {conversationState === 'speaking' ? 'Falando' : 'Silenciosa'}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Estado da conversa */}
-                <div className="flex justify-center">
-                  <Badge variant={
-                    conversationState === 'listening' ? 'default' :
-                    conversationState === 'thinking' ? 'secondary' :
-                    conversationState === 'speaking' ? 'destructive' : 'outline'
-                  }>
-                    {conversationState === 'listening' && '🎤 Escutando'}
-                    {conversationState === 'thinking' && '🤔 Pensando'}
-                    {conversationState === 'speaking' && '🗣️ Falando'}
-                    {conversationState === 'idle' && '💤 Aguardando'}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Histórico de conversas */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Histórico de Conversas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {messages.slice(-5).map((message) => (
-                    <div
-                      key={message.id}
-                      className={`p-2 rounded-lg text-xs ${
-                        message.type === 'user'
-                          ? 'bg-blue-100 text-blue-800 ml-4'
-                          : 'bg-green-100 text-green-800 mr-4'
-                      }`}
-                    >
-                      <p className="font-medium">
-                        {message.type === 'user' ? 'Você' : 'Pro Versa'}
-                      </p>
-                      <p>{message.content.substring(0, 100)}...</p>
-                    </div>
-                  ))}
-                  {messages.length === 0 && (
-                    <p className="text-gray-500 text-xs text-center py-4">
-                      Nenhuma conversa ainda
-                    </p>
-                  )}
-                </div>
+                </ScrollArea>
               </CardContent>
             </Card>
           </div>
