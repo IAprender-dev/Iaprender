@@ -16,8 +16,12 @@ import {
   Users,
   MessageSquare,
   FileText,
-  Globe
+  Globe,
+  ClipboardList,
+  ImageIcon,
+  Search
 } from "lucide-react";
+import { Link } from "wouter";
 
 interface WelcomeCardProps {
   notifications?: number;
@@ -170,23 +174,44 @@ export function WelcomeCard({
 
               {/* Quick Launch */}
               <div className="mt-4 pt-4 border-t border-slate-200">
-                <p className="text-slate-600 text-xs mb-2 font-medium">Acesso Rápido</p>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-0 text-xs font-semibold shadow-sm"
-                  >
-                    <MessageSquare className="h-3 w-3 mr-1" />
-                    Chat IA
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold"
-                  >
-                    <FileText className="h-3 w-3 mr-1" />
-                    Criar
-                  </Button>
+                <p className="text-slate-600 text-xs mb-3 font-medium">Criação Rápida</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link href="/professor/ferramentas/planejamento-aula">
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <ClipboardList className="h-3 w-3 mr-1" />
+                      Planos
+                    </Button>
+                  </Link>
+                  <Link href="/professor/ferramentas/gerador-atividades">
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <FileText className="h-3 w-3 mr-1" />
+                      Atividades
+                    </Button>
+                  </Link>
+                  <Link href="/professor/ferramentas/imagem-educacional">
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <ImageIcon className="h-3 w-3 mr-1" />
+                      Imagens
+                    </Button>
+                  </Link>
+                  <Link href="/professor/ferramentas/analisar-documentos">
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <Search className="h-3 w-3 mr-1" />
+                      Análise
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
