@@ -652,55 +652,6 @@ export default function StudentDashboard() {
                   </CardContent>
                 </Card>
               </div>
-
-              {/* Study Planning Section */}
-              <Card className="border-0 bg-gradient-to-br from-purple-50 to-blue-50 backdrop-blur-sm shadow-lg rounded-2xl">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
-                        <Calendar className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-bold text-slate-900">Planejamento de Estudos</CardTitle>
-                        <p className="text-sm text-slate-600">Organize seus estudos da semana</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Link href="/aluno/gerador-plano">
-                        <Button className="gap-2 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                          <Target className="h-4 w-4" />
-                          Novo Plano
-                        </Button>
-                      </Link>
-                      <Link href="/aluno/planejamento">
-                        <Button variant="outline" className="gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Ver Planos
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <TodayStudySchedule studyPlan={studyPlan} />
-                  
-                  <div className="mt-4 flex gap-3">
-                    <Link href="/aluno/gerador-plano">
-                      <Button className="gap-2" size="sm">
-                        <Calendar className="h-4 w-4" />
-                        Ver Cronograma Completo
-                      </Button>
-                    </Link>
-                    <Link href="/aluno/gerador-plano">
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Target className="h-4 w-4" />
-                        Editar Plano
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </main>
         </div>
