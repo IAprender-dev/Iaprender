@@ -67,6 +67,7 @@ export default function TeacherDashboard() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [activeForm, setActiveForm] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -78,8 +79,30 @@ export default function TeacherDashboard() {
     specialization: (user as any)?.specialization || '',
     bio: (user as any)?.bio || ''
   });
-
-
+  const [lessonPlanData, setLessonPlanData] = useState({
+    title: '',
+    subject: '',
+    grade: '',
+    duration: '',
+    objectives: '',
+    content: '',
+    activities: '',
+    evaluation: ''
+  });
+  const [activityData, setActivityData] = useState({
+    title: '',
+    subject: '',
+    type: '',
+    difficulty: '',
+    instructions: '',
+    questions: ''
+  });
+  const [documentData, setDocumentData] = useState({
+    title: '',
+    type: '',
+    content: '',
+    keywords: ''
+  });
 
   // Auto-format phone number
   const formatPhoneNumber = (value: string) => {
