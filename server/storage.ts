@@ -150,61 +150,46 @@ export class DatabaseStorage implements IStorage, ITokenStorage {
 
   async updateUser(id: number, userUpdate: Partial<User>): Promise<User | undefined> {
     try {
-      console.log('Storage: Chamando função do banco para atualizar usuário:', { id, userUpdate });
+      console.log('Storage: Atualizando usuário com dados editados:', { id, userUpdate });
       
-      // Usar função específica do banco de dados
-      const result = await pool.query(`
-        SELECT * FROM update_user_profile(
-          $1, $2, $3, $4, $5, $6, $7, $8
-        )
-      `, [
-        id,
-        userUpdate.firstName || null,
-        userUpdate.lastName || null,
-        userUpdate.email || null,
-        userUpdate.phone || null,
-        userUpdate.address || null,
-        userUpdate.schoolYear || null,
-        userUpdate.dateOfBirth || null
-      ]);
+      // Primeiro, buscar dados atuais do usuário
+      const currentUser = await this.getUser(id);
+      if (!currentUser) {
+        throw new Error(`Usuário com ID ${id} não encontrado`);
+      }
       
-      const updatedUser = result.rows[0];
-      console.log('Storage: Resultado da função do banco:', updatedUser);
+      // Preparar dados para atualização - manter campos não editados
+      const updateData = {
+        firstName: userUpdate.firstName !== undefined ? userUpdate.firstName : currentUser.firstName,
+        lastName: userUpdate.lastName !== undefined ? userUpdate.lastName : currentUser.lastName,
+        email: userUpdate.email !== undefined ? userUpdate.email : currentUser.email,
+        phone: userUpdate.phone !== undefined ? userUpdate.phone : currentUser.phone,
+        address: userUpdate.address !== undefined ? userUpdate.address : currentUser.address,
+        schoolYear: userUpdate.schoolYear !== undefined ? userUpdate.schoolYear : currentUser.schoolYear,
+        dateOfBirth: userUpdate.dateOfBirth !== undefined ? userUpdate.dateOfBirth : currentUser.dateOfBirth,
+        updatedAt: new Date()
+      };
       
-      if (!updatedUser) {
-        console.warn('Storage: Nenhum usuário retornado pela função do banco');
+      console.log('Storage: Dados finais para atualização:', updateData);
+      
+      // Usar Drizzle ORM com trigger automático
+      const [user] = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, id))
+        .returning();
+        
+      console.log('Storage: Usuário atualizado via trigger:', user);
+      
+      if (!user) {
+        console.warn('Storage: Nenhum usuário retornado após update');
         return undefined;
       }
       
-      // Converter snake_case para camelCase para compatibilidade
-      const formattedUser = {
-        id: updatedUser.id,
-        username: updatedUser.username,
-        firstName: updatedUser.first_name,
-        lastName: updatedUser.last_name,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        address: updatedUser.address,
-        schoolYear: updatedUser.school_year,
-        dateOfBirth: updatedUser.date_of_birth,
-        updatedAt: updatedUser.updated_at,
-        createdAt: updatedUser.created_at,
-        // Campos que não estão sendo atualizados mas são necessários
-        role: 'student', // Será mantido do registro existente
-        status: 'active',
-        firstLogin: true,
-        forcePasswordChange: false,
-        profileImage: null,
-        contractId: null,
-        lastLoginAt: null,
-        password: '' // Não retornamos a senha por segurança
-      };
-      
-      console.log('Storage: Usuário formatado para retorno:', formattedUser);
-      return formattedUser as User;
+      return user;
       
     } catch (error) {
-      console.error('Storage: Erro ao atualizar usuário via função do banco:', error);
+      console.error('Storage: Erro ao atualizar usuário:', error);
       throw error;
     }
   }
