@@ -202,9 +202,9 @@ export function DownloadsPanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-blue-200" />
-        <button className="w-full h-8 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 hover:text-blue-800 text-xs font-medium rounded-md transition-all">
+        <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm">
           Ver todos os downloads
-        </button>
+        </Button>
       </CardContent>
     </Card>
   );
@@ -305,9 +305,9 @@ export function FavoritesPanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-pink-200" />
-        <button className="w-full h-8 bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 hover:text-pink-800 text-xs font-medium rounded-md transition-all">
+        <Button size="sm" className="w-full bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold shadow-sm">
           Gerenciar favoritos
-        </button>
+        </Button>
       </CardContent>
     </Card>
   );
@@ -385,9 +385,9 @@ export function SummariesPanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-emerald-200" />
-        <button className="w-full h-8 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 hover:text-emerald-800 text-xs font-medium rounded-md transition-all">
+        <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm">
           Ver todos os resumos
-        </button>
+        </Button>
       </CardContent>
     </Card>
   );
@@ -496,9 +496,9 @@ export function StudentPerformancePanel() {
           </div>
         </ScrollArea>
         <Separator className="my-3 bg-amber-200" />
-        <button className="w-full h-8 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 hover:text-amber-800 text-xs font-medium rounded-md transition-all">
+        <Button size="sm" className="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-sm">
           Ver relatório completo
-        </button>
+        </Button>
       </CardContent>
     </Card>
   );

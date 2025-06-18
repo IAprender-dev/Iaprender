@@ -174,31 +174,43 @@ export function WelcomeCard({
 
               {/* Quick Launch */}
               <div className="mt-4 pt-4 border-t border-slate-200">
-                <p className="text-slate-600 text-xs mb-2 font-medium">Criação Rápida</p>
-                <div className="grid grid-cols-2 gap-1.5">
+                <p className="text-slate-600 text-xs mb-3 font-medium">Criação Rápida</p>
+                <div className="grid grid-cols-2 gap-2">
                   <Link href="/professor/ferramentas/planejamento-aula">
-                    <button className="w-full h-8 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 hover:text-blue-800 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1">
-                      <ClipboardList className="h-2.5 w-2.5" />
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <ClipboardList className="h-3 w-3 mr-1" />
                       Planos
-                    </button>
+                    </Button>
                   </Link>
                   <Link href="/professor/ferramentas/gerador-atividades">
-                    <button className="w-full h-8 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 hover:text-emerald-800 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1">
-                      <FileText className="h-2.5 w-2.5" />
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <FileText className="h-3 w-3 mr-1" />
                       Atividades
-                    </button>
+                    </Button>
                   </Link>
                   <Link href="/professor/ferramentas/imagem-educacional">
-                    <button className="w-full h-8 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 hover:text-purple-800 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1">
-                      <ImageIcon className="h-2.5 w-2.5" />
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <ImageIcon className="h-3 w-3 mr-1" />
                       Imagens
-                    </button>
+                    </Button>
                   </Link>
                   <Link href="/professor/ferramentas/analisar-documentos">
-                    <button className="w-full h-8 bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-700 hover:text-orange-800 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-1">
-                      <Search className="h-2.5 w-2.5" />
+                    <Button 
+                      size="sm" 
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold shadow-sm"
+                    >
+                      <Search className="h-3 w-3 mr-1" />
                       Análise
-                    </button>
+                    </Button>
                   </Link>
                 </div>
               </div>
