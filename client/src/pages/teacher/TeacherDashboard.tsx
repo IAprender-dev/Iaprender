@@ -707,6 +707,21 @@ export default function TeacherDashboard() {
                       </div>
                     </Link>
 
+                    <Link href="/professor/ferramentas/analisar-documentos">
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl border border-rose-200/50 hover:shadow-md transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-rose-100 rounded-lg group-hover:bg-rose-200 transition-colors">
+                            <Search className="h-5 w-5 text-rose-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-900">Análise de Documentos</p>
+                            <p className="text-sm text-slate-600">PDFs em material didático</p>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-rose-600 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+
                     <Link href="/tokens">
                       <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/50 hover:shadow-md transition-all cursor-pointer group">
                         <div className="flex items-center gap-3">

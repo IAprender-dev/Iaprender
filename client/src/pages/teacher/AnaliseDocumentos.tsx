@@ -14,7 +14,10 @@ import {
   Users,
   Clock,
   Lightbulb,
-  Award
+  Award,
+  ClipboardList,
+  PenTool,
+  FileDown
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function AnaliseDocumentos() {
   const [file, setFile] = useState<File | null>(null);
@@ -30,6 +34,7 @@ export default function AnaliseDocumentos() {
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [error, setError] = useState<string>("");
   const [progress, setProgress] = useState(0);
+  const [outputType, setOutputType] = useState<string>("plano-aula");
 
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
@@ -165,7 +170,7 @@ ${analysisResult.assessment}
                 </div>
                 <div>
                   <h1 className="text-lg md:text-xl font-bold text-slate-900">Análise de Documentos</h1>
-                  <p className="text-sm text-slate-600">Transforme qualquer documento em material didático estruturado</p>
+                  <p className="text-sm text-slate-600">Transforme PDFs em planos de aula, provas, listas de exercícios ou resumos</p>
                 </div>
               </div>
             </div>
@@ -190,9 +195,9 @@ ${analysisResult.assessment}
                 >
                   <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                   <div className="space-y-2">
-                    <p className="text-slate-700 font-medium">Arraste e solte seu arquivo aqui</p>
+                    <p className="text-slate-700 font-medium">Arraste e solte seu PDF aqui</p>
                     <p className="text-sm text-slate-500">ou clique para selecionar</p>
-                    <p className="text-xs text-slate-400">Suporte para PDF, DOC e DOCX (máx. 10MB)</p>
+                    <p className="text-xs text-slate-400">Suporte para PDF (máx. 10MB)</p>
                   </div>
                   <input
                     type="file"
@@ -204,6 +209,45 @@ ${analysisResult.assessment}
                   <Button className="mt-4 bg-rose-600 hover:bg-rose-700 pointer-events-none">
                     Selecionar Arquivo
                   </Button>
+                </div>
+
+                {/* Output Type Selection */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-slate-700">Tipo de Material</Label>
+                  <Select value={outputType} onValueChange={setOutputType}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Selecione o tipo de material" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="plano-aula">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-blue-600" />
+                          <span>Plano de Aula</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="prova">
+                        <div className="flex items-center gap-2">
+                          <ClipboardList className="h-4 w-4 text-green-600" />
+                          <span>Prova/Avaliação</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="exercicios">
+                        <div className="flex items-center gap-2">
+                          <PenTool className="h-4 w-4 text-purple-600" />
+                          <span>Lista de Exercícios</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="resumo">
+                        <div className="flex items-center gap-2">
+                          <FileDown className="h-4 w-4 text-orange-600" />
+                          <span>Resumo</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-slate-500">
+                    Escolha como você deseja que o documento seja transformado
+                  </p>
                 </div>
 
                 {file && (
@@ -247,12 +291,18 @@ ${analysisResult.assessment}
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Analisando...
+                      {outputType === 'plano-aula' ? 'Criando plano...' :
+                       outputType === 'prova' ? 'Gerando prova...' :
+                       outputType === 'exercicios' ? 'Criando exercícios...' :
+                       'Fazendo resumo...'}
                     </>
                   ) : (
                     <>
                       <FileText className="h-4 w-4 mr-2" />
-                      Analisar Documento
+                      {outputType === 'plano-aula' ? 'Criar Plano de Aula' :
+                       outputType === 'prova' ? 'Gerar Prova' :
+                       outputType === 'exercicios' ? 'Criar Lista de Exercícios' :
+                       'Fazer Resumo'}
                     </>
                   )}
                 </Button>
