@@ -91,7 +91,10 @@ export default function VoiceTutorTeacher() {
         
         if (titleMatch && contentMatch) {
           const title = titleMatch[1].trim();
-          const lousaContent = contentMatch[1].trim();
+          let lousaContent = contentMatch[1].trim();
+          
+          // Remove square brackets from content display
+          lousaContent = lousaContent.replace(/^\[|\]$/g, '').trim();
           
           // Organize content by type based on keywords
           if (lousaContent.includes('Fórmula') || lousaContent.includes('=') || lousaContent.includes('→')) {
@@ -530,13 +533,19 @@ Lembre-se: Sua fala deve ser natural e educativa, enquanto a lousa complementa v
 
   // Test function to simulate AI response and demonstrate chalkboard functionality
   const testChalkboardExtraction = () => {
-    const testResponse = "Vamos estudar fotossíntese. A fotossíntese é o processo pelo qual as plantas convertem luz solar em energia química. Por exemplo: uma folha verde absorve luz solar e produz glicose. A fórmula da fotossíntese é: 6CO₂ + 6H₂O + luz solar → C₆H₁₂O₆ + 6O₂. Importante: este processo é fundamental para a vida na Terra, pois produz o oxigênio que respiramos. Resumindo: as plantas são os produtores primários da cadeia alimentar.";
+    const testResponse = `Vamos estudar fotossíntese! É um processo fascinante onde as plantas transformam luz solar em energia. Imagine uma folha como uma pequena fábrica solar que produz seu próprio alimento...
+
+[LOUSA] Título: Fotossíntese
+[• Processo de produção de energia nas plantas
+• Ingredientes: CO₂ + H₂O + luz solar
+• Produto: glicose + oxigênio
+• Fórmula: 6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂] [/LOUSA]`;
     
     addMessage('assistant', testResponse, 'text');
     
     toast({
       title: "Teste da Lousa",
-      description: "Conteúdo educacional extraído e adicionado à lousa automaticamente",
+      description: "Demonstração do formato correto da ProVersa",
       variant: "default"
     });
   };
