@@ -382,7 +382,7 @@ export default function TeacherDashboard() {
                   Use a Central de IAs para comparar diferentes perspectivas sobre um tópico educacional. Cada IA tem seus pontos fortes únicos!
                 </p>
                 <Link href="/central-ia">
-                  <Button size="sm" variant="outline" className="border-blue-300 text-blue-700 hover:bg-blue-50">
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm">
                     Experimentar
                   </Button>
                 </Link>
@@ -394,7 +394,7 @@ export default function TeacherDashboard() {
                   A Análise de Documentos pode transformar qualquer PDF ou Word em material didático estruturado automaticamente.
                 </p>
                 <Link href="/professor/ferramentas/analise-documentos">
-                  <Button size="sm" variant="outline" className="border-emerald-300 text-emerald-700 hover:bg-emerald-50">
+                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm">
                     Testar Agora
                   </Button>
                 </Link>
