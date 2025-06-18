@@ -19,6 +19,10 @@ export type User = {
   role: "admin" | "teacher" | "student";
   status: "active" | "inactive" | "suspended" | "blocked";
   contractId?: number | null;
+  schoolYear?: string;
+  phone?: string;
+  address?: string;
+  dateOfBirth?: string;
   createdAt: string;
 };
 
@@ -45,6 +49,7 @@ export interface AuthContextType {
   registerMutation: UseMutationResult<User, Error, RegisterData>;
   logoutMutation: UseMutationResult<void, Error, void>;
   logout: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);

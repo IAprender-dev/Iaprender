@@ -9,6 +9,10 @@ export interface User {
   role: UserRole;
   profileImage?: string;
   schoolYear?: string;
+  phone?: string;
+  address?: string;
+  dateOfBirth?: string;
+  createdAt?: string;
 }
 
 export interface Course {

@@ -25,6 +25,7 @@ import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentActivities from "@/pages/student/StudentActivities";
+import StudentProfile from "@/pages/student/StudentProfile";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
 import StudyPlanGenerator from "@/pages/student/StudyPlanGenerator";
 import WikipediaExplorer from "@/pages/student/WikipediaExplorer";
@@ -113,6 +114,7 @@ function Router() {
       <Route path="/student/dashboard" component={StudentDashboard} />
       <Route path="/student/courses" component={StudentCourses} />
       <Route path="/student/activities" component={StudentActivities} />
+      <Route path="/student/profile" component={StudentProfile} />
       <Route path="/student/wikipedia" component={WikipediaExplorer} />
       <Route path="/student/translator" component={Translator} />
       <Route path="/aluno/dashboard" component={StudentDashboard} />

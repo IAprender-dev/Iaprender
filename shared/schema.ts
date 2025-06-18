@@ -28,6 +28,9 @@ export const users = pgTable("users", {
   profileImage: text("profile_image"),
   contractId: integer("contract_id").references(() => contracts.id),
   schoolYear: text("school_year"), // Ano escolar para estudantes (1º ano, 2º ano, etc.)
+  phone: text("phone"),
+  address: text("address"),
+  dateOfBirth: date("date_of_birth"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLoginAt: timestamp("last_login_at"),
 });
