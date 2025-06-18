@@ -1,79 +1,71 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
-import { Helmet } from "react-helmet";
-import { useAuth } from "@/lib/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useAuth } from '@/lib/AuthContext';
+import { queryClient, apiRequest } from '@/lib/queryClient';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
-  CalendarCheck2, 
-  CheckSquare, 
-  FilePlus, 
-  Bot, 
-  Sparkles, 
-  Search, 
-  ImageIcon, 
+  User, 
+  Edit3, 
+  Save, 
+  X, 
+  LogOut, 
   BookOpen, 
-  PenTool, 
-  BarChart,
-  Users,
+  Users, 
+  BarChart3, 
+  Calendar,
+  Star,
+  Download,
+  Heart,
+  Bot,
+  PenTool,
+  Search,
+  GraduationCap,
+  Lightbulb,
+  ImageIcon,
   FileText,
   ArrowRight,
-  FileEdit,
-  ClipboardList,
-  ListChecks,
-  BookOpenCheck,
-  LayoutGrid,
-  Calendar,
-  Award,
-  TrendingUp,
-  Clock,
-  Target,
+  Sparkles,
   PlayCircle,
-  Menu,
-  X,
-  Home,
-  User,
-  LogOut,
-  Settings,
-  Bell,
-  Plus,
+  ClipboardList,
   Wand2,
-  Lightbulb,
-  GraduationCap,
-  Palette,
-  Edit3,
-  Save,
-  Mail,
-  Phone,
-  MapPin,
-  CalendarDays,
-  Briefcase
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TokenUsageWidget } from "@/components/tokens/TokenUsageWidget";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { MiniAreaChart, MiniBarChart } from "@/components/dashboard/MiniChart";
-import { WelcomeCard } from "@/components/dashboard/WelcomeCard";
-import { DownloadsPanel, FavoritesPanel, SummariesPanel, StudentPerformancePanel } from "@/components/dashboard/InteractiveElements";
-import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
-import alverseLogo from "@assets/iaprender-logo.png";
+  FilePlus,
+  Palette
+} from 'lucide-react';
+import { Link } from 'wouter';
+import alverseLogo from '@/assets/aiverse-logo-new.png';
+
+
+
+interface DashboardMetrics {
+  activitiesCreated: number;
+  lessonPlans: number;
+  imagesGenerated: number;
+  documentsAnalyzed: number;
+  weeklyTrend: {
+    activities: number;
+    lessonPlans: number;
+    images: number;
+    documents: number;
+  };
+  chartData: {
+    activities?: Array<{ value: number }>;
+    lessonPlans?: Array<{ value: number }>;
+    images?: Array<{ value: number }>;
+    documents?: Array<{ value: number }>;
+  };
+}
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
-  const [location, setLocation] = useLocation();
-  const { data: metrics, isLoading: metricsLoading } = useDashboardMetrics();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
@@ -81,42 +73,48 @@ export default function TeacherDashboard() {
     email: user?.email || '',
     phone: user?.phone || '',
     address: user?.address || '',
+    dateOfBirth: user?.dateOfBirth || '',
     schoolYear: user?.schoolYear || '',
-    dateOfBirth: user?.dateOfBirth || ''
+    specialization: (user as any)?.specialization || '',
+    bio: (user as any)?.bio || ''
   });
 
-  // Garantir que a página sempre inicie no topo
-  useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-  }, []);
 
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        address: user.address || '',
-        schoolYear: user.schoolYear || '',
-        dateOfBirth: user.dateOfBirth || ''
-      });
+
+  // Auto-format phone number
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
     }
-  }, [user]);
+    return value;
+  };
 
-  // Mutation para atualizar perfil
+  // Get current date
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Get greeting based on time
+  const getGreeting = () => {
+    const hour = currentDate.getHours();
+    if (hour < 12) return "Bom dia";
+    if (hour < 18) return "Boa tarde";
+    return "Boa noite";
+  };
+
+  // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const cleanPhone = data.phone.replace(/\D/g, '');
-      const dataToSend = { ...data, phone: cleanPhone };
-
+    mutationFn: async (data: typeof formData) => {
       const response = await fetch('/api/user/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify(data),
       });
-
       if (!response.ok) {
         throw new Error('Erro ao atualizar perfil');
       }
@@ -151,55 +149,45 @@ export default function TeacherDashboard() {
       email: user?.email || '',
       phone: user?.phone || '',
       address: user?.address || '',
+      dateOfBirth: user?.dateOfBirth || '',
       schoolYear: user?.schoolYear || '',
-      dateOfBirth: user?.dateOfBirth || ''
+      specialization: (user as any)?.specialization || '',
+      bio: (user as any)?.bio || ''
     });
   };
 
-  // Formatação de telefone
-  const formatPhone = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length <= 11) {
-      const match = cleaned.match(/^(\d{2})(\d{5})(\d{4})$/);
-      if (match) {
-        return `(${match[1]}) ${match[2]}-${match[3]}`;
-      }
-      const partialMatch = cleaned.match(/^(\d{2})(\d{1,5})(\d{0,4})$/);
-      if (partialMatch) {
-        return `(${partialMatch[1]}) ${partialMatch[2]}${partialMatch[3] ? '-' + partialMatch[3] : ''}`;
-      }
+  const handleInputChange = (field: string, value: string) => {
+    if (field === 'phone') {
+      value = formatPhoneNumber(value);
     }
-    return value;
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // Get current date and time-based greeting
-  const currentDate = new Date();
-  const currentHour = currentDate.getHours();
-  const getGreeting = () => {
-    if (currentHour < 12) return "Bom dia";
-    if (currentHour < 18) return "Boa tarde";
-    return "Boa noite";
-  };
-
-  const formattedDate = currentDate.toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        dateOfBirth: user.dateOfBirth || '',
+        schoolYear: user.schoolYear || '',
+        specialization: (user as any).specialization || '',
+        bio: (user as any).bio || ''
+      });
+    }
+  }, [user]);
 
   return (
     <>
-      <Helmet>
-        <title>Dashboard do Professor - IAverse</title>
-      </Helmet>
-
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
-        <div className="flex">
-          {/* Sidebar Esquerda - Design do Aluno */}
-          <div className="w-80 bg-white/90 backdrop-blur-xl border-r border-slate-200 shadow-xl min-h-screen">
-            <div className="p-6">
-              {/* Profile Section */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        {/* Main Dashboard Container */}
+        <div className="flex h-screen bg-slate-50">
+          {/* Left Sidebar - Profile Form */}
+          <div className="w-80 bg-white border-r border-slate-200 flex flex-col">
+            {/* Profile Header */}
+            <div className="p-6 border-b border-slate-200">
               <Card className="mb-6 border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg">
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center mb-4">
@@ -210,233 +198,176 @@ export default function TeacherDashboard() {
                       </AvatarFallback>
                     </Avatar>
                   </div>
-                  <CardTitle className="text-xl font-bold text-slate-800">
-                    Prof. {user?.firstName} {user?.lastName}
-                  </CardTitle>
-                  <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 font-semibold">
-                    Professor
-                  </Badge>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  {/* Informações do Perfil */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-slate-700 flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Informações Pessoais
-                      </h3>
-                      {!isEditing ? (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setIsEditing(true)}
-                          className="h-8 w-8 p-0 hover:bg-blue-100"
-                        >
-                          <Edit3 className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={handleSaveProfile}
-                            disabled={updateProfileMutation.isPending}
-                            className="h-8 w-8 p-0 hover:bg-green-100"
-                          >
-                            <Save className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={handleCancelEdit}
-                            className="h-8 w-8 p-0 hover:bg-red-100"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Nome */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <User className="h-4 w-4 text-blue-600" />
-                        Nome
-                      </Label>
-                      {isEditing ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          <Input
-                            value={formData.firstName}
-                            onChange={(e) => setFormData(prev => ({...prev, firstName: e.target.value}))}
-                            className="text-sm"
-                            placeholder="Nome"
-                          />
-                          <Input
-                            value={formData.lastName}
-                            onChange={(e) => setFormData(prev => ({...prev, lastName: e.target.value}))}
-                            className="text-sm"
-                            placeholder="Sobrenome"
-                          />
-                        </div>
-                      ) : (
-                        <p className="text-slate-800 bg-white p-2 rounded-lg border text-sm">
-                          {user?.firstName} {user?.lastName}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                        Email
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData(prev => ({...prev, email: e.target.value}))}
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-2 rounded-lg border text-sm">
-                          {user?.email || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Telefone */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-blue-600" />
-                        Telefone
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          value={formData.phone}
-                          onChange={(e) => {
-                            const formatted = formatPhone(e.target.value);
-                            setFormData(prev => ({...prev, phone: formatted}));
-                          }}
-                          className="text-sm"
-                          placeholder="(00) 00000-0000"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-2 rounded-lg border text-sm">
-                          {user?.phone || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Endereço */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-blue-600" />
-                        Endereço
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          value={formData.address}
-                          onChange={(e) => setFormData(prev => ({...prev, address: e.target.value}))}
-                          className="text-sm"
-                          placeholder="Endereço completo"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-2 rounded-lg border text-sm">
-                          {user?.address || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Especialização */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <Briefcase className="h-4 w-4 text-blue-600" />
-                        Especialização
-                      </Label>
-                      {isEditing ? (
-                        <Select value={formData.schoolYear} onValueChange={(value) => setFormData(prev => ({...prev, schoolYear: value}))}>
-                          <SelectTrigger className="text-sm">
-                            <SelectValue placeholder="Selecione sua área" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Matemática">Matemática</SelectItem>
-                            <SelectItem value="Português">Português</SelectItem>
-                            <SelectItem value="História">História</SelectItem>
-                            <SelectItem value="Geografia">Geografia</SelectItem>
-                            <SelectItem value="Ciências">Ciências</SelectItem>
-                            <SelectItem value="Física">Física</SelectItem>
-                            <SelectItem value="Química">Química</SelectItem>
-                            <SelectItem value="Biologia">Biologia</SelectItem>
-                            <SelectItem value="Educação Física">Educação Física</SelectItem>
-                            <SelectItem value="Arte">Arte</SelectItem>
-                            <SelectItem value="Inglês">Inglês</SelectItem>
-                            <SelectItem value="Multidisciplinar">Multidisciplinar</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="text-slate-800 bg-white p-2 rounded-lg border text-sm">
-                          {user?.schoolYear || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Data de Nascimento */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <CalendarDays className="h-4 w-4 text-blue-600" />
-                        Data de Nascimento
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          type="date"
-                          value={formData.dateOfBirth}
-                          onChange={(e) => setFormData(prev => ({...prev, dateOfBirth: e.target.value}))}
-                          className="text-sm"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-2 rounded-lg border text-sm">
-                          {user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString('pt-BR') : 'Não informado'}
-                        </p>
-                      )}
-                    </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-900 mb-1">
+                      {user?.firstName} {user?.lastName}
+                    </h2>
+                    <p className="text-sm text-slate-600 mb-2">{user?.email}</p>
+                    <Badge className="bg-indigo-100 text-indigo-700 border-indigo-200">
+                      <GraduationCap className="h-3 w-3 mr-1" />
+                      Professor
+                    </Badge>
                   </div>
-                </CardContent>
+                </CardHeader>
               </Card>
 
-              {/* Navigation Menu */}
-              <div className="space-y-2">
-                <Link href="/teacher">
-                  <Button variant="ghost" className="w-full justify-start bg-blue-100 text-blue-800 hover:bg-blue-200">
-                    <BookOpen className="mr-3 h-5 w-5" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Link href="/courses">
-                  <Button variant="ghost" className="w-full justify-start hover:bg-slate-100">
-                    <Users className="mr-3 h-5 w-5" />
-                    Meus Alunos
-                  </Button>
-                </Link>
-                <Link href="/ai/lesson-planner">
-                  <Button variant="ghost" className="w-full justify-start hover:bg-slate-100">
-                    <FileText className="mr-3 h-5 w-5" />
-                    Planos de Aula
-                  </Button>
-                </Link>
-                <Link href="/ai/central">
-                  <Button variant="ghost" className="w-full justify-start hover:bg-slate-100">
-                    <Target className="mr-3 h-5 w-5" />
-                    Central IA
-                  </Button>
-                </Link>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <User className="h-5 w-5 text-blue-600" />
+                  Meu Perfil
+                </h3>
+                <Button
+                  size="sm"
+                  variant={isEditing ? "ghost" : "outline"}
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="gap-2"
+                >
+                  {isEditing ? <X className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
+                  {isEditing ? "Cancelar" : "Editar"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Profile Form */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">Nome</Label>
+                    <Input
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                      disabled={!isEditing}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">Sobrenome</Label>
+                    <Input
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      disabled={!isEditing}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">E-mail</Label>
+                  <Input
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    disabled={!isEditing}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">Telefone</Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="(11) 99999-9999"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">Endereço</Label>
+                  <Input
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    disabled={!isEditing}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">Data de Nascimento</Label>
+                  <Input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                    disabled={!isEditing}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">Ano Escolar que Leciona</Label>
+                  <Select 
+                    value={formData.schoolYear} 
+                    onValueChange={(value) => handleInputChange('schoolYear', value)}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Selecione o ano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-ano">1º Ano</SelectItem>
+                      <SelectItem value="2-ano">2º Ano</SelectItem>
+                      <SelectItem value="3-ano">3º Ano</SelectItem>
+                      <SelectItem value="4-ano">4º Ano</SelectItem>
+                      <SelectItem value="5-ano">5º Ano</SelectItem>
+                      <SelectItem value="6-ano">6º Ano</SelectItem>
+                      <SelectItem value="7-ano">7º Ano</SelectItem>
+                      <SelectItem value="8-ano">8º Ano</SelectItem>
+                      <SelectItem value="9-ano">9º Ano</SelectItem>
+                      <SelectItem value="ensino-medio">Ensino Médio</SelectItem>
+                      <SelectItem value="superior">Ensino Superior</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">Especialização</Label>
+                  <Input
+                    value={formData.specialization}
+                    onChange={(e) => handleInputChange('specialization', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Ex: Matemática, Português, Ciências..."
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">Biografia</Label>
+                  <Textarea
+                    value={formData.bio}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                    disabled={!isEditing}
+                    placeholder="Conte um pouco sobre você..."
+                    className="mt-1 min-h-[80px]"
+                  />
+                </div>
+
+                {isEditing && (
+                  <div className="flex gap-3 pt-4">
+                    <Button 
+                      onClick={handleSaveProfile}
+                      disabled={updateProfileMutation.isPending}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {updateProfileMutation.isPending ? 'Salvando...' : 'Salvar'}
+                    </Button>
+                    <Button 
+                      onClick={handleCancelEdit}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Conteúdo Principal */}
-          <div className="flex-1">
+          {/* Right Content Area */}
+          <div className="flex-1 flex flex-col">
             {/* Header */}
             <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-30">
               <div className="px-6 py-3">
@@ -448,15 +379,16 @@ export default function TeacherDashboard() {
                       <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
                     </div>
                   </div>
-              <div className="flex items-center gap-3">
-                <Button 
-                  onClick={logout}
-                  size="sm"
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Sair
-                </Button>
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      onClick={logout}
+                      size="sm"
+                      className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sair
+                    </Button>
+                  </div>
                 </div>
               </div>
             </header>
@@ -464,333 +396,283 @@ export default function TeacherDashboard() {
             {/* Main Content */}
             <main className="flex-1 p-6 overflow-auto">
               {/* Welcome Section */}
-              <WelcomeCard 
-                userName={user?.firstName || "Professor"}
-                greeting={getGreeting()}
-                subtitle="Seja bem-vindo ao seu painel de ensino inteligente"
-              />
-
-              {/* Content Grid */}
-              <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 mb-8">
-                {/* Left Column - Metrics */}
-                <div className="xl:col-span-3 space-y-6">
-                  {/* Primary Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <MetricCard
-                      title="Aulas Criadas"
-                      value={metrics?.lessonsCreated || 0}
-                      icon={<FileText className="h-5 w-5" />}
-                      trend={+12}
-                      color="blue"
-                    />
-                    <MetricCard
-                      title="Alunos Ativos"
-                      value={metrics?.activeStudents || 0}
-                      icon={<Users className="h-5 w-5" />}
-                      trend={+8}
-                      color="green"
-                    />
-                    <MetricCard
-                      title="Tokens Usados"
-                      value={metrics?.tokensUsed || 0}
-                      icon={<Target className="h-5 w-5" />}
-                      trend={-5}
-                      color="purple"
-                    />
-                    <MetricCard
-                      title="Avaliação Média"
-                      value={4.8}
-                      icon={<Award className="h-5 w-5" />}
-                      trend={+2}
-                      color="orange"
-                      format="rating"
-                    />
+              <Card className="mb-6 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 text-white border-0 shadow-2xl">
+                <CardContent className="p-8">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-3xl font-bold mb-2">{getGreeting()}, {user?.firstName}!</h2>
+                      <p className="text-blue-100 text-lg">Seja bem-vindo ao seu painel de ensino inteligente</p>
+                      <div className="flex items-center gap-6 mt-4">
+                        <div className="flex items-center gap-2">
+                          <Download className="h-5 w-5" />
+                          <span className="font-semibold">15 Downloads</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Heart className="h-5 w-5" />
+                          <span className="font-semibold">12 Favoritos</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Users className="h-5 w-5" />
+                          <span className="font-semibold">28 Alunos Online</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge className="bg-white/20 text-white border-white/30 mb-2">
+                        <Star className="h-3 w-3 mr-1" />
+                        Premium
+                      </Badge>
+                    </div>
                   </div>
+                </CardContent>
+              </Card>
 
-                  {/* Activity Charts */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="bg-white/50 backdrop-blur-sm border-slate-200/50">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4 text-blue-500" />
-                          Atividade de Ensino
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <MiniAreaChart 
-                          data={[
-                            { name: 'Seg', value: 12 },
-                            { name: 'Ter', value: 19 },
-                            { name: 'Qua', value: 15 },
-                            { name: 'Qui', value: 25 },
-                            { name: 'Sex', value: 22 },
-                            { name: 'Sab', value: 8 },
-                            { name: 'Dom', value: 4 }
-                          ]}
-                          color="#3B82F6"
-                        />
-                      </CardContent>
-                    </Card>
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card className="border-l-4 border-l-blue-500">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600">Planos Criados</p>
+                        <p className="text-3xl font-bold text-slate-900">24</p>
+                        <p className="text-sm text-slate-500">Este mês</p>
+                      </div>
+                      <div className="p-3 bg-blue-100 rounded-full">
+                        <BookOpen className="h-6 w-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-l-4 border-l-green-500">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600">Alunos Ativos</p>
+                        <p className="text-3xl font-bold text-slate-900">156</p>
+                        <p className="text-sm text-slate-500">Online agora</p>
+                      </div>
+                      <div className="p-3 bg-green-100 rounded-full">
+                        <Users className="h-6 w-6 text-green-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-l-4 border-l-purple-500">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600">Tokens Usados</p>
+                        <p className="text-3xl font-bold text-slate-900">2,847</p>
+                        <p className="text-sm text-slate-500">Este mês</p>
+                      </div>
+                      <div className="p-3 bg-purple-100 rounded-full">
+                        <Sparkles className="h-6 w-6 text-purple-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card className="border-l-4 border-l-orange-500">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-slate-600">Avaliações</p>
+                        <p className="text-3xl font-bold text-slate-900">42</p>
+                        <p className="text-sm text-slate-500">Pendentes</p>
+                      </div>
+                      <div className="p-3 bg-orange-100 rounded-full">
+                        <BarChart3 className="h-6 w-6 text-orange-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-                    <Card className="bg-white/50 backdrop-blur-sm border-slate-200/50">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                          <BarChart className="h-4 w-4 text-green-500" />
-                          Engajamento dos Alunos
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <MiniBarChart 
-                          data={[
-                            { name: 'Mat', value: 85 },
-                            { name: 'Por', value: 92 },
-                            { name: 'His', value: 78 },
-                            { name: 'Geo', value: 88 },
-                            { name: 'Cie', value: 95 }
-                          ]}
-                          color="#10B981"
-                        />
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-
-                {/* Right Column - Quick Actions & Info */}
-                <div className="space-y-6">
-                  {/* Token Usage */}
-                  <TokenUsageWidget />
-
-                  {/* Quick Actions */}
-                  <Card className="bg-white/50 backdrop-blur-sm border-slate-200/50">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                        <Plus className="h-4 w-4 text-indigo-500" />
-                        Ações Rápidas
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Link href="/ai/lesson-planner" className="block">
-                        <Button 
-                          size="sm" 
-                          className="w-full justify-start bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0"
-                        >
-                          <FileEdit className="mr-2 h-4 w-4" />
-                          Criar Plano de Aula
-                        </Button>
-                      </Link>
-                      
-                      <Link href="/ai/quiz-generator" className="block">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="w-full justify-start border-slate-200 hover:bg-slate-50"
-                        >
-                          <ListChecks className="mr-2 h-4 w-4" />
-                          Gerar Quiz
-                        </Button>
-                      </Link>
-                      
-                      <Link href="/courses" className="block">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="w-full justify-start border-slate-200 hover:bg-slate-50"
-                        >
-                          <Users className="mr-2 h-4 w-4" />
-                          Gerenciar Turmas
-                        </Button>
-                      </Link>
-                      
-                      <Link href="/ai/central" className="block">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="w-full justify-start border-slate-200 hover:bg-slate-50"
-                        >
-                          <Bot className="mr-2 h-4 w-4" />
-                          Central de IA
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-
-                  {/* Recent Activity */}
-                  <Card className="bg-white/50 backdrop-blur-sm border-slate-200/50">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base font-semibold text-slate-800 flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-slate-500" />
-                        Atividade Recente
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {[
-                          { action: "Plano criado", subject: "Matemática - Frações", time: "2h atrás", color: "blue" },
-                          { action: "Quiz gerado", subject: "História do Brasil", time: "4h atrás", color: "green" },
-                          { action: "Turma criada", subject: "3º Ano A", time: "1 dia atrás", color: "purple" }
-                        ].map((activity, index) => (
-                          <div key={index} className="flex items-start gap-3 p-2 rounded-lg hover:bg-slate-50/50 transition-colors">
-                            <div className={`w-2 h-2 rounded-full mt-2 bg-${activity.color}-500`}></div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-slate-800 truncate">{activity.action}</p>
-                              <p className="text-xs text-slate-600 truncate">{activity.subject}</p>
-                              <p className="text-xs text-slate-400">{activity.time}</p>
-                            </div>
-                          </div>
-                        ))}
+              {/* Quick Access Tools */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Link href="/central-ia">
+                  <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl">
+                          <Bot className="h-6 w-6 text-white" />
+                        </div>
+                        <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Novo
+                        </Badge>
+                      </div>
+                      <h3 className="font-bold text-lg text-slate-900 mb-2">Central de IAs</h3>
+                      <p className="text-sm text-slate-600">ChatGPT, Claude e Gemini em um só lugar</p>
+                      <div className="mt-4 flex items-center text-purple-600 group-hover:text-purple-700">
+                        <span className="text-sm font-medium">Acessar</span>
+                        <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
                       </div>
                     </CardContent>
                   </Card>
-                </div>
+                </Link>
+
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl">
+                        <PenTool className="h-6 w-6 text-white" />
+                      </div>
+                      <Badge className="bg-green-100 text-green-700 border-green-200">Popular</Badge>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Gerador de Atividades</h3>
+                    <p className="text-sm text-slate-600">Criação automática de exercícios</p>
+                    <div className="mt-4 flex items-center text-green-600 group-hover:text-green-700">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
+                        <BookOpen className="h-6 w-6 text-white" />
+                      </div>
+                      <Badge className="bg-blue-100 text-blue-700 border-blue-200">Essencial</Badge>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Planos de Aula</h3>
+                    <p className="text-sm text-slate-600">Planejamento inteligente com IA</p>
+                    <div className="mt-4 flex items-center text-blue-600 group-hover:text-blue-700">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl">
+                        <Search className="h-6 w-6 text-white" />
+                      </div>
+                      <Badge className="bg-amber-100 text-amber-700 border-amber-200">IA</Badge>
+                    </div>
+                    <h3 className="font-bold text-lg text-slate-900 mb-2">Análise de Documentos</h3>
+                    <p className="text-sm text-slate-600">Extraia insights de PDFs e textos</p>
+                    <div className="mt-4 flex items-center text-amber-600 group-hover:text-amber-700">
+                      <span className="text-sm font-medium">Analisar</span>
+                      <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
-              {/* Interactive Content Sections */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-                <div className="xl:col-span-2">
-                  <SummariesPanel />
-                </div>
-                <div>
-                  <FavoritesPanel />
-                </div>
-                <div>
-                  <DownloadsPanel />
-                </div>
-              </div>
+              {/* Interactive Panels */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Download className="h-5 w-5 text-blue-600" />
+                      Downloads Recentes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Plano de Matemática</span>
+                        <Badge className="bg-blue-100 text-blue-700">PDF</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Atividade de Português</span>
+                        <Badge className="bg-green-100 text-green-700">DOCX</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Quiz de Ciências</span>
+                        <Badge className="bg-purple-100 text-purple-700">PDF</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Student Performance Section */}
-              <div className="mt-8">
-                <StudentPerformancePanel />
+                <Card className="bg-gradient-to-br from-green-50 to-emerald-50">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Heart className="h-5 w-5 text-green-600" />
+                      Favoritos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Gerador de Atividades</span>
+                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Central de IAs</span>
+                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Planos de Aula</span>
+                        <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-50 to-pink-50">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-purple-600" />
+                      Resumos IA
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="p-3 bg-white rounded-lg">
+                        <p className="text-sm text-slate-700">Resumo sobre frações para 3º ano</p>
+                        <p className="text-xs text-slate-500 mt-1">Há 2 horas</p>
+                      </div>
+                      <div className="p-3 bg-white rounded-lg">
+                        <p className="text-sm text-slate-700">Análise de texto de literatura</p>
+                        <p className="text-xs text-slate-500 mt-1">Ontem</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-orange-50 to-amber-50">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5 text-orange-600" />
+                      Performance dos Alunos
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Matemática</span>
+                        <div className="w-20 bg-slate-200 rounded-full h-2">
+                          <div className="bg-green-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Português</span>
+                        <div className="w-20 bg-slate-200 rounded-full h-2">
+                          <div className="bg-blue-500 h-2 rounded-full" style={{ width: '78%' }}></div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Ciências</span>
+                        <div className="w-20 bg-slate-200 rounded-full h-2">
+                          <div className="bg-purple-500 h-2 rounded-full" style={{ width: '92%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </main>
           </div>
         </div>
-      </div>
-    </>
-  );
-}
-                    </div>
-                  </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">Gerar Atividades</h3>
-                  <p className="text-sm text-slate-600">Exercícios personalizados com IA</p>
-                  <div className="mt-4 flex items-center text-emerald-600 group-hover:text-emerald-700">
-                    <span className="text-sm font-medium">Acessar</span>
-                    <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/professor/ferramentas/imagem-educacional">
-              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-violet-50 to-purple-50 hover:from-violet-100 hover:to-purple-100">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-violet-500 to-purple-500 rounded-xl">
-                      <ImageIcon className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">Imagens Educacionais</h3>
-                  <p className="text-sm text-slate-600">Gere ilustrações para suas aulas</p>
-                  <div className="mt-4 flex items-center text-violet-600 group-hover:text-violet-700">
-                    <span className="text-sm font-medium">Acessar</span>
-                    <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/professor/ferramentas/materiais-didaticos">
-              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl">
-                      <BookOpen className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">Resumos Didáticos</h3>
-                  <p className="text-sm text-slate-600">Crie resumos educativos com IA</p>
-                  <div className="mt-4 flex items-center text-indigo-600 group-hover:text-indigo-700">
-                    <span className="text-sm font-medium">Acessar</span>
-                    <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/professor/ferramentas/resumos-bncc">
-              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl">
-                      <GraduationCap className="h-6 w-6 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">Resumos BNCC</h3>
-                  <p className="text-sm text-slate-600">Resumos alinhados à Base Nacional</p>
-                  <div className="mt-4 flex items-center text-cyan-600 group-hover:text-cyan-700">
-                    <span className="text-sm font-medium">Acessar</span>
-                    <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/professor/ferramentas/analise-documentos">
-              <Card className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-rose-50 to-pink-50 hover:from-rose-100 hover:to-pink-100">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl">
-                      <FileText className="h-6 w-6 text-white" />
-                    </div>
-                    <Badge className="bg-rose-100 text-rose-700 border-rose-200">Popular</Badge>
-                  </div>
-                  <h3 className="font-bold text-lg text-slate-900 mb-2">Análise de Documentos</h3>
-                  <p className="text-sm text-slate-600">Transforme PDFs em material didático</p>
-                  <div className="mt-4 flex items-center text-rose-600 group-hover:text-rose-700">
-                    <span className="text-sm font-medium">Acessar</span>
-                    <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-
-          </div>
-
-          {/* Dicas de IA para Educadores */}
-          <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl max-w-4xl mx-auto">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Lightbulb className="h-5 w-5 text-amber-500" />
-                Dicas de IA para Educadores
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/50">
-                <h4 className="font-semibold text-slate-900 mb-2">💡 Dica do Dia</h4>
-                <p className="text-sm text-slate-700 mb-3">
-                  Use a Central de IAs para comparar diferentes perspectivas sobre um tópico educacional. Cada IA tem seus pontos fortes únicos!
-                </p>
-                <Link href="/central-ia">
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm">
-                    Experimentar
-                  </Button>
-                </Link>
-              </div>
-              
-              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200/50">
-                <h4 className="font-semibold text-slate-900 mb-2">🚀 Recurso em Destaque</h4>
-                <p className="text-sm text-slate-700 mb-3">
-                  A Análise de Documentos pode transformar qualquer PDF ou Word em material didático estruturado automaticamente.
-                </p>
-                <Link href="/professor/ferramentas/analise-documentos">
-                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm">
-                    Testar Agora
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
       </div>
     </>
   );
