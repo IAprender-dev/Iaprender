@@ -24,27 +24,21 @@ export default function VoiceTutorTeacher() {
   const [blackboardContent, setBlackboardContent] = useState('');
   const [isMuted, setIsMuted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [realtimeSession, setRealtimeSession] = useState<any>(null);
-  const [wsConnection, setWsConnection] = useState<WebSocket | null>(null);
   const [permissionsGranted, setPermissionsGranted] = useState(false);
-  const [microphoneStream, setMicrophoneStream] = useState<MediaStream | null>(null);
 
-  // Refs
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
-  const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  // Refs para reconhecimento de voz e síntese
+  const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isListeningRef = useRef(false);
 
   const { toast } = useToast();
 
-  // Solicitar permissões de microfone e alto-falante ao carregar a página
+  // Solicitar permissões de microfone ao carregar a página
   useEffect(() => {
     const requestPermissions = async () => {
       try {
         console.log('🎤 Solicitando permissões de áudio...');
         
-        // Solicitar permissão do microfone
         const stream = await navigator.mediaDevices.getUserMedia({ 
           audio: {
             echoCancellation: true,
@@ -54,12 +48,12 @@ export default function VoiceTutorTeacher() {
         });
         
         console.log('✅ Permissão do microfone concedida');
-        setMicrophoneStream(stream);
+        stream.getTracks().forEach(track => track.stop()); // Parar stream inicial
         setPermissionsGranted(true);
         
         toast({
           title: "Permissões concedidas",
-          description: "Microfone e alto-falante autorizados para uso",
+          description: "Microfone autorizado para uso",
         });
         
       } catch (error) {
@@ -68,20 +62,13 @@ export default function VoiceTutorTeacher() {
         
         toast({
           title: "Permissões necessárias",
-          description: "A Pro Versa precisa de acesso ao microfone e alto-falante para funcionar",
+          description: "A Pro Versa precisa de acesso ao microfone para funcionar",
           variant: "destructive",
         });
       }
     };
 
     requestPermissions();
-    
-    // Cleanup ao desmontar componente
-    return () => {
-      if (microphoneStream) {
-        microphoneStream.getTracks().forEach(track => track.stop());
-      }
-    };
   }, [toast]);
 
   // Função para adicionar mensagem
@@ -94,6 +81,14 @@ export default function VoiceTutorTeacher() {
       format
     };
     setMessages(prev => [...prev, message]);
+
+    // Atualizar quadro se for conteúdo educacional
+    if (type === 'assistant') {
+      const educationalContent = filterContentForBlackboard(content);
+      if (educationalContent) {
+        setBlackboardContent(prev => prev + '\n' + educationalContent);
+      }
+    }
   }, []);
 
   // Função para filtrar conteúdo para o quadro
@@ -122,367 +117,173 @@ export default function VoiceTutorTeacher() {
     return educationalLines.join('\n').trim();
   };
 
-  // Função para converter ArrayBuffer para Base64
-  const arrayBufferToBase64 = useCallback((buffer: ArrayBuffer) => {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }, []);
-
-  // Função para inicializar áudio WebRTC
-  const initializeAudioSystem = useCallback(async (ws: WebSocket) => {
-    if (!permissionsGranted || !microphoneStream) {
-      console.error('Permissões de áudio não concedidas');
+  // Função para inicializar reconhecimento de voz
+  const initializeSpeechRecognition = useCallback(() => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      console.error('Reconhecimento de voz não suportado');
       toast({
-        title: "Permissões necessárias",
-        description: "Conceda acesso ao microfone para usar a Pro Versa",
+        title: "Não suportado",
+        description: "Seu navegador não suporta reconhecimento de voz",
         variant: "destructive",
       });
       return false;
     }
 
-    try {
-      // Criar contexto de áudio
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({
-        sampleRate: 24000
-      });
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    recognitionRef.current = new SpeechRecognition();
+    
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = false;
+    recognitionRef.current.lang = 'pt-BR';
+    recognitionRef.current.maxAlternatives = 1;
 
-      if (audioContextRef.current.state === 'suspended') {
-        await audioContextRef.current.resume();
-      }
+    recognitionRef.current.onstart = () => {
+      console.log('🎤 Reconhecimento iniciado');
+      setConversationState('listening');
+      isListeningRef.current = true;
+    };
 
-      // Criar fonte de áudio do stream do microfone
-      sourceRef.current = audioContextRef.current.createMediaStreamSource(microphoneStream);
-
-      // Criar processador de script para capturar áudio
-      processorRef.current = audioContextRef.current.createScriptProcessor(4096, 1, 1);
-
-      processorRef.current.onaudioprocess = (event) => {
-        if (!ws || ws.readyState !== WebSocket.OPEN) return;
-
-        const inputBuffer = event.inputBuffer.getChannelData(0);
+    recognitionRef.current.onresult = async (event: any) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.trim();
+      
+      if (transcript) {
+        console.log('🗣️ Texto reconhecido:', transcript);
+        addMessage('user', transcript);
         
-        // Converter para PCM 16-bit
-        const pcmBuffer = new Int16Array(inputBuffer.length);
-        for (let i = 0; i < inputBuffer.length; i++) {
-          pcmBuffer[i] = Math.max(-32768, Math.min(32767, inputBuffer[i] * 32768));
+        setConversationState('thinking');
+        
+        // Enviar para IA e processar resposta
+        try {
+          const response = await fetch('/api/ai/tutor-chat', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: transcript,
+              context: 'voice_tutor'
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            addMessage('assistant', data.response);
+            
+            // Sintetizar resposta
+            if (!isMuted) {
+              await synthesizeSpeech(data.response);
+            } else {
+              setConversationState('idle');
+              setTimeout(() => startListening(), 1000);
+            }
+          } else {
+            throw new Error('Erro na resposta da IA');
+          }
+        } catch (error) {
+          console.error('Erro ao processar resposta:', error);
+          setConversationState('idle');
+          setTimeout(() => startListening(), 2000);
         }
+      }
+    };
 
-        // Enviar áudio para OpenAI Realtime
-        if (isListeningRef.current) {
-          ws.send(JSON.stringify({
-            type: 'input_audio_buffer.append',
-            audio: arrayBufferToBase64(pcmBuffer.buffer)
-          }));
+    recognitionRef.current.onerror = (event: any) => {
+      console.error('Erro no reconhecimento:', event.error);
+      setConversationState('idle');
+      isListeningRef.current = false;
+      
+      setTimeout(() => {
+        if (isConnected) {
+          startListening();
         }
-      };
+      }, 2000);
+    };
 
-      // Conectar os nós
-      sourceRef.current.connect(processorRef.current);
-      processorRef.current.connect(audioContextRef.current.destination);
+    recognitionRef.current.onend = () => {
+      console.log('🔇 Reconhecimento finalizado');
+      isListeningRef.current = false;
+      
+      if (conversationState === 'listening' && isConnected) {
+        setTimeout(() => startListening(), 1000);
+      }
+    };
 
-      console.log('✅ Sistema de áudio WebRTC inicializado');
-      return true;
-
-    } catch (error) {
-      console.error('Erro ao inicializar sistema de áudio:', error);
-      toast({
-        title: "Erro no áudio",
-        description: "Falha ao inicializar sistema de áudio",
-        variant: "destructive",
-      });
-      return false;
-    }
-  }, [permissionsGranted, microphoneStream, toast, arrayBufferToBase64]);
+    return true;
+  }, [addMessage, conversationState, isConnected, isMuted, toast]);
 
   // Função para iniciar escuta
   const startListening = useCallback(() => {
-    if (!wsConnection || !isConnected || !permissionsGranted || conversationState !== 'idle' || isListeningRef.current) {
-      console.log('Condições não atendidas para iniciar escuta:', {
-        hasWebSocket: !!wsConnection,
-        isConnected,
-        permissionsGranted,
-        conversationState,
-        isListening: isListeningRef.current
-      });
+    if (!recognitionRef.current || !isConnected || !permissionsGranted || isListeningRef.current) {
       return;
     }
 
     try {
-      isListeningRef.current = true;
-      setConversationState('listening');
-      console.log('🎤 Iniciando escuta com OpenAI Realtime...');
-
-      // Sinalizar início da escuta para o servidor
-      wsConnection.send(JSON.stringify({
-        type: 'input_audio_buffer.commit'
-      }));
-
+      recognitionRef.current.start();
+      console.log('🎤 Iniciando escuta...');
     } catch (error) {
-      console.error('Erro ao iniciar escuta:', error);
-      isListeningRef.current = false;
-      setConversationState('idle');
+      console.error('Erro ao iniciar reconhecimento:', error);
     }
-  }, [wsConnection, isConnected, permissionsGranted, conversationState]);
+  }, [isConnected, permissionsGranted]);
 
   // Função para parar escuta
   const stopListening = useCallback(() => {
-    if (!isListeningRef.current) return;
-
-    isListeningRef.current = false;
-    setConversationState('thinking');
-    console.log('🔇 Parando escuta...');
-
-    if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
-      wsConnection.send(JSON.stringify({
-        type: 'input_audio_buffer.commit'
-      }));
+    if (recognitionRef.current && isListeningRef.current) {
+      recognitionRef.current.stop();
+      isListeningRef.current = false;
+      setConversationState('idle');
     }
-  }, [wsConnection]);
+  }, []);
 
-  // Função para reproduzir áudio delta
-  const playAudioDelta = useCallback((deltaBase64: string) => {
-    if (isMuted) return;
+  // Função para sintetizar fala
+  const synthesizeSpeech = useCallback(async (text: string) => {
+    if (isMuted || !text) return;
 
     try {
-      // Decodificar base64 para ArrayBuffer
-      const binaryString = atob(deltaBase64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      if (audioContextRef.current) {
-        // Converter PCM16 para AudioBuffer e reproduzir
-        const audioBuffer = audioContextRef.current.createBuffer(1, bytes.length / 2, 24000);
-        const channelData = audioBuffer.getChannelData(0);
-        
-        const int16Array = new Int16Array(bytes.buffer);
-        for (let i = 0; i < int16Array.length; i++) {
-          channelData[i] = int16Array[i] / 32768;
-        }
-
-        const source = audioContextRef.current.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(audioContextRef.current.destination);
-        source.start();
-      }
-    } catch (error) {
-      console.error('Erro ao reproduzir áudio delta:', error);
-    }
-  }, [isMuted]);
-
-  // Função para inicializar WebSocket da OpenAI Realtime
-  const initializeRealtimeWebSocket = useCallback(async () => {
-    try {
-      // Obter token ephemeral da OpenAI
-      const tokenResponse = await fetch('/api/realtime/session', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!tokenResponse.ok) {
-        throw new Error(`Erro ao obter token: ${tokenResponse.status}`);
-      }
-
-      const { client_secret } = await tokenResponse.json();
+      setConversationState('speaking');
+      console.log('🔊 Sintetizando fala...');
       
-      // Conectar ao WebSocket da OpenAI Realtime
-      const ws = new WebSocket('wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01', [
-        'realtime',
-        `openai-insecure-api-key.${client_secret.value}`
-      ]);
+      // Usar Speech Synthesis API nativa
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
 
-      ws.onopen = () => {
-        console.log('✅ WebSocket conectado à OpenAI Realtime');
-        
-        // Configurar sessão com configurações mais robustas
-        ws.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            modalities: ['text', 'audio'],
-            instructions: 'Você é a Pro Versa, uma tutora virtual educacional brasileira. Seja amigável, educativa e responda em português. Mantenha as respostas concisas e didáticas.',
-            voice: 'alloy',
-            input_audio_format: 'pcm16',
-            output_audio_format: 'pcm16',
-            input_audio_transcription: {
-              model: 'whisper-1'
-            },
-            turn_detection: {
-              type: 'server_vad',
-              threshold: 0.6,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 800
-            },
-            temperature: 0.8,
-            max_response_output_tokens: 4096
-          }
-        }));
-        
-        // Definir o WebSocket como conectado
-        setWsConnection(ws);
-      };
+      // Tentar encontrar uma voz em português
+      const voices = speechSynthesis.getVoices();
+      const portugueseVoice = voices.find(voice => voice.lang.includes('pt'));
+      if (portugueseVoice) {
+        utterance.voice = portugueseVoice;
+      }
 
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log('📩 Mensagem WebSocket:', data.type);
-
-        switch (data.type) {
-          case 'conversation.item.input_audio_transcription.completed':
-            if (data.transcript) {
-              console.log('🗣️ Transcrição:', data.transcript);
-              addMessage('user', data.transcript);
-            }
-            break;
-
-          case 'response.audio.delta':
-            // Reproduzir áudio da resposta
-            if (data.delta) {
-              playAudioDelta(data.delta);
-            }
-            break;
-
-          case 'response.text.delta':
-            // Atualizar texto da resposta
-            if (data.delta) {
-              console.log('📝 Texto da resposta:', data.delta);
-            }
-            break;
-
-          case 'response.done':
-            console.log('✅ Resposta concluída');
-            setConversationState('idle');
-            // Não reiniciar escuta automaticamente
-            break;
-
-          case 'input_audio_buffer.speech_started':
-            console.log('🎤 Início da fala detectado');
-            setConversationState('listening');
-            break;
-
-          case 'input_audio_buffer.speech_stopped':
-            console.log('🔇 Fim da fala detectado');
-            setConversationState('thinking');
-            break;
-
-          case 'error':
-            console.error('❌ Erro WebSocket:', data.error);
-            break;
-        }
-      };
-
-      // Configurar handlers de erro e fechamento fora da Promise
-      const originalOnError = ws.onerror;
-      const originalOnClose = ws.onclose;
-      
-      ws.onerror = (error) => {
-        console.error('❌ Erro no WebSocket:', error);
-        if (originalOnError) originalOnError.call(ws, error);
-        toast({
-          title: "Erro de conexão",
-          description: "Falha na conexão com OpenAI Realtime",
-          variant: "destructive",
-        });
-      };
-
-      ws.onclose = (event) => {
-        console.log('🔌 WebSocket fechado:', event.code, event.reason);
-        if (originalOnClose) originalOnClose.call(ws, event);
-        
-        setWsConnection(null);
-        setIsConnected(false);
+      utterance.onend = () => {
+        console.log('🎵 Síntese finalizada');
         setConversationState('idle');
-        setConnectionState('disconnected');
-        
-        // Códigos de erro específicos
-        let errorMessage = "WebSocket foi fechado";
-        if (event.code === 1006) {
-          errorMessage = "Conexão perdida inesperadamente";
-        } else if (event.code === 1011) {
-          errorMessage = "Erro interno do servidor";
-        } else if (event.code === 1008) {
-          errorMessage = "Política violada - verifique autenticação";
-        } else if (event.code !== 1000) {
-          errorMessage = `Erro de conexão (código: ${event.code})`;
-        }
-        
-        if (event.code !== 1000) {
-          toast({
-            title: "Conexão perdida",
-            description: errorMessage,
-            variant: "destructive",
-          });
-        }
+        setTimeout(() => startListening(), 1000);
       };
 
-      // Aguardar conexão estabelecer
-      return new Promise((resolve) => {
-        const timeout = setTimeout(() => {
-          resolve(false);
-        }, 10000); // Timeout de 10 segundos
+      utterance.onerror = (error) => {
+        console.error('Erro na síntese:', error);
+        setConversationState('idle');
+        setTimeout(() => startListening(), 1500);
+      };
 
-        ws.onopen = () => {
-          clearTimeout(timeout);
-          console.log('✅ WebSocket conectado à OpenAI Realtime');
-          
-          // Configurar sessão com configurações mais robustas
-          ws.send(JSON.stringify({
-            type: 'session.update',
-            session: {
-              modalities: ['text', 'audio'],
-              instructions: 'Você é a Pro Versa, uma tutora virtual educacional brasileira. Seja amigável, educativa e responda em português. Mantenha as respostas concisas e didáticas.',
-              voice: 'alloy',
-              input_audio_format: 'pcm16',
-              output_audio_format: 'pcm16',
-              input_audio_transcription: {
-                model: 'whisper-1'
-              },
-              turn_detection: {
-                type: 'server_vad',
-                threshold: 0.6,
-                prefix_padding_ms: 300,
-                silence_duration_ms: 800
-              },
-              temperature: 0.8,
-              max_response_output_tokens: 4096
-            }
-          }));
-          
-          // Definir o WebSocket como conectado
-          setWsConnection(ws);
-          resolve(true);
-        };
-
-        ws.onerror = (error) => {
-          clearTimeout(timeout);
-          console.error('❌ Erro no WebSocket:', error);
-          resolve(false);
-        };
-      });
-
+      speechSynthesis.speak(utterance);
+      
     } catch (error) {
-      console.error('Erro ao inicializar WebSocket:', error);
-      toast({
-        title: "Erro na conexão",
-        description: "Não foi possível conectar à OpenAI Realtime",
-        variant: "destructive",
-      });
-      return false;
+      console.error('Erro na síntese de fala:', error);
+      setConversationState('idle');
+      setTimeout(() => startListening(), 1000);
     }
-  }, [addMessage, toast, playAudioDelta]);
+  }, [isMuted, startListening]);
 
-  // Função para conectar ao OpenAI Realtime
-  const connectToRealtime = useCallback(async () => {
+  // Função para conectar
+  const connectToSystem = useCallback(async () => {
     if (!permissionsGranted) {
       toast({
         title: "Permissões necessárias",
-        description: "Primeiro conceda acesso ao microfone e alto-falante",
+        description: "Primeiro conceda acesso ao microfone",
         variant: "destructive",
       });
       return;
@@ -490,47 +291,36 @@ export default function VoiceTutorTeacher() {
 
     try {
       setConnectionState('connecting');
-      
-      // Primeiro inicializar WebSocket
-      const wsInitialized = await initializeRealtimeWebSocket();
-      if (!wsInitialized) {
-        throw new Error('Falha ao conectar WebSocket');
+      console.log('🔄 Conectando...');
+
+      // Inicializar reconhecimento de voz
+      const speechInitialized = initializeSpeechRecognition();
+      if (!speechInitialized) {
+        throw new Error('Falha ao inicializar reconhecimento de voz');
       }
 
-      // Aguardar o WebSocket estar disponível
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Depois inicializar sistema de áudio com o WebSocket
-      if (wsConnection) {
-        const audioInitialized = await initializeAudioSystem(wsConnection);
-        if (!audioInitialized) {
-          throw new Error('Falha ao inicializar sistema de áudio');
-        }
-      } else {
-        throw new Error('WebSocket não disponível para inicializar áudio');
+      // Aguardar carregamento das vozes
+      if (speechSynthesis.getVoices().length === 0) {
+        await new Promise(resolve => {
+          speechSynthesis.onvoiceschanged = resolve;
+          setTimeout(resolve, 1000); // Fallback timeout
+        });
       }
 
       setIsConnected(true);
       setConnectionState('connected');
       
-      // Saudação inicial via texto
-      const welcomeMessage = 'Oi! Eu sou a Pro Versa, sua tutora virtual com OpenAI Realtime. O que gostaria de aprender hoje?';
+      // Saudação inicial
+      const welcomeMessage = 'Oi! Eu sou a Pro Versa, sua tutora virtual. O que gostaria de aprender hoje?';
       addMessage('assistant', welcomeMessage);
       
-      // Aguardar estabilização da conexão
-      setTimeout(() => {
-        if (isConnected && wsConnection && wsConnection.readyState === WebSocket.OPEN) {
-          console.log('Sistema pronto para conversação');
-          toast({
-            title: "Sistema ativo",
-            description: "Use o botão 'Clique para Falar' para interagir"
-          });
-        }
-      }, 2000);
-
+      setTimeout(async () => {
+        await synthesizeSpeech(welcomeMessage);
+      }, 1000);
+      
       toast({
         title: "Pro Versa conectada!",
-        description: "Sistema OpenAI Realtime ativo - pode falar!"
+        description: "Sistema de voz ativo - pode falar!"
       });
 
     } catch (error) {
@@ -542,7 +332,32 @@ export default function VoiceTutorTeacher() {
         variant: "destructive",
       });
     }
-  }, [permissionsGranted, initializeAudioSystem, initializeRealtimeWebSocket, addMessage, toast]);
+  }, [permissionsGranted, initializeSpeechRecognition, addMessage, synthesizeSpeech, toast]);
+
+  // Função para desconectar
+  const disconnect = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    speechSynthesis.cancel();
+    
+    setConnectionState('disconnected');
+    setConversationState('idle');
+    setIsConnected(false);
+    isListeningRef.current = false;
+    
+    toast({
+      title: "Desconectado",
+      description: "Pro Versa foi desconectada"
+    });
+  }, [toast]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
@@ -584,7 +399,7 @@ export default function VoiceTutorTeacher() {
                       <AlertTriangle className="w-5 h-5 text-amber-600" />
                       <div>
                         <p className="text-sm font-medium text-amber-800">Permissões necessárias</p>
-                        <p className="text-xs text-amber-600">Microfone e alto-falante são obrigatórios</p>
+                        <p className="text-xs text-amber-600">Microfone é obrigatório</p>
                       </div>
                     </div>
                   </div>
@@ -594,7 +409,7 @@ export default function VoiceTutorTeacher() {
                 <div className="space-y-3">
                   {!isConnected ? (
                     <Button
-                      onClick={connectToRealtime}
+                      onClick={connectToSystem}
                       disabled={connectionState === 'connecting' || !permissionsGranted}
                       className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
                     >
@@ -612,22 +427,7 @@ export default function VoiceTutorTeacher() {
                     </Button>
                   ) : (
                     <Button
-                      onClick={() => {
-                        setIsConnected(false);
-                        setConnectionState('disconnected');
-                        setConversationState('idle');
-                        setRealtimeSession(null);
-                        
-                        if (wsConnection) {
-                          wsConnection.close();
-                          setWsConnection(null);
-                        }
-                        
-                        if (audioContextRef.current) {
-                          audioContextRef.current.close();
-                          audioContextRef.current = null;
-                        }
-                      }}
+                      onClick={disconnect}
                       className="w-full bg-red-600 hover:bg-red-700"
                     >
                       <PowerOff className="w-4 h-4 mr-2" />
