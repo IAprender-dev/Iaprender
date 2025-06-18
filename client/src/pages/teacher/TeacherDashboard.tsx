@@ -416,8 +416,7 @@ export default function TeacherDashboard() {
                     <Button 
                       onClick={logout}
                       size="sm"
-                      variant="outline"
-                      className="gap-2 border-blue-300 text-blue-700 hover:bg-blue-50 font-medium"
+                      className="gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                     >
                       <LogOut className="h-4 w-4" />
                       Sair
