@@ -464,124 +464,122 @@ export default function TeacherDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Token Usage Bar */}
+              {/* Token Usage Card - Redesigned */}
               <div className="mb-8">
                 {isTokenLoading ? (
-                  <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200">
+                  <Card className="border border-slate-200/60 bg-white/50 backdrop-blur-sm">
                     <CardContent className="p-6">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-slate-200 rounded-xl animate-pulse">
-                          <Zap className="h-6 w-6 text-slate-400" />
-                        </div>
-                        <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-slate-200 rounded animate-pulse w-1/4"></div>
-                          <div className="h-2 bg-slate-200 rounded animate-pulse"></div>
-                          <div className="h-3 bg-slate-200 rounded animate-pulse w-1/3"></div>
+                        <div className="w-12 h-12 bg-slate-200 rounded-xl animate-pulse"></div>
+                        <div className="flex-1 space-y-3">
+                          <div className="h-4 bg-slate-200 rounded animate-pulse w-1/3"></div>
+                          <div className="h-3 bg-slate-200 rounded animate-pulse w-full"></div>
+                          <div className="h-2 bg-slate-200 rounded animate-pulse w-2/3"></div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 ) : tokenData ? (
-                  <Card className={`border-0 shadow-lg ${
-                    tokenData.warningThreshold 
-                      ? 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200' 
-                      : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
-                  }`}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
+                  <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
+                    <CardContent className="p-8">
+                      <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-xl ${
+                          <div className={`relative p-4 rounded-2xl ${
                             tokenData.warningThreshold 
-                              ? 'bg-gradient-to-br from-red-500 to-orange-500' 
-                              : 'bg-gradient-to-br from-blue-500 to-indigo-500'
-                          }`}>
-                            <Zap className="h-6 w-6 text-white" />
+                              ? 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-200' 
+                              : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200'
+                          } shadow-lg`}>
+                            <Zap className="h-7 w-7 text-white" />
+                            {tokenData.warningThreshold && (
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full animate-pulse"></div>
+                            )}
                           </div>
                           <div>
-                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                              Consumo de Tokens IA
-                              {tokenData.warningThreshold && (
-                                <Badge variant="destructive" className="flex items-center gap-1">
-                                  <AlertTriangle className="h-3 w-3" />
-                                  Limite Próximo
-                                </Badge>
-                              )}
-                            </h3>
-                            <p className="text-sm text-slate-600">
-                              Monitoramento do uso mensal de inteligência artificial
+                            <h2 className="text-2xl font-bold text-slate-900 mb-1">
+                              Tokens de IA
+                            </h2>
+                            <p className="text-slate-600 text-sm">
+                              {tokenData.warningThreshold ? 'Atenção: Limite próximo' : 'Monitoramento em tempo real'}
                             </p>
                           </div>
                         </div>
-                        <Link href="/tokens">
-                          <Button variant="outline" className="gap-2 hover:bg-slate-100">
-                            <BarChart3 className="h-4 w-4" />
-                            Ver Detalhes
-                          </Button>
-                        </Link>
+                        
+                        <div className="text-right">
+                          <div className={`text-3xl font-bold mb-1 ${
+                            tokenData.warningThreshold ? 'text-amber-600' : 'text-blue-600'
+                          }`}>
+                            {((tokenData.currentUsage / tokenData.monthlyLimit) * 100).toFixed(0)}%
+                          </div>
+                          <div className="text-xs text-slate-500 font-medium">utilizado</div>
+                        </div>
                       </div>
                       
-                      <div className="space-y-4">
-                        {/* Progress Bar */}
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium text-slate-700">
-                              {tokenData.currentUsage.toLocaleString()} / {tokenData.monthlyLimit.toLocaleString()} tokens
+                      <div className="space-y-6">
+                        {/* Enhanced Progress Bar */}
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-slate-700">
+                              {tokenData.currentUsage.toLocaleString()} tokens usados
                             </span>
-                            <span className={`text-sm font-bold ${
-                              tokenData.warningThreshold ? 'text-red-600' : 'text-blue-600'
-                            }`}>
-                              {((tokenData.currentUsage / tokenData.monthlyLimit) * 100).toFixed(1)}%
+                            <span className="font-medium text-slate-500">
+                              {tokenData.monthlyLimit.toLocaleString()} limite
                             </span>
                           </div>
-                          <Progress 
-                            value={(tokenData.currentUsage / tokenData.monthlyLimit) * 100} 
-                            className={`h-3 ${
-                              tokenData.warningThreshold ? 'text-red-500' : 'text-blue-500'
-                            }`}
-                          />
+                          
+                          <div className="relative">
+                            <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                              <div 
+                                className={`h-full rounded-full transition-all duration-700 ease-out ${
+                                  tokenData.warningThreshold 
+                                    ? 'bg-gradient-to-r from-amber-400 to-orange-500' 
+                                    : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+                                }`}
+                                style={{ width: `${Math.min((tokenData.currentUsage / tokenData.monthlyLimit) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                            {tokenData.warningThreshold && (
+                              <div className="absolute top-0 right-4 transform -translate-y-1">
+                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
-                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <TrendingUp className="h-4 w-4 text-green-600" />
+                        {/* Compact Stats */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                <TrendingUp className="h-4 w-4 text-green-600" />
+                              </div>
+                              <span className="text-xs font-medium text-green-700">Disponível</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-slate-600 font-medium">Tokens Restantes</p>
-                              <p className="text-lg font-bold text-slate-900">{tokenData.remainingTokens.toLocaleString()}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                              <Calendar className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-slate-600 font-medium">Uso Diário</p>
-                              <p className="text-lg font-bold text-slate-900">{tokenData.stats.dailyUsage.toLocaleString()}</p>
+                            <div className="text-xl font-bold text-green-800">
+                              {tokenData.remainingTokens.toLocaleString()}
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                              <BarChart3 className="h-4 w-4 text-purple-600" />
+                          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 rounded-xl border border-blue-200/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <Calendar className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <span className="text-xs font-medium text-blue-700">Hoje</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-slate-600 font-medium">Média Diária</p>
-                              <p className="text-lg font-bold text-slate-900">{tokenData.stats.averageDailyUsage.toLocaleString()}</p>
+                            <div className="text-xl font-bold text-blue-800">
+                              {tokenData.stats.dailyUsage.toLocaleString()}
                             </div>
                           </div>
                           
-                          <div className="flex items-center gap-3 p-3 bg-white/50 rounded-lg border border-white/60">
-                            <div className="p-2 bg-orange-100 rounded-lg">
-                              <Calendar className="h-4 w-4 text-orange-600" />
+                          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-200/50 col-span-2 md:col-span-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <BarChart3 className="h-4 w-4 text-purple-600" />
+                              </div>
+                              <span className="text-xs font-medium text-purple-700">Reset</span>
                             </div>
-                            <div>
-                              <p className="text-xs text-slate-600 font-medium">Reset em</p>
-                              <p className="text-lg font-bold text-slate-900">
-                                {Math.ceil((new Date(tokenData.resetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} dias
-                              </p>
+                            <div className="text-xl font-bold text-purple-800">
+                              {Math.ceil((new Date(tokenData.resetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}d
                             </div>
                           </div>
                         </div>
@@ -589,15 +587,15 @@ export default function TeacherDashboard() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <Card className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200">
+                  <Card className="border border-slate-200/60 bg-white/50 backdrop-blur-sm">
                     <CardContent className="p-6">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-slate-300 rounded-xl">
+                        <div className="w-12 h-12 bg-slate-300 rounded-xl flex items-center justify-center">
                           <Zap className="h-6 w-6 text-slate-600" />
                         </div>
                         <div>
-                          <h3 className="text-xl font-bold text-slate-900">Dados de Tokens Indisponíveis</h3>
-                          <p className="text-sm text-slate-600">Não foi possível carregar as informações de consumo</p>
+                          <h3 className="text-lg font-semibold text-slate-900">Dados Indisponíveis</h3>
+                          <p className="text-sm text-slate-600">Não foi possível carregar as informações</p>
                         </div>
                       </div>
                     </CardContent>
@@ -605,216 +603,188 @@ export default function TeacherDashboard() {
                 )}
               </div>
 
-              {/* Quick Access Tools */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+              {/* Essential Actions - Simplified */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <Link href="/central-ia">
-                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 rounded-lg">
-                          <Bot className="h-6 w-6 text-white" />
+                  <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardContent className="p-8 relative z-10">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                          <Bot className="h-8 w-8 text-white" />
                         </div>
-                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-semibold">
-                          <Sparkles className="h-3 w-3 mr-1" />
-                          Novo
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-bold px-3 py-1 text-sm">
+                          <Sparkles className="h-4 w-4 mr-1" />
+                          Central IA
                         </Badge>
                       </div>
-                      <h3 className="font-semibold text-lg text-white mb-2">Central de IAs</h3>
-                      <p className="text-sm text-white/80">ChatGPT, Claude e Gemini em um só lugar</p>
-                      <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">Acessar</span>
-                        <ArrowRight className="h-4 w-4 ml-1" />
+                      <div className="space-y-3">
+                        <h3 className="font-bold text-2xl text-white">Central de Inteligências</h3>
+                        <p className="text-white/90 text-base leading-relaxed">
+                          Acesse ChatGPT, Claude e Gemini em uma interface unificada para maximizar sua produtividade
+                        </p>
+                        <div className="flex items-center gap-2 pt-4">
+                          <div className="flex items-center text-white/80 font-medium">
+                            <span>Acessar Central</span>
+                            <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 </Link>
 
-                <Link href="/teacher/activities">
-                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 rounded-lg">
-                          <PenTool className="h-6 w-6 text-white" />
+                <Link href="/professor/ferramentas/planejamento-aula">
+                  <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardContent className="p-8 relative z-10">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                          <BookOpen className="h-8 w-8 text-white" />
                         </div>
-                        <Badge className="bg-gradient-to-r from-pink-400 to-red-500 text-white border-0 font-semibold">Popular</Badge>
+                        <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-bold px-3 py-1 text-sm">
+                          <ClipboardList className="h-4 w-4 mr-1" />
+                          Essencial
+                        </Badge>
                       </div>
-                      <h3 className="font-semibold text-lg text-white mb-2">Gerador de Atividades</h3>
-                      <p className="text-sm text-white/80">Criação automática de exercícios</p>
-                      <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">Acessar</span>
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-
-                <Link href="/teacher/lesson-plans">
-                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-blue-600 to-cyan-700 text-white">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 rounded-lg">
-                          <BookOpen className="h-6 w-6 text-white" />
+                      <div className="space-y-3">
+                        <h3 className="font-bold text-2xl text-white">Planos de Aula</h3>
+                        <p className="text-white/90 text-base leading-relaxed">
+                          Crie planos de aula detalhados e alinhados à BNCC com o poder da inteligência artificial
+                        </p>
+                        <div className="flex items-center gap-2 pt-4">
+                          <div className="flex items-center text-white/80 font-medium">
+                            <span>Criar Plano</span>
+                            <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
                         </div>
-                        <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-semibold">Essencial</Badge>
-                      </div>
-                      <h3 className="font-semibold text-lg text-white mb-2">Planos de Aula</h3>
-                      <p className="text-sm text-white/80">Planejamento inteligente com IA</p>
-                      <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">Acessar</span>
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-
-                <Link href="/teacher/document-analysis">
-                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-orange-600 to-red-700 text-white">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 rounded-lg">
-                          <Search className="h-6 w-6 text-white" />
-                        </div>
-                        <Badge className="bg-gradient-to-r from-purple-400 to-indigo-500 text-white border-0 font-semibold">IA</Badge>
-                      </div>
-                      <h3 className="font-semibold text-lg text-white mb-2">Análise de Documentos</h3>
-                      <p className="text-sm text-white/80">Extraia insights de PDFs e textos</p>
-                      <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">Analisar</span>
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-
-                <Link href="/tokens">
-                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-purple-600 to-pink-700 text-white">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 rounded-lg">
-                          <Sparkles className="h-6 w-6 text-white" />
-                        </div>
-                        <Badge className="bg-gradient-to-r from-amber-400 to-yellow-500 text-white border-0 font-semibold">Controle</Badge>
-                      </div>
-                      <h3 className="font-semibold text-lg text-white mb-2">Gerenciar Tokens</h3>
-                      <p className="text-sm text-white/80">Controle e monitore seu uso de IA</p>
-                      <div className="mt-4 flex items-center text-white">
-                        <span className="text-sm font-medium">Gerenciar</span>
-                        <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </CardContent>
                   </Card>
                 </Link>
               </div>
 
-              {/* Interactive Panels */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-cyan-600 to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 rounded-lg">
-                        <Download className="h-5 w-5 text-white" />
+              {/* Quick Navigation & Insights */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Quick Access to Tools */}
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                      <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
+                        <Lightbulb className="h-6 w-6 text-white" />
                       </div>
-                      Downloads Recentes
+                      Acesso Rápido
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
-                        <span className="text-sm font-medium text-white">Plano de Matemática</span>
-                        <Badge className="bg-white/20 text-white border-white/30 font-medium">PDF</Badge>
+                  <CardContent className="space-y-4">
+                    <Link href="/professor/ferramentas/gerador-atividades">
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200/50 hover:shadow-md transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-emerald-100 rounded-lg group-hover:bg-emerald-200 transition-colors">
+                            <PenTool className="h-5 w-5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-900">Gerador de Atividades</p>
+                            <p className="text-sm text-slate-600">Criar exercícios com IA</p>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
-                        <span className="text-sm font-medium text-white">Atividade de Português</span>
-                        <Badge className="bg-white/20 text-white border-white/30 font-medium">DOCX</Badge>
+                    </Link>
+
+                    <Link href="/professor/ferramentas/materiais-didaticos">
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200/50 hover:shadow-md transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+                            <FileText className="h-5 w-5 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-900">Materiais Didáticos</p>
+                            <p className="text-sm text-slate-600">Resumos e conteúdos</p>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
-                        <span className="text-sm font-medium text-white">Quiz de Ciências</span>
-                        <Badge className="bg-white/20 text-white border-white/30 font-medium">PDF</Badge>
+                    </Link>
+
+                    <Link href="/tokens">
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200/50 hover:shadow-md transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-amber-100 rounded-lg group-hover:bg-amber-200 transition-colors">
+                            <BarChart3 className="h-5 w-5 text-amber-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-900">Gerenciar Tokens</p>
+                            <p className="text-sm text-slate-600">Controle de uso</p>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" />
                       </div>
-                    </div>
+                    </Link>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 rounded-lg">
-                        <Heart className="h-5 w-5 text-white" />
+                {/* Usage Insights */}
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-3">
+                      <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
+                        <TrendingUp className="h-6 w-6 text-white" />
                       </div>
-                      Favoritos
+                      Insights de Uso
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
-                        <span className="text-sm font-medium text-white">Gerador de Atividades</span>
-                        <Star className="h-4 w-4 text-yellow-300 fill-current" />
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
-                        <span className="text-sm font-medium text-white">Central de IAs</span>
-                        <Star className="h-4 w-4 text-yellow-300 fill-current" />
-                      </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
-                        <span className="text-sm font-medium text-white">Planos de Aula</span>
-                        <Star className="h-4 w-4 text-yellow-300 fill-current" />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <CardContent className="space-y-4">
+                    {tokenData ? (
+                      <>
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-blue-700">Eficiência Mensal</span>
+                            <span className="text-lg font-bold text-blue-800">
+                              {tokenData.stats.averageDailyUsage > 0 
+                                ? Math.round((tokenData.stats.monthlyUsage / tokenData.monthlyLimit) * 100)
+                                : 0}%
+                            </span>
+                          </div>
+                          <p className="text-xs text-blue-600">
+                            Você está utilizando os recursos de forma {
+                              (tokenData.currentUsage / tokenData.monthlyLimit) < 0.7 ? 'eficiente' : 'intensa'
+                            }
+                          </p>
+                        </div>
 
-                <Card className="bg-gradient-to-br from-violet-600 to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 rounded-lg">
-                        <FileText className="h-5 w-5 text-white" />
-                      </div>
-                      Resumos IA
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="p-3 bg-white/10 rounded-lg">
-                        <p className="text-sm font-medium text-white">Resumo sobre frações para 3º ano</p>
-                        <p className="text-xs text-white/70 mt-1">Há 2 horas</p>
-                      </div>
-                      <div className="p-3 bg-white/10 rounded-lg">
-                        <p className="text-sm font-medium text-white">Análise de texto de literatura</p>
-                        <p className="text-xs text-white/70 mt-1">Ontem</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-green-700">Tokens Disponíveis</span>
+                            <span className="text-lg font-bold text-green-800">
+                              {Math.round((tokenData.remainingTokens / tokenData.monthlyLimit) * 100)}%
+                            </span>
+                          </div>
+                          <p className="text-xs text-green-600">
+                            {tokenData.remainingTokens.toLocaleString()} tokens restantes este mês
+                          </p>
+                        </div>
 
-                <Card className="bg-gradient-to-br from-orange-600 to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 rounded-lg">
-                        <BarChart3 className="h-5 w-5 text-white" />
-                      </div>
-                      Performance dos Alunos
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-white">Matemática</span>
-                        <div className="w-20 bg-white/20 rounded-full h-2">
-                          <div className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full" style={{ width: '85%' }}></div>
+                        <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200/50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-purple-700">Próximo Reset</span>
+                            <span className="text-lg font-bold text-purple-800">
+                              {Math.ceil((new Date(tokenData.resetDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} dias
+                            </span>
+                          </div>
+                          <p className="text-xs text-purple-600">
+                            Seus limites serão renovados
+                          </p>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-white">Português</span>
-                        <div className="w-20 bg-white/20 rounded-full h-2">
-                          <div className="bg-gradient-to-r from-blue-400 to-cyan-500 h-2 rounded-full" style={{ width: '78%' }}></div>
+                      </>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <BarChart3 className="h-8 w-8 text-slate-400" />
                         </div>
+                        <p className="text-slate-600">Carregando insights...</p>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-white">Ciências</span>
-                        <div className="w-20 bg-white/20 rounded-full h-2">
-                          <div className="bg-gradient-to-r from-purple-400 to-pink-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
