@@ -351,6 +351,38 @@ export default function VoiceTutorTeacher() {
     setChalkboardContent([]);
   };
 
+  // Add demo content when component mounts
+  useEffect(() => {
+    // Add some initial demo content to showcase the chalkboard
+    const demoContent = [
+      {
+        id: 'demo-1',
+        type: 'concept' as const,
+        title: 'Conceito Fundamental',
+        content: 'A fotossíntese é o processo pelo qual as plantas convertem luz solar em energia química.',
+        timestamp: new Date(),
+        subject: 'Biologia'
+      },
+      {
+        id: 'demo-2', 
+        type: 'formula' as const,
+        title: 'Fórmula da Fotossíntese',
+        content: '6CO₂ + 6H₂O + energia solar → C₆H₁₂O₆ + 6O₂',
+        timestamp: new Date(),
+        subject: 'Biologia'
+      },
+      {
+        id: 'demo-3',
+        type: 'important' as const,
+        title: 'Ponto Importante',
+        content: 'Lembre-se: as plantas são os produtores primários da cadeia alimentar!',
+        timestamp: new Date(),
+        subject: 'Biologia'
+      }
+    ];
+    setChalkboardContent(demoContent);
+  }, []);
+
   const getTeacherAvatar = () => {
     if (conversationState === 'listening') {
       return (
@@ -538,6 +570,94 @@ export default function VoiceTutorTeacher() {
                     <p>Não tenha medo de errar!</p>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Green Chalkboard */}
+          <div className="lg:col-span-1">
+            <Card className="h-[700px] bg-gradient-to-br from-green-800 to-green-900 border-green-700 shadow-xl">
+              <CardContent className="p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Presentation className="h-5 w-5 text-green-100" />
+                    <h3 className="font-semibold text-green-100">Lousa Digital</h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => setShowChalkboard(!showChalkboard)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-green-100 hover:bg-green-700/50"
+                    >
+                      {showChalkboard ? 'Ocultar' : 'Mostrar'}
+                    </Button>
+                    {chalkboardContent.length > 0 && (
+                      <Button
+                        onClick={clearChalkboard}
+                        variant="ghost"
+                        size="sm"
+                        className="text-green-100 hover:bg-green-700/50"
+                      >
+                        Limpar
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                {showChalkboard && (
+                  <ScrollArea className="flex-1 pr-4">
+                    <div className="space-y-4">
+                      {chalkboardContent.length === 0 ? (
+                        <div className="text-center py-16">
+                          <div className="w-16 h-16 rounded-full bg-green-700/50 flex items-center justify-center mx-auto mb-4">
+                            <Presentation className="h-8 w-8 text-green-200" />
+                          </div>
+                          <h4 className="font-medium text-green-100 mb-2">Lousa Pronta</h4>
+                          <p className="text-green-200 text-sm">
+                            A Pro Versa vai apresentar conceitos importantes aqui durante a aula
+                          </p>
+                        </div>
+                      ) : (
+                        chalkboardContent.map((item) => (
+                          <div
+                            key={item.id}
+                            className={`p-4 rounded-lg border-2 border-dashed ${getChalkboardColor(item.type)} bg-opacity-90`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                {getChalkboardIcon(item.type)}
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-800 mb-1 flex items-center gap-2">
+                                  {item.title}
+                                  <Badge variant="outline" className="text-xs">
+                                    {item.type}
+                                  </Badge>
+                                </h4>
+                                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                                  {item.content}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  {formatTime(item.timestamp)}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                )}
+                
+                {!showChalkboard && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <Presentation className="h-12 w-12 text-green-400 mx-auto mb-3" />
+                      <p className="text-green-200 text-sm">Lousa oculta</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
