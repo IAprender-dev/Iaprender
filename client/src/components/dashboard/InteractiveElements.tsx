@@ -155,14 +155,16 @@ export function DownloadsPanel() {
   ]);
 
   return (
-    <Card className="border border-slate-300 bg-gradient-to-br from-slate-800 to-slate-900 shadow-lg">
+    <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-100 shadow-lg hover:shadow-xl transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
-            <Download className="h-5 w-5 text-blue-400" />
+          <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-800">
+            <div className="p-2 bg-blue-600 rounded-lg">
+              <Download className="h-5 w-5 text-white" />
+            </div>
             Central de Downloads
           </CardTitle>
-          <Badge variant="secondary" className="bg-blue-600 text-white border-blue-500">
+          <Badge variant="secondary" className="bg-blue-600 text-white border-blue-500 font-semibold">
             {downloads.length} itens
           </Badge>
         </div>
@@ -171,16 +173,16 @@ export function DownloadsPanel() {
         <ScrollArea className="h-64">
           <div className="space-y-3">
             {downloads.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all">
+              <div key={item.id} className="flex items-center justify-between p-3 bg-white/80 rounded-lg border-2 border-blue-100 hover:bg-white hover:border-blue-200 transition-all shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-600 rounded-lg text-white">
+                  <div className="p-2 bg-blue-600 rounded-lg">
                     {getFileIcon(item.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-semibold text-slate-800 truncate">
                       {item.name}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-slate-300">
+                    <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
                       <span>{item.size}</span>
                       <span>•</span>
                       <span>{item.downloadedAt}</span>
@@ -188,10 +190,10 @@ export function DownloadsPanel() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600">
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-600 hover:text-slate-800 hover:bg-blue-100">
                     <ExternalLink className="h-3 w-3" />
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600">
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-600 hover:text-slate-800 hover:bg-blue-100">
                     <Share className="h-3 w-3" />
                   </Button>
                 </div>
@@ -199,8 +201,8 @@ export function DownloadsPanel() {
             ))}
           </div>
         </ScrollArea>
-        <Separator className="my-3 bg-slate-600" />
-        <Button variant="outline" size="sm" className="w-full border-slate-600 text-white hover:bg-slate-700">
+        <Separator className="my-3 bg-blue-200" />
+        <Button variant="outline" size="sm" className="w-full border-2 border-blue-600 text-blue-700 font-semibold hover:bg-blue-600 hover:text-white transition-all">
           Ver todos os downloads
         </Button>
       </CardContent>
@@ -248,14 +250,16 @@ export function FavoritesPanel() {
   ]);
 
   return (
-    <Card className="border border-slate-300 bg-gradient-to-br from-indigo-900 to-purple-900 shadow-lg">
+    <Card className="border-2 border-pink-200 bg-gradient-to-br from-pink-50 to-rose-100 shadow-lg hover:shadow-xl transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
-            <Heart className="h-5 w-5 text-pink-400" />
+          <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-800">
+            <div className="p-2 bg-pink-600 rounded-lg">
+              <Heart className="h-5 w-5 text-white" />
+            </div>
             Itens Favoritos
           </CardTitle>
-          <Badge variant="secondary" className="bg-pink-600 text-white border-pink-500">
+          <Badge variant="secondary" className="bg-pink-600 text-white border-pink-500 font-semibold">
             {favorites.length} itens
           </Badge>
         </div>
@@ -264,19 +268,19 @@ export function FavoritesPanel() {
         <ScrollArea className="h-64">
           <div className="space-y-3">
             {favorites.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all group">
+              <div key={item.id} className="flex items-center justify-between p-3 bg-white/80 rounded-lg border-2 border-pink-100 hover:bg-white hover:border-pink-200 transition-all shadow-sm group">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                    <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-semibold text-slate-800 truncate">
                       {item.title}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-slate-300">
+                    <div className="flex items-center gap-2 text-xs text-slate-600 font-medium">
                       <Badge 
                         variant="secondary" 
-                        className={`text-xs border-slate-600 ${getTypeDarkColor(item.type)}`}
+                        className={`text-xs border-slate-200 ${getTypeColor(item.type)}`}
                       >
                         {item.type}
                       </Badge>
@@ -289,10 +293,10 @@ export function FavoritesPanel() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-300 hover:text-white hover:bg-slate-600">
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-600 hover:text-slate-800 hover:bg-pink-100">
                     <Eye className="h-3 w-3" />
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-slate-600">
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-pink-100">
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -300,8 +304,8 @@ export function FavoritesPanel() {
             ))}
           </div>
         </ScrollArea>
-        <Separator className="my-3 bg-slate-600" />
-        <Button variant="outline" size="sm" className="w-full border-slate-600 text-white hover:bg-slate-700">
+        <Separator className="my-3 bg-pink-200" />
+        <Button variant="outline" size="sm" className="w-full border-2 border-pink-600 text-pink-700 font-semibold hover:bg-pink-600 hover:text-white transition-all">
           Gerenciar favoritos
         </Button>
       </CardContent>
@@ -338,14 +342,16 @@ export function SummariesPanel() {
   ]);
 
   return (
-    <Card className="border border-slate-300 bg-gradient-to-br from-emerald-900 to-teal-900 shadow-lg">
+    <Card className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-100 shadow-lg hover:shadow-xl transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
-            <BookOpen className="h-5 w-5 text-emerald-400" />
+          <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-800">
+            <div className="p-2 bg-emerald-600 rounded-lg">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
             Resumos Criados
           </CardTitle>
-          <Badge variant="secondary" className="bg-emerald-600 text-white border-emerald-500">
+          <Badge variant="secondary" className="bg-emerald-600 text-white border-emerald-500 font-semibold">
             {summaries.length} resumos
           </Badge>
         </div>
@@ -354,17 +360,17 @@ export function SummariesPanel() {
         <ScrollArea className="h-64">
           <div className="space-y-3">
             {summaries.map((item) => (
-              <div key={item.id} className="p-3 bg-slate-700/50 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all">
+              <div key={item.id} className="p-3 bg-white/80 rounded-lg border-2 border-emerald-100 hover:bg-white hover:border-emerald-200 transition-all shadow-sm">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-600 rounded-lg">
                     <FileText className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-semibold text-slate-800 truncate">
                       {item.title}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-slate-300 mt-1">
-                      <Badge variant="secondary" className="bg-emerald-600 text-emerald-100 text-xs">
+                    <div className="flex items-center gap-2 text-xs text-slate-600 font-medium mt-1">
+                      <Badge variant="secondary" className="bg-emerald-100 text-emerald-800 border-emerald-200 text-xs font-semibold">
                         {item.subject}
                       </Badge>
                       <span>•</span>
@@ -378,8 +384,8 @@ export function SummariesPanel() {
             ))}
           </div>
         </ScrollArea>
-        <Separator className="my-3 bg-slate-600" />
-        <Button variant="outline" size="sm" className="w-full border-slate-600 text-white hover:bg-slate-700">
+        <Separator className="my-3 bg-emerald-200" />
+        <Button variant="outline" size="sm" className="w-full border-2 border-emerald-600 text-emerald-700 font-semibold hover:bg-emerald-600 hover:text-white transition-all">
           Ver todos os resumos
         </Button>
       </CardContent>
@@ -439,14 +445,16 @@ export function StudentPerformancePanel() {
   };
 
   return (
-    <Card className="border border-slate-300 bg-gradient-to-br from-amber-900 to-orange-900 shadow-lg">
+    <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-100 shadow-lg hover:shadow-xl transition-all duration-200">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-semibold flex items-center gap-2 text-white">
-            <BarChart className="h-5 w-5 text-amber-400" />
+          <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-800">
+            <div className="p-2 bg-amber-600 rounded-lg">
+              <BarChart className="h-5 w-5 text-white" />
+            </div>
             Rendimento dos Alunos
           </CardTitle>
-          <Badge variant="secondary" className="bg-amber-600 text-white border-amber-500">
+          <Badge variant="secondary" className="bg-amber-600 text-white border-amber-500 font-semibold">
             {students.length} alunos
           </Badge>
         </div>
@@ -455,7 +463,7 @@ export function StudentPerformancePanel() {
         <ScrollArea className="h-64">
           <div className="space-y-3">
             {students.map((student) => (
-              <div key={student.id} className="p-3 bg-slate-700/50 rounded-lg border border-slate-600 hover:bg-slate-700 transition-all">
+              <div key={student.id} className="p-3 bg-white/80 rounded-lg border-2 border-amber-100 hover:bg-white hover:border-amber-200 transition-all shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-amber-600 rounded-lg">
@@ -463,13 +471,13 @@ export function StudentPerformancePanel() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-white truncate">
+                        <p className="text-sm font-semibold text-slate-800 truncate">
                           {student.studentName}
                         </p>
                         {getTrendIcon(student.trend)}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-300 mt-1">
-                        <Badge variant="secondary" className="bg-amber-600 text-amber-100 text-xs">
+                      <div className="flex items-center gap-2 text-xs text-slate-600 font-medium mt-1">
+                        <Badge variant="secondary" className="bg-amber-100 text-amber-800 border-amber-200 text-xs font-semibold">
                           {student.subject}
                         </Badge>
                         <span>•</span>
@@ -478,7 +486,7 @@ export function StudentPerformancePanel() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-sm font-semibold ${getScoreColor(student.avgScore)}`}>
+                    <div className={`text-sm font-bold ${getScoreColor(student.avgScore)}`}>
                       {student.avgScore.toFixed(1)}
                     </div>
                   </div>
@@ -487,8 +495,8 @@ export function StudentPerformancePanel() {
             ))}
           </div>
         </ScrollArea>
-        <Separator className="my-3 bg-slate-600" />
-        <Button variant="outline" size="sm" className="w-full border-slate-600 text-white hover:bg-slate-700">
+        <Separator className="my-3 bg-amber-200" />
+        <Button variant="outline" size="sm" className="w-full border-2 border-amber-600 text-amber-700 font-semibold hover:bg-amber-600 hover:text-white transition-all">
           Ver relatório completo
         </Button>
       </CardContent>
