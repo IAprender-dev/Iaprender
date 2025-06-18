@@ -55,14 +55,39 @@ export default function StudentProfile() {
   const updateProfileMutation = useMutation({
     mutationFn: (data: any) => fetch('/api/user/profile', {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(data),
     }).then(async (res) => {
+      const contentType = res.headers.get('content-type');
+      
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Falha ao atualizar perfil');
+        let errorMessage = 'Falha ao atualizar perfil';
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const error = await res.json();
+            errorMessage = error.message || errorMessage;
+          } catch (e) {
+            console.error('Erro ao fazer parse do JSON de erro:', e);
+          }
+        } else {
+          const textResponse = await res.text();
+          console.error('Resposta não-JSON recebida:', textResponse);
+          errorMessage = 'Erro no servidor - resposta inválida';
+        }
+        throw new Error(errorMessage);
       }
-      return res.json();
+      
+      if (contentType && contentType.includes('application/json')) {
+        return res.json();
+      } else {
+        const textResponse = await res.text();
+        console.error('Resposta de sucesso não é JSON:', textResponse);
+        throw new Error('Resposta do servidor inválida');
+      }
     }),
     onSuccess: (updatedUser) => {
       if (updateUser) {
