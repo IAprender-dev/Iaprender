@@ -77,40 +77,116 @@ export default function VoiceTutorTeacher() {
   };
 
   const analyzeForChalkboardContent = (content: string) => {
-    // Simple keyword-based analysis to extract educational content
     const lowerContent = content.toLowerCase();
     
-    // Look for examples
-    if (lowerContent.includes('exemplo') || lowerContent.includes('por exemplo')) {
-      const exampleMatch = content.match(/(?:exemplo|por exemplo)[:\-]?\s*([^.!?]*[.!?])/i);
-      if (exampleMatch) {
-        addChalkboardContent('example', 'Exemplo', exampleMatch[1].trim());
-      }
-    }
+    // Enhanced educational content extraction patterns
     
-    // Look for formulas or equations
-    if (content.includes('=') || lowerContent.includes('fórmula')) {
-      const formulaMatch = content.match(/([^.!?]*[=][^.!?]*)/);
-      if (formulaMatch) {
-        addChalkboardContent('formula', 'Fórmula', formulaMatch[1].trim());
-      }
-    }
+    // Extract concepts and definitions
+    const conceptPatterns = [
+      /([A-ZÁÊÔÃÇÕ][^.!?]*(?:é|são|significa|define-se como|consiste em|refere-se a)[^.!?]*[.!?])/gi,
+      /(?:conceito|definição)[:\-]?\s*([^.!?]*[.!?])/gi,
+      /([^.!?]*processo[^.!?]*[.!?])/gi
+    ];
     
-    // Look for important concepts
-    if (lowerContent.includes('importante') || lowerContent.includes('lembre-se')) {
-      const importantMatch = content.match(/(?:importante|lembre-se)[:\-]?\s*([^.!?]*[.!?])/i);
-      if (importantMatch) {
-        addChalkboardContent('important', 'Importante', importantMatch[1].trim());
+    conceptPatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleanMatch = match.trim();
+          if (cleanMatch.length > 20 && cleanMatch.length < 200) {
+            addChalkboardContent('concept', 'Conceito Principal', cleanMatch);
+          }
+        });
       }
-    }
+    });
     
-    // Look for definitions
-    if (lowerContent.includes('é definido como') || lowerContent.includes('significa')) {
-      const conceptMatch = content.match(/([^.!?]*(?:é definido como|significa)[^.!?]*[.!?])/i);
-      if (conceptMatch) {
-        addChalkboardContent('concept', 'Conceito', conceptMatch[1].trim());
+    // Extract examples
+    const examplePatterns = [
+      /(?:exemplo|por exemplo|como exemplo|vamos ver)[:\-]?\s*([^.!?]*[.!?])/gi,
+      /(?:imagine|considere|vamos pensar)[^.!?]*([^.!?]*[.!?])/gi
+    ];
+    
+    examplePatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleanMatch = match.trim();
+          if (cleanMatch.length > 15 && cleanMatch.length < 150) {
+            addChalkboardContent('example', 'Exemplo Prático', cleanMatch);
+          }
+        });
       }
-    }
+    });
+    
+    // Extract formulas and equations
+    const formulaPatterns = [
+      /([^.!?]*[=+\-×÷][^.!?]*)/g,
+      /(?:fórmula|equação)[:\-]?\s*([^.!?]*[.!?])/gi,
+      /([A-Z]+[₀-₉]*\s*[+\-=]\s*[A-Z₀-₉\s+\-→]+)/g
+    ];
+    
+    formulaPatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleanMatch = match.trim();
+          if (cleanMatch.includes('=') || cleanMatch.includes('→') || cleanMatch.includes('fórmula')) {
+            addChalkboardContent('formula', 'Fórmula', cleanMatch);
+          }
+        });
+      }
+    });
+    
+    // Extract important points
+    const importantPatterns = [
+      /(?:importante|fundamental|essencial|crucial|lembre-se|atenção)[:\-]?\s*([^.!?]*[.!?])/gi,
+      /(?:não esqueça|é vital|é necessário)[^.!?]*([^.!?]*[.!?])/gi
+    ];
+    
+    importantPatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleanMatch = match.trim();
+          if (cleanMatch.length > 10 && cleanMatch.length < 120) {
+            addChalkboardContent('important', 'Ponto Importante', cleanMatch);
+          }
+        });
+      }
+    });
+    
+    // Extract summaries and conclusions
+    const summaryPatterns = [
+      /(?:resumindo|em resumo|concluindo|portanto)[:\-]?\s*([^.!?]*[.!?])/gi,
+      /(?:principais pontos|pontos principais)[:\-]?\s*([^.!?]*[.!?])/gi
+    ];
+    
+    summaryPatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches) {
+        matches.forEach(match => {
+          const cleanMatch = match.trim();
+          if (cleanMatch.length > 15 && cleanMatch.length < 180) {
+            addChalkboardContent('summary', 'Resumo', cleanMatch);
+          }
+        });
+      }
+    });
+    
+    // Extract mind map elements (steps, processes, lists)
+    const mindmapPatterns = [
+      /(?:primeiro|segundo|terceiro|quarto|quinto)[:\-]?\s*([^.!?]*[.!?])/gi,
+      /(?:etapas?|passos?|fases?)[:\-]?\s*([^.!?]*[.!?])/gi,
+      /\d+[°º\.\)]\s*([^.!?]*[.!?])/g
+    ];
+    
+    mindmapPatterns.forEach(pattern => {
+      const matches = content.match(pattern);
+      if (matches && matches.length >= 2) {
+        const steps = matches.map(match => match.trim()).join('\n');
+        addChalkboardContent('mindmap', 'Mapa Mental', steps);
+      }
+    });
   };
 
   const connectToRealtime = useCallback(async () => {
@@ -352,36 +428,22 @@ export default function VoiceTutorTeacher() {
     setChalkboardContent([]);
   };
 
-  // Add demo content when component mounts
+  // Test function to simulate AI response and demonstrate chalkboard functionality
+  const testChalkboardExtraction = () => {
+    const testResponse = "Vamos estudar fotossíntese. A fotossíntese é o processo pelo qual as plantas convertem luz solar em energia química. Por exemplo: uma folha verde absorve luz solar e produz glicose. A fórmula da fotossíntese é: 6CO₂ + 6H₂O + luz solar → C₆H₁₂O₆ + 6O₂. Importante: este processo é fundamental para a vida na Terra, pois produz o oxigênio que respiramos. Resumindo: as plantas são os produtores primários da cadeia alimentar.";
+    
+    addMessage('assistant', testResponse, 'text');
+    
+    toast({
+      title: "Teste da Lousa",
+      description: "Conteúdo educacional extraído e adicionado à lousa automaticamente",
+      variant: "default"
+    });
+  };
+
+  // Initialize clean chalkboard
   useEffect(() => {
-    // Add some initial demo content to showcase the chalkboard
-    const demoContent = [
-      {
-        id: 'demo-1',
-        type: 'concept' as const,
-        title: 'Conceito Fundamental',
-        content: 'A fotossíntese é o processo pelo qual as plantas convertem luz solar em energia química.',
-        timestamp: new Date(),
-        subject: 'Biologia'
-      },
-      {
-        id: 'demo-2', 
-        type: 'formula' as const,
-        title: 'Fórmula da Fotossíntese',
-        content: '6CO₂ + 6H₂O + energia solar → C₆H₁₂O₆ + 6O₂',
-        timestamp: new Date(),
-        subject: 'Biologia'
-      },
-      {
-        id: 'demo-3',
-        type: 'important' as const,
-        title: 'Ponto Importante',
-        content: 'Lembre-se: as plantas são os produtores primários da cadeia alimentar!',
-        timestamp: new Date(),
-        subject: 'Biologia'
-      }
-    ];
-    setChalkboardContent(demoContent);
+    setChalkboardContent([]);
   }, []);
 
   // Auto-scroll conversation to bottom
@@ -551,6 +613,14 @@ export default function VoiceTutorTeacher() {
                     variant="outline"
                   >
                     Finalizar Aula
+                  </Button>
+                  
+                  <Button
+                    onClick={testChalkboardExtraction}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Testar Lousa
                   </Button>
                 </div>
               )}
