@@ -133,7 +133,7 @@ export default function VoiceTutorTeacher() {
   }, []);
 
   // Função para inicializar áudio WebRTC
-  const initializeAudioSystem = useCallback(async () => {
+  const initializeAudioSystem = useCallback(async (ws: WebSocket) => {
     if (!permissionsGranted || !microphoneStream) {
       console.error('Permissões de áudio não concedidas');
       toast({
@@ -161,7 +161,7 @@ export default function VoiceTutorTeacher() {
       processorRef.current = audioContextRef.current.createScriptProcessor(4096, 1, 1);
 
       processorRef.current.onaudioprocess = (event) => {
-        if (!wsConnection || wsConnection.readyState !== WebSocket.OPEN) return;
+        if (!ws || ws.readyState !== WebSocket.OPEN) return;
 
         const inputBuffer = event.inputBuffer.getChannelData(0);
         
@@ -173,7 +173,7 @@ export default function VoiceTutorTeacher() {
 
         // Enviar áudio para OpenAI Realtime
         if (isListeningRef.current) {
-          wsConnection.send(JSON.stringify({
+          ws.send(JSON.stringify({
             type: 'input_audio_buffer.append',
             audio: arrayBufferToBase64(pcmBuffer.buffer)
           }));
@@ -196,7 +196,7 @@ export default function VoiceTutorTeacher() {
       });
       return false;
     }
-  }, [permissionsGranted, microphoneStream, wsConnection, toast, arrayBufferToBase64]);
+  }, [permissionsGranted, microphoneStream, toast, arrayBufferToBase64]);
 
   // Função para iniciar escuta
   const startListening = useCallback(() => {
@@ -353,7 +353,7 @@ export default function VoiceTutorTeacher() {
           case 'response.done':
             console.log('✅ Resposta concluída');
             setConversationState('idle');
-            setTimeout(() => startListening(), 1000);
+            // Não reiniciar escuta automaticamente
             break;
 
           case 'input_audio_buffer.speech_started':
@@ -381,11 +381,21 @@ export default function VoiceTutorTeacher() {
         });
       };
 
-      ws.onclose = () => {
-        console.log('🔌 WebSocket fechado');
+      ws.onclose = (event) => {
+        console.log('🔌 WebSocket fechado:', event.code, event.reason);
         setWsConnection(null);
         setIsConnected(false);
         setConversationState('idle');
+        setConnectionState('disconnected');
+        
+        // Não reconectar automaticamente
+        if (event.code !== 1000) { // 1000 = fechamento normal
+          toast({
+            title: "Conexão perdida",
+            description: "WebSocket foi fechado inesperadamente",
+            variant: "destructive",
+          });
+        }
       };
 
       setWsConnection(ws);
@@ -400,7 +410,7 @@ export default function VoiceTutorTeacher() {
       });
       return false;
     }
-  }, [addMessage, startListening, toast, playAudioDelta]);
+  }, [addMessage, toast, playAudioDelta]);
 
   // Função para conectar ao OpenAI Realtime
   const connectToRealtime = useCallback(async () => {
@@ -416,16 +426,19 @@ export default function VoiceTutorTeacher() {
     try {
       setConnectionState('connecting');
       
-      // Inicializar sistema de áudio
-      const audioInitialized = await initializeAudioSystem();
-      if (!audioInitialized) {
-        throw new Error('Falha ao inicializar sistema de áudio');
-      }
-
-      // Inicializar WebSocket
+      // Primeiro inicializar WebSocket
       const wsInitialized = await initializeRealtimeWebSocket();
       if (!wsInitialized) {
         throw new Error('Falha ao conectar WebSocket');
+      }
+
+      // Depois inicializar sistema de áudio com o WebSocket
+      const currentWs = wsConnection;
+      if (currentWs) {
+        const audioInitialized = await initializeAudioSystem(currentWs);
+        if (!audioInitialized) {
+          throw new Error('Falha ao inicializar sistema de áudio');
+        }
       }
 
       setIsConnected(true);
@@ -435,30 +448,12 @@ export default function VoiceTutorTeacher() {
       const welcomeMessage = 'Oi! Eu sou a Pro Versa, sua tutora virtual com OpenAI Realtime. O que gostaria de aprender hoje?';
       addMessage('assistant', welcomeMessage);
       
-      // Aguardar conexão WebSocket estar pronta
+      // Aguardar um momento antes de ativar escuta
       setTimeout(() => {
-        if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
-          // Enviar mensagem inicial para o assistente
-          wsConnection.send(JSON.stringify({
-            type: 'conversation.item.create',
-            item: {
-              type: 'message',
-              role: 'assistant',
-              content: [
-                {
-                  type: 'text',
-                  text: welcomeMessage
-                }
-              ]
-            }
-          }));
-
-          // Iniciar escuta
-          setTimeout(() => {
-            startListening();
-          }, 1000);
+        if (isConnected) {
+          console.log('Sistema pronto para conversação');
         }
-      }, 2000);
+      }, 1000);
 
       toast({
         title: "Pro Versa conectada!",
@@ -474,7 +469,7 @@ export default function VoiceTutorTeacher() {
         variant: "destructive",
       });
     }
-  }, [permissionsGranted, initializeAudioSystem, initializeRealtimeWebSocket, addMessage, wsConnection, startListening, toast]);
+  }, [permissionsGranted, initializeAudioSystem, initializeRealtimeWebSocket, addMessage, toast]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-4">
