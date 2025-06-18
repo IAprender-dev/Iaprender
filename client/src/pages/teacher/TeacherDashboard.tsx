@@ -181,29 +181,29 @@ export default function TeacherDashboard() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
+      <div className="min-h-screen bg-slate-50">
         {/* Main Dashboard Container */}
-        <div className="flex h-screen bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
+        <div className="flex h-screen bg-slate-50">
           {/* Left Sidebar - Profile Form */}
-          <div className="w-80 bg-gradient-to-b from-white/95 to-slate-50/95 backdrop-blur-xl border-r border-white/20 flex flex-col shadow-2xl">
+          <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-lg">
             {/* Profile Header */}
-            <div className="p-6 border-b border-white/20">
-              <Card className="mb-6 border-0 bg-gradient-to-br from-emerald-400 via-cyan-400 to-blue-500 shadow-2xl transform hover:scale-105 transition-all duration-300">
+            <div className="p-6 border-b border-slate-200">
+              <Card className="mb-6 border border-slate-200 bg-white shadow-sm">
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center mb-4">
-                    <Avatar className="h-24 w-24 border-4 border-white/30 shadow-2xl ring-4 ring-white/20">
+                    <Avatar className="h-20 w-20 border-2 border-slate-200">
                       <AvatarImage src="" />
-                      <AvatarFallback className="bg-gradient-to-br from-violet-600 to-purple-700 text-white text-2xl font-bold shadow-inner">
+                      <AvatarFallback className="bg-slate-100 text-slate-700 text-xl font-semibold">
                         {user?.firstName?.[0]}{user?.lastName?.[0]}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white mb-1 drop-shadow-md">
+                    <h2 className="text-lg font-semibold text-slate-900 mb-1">
                       {user?.firstName} {user?.lastName}
                     </h2>
-                    <p className="text-sm text-white/80 mb-2 font-medium">{user?.email}</p>
-                    <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm font-semibold">
+                    <p className="text-sm text-slate-600 mb-2">{user?.email}</p>
+                    <Badge className="bg-blue-50 text-blue-700 border border-blue-200 font-medium">
                       <GraduationCap className="h-3 w-3 mr-1" />
                       Professor
                     </Badge>
@@ -212,20 +212,20 @@ export default function TeacherDashboard() {
               </Card>
 
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <div className="p-2 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg">
-                    <User className="h-4 w-4 text-white" />
+                <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <User className="h-4 w-4 text-blue-600" />
                   </div>
                   Meu Perfil
                 </h3>
                 <Button
                   size="sm"
-                  variant={isEditing ? "ghost" : "outline"}
+                  variant={isEditing ? "outline" : "default"}
                   onClick={() => setIsEditing(!isEditing)}
-                  className={`gap-2 font-semibold transition-all duration-300 ${
+                  className={`gap-2 font-medium transition-colors ${
                     isEditing 
-                      ? "bg-gradient-to-r from-red-500 to-pink-500 text-white hover:from-red-600 hover:to-pink-600 border-0" 
-                      : "bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700 border-0"
+                      ? "border-red-300 text-red-700 hover:bg-red-50" 
+                      : "bg-blue-600 text-white hover:bg-blue-700"
                   }`}
                 >
                   {isEditing ? <X className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
@@ -353,14 +353,15 @@ export default function TeacherDashboard() {
                     <Button 
                       onClick={handleSaveProfile}
                       disabled={updateProfileMutation.isPending}
-                      className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium"
                     >
                       <Save className="h-4 w-4 mr-2" />
                       {updateProfileMutation.isPending ? 'Salvando...' : 'Salvar'}
                     </Button>
                     <Button 
                       onClick={handleCancelEdit}
-                      className="flex-1 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      variant="outline"
+                      className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
                     >
                       <X className="h-4 w-4 mr-2" />
                       Cancelar
@@ -374,23 +375,24 @@ export default function TeacherDashboard() {
           {/* Right Content Area */}
           <div className="flex-1 flex flex-col">
             {/* Header */}
-            <header className="bg-white/10 backdrop-blur-2xl border-b border-white/20 sticky top-0 z-30 shadow-lg">
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
               <div className="px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="p-3 bg-gradient-to-br from-white/20 to-white/10 rounded-2xl backdrop-blur-xl border border-white/20">
+                    <div className="p-2 bg-slate-100 rounded-lg border border-slate-200">
                       <img src={alverseLogo} alt="Alverse" className="h-8 w-8 object-contain" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold text-white drop-shadow-lg">Dashboard do Professor</h1>
-                      <p className="text-sm text-white/80 capitalize font-medium">{formattedDate}</p>
+                      <h1 className="text-xl font-semibold text-slate-900">Dashboard do Professor</h1>
+                      <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Button 
                       onClick={logout}
                       size="sm"
-                      className="gap-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
+                      variant="outline"
+                      className="gap-2 border-red-300 text-red-700 hover:bg-red-50 font-medium"
                     >
                       <LogOut className="h-4 w-4" />
                       Sair
@@ -439,61 +441,61 @@ export default function TeacherDashboard() {
 
               {/* Metrics Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-blue-600 to-cyan-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-blue-100 mb-2">Planos Criados</p>
-                        <p className="text-4xl font-bold text-white mb-1">24</p>
+                        <p className="text-3xl font-bold text-white mb-1">24</p>
                         <p className="text-sm text-blue-200">Este mês</p>
                       </div>
-                      <div className="p-4 bg-white/20 backdrop-blur-sm rounded-xl">
-                        <BookOpen className="h-8 w-8 text-white" />
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <BookOpen className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-emerald-600 to-teal-600 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-emerald-600 to-teal-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-emerald-100 mb-2">Alunos Ativos</p>
-                        <p className="text-4xl font-bold text-white mb-1">156</p>
+                        <p className="text-3xl font-bold text-white mb-1">156</p>
                         <p className="text-sm text-emerald-200">Online agora</p>
                       </div>
-                      <div className="p-4 bg-white/20 backdrop-blur-sm rounded-xl">
-                        <Users className="h-8 w-8 text-white" />
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <Users className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-violet-600 to-purple-600 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-violet-600 to-purple-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-violet-100 mb-2">Tokens Usados</p>
-                        <p className="text-4xl font-bold text-white mb-1">2,847</p>
+                        <p className="text-3xl font-bold text-white mb-1">2,847</p>
                         <p className="text-sm text-violet-200">Este mês</p>
                       </div>
-                      <div className="p-4 bg-white/20 backdrop-blur-sm rounded-xl">
-                        <Sparkles className="h-8 w-8 text-white" />
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <Sparkles className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="bg-gradient-to-br from-orange-600 to-red-600 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-orange-600 to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-orange-100 mb-2">Avaliações</p>
-                        <p className="text-4xl font-bold text-white mb-1">42</p>
+                        <p className="text-3xl font-bold text-white mb-1">42</p>
                         <p className="text-sm text-orange-200">Pendentes</p>
                       </div>
-                      <div className="p-4 bg-white/20 backdrop-blur-sm rounded-xl">
-                        <BarChart3 className="h-8 w-8 text-white" />
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <BarChart3 className="h-6 w-6 text-white" />
                       </div>
                     </div>
                   </CardContent>
@@ -503,86 +505,74 @@ export default function TeacherDashboard() {
               {/* Quick Access Tools */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <Link href="/central-ia">
-                  <Card className="group hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 to-purple-700 text-white transform hover:scale-105 hover:rotate-1">
-                    <CardContent className="p-6 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                      <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                            <Bot className="h-6 w-6 text-white" />
-                          </div>
-                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-bold">
-                            <Sparkles className="h-3 w-3 mr-1" />
-                            Novo
-                          </Badge>
+                  <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 to-purple-700 text-white">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white/20 rounded-lg">
+                          <Bot className="h-6 w-6 text-white" />
                         </div>
-                        <h3 className="font-bold text-lg text-white mb-2">Central de IAs</h3>
-                        <p className="text-sm text-white/80">ChatGPT, Claude e Gemini em um só lugar</p>
-                        <div className="mt-4 flex items-center text-white group-hover:text-yellow-300">
-                          <span className="text-sm font-semibold">Acessar</span>
-                          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-2 transition-transform duration-300" />
-                        </div>
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-semibold">
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          Novo
+                        </Badge>
+                      </div>
+                      <h3 className="font-semibold text-lg text-white mb-2">Central de IAs</h3>
+                      <p className="text-sm text-white/80">ChatGPT, Claude e Gemini em um só lugar</p>
+                      <div className="mt-4 flex items-center text-white">
+                        <span className="text-sm font-medium">Acessar</span>
+                        <ArrowRight className="h-4 w-4 ml-1" />
                       </div>
                     </CardContent>
                   </Card>
                 </Link>
 
-                <Card className="group hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 to-teal-700 text-white transform hover:scale-105 hover:-rotate-1">
-                  <CardContent className="p-6 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                          <PenTool className="h-6 w-6 text-white" />
-                        </div>
-                        <Badge className="bg-gradient-to-r from-pink-400 to-red-500 text-white border-0 font-bold">Popular</Badge>
+                <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 to-teal-700 text-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <PenTool className="h-6 w-6 text-white" />
                       </div>
-                      <h3 className="font-bold text-lg text-white mb-2">Gerador de Atividades</h3>
-                      <p className="text-sm text-white/80">Criação automática de exercícios</p>
-                      <div className="mt-4 flex items-center text-white group-hover:text-yellow-300">
-                        <span className="text-sm font-semibold">Acessar</span>
-                        <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-2 transition-transform duration-300" />
-                      </div>
+                      <Badge className="bg-gradient-to-r from-pink-400 to-red-500 text-white border-0 font-semibold">Popular</Badge>
+                    </div>
+                    <h3 className="font-semibold text-lg text-white mb-2">Gerador de Atividades</h3>
+                    <p className="text-sm text-white/80">Criação automática de exercícios</p>
+                    <div className="mt-4 flex items-center text-white">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1" />
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="group hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 bg-gradient-to-br from-blue-600 to-cyan-700 text-white transform hover:scale-105 hover:rotate-1">
-                  <CardContent className="p-6 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                          <BookOpen className="h-6 w-6 text-white" />
-                        </div>
-                        <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-bold">Essencial</Badge>
+                <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-blue-600 to-cyan-700 text-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <BookOpen className="h-6 w-6 text-white" />
                       </div>
-                      <h3 className="font-bold text-lg text-white mb-2">Planos de Aula</h3>
-                      <p className="text-sm text-white/80">Planejamento inteligente com IA</p>
-                      <div className="mt-4 flex items-center text-white group-hover:text-yellow-300">
-                        <span className="text-sm font-semibold">Acessar</span>
-                        <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-2 transition-transform duration-300" />
-                      </div>
+                      <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-semibold">Essencial</Badge>
+                    </div>
+                    <h3 className="font-semibold text-lg text-white mb-2">Planos de Aula</h3>
+                    <p className="text-sm text-white/80">Planejamento inteligente com IA</p>
+                    <div className="mt-4 flex items-center text-white">
+                      <span className="text-sm font-medium">Acessar</span>
+                      <ArrowRight className="h-4 w-4 ml-1" />
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="group hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 bg-gradient-to-br from-orange-600 to-red-700 text-white transform hover:scale-105 hover:-rotate-1">
-                  <CardContent className="p-6 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div className="relative z-10">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                          <Search className="h-6 w-6 text-white" />
-                        </div>
-                        <Badge className="bg-gradient-to-r from-purple-400 to-indigo-500 text-white border-0 font-bold">IA</Badge>
+                <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer border-0 bg-gradient-to-br from-orange-600 to-red-700 text-white">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="p-3 bg-white/20 rounded-lg">
+                        <Search className="h-6 w-6 text-white" />
                       </div>
-                      <h3 className="font-bold text-lg text-white mb-2">Análise de Documentos</h3>
-                      <p className="text-sm text-white/80">Extraia insights de PDFs e textos</p>
-                      <div className="mt-4 flex items-center text-white group-hover:text-yellow-300">
-                        <span className="text-sm font-semibold">Analisar</span>
-                        <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-2 transition-transform duration-300" />
-                      </div>
+                      <Badge className="bg-gradient-to-r from-purple-400 to-indigo-500 text-white border-0 font-semibold">IA</Badge>
+                    </div>
+                    <h3 className="font-semibold text-lg text-white mb-2">Análise de Documentos</h3>
+                    <p className="text-sm text-white/80">Extraia insights de PDFs e textos</p>
+                    <div className="mt-4 flex items-center text-white">
+                      <span className="text-sm font-medium">Analisar</span>
+                      <ArrowRight className="h-4 w-4 ml-1" />
                     </div>
                   </CardContent>
                 </Card>
@@ -590,10 +580,10 @@ export default function TeacherDashboard() {
 
               {/* Interactive Panels */}
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                <Card className="bg-gradient-to-br from-cyan-600 to-blue-700 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-cyan-600 to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                      <div className="p-2 bg-white/20 rounded-lg">
                         <Download className="h-5 w-5 text-white" />
                       </div>
                       Downloads Recentes
@@ -601,26 +591,26 @@ export default function TeacherDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
                         <span className="text-sm font-medium text-white">Plano de Matemática</span>
-                        <Badge className="bg-white/20 text-white border-white/30 font-semibold">PDF</Badge>
+                        <Badge className="bg-white/20 text-white border-white/30 font-medium">PDF</Badge>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
                         <span className="text-sm font-medium text-white">Atividade de Português</span>
-                        <Badge className="bg-white/20 text-white border-white/30 font-semibold">DOCX</Badge>
+                        <Badge className="bg-white/20 text-white border-white/30 font-medium">DOCX</Badge>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
                         <span className="text-sm font-medium text-white">Quiz de Ciências</span>
-                        <Badge className="bg-white/20 text-white border-white/30 font-semibold">PDF</Badge>
+                        <Badge className="bg-white/20 text-white border-white/30 font-medium">PDF</Badge>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                      <div className="p-2 bg-white/20 rounded-lg">
                         <Heart className="h-5 w-5 text-white" />
                       </div>
                       Favoritos
@@ -628,15 +618,15 @@ export default function TeacherDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
                         <span className="text-sm font-medium text-white">Gerador de Atividades</span>
                         <Star className="h-4 w-4 text-yellow-300 fill-current" />
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
                         <span className="text-sm font-medium text-white">Central de IAs</span>
                         <Star className="h-4 w-4 text-yellow-300 fill-current" />
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-white/10 rounded-lg">
                         <span className="text-sm font-medium text-white">Planos de Aula</span>
                         <Star className="h-4 w-4 text-yellow-300 fill-current" />
                       </div>
@@ -644,10 +634,10 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-violet-600 to-purple-700 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-violet-600 to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                      <div className="p-2 bg-white/20 rounded-lg">
                         <FileText className="h-5 w-5 text-white" />
                       </div>
                       Resumos IA
@@ -655,11 +645,11 @@ export default function TeacherDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <div className="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="p-3 bg-white/10 rounded-lg">
                         <p className="text-sm font-medium text-white">Resumo sobre frações para 3º ano</p>
                         <p className="text-xs text-white/70 mt-1">Há 2 horas</p>
                       </div>
-                      <div className="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
+                      <div className="p-3 bg-white/10 rounded-lg">
                         <p className="text-sm font-medium text-white">Análise de texto de literatura</p>
                         <p className="text-xs text-white/70 mt-1">Ontem</p>
                       </div>
@@ -667,10 +657,10 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-orange-600 to-red-700 text-white border-0 shadow-xl transform hover:scale-105 transition-all duration-300">
+                <Card className="bg-gradient-to-br from-orange-600 to-red-700 text-white border-0 shadow-lg hover:shadow-xl transition-shadow duration-200">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-3 text-white">
-                      <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                      <div className="p-2 bg-white/20 rounded-lg">
                         <BarChart3 className="h-5 w-5 text-white" />
                       </div>
                       Performance dos Alunos
@@ -680,20 +670,20 @@ export default function TeacherDashboard() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-white">Matemática</span>
-                        <div className="w-20 bg-white/20 rounded-full h-3">
-                          <div className="bg-gradient-to-r from-green-400 to-emerald-500 h-3 rounded-full shadow-inner" style={{ width: '85%' }}></div>
+                        <div className="w-20 bg-white/20 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full" style={{ width: '85%' }}></div>
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-white">Português</span>
-                        <div className="w-20 bg-white/20 rounded-full h-3">
-                          <div className="bg-gradient-to-r from-blue-400 to-cyan-500 h-3 rounded-full shadow-inner" style={{ width: '78%' }}></div>
+                        <div className="w-20 bg-white/20 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-blue-400 to-cyan-500 h-2 rounded-full" style={{ width: '78%' }}></div>
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-white">Ciências</span>
-                        <div className="w-20 bg-white/20 rounded-full h-3">
-                          <div className="bg-gradient-to-r from-purple-400 to-pink-500 h-3 rounded-full shadow-inner" style={{ width: '92%' }}></div>
+                        <div className="w-20 bg-white/20 rounded-full h-2">
+                          <div className="bg-gradient-to-r from-purple-400 to-pink-500 h-2 rounded-full" style={{ width: '92%' }}></div>
                         </div>
                       </div>
                     </div>
