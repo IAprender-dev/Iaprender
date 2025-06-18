@@ -575,12 +575,10 @@ export default function VoiceTutorChat() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={() => setLocation('/student/dashboard')}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  className="gap-2 h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
                 <div>

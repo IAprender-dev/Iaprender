@@ -288,8 +288,8 @@ export default function VoiceTutorWebRTC() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Link href="/student/dashboard">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+              <Button className="gap-2 h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
+                <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
             </Link>

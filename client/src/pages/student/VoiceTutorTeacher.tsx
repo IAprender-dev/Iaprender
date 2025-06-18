@@ -513,8 +513,8 @@ export default function VoiceTutorTeacher() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/student/dashboard">
-              <Button variant="ghost" className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+              <Button className="gap-2 h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
+                <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
             </Link>
