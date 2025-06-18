@@ -29,12 +29,7 @@ export default function StudentSidebar() {
       href: "/aluno/cursos",
       active: location === "/aluno/cursos"
     },
-    {
-      name: "Exercícios com IA",
-      icon: <Bot className="h-4 w-4" />,
-      href: "/aluno/atividades",
-      active: location === "/aluno/atividades"
-    },
+
     {
       name: "Planejamento de Estudos",
       icon: <Calendar className="h-4 w-4" />,

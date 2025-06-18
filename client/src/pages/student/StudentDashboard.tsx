@@ -204,7 +204,6 @@ export default function StudentDashboard() {
   const menuItems = [
     { icon: Home, label: "Dashboard", href: "/student/dashboard", isActive: location === "/student/dashboard" },
     { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
-    { icon: CheckSquare, label: "Atividades", href: "/student/activities", isActive: location === "/student/activities" },
     { icon: Calendar, label: "Planejamento", href: "/aluno/planejamento", isActive: location === "/aluno/planejamento" },
     { icon: User, label: "Meu Perfil", href: "/student/profile", isActive: location === "/student/profile" },
     { icon: BookOpen, label: "Wikipedia", href: "/student/wikipedia", isActive: location === "/student/wikipedia" },
@@ -591,20 +590,7 @@ export default function StudentDashboard() {
                       </div>
                     </Link>
 
-                    <Link href="/student/activities">
-                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50 hover:shadow-md transition-all cursor-pointer group">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
-                            <CheckSquare className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-slate-900">Exercícios</p>
-                            <p className="text-sm text-slate-600">Questões com IA</p>
-                          </div>
-                        </div>
-                        <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    </Link>
+
 
                     <Link href="/student/wikipedia">
                       <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-200/50 hover:shadow-md transition-all cursor-pointer group">

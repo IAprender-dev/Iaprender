@@ -24,7 +24,7 @@ import TeacherTools from "@/pages/teacher/TeacherTools";
 import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
-import StudentActivities from "@/pages/student/StudentActivities";
+
 import StudentProfile from "@/pages/student/StudentProfile";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
 import StudyPlanGenerator from "@/pages/student/StudyPlanGenerator";
@@ -113,13 +113,13 @@ function Router() {
       {/* Student routes */}
       <Route path="/student/dashboard" component={StudentDashboard} />
       <Route path="/student/courses" component={StudentCourses} />
-      <Route path="/student/activities" component={StudentActivities} />
+
       <Route path="/student/profile" component={StudentProfile} />
       <Route path="/student/wikipedia" component={WikipediaExplorer} />
       <Route path="/student/translator" component={Translator} />
       <Route path="/aluno/dashboard" component={StudentDashboard} />
       <Route path="/aluno/cursos" component={StudentCourses} />
-      <Route path="/aluno/atividades" component={StudentActivities} />
+
       <Route path="/aluno/planejamento" component={StudyPlanning} />
       <Route path="/aluno/gerador-plano" component={StudyPlanGenerator} />
       <Route path="/aluno/tutor-ia" component={AITutorChat} />
