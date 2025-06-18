@@ -35,7 +35,8 @@ import {
   BarChart3,
   Lightbulb,
   PenTool,
-  FileText
+  FileText,
+  MessageSquare
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ interface StudySession {
   subject: string;
   startTime: Date;
   endTime: Date;
+  time: string;
   isCompleted: boolean;
   pomodoroCount: number;
   dayOfWeek: string;
@@ -472,7 +474,7 @@ export default function StudentDashboard() {
               </div>
 
               {/* Essential Actions - Simplified */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
                 <Link href="/central-ia">
                   <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -502,27 +504,56 @@ export default function StudentDashboard() {
                   </Card>
                 </Link>
 
-                <Link href="/aluno/planejamento">
-                  <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white overflow-hidden relative">
+                <Link href="/aluno/tutor-ia">
+                  <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 text-white overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardContent className="p-8 relative z-10">
                       <div className="flex items-center justify-between mb-6">
                         <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                          <Target className="h-8 w-8 text-white" />
+                          <MessageSquare className="h-8 w-8 text-white" />
                         </div>
-                        <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white border-0 font-bold px-3 py-1 text-sm">
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Essencial
+                        <Badge className="bg-gradient-to-r from-purple-400 to-indigo-500 text-white border-0 font-bold px-3 py-1 text-sm">
+                          <Bot className="h-4 w-4 mr-1" />
+                          Tutor
                         </Badge>
                       </div>
                       <div className="space-y-3">
-                        <h3 className="font-bold text-2xl text-white">Plano de Estudos</h3>
+                        <h3 className="font-bold text-2xl text-white">Tutor Chat IA</h3>
                         <p className="text-white/90 text-base leading-relaxed">
-                          Organize seus estudos com planos personalizados criados pela inteligência artificial
+                          Converse por texto com sua tutora especializada em ensino personalizado
                         </p>
                         <div className="flex items-center gap-2 pt-4">
                           <div className="flex items-center text-white/80 font-medium">
-                            <span>Criar Plano</span>
+                            <span>Conversar</span>
+                            <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
+                <Link href="/aluno/tutor-voz">
+                  <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-pink-600 via-purple-600 to-indigo-700 text-white overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardContent className="p-8 relative z-10">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
+                          <Mic className="h-8 w-8 text-white" />
+                        </div>
+                        <Badge className="bg-gradient-to-r from-pink-400 to-purple-500 text-white border-0 font-bold px-3 py-1 text-sm">
+                          <GraduationCap className="h-4 w-4 mr-1" />
+                          NOVO
+                        </Badge>
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="font-bold text-2xl text-white">ProVersa</h3>
+                        <p className="text-white/90 text-base leading-relaxed">
+                          Converse por voz com sua tutora virtual inteligente
+                        </p>
+                        <div className="flex items-center gap-2 pt-4">
+                          <div className="flex items-center text-white/80 font-medium">
+                            <span>Falar Agora</span>
                             <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>
@@ -603,52 +634,54 @@ export default function StudentDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {tokenData ? (
-                      <>
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200/50">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-blue-700">Tokens Utilizados</span>
-                            <span className="text-lg font-bold text-blue-800">
-                              {((tokenData.currentUsage / tokenData.monthlyLimit) * 100).toFixed(0)}%
-                            </span>
-                          </div>
-                          <p className="text-xs text-blue-600">
-                            {tokenData.currentUsage.toLocaleString()} de {tokenData.monthlyLimit.toLocaleString()} tokens
-                          </p>
-                        </div>
-
-                        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-green-700">Progresso Semanal</span>
-                            <span className="text-lg font-bold text-green-800">
-                              {getWeekProgress().percentage}%
-                            </span>
-                          </div>
-                          <p className="text-xs text-green-600">
-                            {getWeekProgress().completed} de {getWeekProgress().total} sessões completas
-                          </p>
-                        </div>
-
-                        <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200/50">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-purple-700">Sessões Hoje</span>
-                            <span className="text-lg font-bold text-purple-800">
-                              {getTodaySessions().length}
-                            </span>
-                          </div>
-                          <p className="text-xs text-purple-600">
-                            {getTodaySessions().filter(s => s.isCompleted).length} sessões concluídas
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-center py-8">
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <BarChart3 className="h-8 w-8 text-slate-400" />
-                        </div>
-                        <p className="text-slate-600">Carregando informações...</p>
+                    <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-green-700">Progresso Semanal</span>
+                        <span className="text-lg font-bold text-green-800">
+                          {getWeekProgress().percentage}%
+                        </span>
                       </div>
-                    )}
+                      <p className="text-xs text-green-600">
+                        {getWeekProgress().completed} de {getWeekProgress().total} sessões completas
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-purple-700">Sessões Hoje</span>
+                        <span className="text-lg font-bold text-purple-800">
+                          {getTodaySessions().length}
+                        </span>
+                      </div>
+                      <p className="text-xs text-purple-600">
+                        {getTodaySessions().filter(s => s.isCompleted).length} sessões concluídas
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200/50">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-700">Próxima Sessão</span>
+                        <span className="text-lg font-bold text-blue-800">
+                          {getTodaySessions().find(s => !s.isCompleted)?.subject || 'Livre'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-600">
+                        {getTodaySessions().find(s => !s.isCompleted)?.startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) || 'Nenhuma agendada'}
+                      </p>
+                    </div>
+
+                    {/* Study Plan Action */}
+                    <div className="pt-4 border-t border-slate-200">
+                      <Link href="/aluno/gerador-plano">
+                        <Button className="w-full gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-sm">
+                          <Target className="h-4 w-4" />
+                          Gerar Plano de Estudos
+                        </Button>
+                      </Link>
+                      <p className="text-xs text-slate-500 text-center mt-2">
+                        Crie um plano personalizado com IA
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
