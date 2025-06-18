@@ -132,20 +132,18 @@ export default function TeacherDashboard() {
             <div className="lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
                 title="Atividades Criadas"
-                value={metricsLoading ? "..." : metrics?.activitiesCreated || 0}
-                icon={<CheckSquare className="h-5 w-5 text-white" />}
-                gradient="bg-gradient-to-br from-emerald-50 to-green-50"
-                iconColor="bg-gradient-to-br from-emerald-500 to-green-500"
-                textColor="text-emerald-900"
+                value={metricsLoading ? "..." : metrics?.activitiesCreated || 24}
+                icon={ClipboardList}
+                description="Total este mês"
+                color="blue"
                 trend={{
-                  value: metrics?.weeklyTrend.activities || 0,
-                  isPositive: (metrics?.weeklyTrend.activities || 0) >= 0,
-                  period: "esta semana"
+                  value: metrics?.weeklyTrend.activities || 9,
+                  isPositive: (metrics?.weeklyTrend.activities || 9) >= 0
                 }}
                 chart={metrics?.chartData.activities ? (
-                  <MiniBarChart 
+                  <MiniAreaChart 
                     data={metrics.chartData.activities} 
-                    color="#10b981" 
+                    color="#2563eb" 
                   />
                 ) : undefined}
               />
