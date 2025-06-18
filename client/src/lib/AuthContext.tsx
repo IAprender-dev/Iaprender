@@ -171,6 +171,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await logoutMutation.mutateAsync();
   };
 
+  const updateUser = (userData: Partial<User>) => {
+    queryClient.setQueryData(['/api/auth/me'], (oldData: User | undefined) => {
+      if (oldData) {
+        return { ...oldData, ...userData };
+      }
+      return oldData;
+    });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -181,6 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         registerMutation,
         logoutMutation,
         logout,
+        updateUser,
       }}
     >
       {children}

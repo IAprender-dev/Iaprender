@@ -32,6 +32,16 @@ export default function StudentProfile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  const formatPhone = (value: string) => {
+    // Remove todos os caracteres não numéricos
+    const numbers = value.replace(/\D/g, '');
+    
+    // Aplica a formatação (XX) XXXXX-XXXX
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -228,7 +238,7 @@ export default function StudentProfile() {
                       variant="outline"
                       size="sm"
                       onClick={handleCancel}
-                      className="gap-2 border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold"
+                      className="gap-2 border-slate-300 text-white bg-slate-500 hover:bg-slate-600 hover:text-white font-semibold"
                     >
                       <X className="h-4 w-4" />
                       Cancelar
@@ -259,7 +269,7 @@ export default function StudentProfile() {
                       id="firstName"
                       value={formData.firstName}
                       onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white"
+                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
                     <p className="text-slate-800 bg-gradient-to-r from-slate-50 to-blue-50 p-4 rounded-xl border-2 border-slate-200 font-medium text-base">
@@ -279,7 +289,7 @@ export default function StudentProfile() {
                       id="lastName"
                       value={formData.lastName}
                       onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white"
+                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
                     <p className="text-slate-800 bg-gradient-to-r from-slate-50 to-indigo-50 p-4 rounded-xl border-2 border-slate-200 font-medium text-base">
@@ -300,7 +310,7 @@ export default function StudentProfile() {
                       type="email"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white"
+                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
                     <p className="text-slate-800 bg-gradient-to-r from-slate-50 to-green-50 p-4 rounded-xl border-2 border-slate-200 font-medium text-base">
@@ -320,7 +330,7 @@ export default function StudentProfile() {
                       id="phone"
                       value={formData.phone}
                       onChange={handlePhoneChange}
-                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white"
+                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                       placeholder="(11) 99999-9999"
                       maxLength={15}
                     />
@@ -342,7 +352,7 @@ export default function StudentProfile() {
                       value={formData.schoolYear} 
                       onValueChange={(value) => setFormData({...formData, schoolYear: value})}
                     >
-                      <SelectTrigger className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white">
+                      <SelectTrigger className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold">
                         <SelectValue placeholder="Selecione o ano escolar" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl max-h-80">
@@ -464,7 +474,7 @@ export default function StudentProfile() {
                       type="date"
                       value={formData.dateOfBirth}
                       onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white"
+                      className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     />
                   ) : (
                     <p className="text-slate-800 bg-gradient-to-r from-slate-50 to-pink-50 p-4 rounded-xl border-2 border-slate-200 font-medium text-base">
@@ -485,7 +495,7 @@ export default function StudentProfile() {
                     id="address"
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white"
+                    className="border-2 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-base py-3 bg-white text-slate-800 font-semibold"
                     placeholder="Rua, número, bairro, cidade"
                   />
                 ) : (
