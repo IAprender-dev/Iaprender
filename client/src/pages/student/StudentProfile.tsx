@@ -52,6 +52,21 @@ export default function StudentProfile() {
     dateOfBirth: user?.dateOfBirth || ''
   });
 
+  // Atualizar formData quando user mudar (necessário para sincronização)
+  useEffect(() => {
+    if (user && !isEditing) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone ? formatPhone(user.phone) : '',
+        address: user.address || '',
+        schoolYear: user.schoolYear || '',
+        dateOfBirth: user.dateOfBirth || ''
+      });
+    }
+  }, [user, isEditing]);
+
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
       try {
@@ -288,7 +303,7 @@ export default function StudentProfile() {
         }
       }
 
-      // Preparar dados para envio
+      // Preparar dados para envio (SOMENTE os dados editados)
       const dataToSend = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -299,7 +314,18 @@ export default function StudentProfile() {
         dateOfBirth: formData.dateOfBirth || ''
       };
 
-      console.log('Dados preparados para envio:', dataToSend);
+      console.log('=== DADOS EDITADOS NA TELA ===');
+      console.log('formData atual:', formData);
+      console.log('=== DADOS PREPARADOS PARA ENVIO ===');
+      console.log('dataToSend:', dataToSend);
+      console.log('=== DIFERENÇAS COM DADOS ORIGINAIS ===');
+      console.log('Original firstName:', user?.firstName, '-> Novo:', dataToSend.firstName);
+      console.log('Original lastName:', user?.lastName, '-> Novo:', dataToSend.lastName);
+      console.log('Original email:', user?.email, '-> Novo:', dataToSend.email);
+      console.log('Original phone:', user?.phone, '-> Novo:', dataToSend.phone);
+      console.log('Original address:', user?.address, '-> Novo:', dataToSend.address);
+      console.log('Original schoolYear:', user?.schoolYear, '-> Novo:', dataToSend.schoolYear);
+      console.log('Original dateOfBirth:', user?.dateOfBirth, '-> Novo:', dataToSend.dateOfBirth);
       
       // Executar mutação
       updateProfileMutation.mutate(dataToSend);
