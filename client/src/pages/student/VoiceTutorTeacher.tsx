@@ -595,65 +595,37 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50">
-      {/* Header */}
+      {/* Compact Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <Link href="/student/dashboard">
-              <Button className="gap-2 h-10 px-4 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl">
+              <Button className="gap-2 h-9 px-3 bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl text-sm">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
             </Link>
             
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-800">Pro Versa</h1>
-              <p className="text-sm text-gray-600">Sua tutora com voz por IA</p>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {isConnected && (
-                <>
-                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
-                    Online
-                  </Badge>
-                  <Badge variant="outline" className="capitalize">
-                    {conversationState === 'listening' && '🎧 Escutando'}
-                    {conversationState === 'thinking' && '🤔 Pensando'}
-                    {conversationState === 'speaking' && '🗣️ Falando'}
-                    {conversationState === 'idle' && '😊 Pronta'}
-                  </Badge>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Top Control Bar */}
-      <div className="bg-white/95 backdrop-blur-sm border-b border-white/30 sticky top-16 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
                 {getTeacherAvatar()}
               </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-800">Pro Versa</h2>
-                <p className="text-sm text-gray-600">
+              <div className="text-center">
+                <h1 className="text-xl font-bold text-gray-800">Pro Versa</h1>
+                <p className="text-xs text-gray-600">
                   {!isConnected && "Pronta para começar"}
-                  {isConnected && conversationState === 'listening' && "🎧 Escutando você..."}
-                  {isConnected && conversationState === 'thinking' && "🤔 Organizando ideias..."}
-                  {isConnected && conversationState === 'speaking' && "🗣️ Explicando conceitos..."}
-                  {isConnected && conversationState === 'idle' && "😊 Pronta para ensinar!"}
+                  {isConnected && conversationState === 'listening' && "Escutando você..."}
+                  {isConnected && conversationState === 'thinking' && "Organizando ideias..."}
+                  {isConnected && conversationState === 'speaking' && "Explicando conceitos..."}
+                  {isConnected && conversationState === 'idle' && "Pronta para ensinar!"}
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {isConnected && (
-                <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">
-                  Online • {chalkboardContent.length} conceitos na lousa
+                <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200 text-xs">
+                  Online • {chalkboardContent.length} itens
                 </Badge>
               )}
               
@@ -661,53 +633,45 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
                 <Button 
                   onClick={connectToRealtime}
                   disabled={connectionState === 'connecting'}
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg"
-                  size="lg"
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg h-9"
+                  size="sm"
                 >
                   {connectionState === 'connecting' ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                       Conectando...
                     </>
                   ) : (
                     <>
-                      <Mic className="h-5 w-5 mr-2" />
-                      Conectar com Pro Versa
+                      <Mic className="h-4 w-4 mr-2" />
+                      Conectar
                     </>
                   )}
                 </Button>
               ) : (
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                   <Button
                     onClick={toggleMute}
                     variant={isMuted ? "destructive" : "secondary"}
+                    size="sm"
                   >
-                    {isMuted ? (
-                      <>
-                        <MicOff className="h-4 w-4 mr-2" />
-                        Ativar Mic
-                      </>
-                    ) : (
-                      <>
-                        <Mic className="h-4 w-4 mr-2" />
-                        Silenciar
-                      </>
-                    )}
+                    {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                   </Button>
                   
                   <Button
                     onClick={disconnect}
                     variant="outline"
+                    size="sm"
                   >
-                    Finalizar Aula
+                    Finalizar
                   </Button>
                   
                   <Button
                     onClick={testChalkboardExtraction}
-                    variant="secondary"
+                    variant="ghost"
                     size="sm"
                   >
-                    Testar Lousa
+                    Teste
                   </Button>
                 </div>
               )}
@@ -716,22 +680,22 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-4 space-y-6">
-        {/* Green Chalkboard - Full Width */}
-        <Card className="h-[calc(100vh-300px)] min-h-[500px] bg-gradient-to-br from-green-800 to-green-900 border-green-700 shadow-2xl">
-          <CardContent className="p-4 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-3 pb-3 border-b border-green-600/50">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center">
-                  <Presentation className="h-5 w-5 text-green-100" />
+      <div className="max-w-7xl mx-auto px-4 py-2 space-y-3">
+        {/* Enhanced Green Chalkboard - Optimized Height */}
+        <Card className="h-[calc(100vh-140px)] min-h-[600px] bg-gradient-to-br from-green-800 to-green-900 border-green-700 shadow-2xl">
+          <CardContent className="p-3 h-full flex flex-col">
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-green-600/50">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-green-600/30 flex items-center justify-center">
+                  <Presentation className="h-4 w-4 text-green-100" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-green-100 text-lg">Lousa Digital - Conceitos da Aula</h3>
-                  <p className="text-green-300 text-xs">Mapas mentais, fórmulas e exemplos ilustrativos</p>
+                  <h3 className="font-bold text-green-100 text-base">Lousa Digital - Conceitos da Aula</h3>
+                  <p className="text-green-300 text-xs">Conteúdo educacional organizado automaticamente</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                <Badge variant="outline" className="text-green-200 border-green-400 bg-green-800/50">
+                <Badge variant="outline" className="text-green-200 border-green-400 bg-green-800/50 text-xs">
                   {chalkboardContent.length} conceitos
                 </Badge>
                 {chalkboardContent.length > 0 && (
@@ -739,7 +703,7 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
                     onClick={clearChalkboard}
                     variant="ghost"
                     size="sm"
-                    className="text-green-200 hover:bg-green-700/50 h-7 px-2"
+                    className="text-green-200 hover:bg-green-700/50 h-6 px-2 text-xs"
                   >
                     Limpar
                   </Button>
@@ -747,35 +711,35 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
               </div>
             </div>
             
-            <ScrollArea className="flex-1 pr-2">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ScrollArea className="flex-1 pr-1">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
                 {chalkboardContent.length === 0 ? (
-                  <div className="col-span-2 text-center py-20">
-                    <div className="w-24 h-24 rounded-full bg-green-700/30 flex items-center justify-center mx-auto mb-6 border-2 border-dashed border-green-500/50">
-                      <Presentation className="h-12 w-12 text-green-200" />
+                  <div className="col-span-full text-center py-12">
+                    <div className="w-16 h-16 rounded-full bg-green-700/30 flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-green-500/50">
+                      <Presentation className="h-8 w-8 text-green-200" />
                     </div>
-                    <h4 className="font-bold text-green-100 mb-3 text-2xl">Lousa Interativa Pronta</h4>
-                    <p className="text-green-300 text-base max-w-lg mx-auto leading-relaxed mb-6">
-                      Durante a explicação, conceitos visuais aparecerão aqui para reforçar o aprendizado
+                    <h4 className="font-bold text-green-100 mb-2 text-lg">Lousa Interativa Pronta</h4>
+                    <p className="text-green-300 text-sm max-w-md mx-auto leading-relaxed mb-4">
+                      Durante a explicação, conceitos visuais aparecerão aqui automaticamente
                     </p>
-                    <div className="grid grid-cols-3 gap-6 max-w-md mx-auto">
+                    <div className="grid grid-cols-3 gap-4 max-w-xs mx-auto">
                       <div className="text-center">
-                        <div className="w-12 h-12 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-2">
-                          <Lightbulb className="h-6 w-6 text-green-300" />
+                        <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-1">
+                          <Lightbulb className="h-4 w-4 text-green-300" />
                         </div>
-                        <span className="text-green-400 text-sm">Exemplos</span>
+                        <span className="text-green-400 text-xs">Exemplos</span>
                       </div>
                       <div className="text-center">
-                        <div className="w-12 h-12 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-2">
-                          <Target className="h-6 w-6 text-green-300" />
+                        <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-1">
+                          <Target className="h-4 w-4 text-green-300" />
                         </div>
-                        <span className="text-green-400 text-sm">Fórmulas</span>
+                        <span className="text-green-400 text-xs">Fórmulas</span>
                       </div>
                       <div className="text-center">
-                        <div className="w-12 h-12 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-2">
-                          <MapPin className="h-6 w-6 text-green-300" />
+                        <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-1">
+                          <MapPin className="h-4 w-4 text-green-300" />
                         </div>
-                        <span className="text-green-400 text-sm">Mapas</span>
+                        <span className="text-green-400 text-xs">Mapas</span>
                       </div>
                     </div>
                   </div>
@@ -785,34 +749,34 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
                       key={item.id}
                       className="relative group"
                     >
-                      <div className="absolute inset-0 bg-green-600/20 rounded-xl transform rotate-1 group-hover:rotate-0 transition-transform duration-300"></div>
-                      <div className="relative bg-green-700/40 border-2 border-green-500/50 rounded-xl p-6 backdrop-blur-sm hover:bg-green-700/50 transition-all duration-300 h-full">
-                        <div className="flex items-start gap-4">
-                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-600/50 flex items-center justify-center border border-green-400/50">
+                      <div className="absolute inset-0 bg-green-600/20 rounded-lg transform rotate-0.5 group-hover:rotate-0 transition-transform duration-300"></div>
+                      <div className="relative bg-green-700/40 border border-green-500/50 rounded-lg p-4 backdrop-blur-sm hover:bg-green-700/50 transition-all duration-300 h-full">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600/50 flex items-center justify-center border border-green-400/50">
                             {getChalkboardIcon(item.type)}
                           </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-3">
-                              <h4 className="font-bold text-green-100 text-xl">{item.title}</h4>
-                              <Badge variant="outline" className="text-xs bg-green-800/50 text-green-200 border-green-400/50">
-                                {item.type === 'example' && '💡 Exemplo'}
-                                {item.type === 'formula' && '🧮 Fórmula'}
-                                {item.type === 'concept' && '📚 Conceito'}
-                                {item.type === 'important' && '⭐ Importante'}
-                                {item.type === 'mindmap' && '🗺️ Mapa Mental'}
-                                {item.type === 'summary' && '📝 Resumo'}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className="font-bold text-green-100 text-sm truncate">{item.title}</h4>
+                              <Badge variant="outline" className="text-xs bg-green-800/50 text-green-200 border-green-400/50 flex-shrink-0">
+                                {item.type === 'example' && 'Exemplo'}
+                                {item.type === 'formula' && 'Fórmula'}
+                                {item.type === 'concept' && 'Conceito'}
+                                {item.type === 'important' && 'Importante'}
+                                {item.type === 'mindmap' && 'Mapa'}
+                                {item.type === 'summary' && 'Resumo'}
                               </Badge>
                             </div>
-                            <div className="bg-green-900/60 rounded-lg p-4 border border-green-600/30 mb-3">
-                              <p className="text-green-100 leading-relaxed whitespace-pre-wrap font-medium text-lg">
+                            <div className="bg-green-900/60 rounded-md p-3 border border-green-600/30 mb-2 max-h-48 overflow-y-auto">
+                              <p className="text-green-100 leading-relaxed whitespace-pre-wrap text-sm">
                                 {item.content}
                               </p>
                             </div>
                             {item.subject && (
-                              <div className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-green-400" />
-                                <span className="text-sm text-green-300">{item.subject}</span>
-                                <span className="text-sm text-green-400">• {formatTime(item.timestamp)}</span>
+                              <div className="flex items-center gap-2 text-xs text-green-300">
+                                <BookOpen className="h-3 w-3 text-green-400" />
+                                <span className="truncate">{item.subject}</span>
+                                <span className="text-green-400">• {formatTime(item.timestamp)}</span>
                               </div>
                             )}
                           </div>
@@ -826,77 +790,66 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
           </CardContent>
         </Card>
 
-        {/* Bottom Conversation Bar */}
-        <Card className="h-48 bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
-          <CardContent className="p-4 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+        {/* Compact Conversation Bar */}
+        <Card className="h-32 bg-white/95 backdrop-blur-sm border-white/40 shadow-lg">
+          <CardContent className="p-3 h-full flex flex-col">
+            <div className="flex items-center justify-between mb-2 pb-1 border-b border-gray-200">
               <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-indigo-600" />
-                <h3 className="font-semibold text-gray-800 text-sm">Conversa com Pro Versa</h3>
+                <BookOpen className="h-3 w-3 text-indigo-600" />
+                <h3 className="font-semibold text-gray-800 text-xs">Conversa</h3>
               </div>
-              <Badge variant="outline" className="text-xs">
-                {messages.length} mensagens
+              <Badge variant="outline" className="text-xs h-5">
+                {messages.length} msgs
               </Badge>
             </div>
             
-            <ScrollArea className="flex-1 pr-2">
-              <div className="space-y-2">
+            <ScrollArea className="flex-1 pr-1">
+              <div className="space-y-1">
                 {messages.length === 0 && !isConnected && (
-                  <div className="text-center py-4">
-                    <p className="text-gray-600 text-sm">Conecte-se para começar a conversar com a Pro Versa</p>
+                  <div className="text-center py-2">
+                    <p className="text-gray-600 text-xs">Conecte-se para começar</p>
                   </div>
                 )}
                 
                 {messages.length === 0 && isConnected && (
-                  <div className="text-center py-4">
-                    <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                      <Mic className="h-4 w-4 animate-pulse text-green-500" />
-                      <span>Pro Versa está ouvindo... Fale naturalmente</span>
-                    </div>
+                  <div className="text-center py-2">
+                    <p className="text-gray-600 text-xs">Conectado! Fale para começar</p>
                   </div>
                 )}
-                
-                {messages.map((message) => (
+
+                {messages.slice(-3).map((message) => (
                   <div
                     key={message.id}
-                    className={`flex gap-2 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-2 ${
+                      message.type === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
                   >
-                    {message.type === 'assistant' && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center flex-shrink-0">
-                        <Heart className="h-3 w-3 text-white" />
-                      </div>
-                    )}
-                    <div className={`max-w-[80%] rounded-lg p-2 text-xs ${
-                      message.type === 'user'
-                        ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white'
-                        : 'bg-white text-gray-800 border border-gray-200'
-                    }`}>
-                      <p className="leading-relaxed">{message.content}</p>
-                      <p className={`text-[10px] mt-1 ${
-                        message.type === 'user' ? 'text-indigo-100' : 'text-gray-400'
-                      }`}>
-                        {message.type === 'user' ? 'Você' : 'Pro Versa'} • {formatTime(message.timestamp)}
+                    <div
+                      className={`max-w-[90%] p-2 rounded-md ${
+                        message.type === 'user'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      <p className="text-xs leading-relaxed whitespace-pre-wrap line-clamp-2">
+                        {message.content}
                       </p>
+                      <span className="text-xs opacity-70 mt-0.5 block">
+                        {formatTime(message.timestamp)}
+                      </span>
                     </div>
-                    {message.type === 'user' && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center flex-shrink-0">
-                        <div className="w-2 h-2 rounded-full bg-white" />
-                      </div>
-                    )}
                   </div>
                 ))}
-                
+
                 {currentTranscript && (
-                  <div className="flex gap-2 justify-start">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center flex-shrink-0 animate-pulse">
-                      <Volume2 className="h-3 w-3 text-white" />
-                    </div>
-                    <div className="max-w-[80%] rounded-lg p-2 bg-gray-50 border-2 border-dashed border-gray-200 text-xs">
-                      <p className="text-gray-700 leading-relaxed italic">{currentTranscript}</p>
-                      <p className="text-[10px] text-gray-400 mt-1 flex items-center">
-                        <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse mr-1" />
-                        Falando...
+                  <div className="flex justify-end">
+                    <div className="max-w-[90%] p-2 rounded-md bg-indigo-100 border border-indigo-200 text-indigo-800">
+                      <p className="text-xs leading-relaxed line-clamp-1">
+                        {currentTranscript}
                       </p>
+                      <span className="text-xs text-indigo-600 mt-0.5 block">
+                        Transcrevendo...
+                      </span>
                     </div>
                   </div>
                 )}
