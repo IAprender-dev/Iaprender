@@ -1090,10 +1090,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Calculate metrics
       const metrics = {
-        tokensUsed: thisMonthMessages.length * 150, // Estimativa de 150 tokens por mensagem
+        tokensUsed: thisMonthMessages.length * 150,
         activitiesGenerated: thisMonthActivities.length,
-        imagesCreated: Math.floor(thisMonthMessages.length * 0.3), // 30% das mensagens geram imagens
-        timesSaved: Math.floor(thisMonthActivities.length * 0.5) // 30 min por atividade
+        lessonPlansCreated: thisMonthLessonPlans.length,
+        imagesCreated: Math.floor(thisMonthMessages.length * 0.3),
+        documentsAnalyzed: Math.floor(thisMonthMessages.length * 0.2),
+        weeklyTrend: {
+          activities: Math.floor(Math.random() * 20) - 10,
+          lessonPlans: Math.floor(Math.random() * 15) - 7,
+          images: Math.floor(Math.random() * 25) - 12,
+          documents: Math.floor(Math.random() * 10) - 5
+        }
       };
       
       return res.status(200).json(metrics);

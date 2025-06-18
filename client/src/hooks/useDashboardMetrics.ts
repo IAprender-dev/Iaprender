@@ -31,6 +31,16 @@ export function useDashboardMetrics() {
       // Process the raw data from API into the format we need
       const currentMonth = new Date();
       
+      // Handle case where data might be undefined
+      if (!data) {
+        data = {
+          activitiesGenerated: 0,
+          lessonPlansCreated: 0,
+          imagesCreated: 0,
+          documentsAnalyzed: 0
+        };
+      }
+      
       // Generate chart data based on current metrics with realistic variation
       const generateChartData = (baseValue: number) => {
         const chartData = [];
@@ -47,7 +57,7 @@ export function useDashboardMetrics() {
         return chartData;
       };
 
-      // Use real API data
+      // Use real API data - matching server response structure
       const activitiesCount = data?.activitiesGenerated || 0;
       const lessonPlansCount = data?.lessonPlansCreated || 0;
       const imagesCount = data?.imagesCreated || 0;
