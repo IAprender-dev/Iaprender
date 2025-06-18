@@ -7,6 +7,8 @@ import { Mic, MicOff, ArrowLeft, BookOpen, Brain, Heart, Star, Volume2, Presenta
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
+import "@fontsource/kalam/400.css";
+import "@fontsource/kalam/700.css";
 
 type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'error';
 type ConversationState = 'idle' | 'listening' | 'thinking' | 'speaking';
@@ -73,7 +75,8 @@ export default function VoiceTutorTeacher() {
       timestamp: new Date(),
       subject
     };
-    setChalkboardContent(prev => [...prev, chalkboardItem]);
+    // Replace previous content with new content (only one item at a time)
+    setChalkboardContent([chalkboardItem]);
   };
 
   const analyzeForChalkboardContent = (content: string) => {
@@ -696,7 +699,7 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
               </div>
               <div className="flex items-center gap-1">
                 <Badge variant="outline" className="text-green-200 border-green-400 bg-green-800/50 text-xs">
-                  {chalkboardContent.length} conceitos
+                  {chalkboardContent.length > 0 ? 'Conteúdo ativo' : 'Aguardando'}
                 </Badge>
                 {chalkboardContent.length > 0 && (
                   <Button
@@ -711,82 +714,87 @@ Lembre-se: Você é mais que uma fonte de informação - você é uma mentora qu
               </div>
             </div>
             
-            <ScrollArea className="flex-1 pr-1">
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-                {chalkboardContent.length === 0 ? (
-                  <div className="col-span-full text-center py-12">
-                    <div className="w-16 h-16 rounded-full bg-green-700/30 flex items-center justify-center mx-auto mb-4 border-2 border-dashed border-green-500/50">
-                      <Presentation className="h-8 w-8 text-green-200" />
+            <div className="flex-1 flex items-center justify-center p-8">
+              {chalkboardContent.length === 0 ? (
+                <div className="text-center">
+                  <div className="w-20 h-20 rounded-full bg-green-700/30 flex items-center justify-center mx-auto mb-6 border-2 border-dashed border-green-500/50">
+                    <Presentation className="h-10 w-10 text-green-200" />
+                  </div>
+                  <h4 className="font-bold text-green-100 mb-3 text-2xl font-serif">Lousa Digital</h4>
+                  <p className="text-green-300 text-lg max-w-md mx-auto leading-relaxed mb-8 font-serif">
+                    Durante a explicação, conceitos aparecerão aqui como em uma lousa tradicional
+                  </p>
+                  <div className="grid grid-cols-3 gap-6 max-w-sm mx-auto">
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-2">
+                        <Lightbulb className="h-6 w-6 text-green-300" />
+                      </div>
+                      <span className="text-green-400 text-sm font-serif">Exemplos</span>
                     </div>
-                    <h4 className="font-bold text-green-100 mb-2 text-lg">Lousa Interativa Pronta</h4>
-                    <p className="text-green-300 text-sm max-w-md mx-auto leading-relaxed mb-4">
-                      Durante a explicação, conceitos visuais aparecerão aqui automaticamente
-                    </p>
-                    <div className="grid grid-cols-3 gap-4 max-w-xs mx-auto">
-                      <div className="text-center">
-                        <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-1">
-                          <Lightbulb className="h-4 w-4 text-green-300" />
-                        </div>
-                        <span className="text-green-400 text-xs">Exemplos</span>
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-2">
+                        <Target className="h-6 w-6 text-green-300" />
                       </div>
-                      <div className="text-center">
-                        <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-1">
-                          <Target className="h-4 w-4 text-green-300" />
-                        </div>
-                        <span className="text-green-400 text-xs">Fórmulas</span>
+                      <span className="text-green-400 text-sm font-serif">Fórmulas</span>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-2">
+                        <Brain className="h-6 w-6 text-green-300" />
                       </div>
-                      <div className="text-center">
-                        <div className="w-8 h-8 rounded-full bg-green-600/30 flex items-center justify-center mx-auto mb-1">
-                          <MapPin className="h-4 w-4 text-green-300" />
-                        </div>
-                        <span className="text-green-400 text-xs">Mapas</span>
-                      </div>
+                      <span className="text-green-400 text-sm font-serif">Conceitos</span>
                     </div>
                   </div>
-                ) : (
-                  chalkboardContent.map((item, index) => (
-                    <div
-                      key={item.id}
-                      className="relative group"
-                    >
-                      <div className="absolute inset-0 bg-green-600/20 rounded-lg transform rotate-0.5 group-hover:rotate-0 transition-transform duration-300"></div>
-                      <div className="relative bg-green-700/40 border border-green-500/50 rounded-lg p-4 backdrop-blur-sm hover:bg-green-700/50 transition-all duration-300 h-full">
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600/50 flex items-center justify-center border border-green-400/50">
-                            {getChalkboardIcon(item.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className="font-bold text-green-100 text-sm truncate">{item.title}</h4>
-                              <Badge variant="outline" className="text-xs bg-green-800/50 text-green-200 border-green-400/50 flex-shrink-0">
-                                {item.type === 'example' && 'Exemplo'}
-                                {item.type === 'formula' && 'Fórmula'}
-                                {item.type === 'concept' && 'Conceito'}
-                                {item.type === 'important' && 'Importante'}
-                                {item.type === 'mindmap' && 'Mapa'}
-                                {item.type === 'summary' && 'Resumo'}
-                              </Badge>
-                            </div>
-                            <div className="bg-green-900/60 rounded-md p-3 border border-green-600/30 mb-2 max-h-48 overflow-y-auto">
-                              <p className="text-green-100 leading-relaxed whitespace-pre-wrap text-sm">
-                                {item.content}
-                              </p>
-                            </div>
-                            {item.subject && (
-                              <div className="flex items-center gap-2 text-xs text-green-300">
-                                <BookOpen className="h-3 w-3 text-green-400" />
-                                <span className="truncate">{item.subject}</span>
-                                <span className="text-green-400">• {formatTime(item.timestamp)}</span>
-                              </div>
-                            )}
-                          </div>
+                </div>
+              ) : (
+                <div className="w-full max-w-4xl">
+                  {chalkboardContent.map((item) => (
+                    <div key={item.id} className="text-center">
+                      {/* Title at top like chalkboard */}
+                      <div className="mb-8">
+                        <h2 className="text-4xl font-bold text-green-100 mb-2 font-serif tracking-wide">
+                          {item.title}
+                        </h2>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="h-px bg-green-400/50 flex-1"></div>
+                          <Badge variant="outline" className="bg-green-800/50 text-green-200 border-green-400/50 font-serif">
+                            {item.type === 'example' && '💡 Exemplo'}
+                            {item.type === 'formula' && '🧮 Fórmula'}
+                            {item.type === 'concept' && '📚 Conceito'}
+                            {item.type === 'important' && '⭐ Importante'}
+                            {item.type === 'mindmap' && '🗺️ Mapa Mental'}
+                            {item.type === 'summary' && '📝 Resumo'}
+                          </Badge>
+                          <div className="h-px bg-green-400/50 flex-1"></div>
                         </div>
                       </div>
+                      
+                      {/* Main content area with chalkboard style */}
+                      <div className="bg-green-900/40 border-2 border-green-500/30 rounded-2xl p-12 backdrop-blur-sm">
+                        <div 
+                          className="text-green-100 leading-relaxed whitespace-pre-wrap font-serif text-2xl text-left"
+                          style={{
+                            fontFamily: 'Kalam, cursive, serif',
+                            textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                            lineHeight: '1.6'
+                          }}
+                        >
+                          {item.content}
+                        </div>
+                      </div>
+                      
+                      {/* Footer info */}
+                      {item.subject && (
+                        <div className="flex items-center justify-center gap-3 mt-6 text-green-300 font-serif">
+                          <BookOpen className="h-5 w-5 text-green-400" />
+                          <span className="text-lg">{item.subject}</span>
+                          <span className="text-green-400">• {formatTime(item.timestamp)}</span>
+                        </div>
+                      )}
                     </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
