@@ -204,6 +204,7 @@ export default function StudentDashboard() {
   const menuItems = [
     { icon: Bot, label: "Central de Inteligências", href: "/central-ia", isActive: location === "/central-ia" },
     { icon: MessageSquare, label: "Tutor por Texto", href: "/aluno/tutor-ia", isActive: location === "/aluno/tutor-ia" },
+    { icon: CheckSquare, label: "Gerador de Atividades", href: "/professor/ferramentas/gerador-atividades", isActive: location === "/professor/ferramentas/gerador-atividades" },
     { icon: Mic, label: "Tutor por Voz", href: "/aluno/tutor-voz", isActive: location === "/aluno/tutor-voz" },
     { icon: Languages, label: "Tradutor Escolar", href: "/student/translator", isActive: location === "/student/translator" },
     { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
@@ -607,6 +608,21 @@ export default function StudentDashboard() {
                           </div>
                         </div>
                         <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    </Link>
+
+                    <Link href="/professor/ferramentas/gerador-atividades">
+                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200/50 hover:shadow-md transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+                            <CheckSquare className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-slate-900">Gerador de Atividades</p>
+                            <p className="text-sm text-slate-600">Exercícios com IA</p>
+                          </div>
+                        </div>
+                        <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all" />
                       </div>
                     </Link>
 
