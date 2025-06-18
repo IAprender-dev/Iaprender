@@ -1,70 +1,64 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/AuthContext";
 import {
-  LayoutDashboard,
-  BookOpen,
-  CheckSquare,
-  Medal,
-  Calendar,
-  FileText,
-  Settings,
   Bot,
-  Users
+  MessageSquare,
+  Mic,
+  Languages,
+  BookOpen,
+  Calendar,
+  User,
+  LogOut
 } from "lucide-react";
 import iaprenderLogo from "@assets/iaprender-logo.png";
 
 export default function StudentSidebar() {
   const [location] = useLocation();
+  const { logout } = useAuth();
 
   const menuItems = [
     {
-      name: "Dashboard",
-      icon: <LayoutDashboard className="h-4 w-4" />,
-      href: "/aluno/dashboard",
-      active: location === "/aluno/dashboard"
+      name: "Central de Inteligências",
+      icon: <Bot className="h-4 w-4" />,
+      href: "/central-ia",
+      active: location === "/central-ia"
     },
     {
-      name: "Meus Cursos",
+      name: "Tutor por Texto",
+      icon: <MessageSquare className="h-4 w-4" />,
+      href: "/aluno/tutor-ia",
+      active: location === "/aluno/tutor-ia"
+    },
+    {
+      name: "Tutor por Voz",
+      icon: <Mic className="h-4 w-4" />,
+      href: "/aluno/tutor-voz",
+      active: location === "/aluno/tutor-voz"
+    },
+    {
+      name: "Tradutor Escolar",
+      icon: <Languages className="h-4 w-4" />,
+      href: "/student/translator",
+      active: location === "/student/translator"
+    },
+    {
+      name: "Cursos",
       icon: <BookOpen className="h-4 w-4" />,
-      href: "/aluno/cursos",
-      active: location === "/aluno/cursos"
+      href: "/student/courses",
+      active: location === "/student/courses"
     },
-
     {
-      name: "Planejamento de Estudos",
+      name: "Planejamento",
       icon: <Calendar className="h-4 w-4" />,
       href: "/aluno/planejamento",
       active: location === "/aluno/planejamento"
     },
     {
-      name: "Conquistas",
-      icon: <Medal className="h-4 w-4" />,
-      href: "/aluno/conquistas",
-      active: location === "/aluno/conquistas"
-    },
-    {
-      name: "Assistente IA",
-      icon: <Bot className="h-4 w-4" />,
-      href: "/aluno/assistente",
-      active: location === "/aluno/assistente"
-    },
-    {
-      name: "Calendário",
-      icon: <Calendar className="h-4 w-4" />,
-      href: "/aluno/calendario",
-      active: location === "/aluno/calendario"
-    },
-    {
-      name: "Notas",
-      icon: <FileText className="h-4 w-4" />,
-      href: "/aluno/notas",
-      active: location === "/aluno/notas"
-    },
-    {
-      name: "Comunidade",
-      icon: <Users className="h-4 w-4" />,
-      href: "/aluno/comunidade",
-      active: location === "/aluno/comunidade"
+      name: "Meu Perfil",
+      icon: <User className="h-4 w-4" />,
+      href: "/student/profile",
+      active: location === "/student/profile"
     }
   ];
 
@@ -91,11 +85,7 @@ export default function StudentSidebar() {
               >
                 {item.icon}
                 <span className="ml-3">{item.name}</span>
-                {item.badge && (
-                  <span className="ml-auto bg-primary text-white text-xs font-medium px-2 py-0.5 rounded-full">
-                    {item.badge}
-                  </span>
-                )}
+
               </Link>
             </li>
           ))}
@@ -104,34 +94,18 @@ export default function StudentSidebar() {
         <div className="mt-6 pt-6 border-t border-neutral-200">
           <ul className="space-y-1">
             <li>
-              <Link 
-                href="/aluno/configuracoes"
-                className={cn(
-                  "flex items-center px-3 py-2 rounded-md text-sm font-medium",
-                  location === "/aluno/configuracoes" 
-                    ? "bg-primary-50 text-primary" 
-                    : "text-neutral-600 hover:bg-neutral-50 hover:text-primary"
-                )}
+              <button 
+                className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 w-full"
+                onClick={() => {
+                  logout();
+                  window.location.href = '/auth';
+                }}
               >
-                <Settings className="h-4 w-4" />
-                <span className="ml-3">Configurações</span>
-              </Link>
+                <LogOut className="h-4 w-4" />
+                <span className="ml-3">Sair</span>
+              </button>
             </li>
           </ul>
-        </div>
-        
-        <div className="mt-6 pt-6 border-t border-neutral-200">
-          <div className="rounded-md bg-primary-50 p-4">
-            <h3 className="text-sm font-medium text-primary mb-2">Precisa de ajuda?</h3>
-            <p className="text-xs text-neutral-600 mb-3">
-              Nosso assistente IA está aqui para ajudar com suas dúvidas.
-            </p>
-            <Link href="/aluno/assistente">
-              <button className="w-full bg-primary text-white text-xs font-medium px-3 py-2 rounded-md hover:bg-primary-600">
-                Abrir Assistente
-              </button>
-            </Link>
-          </div>
         </div>
       </nav>
     </aside>

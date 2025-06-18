@@ -202,11 +202,14 @@ export default function StudentDashboard() {
   };
 
   const menuItems = [
-    { icon: Home, label: "Dashboard", href: "/student/dashboard", isActive: location === "/student/dashboard" },
+    { icon: Bot, label: "Central de Inteligências", href: "/central-ia", isActive: location === "/central-ia" },
+    { icon: MessageSquare, label: "Tutor por Texto", href: "/aluno/tutor-ia", isActive: location === "/aluno/tutor-ia" },
+    { icon: Mic, label: "Tutor por Voz", href: "/aluno/tutor-voz", isActive: location === "/aluno/tutor-voz" },
+    { icon: Languages, label: "Tradutor Escolar", href: "/student/translator", isActive: location === "/student/translator" },
     { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
     { icon: Calendar, label: "Planejamento", href: "/aluno/planejamento", isActive: location === "/aluno/planejamento" },
-    { icon: User, label: "Meu Perfil", href: "/student/profile", isActive: location === "/student/profile" },
     { icon: BookOpen, label: "Wikipedia", href: "/student/wikipedia", isActive: location === "/student/wikipedia" },
+    { icon: User, label: "Meu Perfil", href: "/student/profile", isActive: location === "/student/profile" },
   ];
 
   // Check if user is in elementary grades 1-3 for special layout
