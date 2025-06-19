@@ -1,0 +1,4 @@
+📦 Backup do Projeto IAprender - Thu Jun 19 03:52:59 PM UTC 2025
+Arquivo: backup_projeto_20250619_155259.tar.gz
+Tamanho: 91MB
+Conteúdo: Código completo excluindo node_modules, .git, dist, build e logs
