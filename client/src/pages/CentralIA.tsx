@@ -98,7 +98,7 @@ export default function CentralIA() {
       borderColor: "border-green-200",
       hoverColor: "hover:border-green-400",
       description: "Conversação avançada e análise de texto",
-      route: "/central-ia/chatgpt"
+      route: "/ai/chatgpt"
     },
     "claude": {
       name: "Claude",
@@ -108,7 +108,7 @@ export default function CentralIA() {
       borderColor: "border-purple-200",
       hoverColor: "hover:border-purple-400",
       description: "Análise profunda e raciocínio complexo",
-      route: "/central-ia/claude"
+      route: "/ai/claude"
     },
     "perplexity": {
       name: "Perplexity",
@@ -118,7 +118,7 @@ export default function CentralIA() {
       borderColor: "border-blue-200",
       hoverColor: "hover:border-blue-400",
       description: "Pesquisa em tempo real com fontes",
-      route: "/central-ia/perplexity"
+      route: "/ai/perplexity"
     },
     "image-gen": {
       name: "Gerador de Imagens",
@@ -128,7 +128,7 @@ export default function CentralIA() {
       borderColor: "border-orange-200",
       hoverColor: "hover:border-orange-400",
       description: "Criação de imagens educacionais",
-      route: "/central-ia/image-gen"
+      route: "/ai/image-gen"
     }
   };
 
@@ -164,8 +164,8 @@ export default function CentralIA() {
 
   // Navegar para a IA selecionada
   const handleAISelection = (model: AIModel) => {
-    // Redirecionar para a interface específica da IA
-    window.location.href = modelInfo[model].route;
+    // Usar window.location.assign para navegação mais suave
+    window.location.assign(modelInfo[model].route);
   };
 
   // Lidar com envio de prompt
