@@ -42,6 +42,10 @@ export default function TeacherProfile() {
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    schoolYear: user?.schoolYear || '',
+    dateOfBirth: user?.dateOfBirth || '',
     specialization: (user as any)?.specialization || '',
     bio: (user as any)?.bio || ''
   });
@@ -52,6 +56,10 @@ export default function TeacherProfile() {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        schoolYear: user.schoolYear || '',
+        dateOfBirth: user.dateOfBirth || '',
         specialization: (user as any)?.specialization || '',
         bio: (user as any)?.bio || ''
       });
@@ -239,6 +247,10 @@ export default function TeacherProfile() {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim().toLowerCase(),
+        phone: formData.phone?.trim() || '',
+        address: formData.address?.trim() || '',
+        schoolYear: formData.schoolYear || '',
+        dateOfBirth: formData.dateOfBirth || '',
         specialization: formData.specialization?.trim() || '',
         bio: formData.bio?.trim() || ''
       };
@@ -268,6 +280,10 @@ export default function TeacherProfile() {
         firstName: user?.firstName || '',
         lastName: user?.lastName || '',
         email: user?.email || '',
+        phone: user?.phone || '',
+        address: user?.address || '',
+        schoolYear: user?.schoolYear || '',
+        dateOfBirth: user?.dateOfBirth || '',
         specialization: (user as any)?.specialization || '',
         bio: (user as any)?.bio || ''
       };
@@ -367,33 +383,7 @@ export default function TeacherProfile() {
                     )}
                   </div>
 
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-200">
-                      <div className="text-2xl font-bold text-blue-700">
-                        {formData.specialization || 'N/A'}
-                      </div>
-                      <div className="text-xs text-blue-600 font-medium">Especialização</div>
-                    </div>
-                    <div className="text-center p-3 bg-green-50 rounded-xl border border-green-200">
-                      <div className="text-2xl font-bold text-green-700">
-                        {user?.email ? 'Ativo' : 'N/A'}
-                      </div>
-                      <div className="text-xs text-green-600 font-medium">Status</div>
-                    </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-xl border border-purple-200">
-                      <div className="text-2xl font-bold text-purple-700">
-                        {formData.bio ? 'Sim' : 'N/A'}
-                      </div>
-                      <div className="text-xs text-purple-600 font-medium">Biografia</div>
-                    </div>
-                    <div className="text-center p-3 bg-orange-50 rounded-xl border border-orange-200">
-                      <div className="text-2xl font-bold text-orange-700">
-                        Professor
-                      </div>
-                      <div className="text-xs text-orange-600 font-medium">Função</div>
-                    </div>
-                  </div>
+
                 </div>
               </div>
             </CardContent>
@@ -464,6 +454,81 @@ export default function TeacherProfile() {
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                     disabled={!isEditing}
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Telefone */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Telefone
+                  </Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    disabled={!isEditing}
+                    placeholder="(11) 99999-9999"
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Data de Nascimento */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Data de Nascimento
+                  </Label>
+                  <Input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+                    disabled={!isEditing}
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Ano Escolar que Leciona */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <School className="h-4 w-4" />
+                    Ano Escolar que Leciona
+                  </Label>
+                  <Select 
+                    value={formData.schoolYear} 
+                    onValueChange={(value) => setFormData({...formData, schoolYear: value})}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium">
+                      <SelectValue placeholder="Selecione o ano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-ano">1º Ano</SelectItem>
+                      <SelectItem value="2-ano">2º Ano</SelectItem>
+                      <SelectItem value="3-ano">3º Ano</SelectItem>
+                      <SelectItem value="4-ano">4º Ano</SelectItem>
+                      <SelectItem value="5-ano">5º Ano</SelectItem>
+                      <SelectItem value="6-ano">6º Ano</SelectItem>
+                      <SelectItem value="7-ano">7º Ano</SelectItem>
+                      <SelectItem value="8-ano">8º Ano</SelectItem>
+                      <SelectItem value="9-ano">9º Ano</SelectItem>
+                      <SelectItem value="ensino-medio">Ensino Médio</SelectItem>
+                      <SelectItem value="superior">Ensino Superior</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Endereço */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Endereço
+                  </Label>
+                  <Input
+                    value={formData.address}
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    disabled={!isEditing}
+                    placeholder="Seu endereço completo"
                     className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
                   />
                 </div>
