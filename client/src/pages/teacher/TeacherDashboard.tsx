@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Link } from 'wouter';
 import { 
   User, 
   Edit3, 
@@ -37,7 +38,6 @@ import {
   AlertTriangle,
   TrendingUp
 } from 'lucide-react';
-import { Link } from 'wouter';
 import alverseLogo from '@/assets/aiverse-logo-new.png';
 
 
@@ -155,40 +155,38 @@ export default function TeacherDashboard() {
               </div>
             </div>
 
-            {/* Quick Profile Info */}
+            {/* Navigation and Actions */}
             <div className="flex-1 p-6 overflow-y-auto">
               <div className="space-y-4">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Informações Rápidas</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Especialização:</span>
-                      <span className="font-medium">{(user as any)?.specialization || 'Não informado'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Ano Lecionado:</span>
-                      <span className="font-medium">{user?.schoolYear || 'Não informado'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">Telefone:</span>
-                      <span className="font-medium">{user?.phone || 'Não informado'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-                  <h4 className="text-sm font-semibold text-blue-800 mb-2">Biografia</h4>
-                  <p className="text-sm text-blue-700">
-                    {(user as any)?.bio || 'Adicione uma biografia na página de perfil para se apresentar aos alunos.'}
-                  </p>
-                </div>
-
                 <Link href="/teacher/profile">
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium">
-                    <User className="h-4 w-4 mr-2" />
-                    Ver Perfil Completo
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium h-12">
+                    <User className="h-5 w-5 mr-2" />
+                    Editar Perfil Completo
                   </Button>
                 </Link>
+                
+                <div className="grid gap-3">
+                  <Link href="/professor/ferramentas">
+                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                      <BookOpen className="h-4 w-4 mr-3" />
+                      Ferramentas de Ensino
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/professor/planejamento">
+                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                      <Calendar className="h-4 w-4 mr-3" />
+                      Planejamento de Aulas
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/tokens">
+                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                      <Zap className="h-4 w-4 mr-3" />
+                      Gestão de Tokens
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
