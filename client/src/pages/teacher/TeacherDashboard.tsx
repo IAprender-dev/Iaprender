@@ -136,23 +136,7 @@ export default function TeacherDashboard() {
                 </CardHeader>
               </Card>
 
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <User className="h-4 w-4 text-blue-600" />
-                  </div>
-                  Meu Perfil
-                </h3>
-                <Link href="/teacher/profile">
-                  <Button
-                    size="sm"
-                    className="gap-2 font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                    Editar
-                  </Button>
-                </Link>
-              </div>
+
             </div>
 
             {/* Navigation and Actions */}

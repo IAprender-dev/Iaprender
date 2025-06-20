@@ -36,21 +36,12 @@ export default function TeacherProfile() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   
-  const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 2) return numbers;
-    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
+
 
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     email: user?.email || '',
-    phone: user?.phone ? formatPhone(user.phone) : '',
-    address: user?.address || '',
-    schoolYear: user?.schoolYear || '',
-    dateOfBirth: user?.dateOfBirth || '',
     specialization: (user as any)?.specialization || '',
     bio: (user as any)?.bio || ''
   });
@@ -61,10 +52,6 @@ export default function TeacherProfile() {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         email: user.email || '',
-        phone: user.phone ? formatPhone(user.phone) : '',
-        address: user.address || '',
-        schoolYear: user.schoolYear || '',
-        dateOfBirth: user.dateOfBirth || '',
         specialization: (user as any)?.specialization || '',
         bio: (user as any)?.bio || ''
       });
@@ -203,36 +190,7 @@ export default function TeacherProfile() {
     }
   });
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const inputValue = e.target.value || '';
-      console.log('Alterando telefone:', inputValue);
-      
-      if (inputValue.length > 15) {
-        toast({
-          title: "Limite de caracteres",
-          description: "Telefone não pode ter mais de 15 caracteres.",
-          variant: "destructive",
-        });
-        return;
-      }
 
-      const formatted = formatPhone(inputValue);
-      
-      setFormData(prevData => ({
-        ...prevData, 
-        phone: formatted
-      }));
-
-    } catch (phoneError) {
-      console.error('Erro ao formatar telefone:', phoneError);
-      toast({
-        title: "Erro de formatação",
-        description: "Erro ao formatar telefone. Digite apenas números.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleSave = () => {
     try {
@@ -275,28 +233,12 @@ export default function TeacherProfile() {
         return;
       }
 
-      let processedPhone = '';
-      if (formData.phone?.trim()) {
-        processedPhone = formData.phone.replace(/\D/g, '');
-        
-        if (processedPhone && (processedPhone.length < 10 || processedPhone.length > 11)) {
-          toast({
-            title: "Telefone inválido",
-            description: "Telefone deve ter 10 ou 11 dígitos (incluindo DDD).",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
+
 
       const dataToSend = {
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         email: formData.email.trim().toLowerCase(),
-        phone: processedPhone,
-        address: formData.address?.trim() || '',
-        schoolYear: formData.schoolYear || '',
-        dateOfBirth: formData.dateOfBirth || '',
         specialization: formData.specialization?.trim() || '',
         bio: formData.bio?.trim() || ''
       };
@@ -326,10 +268,6 @@ export default function TeacherProfile() {
         firstName: user?.firstName || '',
         lastName: user?.lastName || '',
         email: user?.email || '',
-        phone: user?.phone ? formatPhone(user.phone) : '',
-        address: user?.address || '',
-        schoolYear: user?.schoolYear || '',
-        dateOfBirth: user?.dateOfBirth || '',
         specialization: (user as any)?.specialization || '',
         bio: (user as any)?.bio || ''
       };
@@ -433,27 +371,27 @@ export default function TeacherProfile() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-200">
                       <div className="text-2xl font-bold text-blue-700">
-                        {formatDate(user?.dateOfBirth || '')}
+                        {formData.specialization || 'N/A'}
                       </div>
-                      <div className="text-xs text-blue-600 font-medium">Data de Nasc.</div>
+                      <div className="text-xs text-blue-600 font-medium">Especialização</div>
                     </div>
                     <div className="text-center p-3 bg-green-50 rounded-xl border border-green-200">
                       <div className="text-2xl font-bold text-green-700">
-                        {user?.phone ? formatPhone(user.phone) : 'N/A'}
+                        {user?.email ? 'Ativo' : 'N/A'}
                       </div>
-                      <div className="text-xs text-green-600 font-medium">Telefone</div>
+                      <div className="text-xs text-green-600 font-medium">Status</div>
                     </div>
                     <div className="text-center p-3 bg-purple-50 rounded-xl border border-purple-200">
                       <div className="text-2xl font-bold text-purple-700">
-                        {formData.schoolYear || 'N/A'}
+                        {formData.bio ? 'Sim' : 'N/A'}
                       </div>
-                      <div className="text-xs text-purple-600 font-medium">Ano Lecionado</div>
+                      <div className="text-xs text-purple-600 font-medium">Biografia</div>
                     </div>
                     <div className="text-center p-3 bg-orange-50 rounded-xl border border-orange-200">
                       <div className="text-2xl font-bold text-orange-700">
-                        {user?.address ? 'Sim' : 'N/A'}
+                        Professor
                       </div>
-                      <div className="text-xs text-orange-600 font-medium">Endereço</div>
+                      <div className="text-xs text-orange-600 font-medium">Função</div>
                     </div>
                   </div>
                 </div>
@@ -530,68 +468,8 @@ export default function TeacherProfile() {
                   />
                 </div>
 
-                {/* Telefone */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Phone className="h-4 w-4" />
-                    Telefone
-                  </Label>
-                  <Input
-                    value={formData.phone}
-                    onChange={handlePhoneChange}
-                    disabled={!isEditing}
-                    placeholder="(11) 99999-9999"
-                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                {/* Data de Nascimento */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Data de Nascimento
-                  </Label>
-                  <Input
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-                    disabled={!isEditing}
-                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                {/* Ano Escolar que Leciona */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <School className="h-4 w-4" />
-                    Ano Escolar que Leciona
-                  </Label>
-                  <Select 
-                    value={formData.schoolYear} 
-                    onValueChange={(value) => setFormData({...formData, schoolYear: value})}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium">
-                      <SelectValue placeholder="Selecione o ano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-ano">1º Ano</SelectItem>
-                      <SelectItem value="2-ano">2º Ano</SelectItem>
-                      <SelectItem value="3-ano">3º Ano</SelectItem>
-                      <SelectItem value="4-ano">4º Ano</SelectItem>
-                      <SelectItem value="5-ano">5º Ano</SelectItem>
-                      <SelectItem value="6-ano">6º Ano</SelectItem>
-                      <SelectItem value="7-ano">7º Ano</SelectItem>
-                      <SelectItem value="8-ano">8º Ano</SelectItem>
-                      <SelectItem value="9-ano">9º Ano</SelectItem>
-                      <SelectItem value="ensino-medio">Ensino Médio</SelectItem>
-                      <SelectItem value="superior">Ensino Superior</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 {/* Especialização */}
-                <div className="space-y-2 md:col-span-1">
+                <div className="space-y-2">
                   <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                     <BookOpen className="h-4 w-4" />
                     Especialização
@@ -601,21 +479,6 @@ export default function TeacherProfile() {
                     onChange={(e) => setFormData({...formData, specialization: e.target.value})}
                     disabled={!isEditing}
                     placeholder="Ex: Matemática, Português, Ciências..."
-                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                {/* Endereço */}
-                <div className="space-y-2 md:col-span-1">
-                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    Endereço
-                  </Label>
-                  <Input
-                    value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    disabled={!isEditing}
-                    placeholder="Seu endereço completo"
                     className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
                   />
                 </div>
