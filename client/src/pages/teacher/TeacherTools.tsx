@@ -17,9 +17,358 @@ import { FileUploader } from "@/components/ui/file-uploader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Upload, Sparkles, FileText, Image, Beer, Wand2, Pencil, BookOpen, MessageSquare } from "lucide-react";
+import { Loader2, Upload, Sparkles, FileText, Image, Beer, Wand2, Pencil, BookOpen, MessageSquare, Calculator, Send, User, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 
-// Image generator component
+// Grade Calculator component
+function GradeCalculator() {
+  const { toast } = useToast();
+  const [students, setStudents] = useState([
+    { id: 1, name: "", grade1: "", grade2: "", grade3: "", average: 0, status: "" }
+  ]);
+
+  const addStudent = () => {
+    const newId = Math.max(...students.map(s => s.id), 0) + 1;
+    setStudents([...students, { id: newId, name: "", grade1: "", grade2: "", grade3: "", average: 0, status: "" }]);
+  };
+
+  const removeStudent = (id: number) => {
+    setStudents(students.filter(s => s.id !== id));
+  };
+
+  const updateStudent = (id: number, field: string, value: string) => {
+    setStudents(students.map(student => {
+      if (student.id === id) {
+        const updated = { ...student, [field]: value };
+        
+        // Calculate average if grades are updated
+        if (field.includes('grade') || field === 'grade1' || field === 'grade2' || field === 'grade3') {
+          const g1 = parseFloat(updated.grade1) || 0;
+          const g2 = parseFloat(updated.grade2) || 0;
+          const g3 = parseFloat(updated.grade3) || 0;
+          const average = (g1 + g2 + g3) / 3;
+          updated.average = Math.round(average * 100) / 100;
+          
+          // Determine status
+          if (average >= 7) {
+            updated.status = "Aprovado";
+          } else if (average >= 5) {
+            updated.status = "Recuperação";
+          } else {
+            updated.status = "Reprovado";
+          }
+        }
+        
+        return updated;
+      }
+      return student;
+    }));
+  };
+
+  const exportResults = () => {
+    const validStudents = students.filter(s => s.name.trim() !== "");
+    if (validStudents.length === 0) {
+      toast({
+        title: "Nenhum aluno válido",
+        description: "Adicione pelo menos um aluno com nome para exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const csvContent = "data:text/csv;charset=utf-8," + 
+      "Nome,Nota 1,Nota 2,Nota 3,Média,Status\n" +
+      validStudents.map(s => `${s.name},${s.grade1},${s.grade2},${s.grade3},${s.average},${s.status}`).join("\n");
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "notas_trimestre.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Exportado com sucesso!",
+      description: "As notas foram exportadas para arquivo CSV.",
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Gestão de Notas por Aluno</h3>
+        <div className="space-x-2">
+          <Button onClick={addStudent} variant="outline">
+            <User className="h-4 w-4 mr-2" />
+            Adicionar Aluno
+          </Button>
+          <Button onClick={exportResults} className="bg-green-600 hover:bg-green-700">
+            <FileText className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {students.map((student) => (
+          <Card key={student.id} className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-8 gap-4 items-center">
+              <div className="md:col-span-2">
+                <Label htmlFor={`name-${student.id}`}>Nome do Aluno</Label>
+                <Input
+                  id={`name-${student.id}`}
+                  value={student.name}
+                  onChange={(e) => updateStudent(student.id, 'name', e.target.value)}
+                  placeholder="Nome completo"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor={`grade1-${student.id}`}>1ª Nota</Label>
+                <Input
+                  id={`grade1-${student.id}`}
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  value={student.grade1}
+                  onChange={(e) => updateStudent(student.id, 'grade1', e.target.value)}
+                  placeholder="0.0"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor={`grade2-${student.id}`}>2ª Nota</Label>
+                <Input
+                  id={`grade2-${student.id}`}
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  value={student.grade2}
+                  onChange={(e) => updateStudent(student.id, 'grade2', e.target.value)}
+                  placeholder="0.0"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor={`grade3-${student.id}`}>3ª Nota</Label>
+                <Input
+                  id={`grade3-${student.id}`}
+                  type="number"
+                  min="0"
+                  max="10"
+                  step="0.1"
+                  value={student.grade3}
+                  onChange={(e) => updateStudent(student.id, 'grade3', e.target.value)}
+                  placeholder="0.0"
+                />
+              </div>
+              
+              <div>
+                <Label>Média</Label>
+                <div className={`text-lg font-bold p-2 rounded ${
+                  student.average >= 7 ? 'text-green-600 bg-green-50' :
+                  student.average >= 5 ? 'text-yellow-600 bg-yellow-50' :
+                  'text-red-600 bg-red-50'
+                }`}>
+                  {student.average.toFixed(1)}
+                </div>
+              </div>
+              
+              <div>
+                <Label>Status</Label>
+                <div className="flex items-center gap-2">
+                  {student.status === "Aprovado" && <CheckCircle className="h-4 w-4 text-green-600" />}
+                  {student.status === "Recuperação" && <Clock className="h-4 w-4 text-yellow-600" />}
+                  {student.status === "Reprovado" && <AlertTriangle className="h-4 w-4 text-red-600" />}
+                  <span className="text-sm font-medium">{student.status}</span>
+                </div>
+              </div>
+              
+              <div>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={() => removeStudent(student.id)}
+                  disabled={students.length === 1}
+                >
+                  Remover
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Notification Sender component
+function NotificationSender() {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [notificationType, setNotificationType] = useState("performance");
+  const [studentName, setStudentName] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [priority, setPriority] = useState("normal");
+  const [isSending, setIsSending] = useState(false);
+
+  const notificationTypes = {
+    performance: "Relatório de Desempenho",
+    behavior: "Questão Comportamental", 
+    attendance: "Frequência e Presença",
+    academic: "Questão Acadêmica",
+    health: "Questão de Saúde",
+    general: "Comunicação Geral"
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!studentName.trim() || !subject.trim() || !message.trim()) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha todos os campos obrigatórios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSending(true);
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Notificação enviada!",
+        description: "A notificação foi enviada para a secretaria com sucesso.",
+      });
+      
+      // Reset form
+      setStudentName("");
+      setSubject("");
+      setMessage("");
+      setPriority("normal");
+      
+    } catch (error) {
+      toast({
+        title: "Erro ao enviar",
+        description: "Não foi possível enviar a notificação. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="notificationType">Tipo de Notificação</Label>
+          <Select value={notificationType} onValueChange={setNotificationType}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(notificationTypes).map(([key, label]) => (
+                <SelectItem key={key} value={key}>{label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label htmlFor="priority">Prioridade</Label>
+          <Select value={priority} onValueChange={setPriority}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="low">Baixa</SelectItem>
+              <SelectItem value="normal">Normal</SelectItem>
+              <SelectItem value="high">Alta</SelectItem>
+              <SelectItem value="urgent">Urgente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <Label htmlFor="studentName">Nome do Aluno *</Label>
+        <Input
+          id="studentName"
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
+          placeholder="Nome completo do aluno"
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="subject">Assunto *</Label>
+        <Input
+          id="subject"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          placeholder="Assunto da notificação"
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="message">Mensagem/Relato *</Label>
+        <Textarea
+          id="message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Descreva detalhadamente a situação, comportamento ou informação relevante..."
+          className="min-h-[120px]"
+          required
+        />
+      </div>
+
+      <div className="bg-slate-50 p-4 rounded-lg">
+        <h4 className="font-medium mb-2">Informações do Remetente</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <span className="font-medium">Professor(a):</span> {user?.firstName} {user?.lastName}
+          </div>
+          <div>
+            <span className="font-medium">Email:</span> {user?.email}
+          </div>
+          <div>
+            <span className="font-medium">Data/Hora:</span> {new Date().toLocaleString('pt-BR')}
+          </div>
+          <div>
+            <span className="font-medium">Tipo:</span> {notificationTypes[notificationType as keyof typeof notificationTypes]}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={isSending} className="bg-blue-600 hover:bg-blue-700">
+          {isSending ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Enviando...
+            </>
+          ) : (
+            <>
+              <Send className="h-4 w-4 mr-2" />
+              Enviar Notificação
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// Image generator component (keeping for tools tab)
 function ImageGenerator() {
   const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
