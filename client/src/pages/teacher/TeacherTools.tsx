@@ -1014,19 +1014,15 @@ export default function TeacherTools() {
                 </p>
               </div>
               
-              <Tabs defaultValue="assistant" className="w-full">
-                <TabsList className="mb-6 grid w-full grid-cols-2 md:grid-cols-5">
-                  <TabsTrigger value="assistant" className="flex items-center gap-1">
-                    <MessageSquare className="h-4 w-4" />
-                    <span className="hidden md:inline">Assistente</span>
+              <Tabs defaultValue="calculator" className="w-full">
+                <TabsList className="mb-6 grid w-full grid-cols-2 md:grid-cols-4">
+                  <TabsTrigger value="calculator" className="flex items-center gap-1">
+                    <Calculator className="h-4 w-4" />
+                    <span className="hidden md:inline">Calculadora de Notas</span>
                   </TabsTrigger>
-                  <TabsTrigger value="images" className="flex items-center gap-1">
-                    <Image className="h-4 w-4" />
-                    <span className="hidden md:inline">Imagens</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="documents" className="flex items-center gap-1">
-                    <FileText className="h-4 w-4" />
-                    <span className="hidden md:inline">Documentos</span>
+                  <TabsTrigger value="notifications" className="flex items-center gap-1">
+                    <Send className="h-4 w-4" />
+                    <span className="hidden md:inline">Notificações</span>
                   </TabsTrigger>
                   <TabsTrigger value="essays" className="flex items-center gap-1">
                     <Pencil className="h-4 w-4" />
@@ -1039,76 +1035,20 @@ export default function TeacherTools() {
                 </TabsList>
                 
                 <ScrollArea className="h-[calc(100vh-240px)]">
-                  <TabsContent value="assistant" className="mt-0">
+                  <TabsContent value="calculator" className="mt-0">
                     <Card className="border-0 shadow-none">
                       <CardContent className="pt-6">
-                        <AIAssistant role="teacher" />
+                        <GradeCalculator />
                       </CardContent>
                     </Card>
                   </TabsContent>
                   
-                  <TabsContent value="images" className="mt-0">
-                    <ImageGenerator />
-                  </TabsContent>
-                  
-                  <TabsContent value="documents" className="mt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      <div className="lg:col-span-2">
-                        <DocumentAnalyzer />
-                      </div>
-                      
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Documentos Recentes</CardTitle>
-                          <CardDescription>
-                            Materiais analisados recentemente
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="border rounded-md p-3 hover:bg-neutral-50 cursor-pointer transition-colors">
-                              <div className="flex items-center">
-                                <div className="p-2 bg-primary-50 rounded mr-3">
-                                  <FileText className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-sm">Plano Pedagogico 2023.pdf</h4>
-                                  <p className="text-xs text-neutral-500">Analisado em 15/05/2023</p>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="border rounded-md p-3 hover:bg-neutral-50 cursor-pointer transition-colors">
-                              <div className="flex items-center">
-                                <div className="p-2 bg-primary-50 rounded mr-3">
-                                  <FileText className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-sm">Apostila Matemática 8 ano.docx</h4>
-                                  <p className="text-xs text-neutral-500">Analisado em 10/05/2023</p>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="border rounded-md p-3 hover:bg-neutral-50 cursor-pointer transition-colors">
-                              <div className="flex items-center">
-                                <div className="p-2 bg-primary-50 rounded mr-3">
-                                  <FileText className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-sm">Notas Bimestrais.xlsx</h4>
-                                  <p className="text-xs text-neutral-500">Analisado em 05/05/2023</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <Button variant="outline" className="w-full mt-4">
-                            Ver todos os documentos
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    </div>
+                  <TabsContent value="notifications" className="mt-0">
+                    <Card className="border-0 shadow-none">
+                      <CardContent className="pt-6">
+                        <NotificationSender />
+                      </CardContent>
+                    </Card>
                   </TabsContent>
                   
                   <TabsContent value="essays" className="mt-0">
