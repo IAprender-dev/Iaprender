@@ -18,6 +18,7 @@ import ClaudePage from "@/pages/ai/ClaudePage";
 import PerplexityPage from "@/pages/ai/PerplexityPage";
 import ImageGenPage from "@/pages/ai/ImageGenPage";
 import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
+import TeacherProfile from "@/pages/teacher/TeacherProfile";
 import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
 import TeacherTools from "@/pages/teacher/TeacherTools";
@@ -89,6 +90,8 @@ function Router() {
       {/* Teacher routes */}
       <Route path="/professor" component={TeacherDashboard} />
       <Route path="/professor/dashboard" component={TeacherDashboard} />
+      <Route path="/teacher/dashboard" component={TeacherDashboard} />
+      <Route path="/teacher/profile" component={TeacherProfile} />
       <Route path="/professor/cursos" component={TeacherCourses} />
       <Route path="/professor/planejamento" component={TeacherPlanning} />
       <Route path="/professor/ferramentas" component={TeacherTools} />

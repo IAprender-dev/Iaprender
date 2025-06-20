@@ -1,17 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/AuthContext';
-import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   User, 
   Edit3, 
@@ -85,19 +79,6 @@ interface TokenUsageData {
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
-  const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address || '',
-    dateOfBirth: user?.dateOfBirth || '',
-    schoolYear: user?.schoolYear || '',
-    specialization: (user as any)?.specialization || '',
-    bio: (user as any)?.bio || ''
-  });
 
   // Buscar dados de consumo de tokens
   const { data: tokenData, isLoading: isTokenLoading } = useQuery<TokenUsageData>({
@@ -105,15 +86,6 @@ export default function TeacherDashboard() {
     enabled: !!user,
     refetchInterval: 30000, // Atualiza a cada 30 segundos
   });
-
-  // Auto-format phone number
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 11) {
-      return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    }
-    return value;
-  };
 
   // Get current date
   const currentDate = new Date();
@@ -132,84 +104,12 @@ export default function TeacherDashboard() {
     return "Boa noite";
   };
 
-  // Update profile mutation
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error('Erro ao atualizar perfil');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      setIsEditing(false);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      toast({
-        title: "Perfil atualizado!",
-        description: "Suas informações foram salvas com sucesso.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível salvar as alterações. Tente novamente.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSaveProfile = () => {
-    updateProfileMutation.mutate(formData);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setFormData({
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      address: user?.address || '',
-      dateOfBirth: user?.dateOfBirth || '',
-      schoolYear: user?.schoolYear || '',
-      specialization: (user as any)?.specialization || '',
-      bio: (user as any)?.bio || ''
-    });
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    if (field === 'phone') {
-      value = formatPhoneNumber(value);
-    }
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        address: user.address || '',
-        dateOfBirth: user.dateOfBirth || '',
-        schoolYear: user.schoolYear || '',
-        specialization: (user as any).specialization || '',
-        bio: (user as any).bio || ''
-      });
-    }
-  }, [user]);
-
   return (
     <>
       <div className="min-h-screen bg-slate-50">
         {/* Main Dashboard Container */}
         <div className="flex h-screen bg-slate-50">
-          {/* Left Sidebar - Profile Form */}
+          {/* Left Sidebar - Profile Summary */}
           <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-lg">
             {/* Profile Header */}
             <div className="p-6 border-b border-slate-200">
@@ -243,156 +143,52 @@ export default function TeacherDashboard() {
                   </div>
                   Meu Perfil
                 </h3>
-                <Button
-                  size="sm"
-                  variant={isEditing ? "outline" : "default"}
-                  onClick={() => setIsEditing(!isEditing)}
-                  className={`gap-2 font-medium transition-colors ${
-                    isEditing 
-                      ? "border-red-300 text-red-700 hover:bg-red-50" 
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  {isEditing ? <X className="h-4 w-4" /> : <Edit3 className="h-4 w-4" />}
-                  {isEditing ? "Cancelar" : "Editar"}
-                </Button>
+                <Link href="/teacher/profile">
+                  <Button
+                    size="sm"
+                    className="gap-2 font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Editar
+                  </Button>
+                </Link>
               </div>
             </div>
 
-            {/* Profile Form */}
+            {/* Quick Profile Info */}
             <div className="flex-1 p-6 overflow-y-auto">
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-sm font-semibold text-slate-700 mb-2 block">Nome</Label>
-                    <Input
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      disabled={!isEditing}
-                      className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-semibold text-slate-700 mb-2 block">Sobrenome</Label>
-                    <Input
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      disabled={!isEditing}
-                      className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                    />
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                  <h4 className="text-sm font-semibold text-slate-700 mb-3">Informações Rápidas</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Especialização:</span>
+                      <span className="font-medium">{(user as any)?.specialization || 'Não informado'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Ano Lecionado:</span>
+                      <span className="font-medium">{user?.schoolYear || 'Não informado'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-600">Telefone:</span>
+                      <span className="font-medium">{user?.phone || 'Não informado'}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-semibold text-slate-700 mb-2 block">E-mail</Label>
-                  <Input
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={!isEditing}
-                    className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                  />
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                  <h4 className="text-sm font-semibold text-blue-800 mb-2">Biografia</h4>
+                  <p className="text-sm text-blue-700">
+                    {(user as any)?.bio || 'Adicione uma biografia na página de perfil para se apresentar aos alunos.'}
+                  </p>
                 </div>
 
-                <div>
-                  <Label className="text-sm font-semibold text-slate-700 mb-2 block">Telefone</Label>
-                  <Input
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="(11) 99999-9999"
-                    className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold text-slate-700 mb-2 block">Endereço</Label>
-                  <Input
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    disabled={!isEditing}
-                    className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold text-slate-700 mb-2 block">Data de Nascimento</Label>
-                  <Input
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
-                    disabled={!isEditing}
-                    className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold text-slate-700 mb-2 block">Ano Escolar que Leciona</Label>
-                  <Select 
-                    value={formData.schoolYear} 
-                    onValueChange={(value) => handleInputChange('schoolYear', value)}
-                    disabled={!isEditing}
-                  >
-                    <SelectTrigger className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium">
-                      <SelectValue placeholder="Selecione o ano" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-ano">1º Ano</SelectItem>
-                      <SelectItem value="2-ano">2º Ano</SelectItem>
-                      <SelectItem value="3-ano">3º Ano</SelectItem>
-                      <SelectItem value="4-ano">4º Ano</SelectItem>
-                      <SelectItem value="5-ano">5º Ano</SelectItem>
-                      <SelectItem value="6-ano">6º Ano</SelectItem>
-                      <SelectItem value="7-ano">7º Ano</SelectItem>
-                      <SelectItem value="8-ano">8º Ano</SelectItem>
-                      <SelectItem value="9-ano">9º Ano</SelectItem>
-                      <SelectItem value="ensino-medio">Ensino Médio</SelectItem>
-                      <SelectItem value="superior">Ensino Superior</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold text-slate-700 mb-2 block">Especialização</Label>
-                  <Input
-                    value={formData.specialization}
-                    onChange={(e) => handleInputChange('specialization', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Ex: Matemática, Português, Ciências..."
-                    className="mt-1 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold text-slate-700 mb-2 block">Biografia</Label>
-                  <Textarea
-                    value={formData.bio}
-                    onChange={(e) => handleInputChange('bio', e.target.value)}
-                    disabled={!isEditing}
-                    placeholder="Conte um pouco sobre você..."
-                    className="mt-1 min-h-[80px] bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-violet-400 focus:ring-violet-400/20 text-slate-800 font-medium"
-                  />
-                </div>
-
-                {isEditing && (
-                  <div className="flex gap-3 pt-4">
-                    <Button 
-                      onClick={handleSaveProfile}
-                      disabled={updateProfileMutation.isPending}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      {updateProfileMutation.isPending ? 'Salvando...' : 'Salvar'}
-                    </Button>
-                    <Button 
-                      onClick={handleCancelEdit}
-                      variant="outline"
-                      className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Cancelar
-                    </Button>
-                  </div>
-                )}
+                <Link href="/teacher/profile">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium">
+                    <User className="h-4 w-4 mr-2" />
+                    Ver Perfil Completo
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

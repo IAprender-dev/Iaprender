@@ -9,506 +9,659 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { 
   User, 
   Mail, 
-  Phone, 
-  MapPin, 
-  CalendarDays, 
-  Briefcase,
-  Edit3, 
+  Calendar, 
+  BookOpen, 
+  Edit, 
   Save, 
   X, 
-  BookOpen,
-  Users,
-  FileText,
-  Target,
-  Home,
-  Settings,
-  Award,
-  TrendingUp,
-  Clock,
-  Calendar,
-  Star,
-  Plus,
-  ChevronRight
+  ArrowLeft,
+  School,
+  Phone,
+  MapPin,
+  Camera,
+  GraduationCap,
+  FileText
 } from "lucide-react";
 
 export default function TeacherProfile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
   const [isEditing, setIsEditing] = useState(false);
+  
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     email: user?.email || '',
-    phone: user?.phone || '',
+    phone: user?.phone ? formatPhone(user.phone) : '',
     address: user?.address || '',
-    schoolYear: user?.schoolYear || '', // Para professor será especialização
-    dateOfBirth: user?.dateOfBirth || ''
+    schoolYear: user?.schoolYear || '',
+    dateOfBirth: user?.dateOfBirth || '',
+    specialization: (user as any)?.specialization || '',
+    bio: (user as any)?.bio || ''
   });
 
   useEffect(() => {
-    if (user) {
+    if (user && !isEditing) {
       setFormData({
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         email: user.email || '',
-        phone: user.phone || '',
+        phone: user.phone ? formatPhone(user.phone) : '',
         address: user.address || '',
         schoolYear: user.schoolYear || '',
-        dateOfBirth: user.dateOfBirth || ''
+        dateOfBirth: user.dateOfBirth || '',
+        specialization: (user as any)?.specialization || '',
+        bio: (user as any)?.bio || ''
       });
     }
-  }, [user]);
+  }, [user, isEditing]);
 
-  // Mutation para atualizar perfil
   const updateProfileMutation = useMutation({
     mutationFn: async (data: any) => {
+      try {
+        if (!data || typeof data !== 'object') {
+          throw new Error('Dados inválidos para atualização');
+        }
+
+        console.log('Enviando dados para atualização:', data);
+
+        const response = await fetch('/api/user/profile', {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(data),
+        });
+
+        const contentType = response.headers.get('content-type');
+        console.log('Content-Type da resposta:', contentType);
+        
+        if (!response.ok) {
+          let errorMessage = 'Falha ao atualizar perfil';
+          
+          try {
+            if (contentType && contentType.includes('application/json')) {
+              const errorData = await response.json();
+              errorMessage = errorData.message || errorData.error || errorMessage;
+            } else {
+              const textResponse = await response.text();
+              console.error('Resposta de erro não-JSON:', textResponse);
+              errorMessage = `Erro ${response.status}: Resposta inválida do servidor`;
+            }
+          } catch (parseError) {
+            console.error('Erro ao processar resposta de erro:', parseError);
+            errorMessage = `Erro ${response.status}: Falha na comunicação com servidor`;
+          }
+          
+          throw new Error(errorMessage);
+        }
+        
+        try {
+          if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            console.log('Perfil atualizado com sucesso:', result);
+            return result;
+          } else {
+            const textResponse = await response.text();
+            console.error('Resposta de sucesso não é JSON:', textResponse);
+            throw new Error('Servidor retornou formato inválido');
+          }
+        } catch (parseError) {
+          console.error('Erro ao processar resposta de sucesso:', parseError);
+          throw new Error('Falha ao processar dados atualizados');
+        }
+
+      } catch (networkError) {
+        console.error('Erro de rede ou processamento:', networkError);
+        
+        if (networkError instanceof TypeError && networkError.message.includes('fetch')) {
+          throw new Error('Erro de conexão - verifique sua internet');
+        }
+        
+        throw networkError;
+      }
+    },
+    onSuccess: (updatedUser) => {
+      try {
+        console.log('Processando sucesso da atualização:', updatedUser);
+        
+        if (!updatedUser || typeof updatedUser !== 'object') {
+          throw new Error('Dados de usuário inválidos recebidos');
+        }
+
+        if (updateUser && typeof updateUser === 'function') {
+          updateUser(updatedUser);
+        }
+
+        setIsEditing(false);
+
+        toast({
+          title: "Perfil atualizado!",
+          description: "Suas informações foram salvas com sucesso.",
+        });
+
+        try {
+          queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+        } catch (cacheError) {
+          console.warn('Erro ao invalidar cache:', cacheError);
+        }
+
+      } catch (successError) {
+        console.error('Erro ao processar sucesso:', successError);
+        toast({
+          title: "Aviso",
+          description: "Perfil atualizado, mas houve um problema menor. Recarregue a página se necessário.",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: any) => {
+      try {
+        console.error('Erro na atualização do perfil:', error);
+        
+        const errorMessage = error?.message || error?.toString() || "Erro desconhecido ao atualizar perfil";
+        
+        let userFriendlyMessage = errorMessage;
+        if (errorMessage.includes('rede') || errorMessage.includes('conexão')) {
+          userFriendlyMessage = "Problema de conexão. Verifique sua internet e tente novamente.";
+        } else if (errorMessage.includes('servidor')) {
+          userFriendlyMessage = "Erro no servidor. Tente novamente em alguns instantes.";
+        } else if (errorMessage.includes('Telefone') || errorMessage.includes('email')) {
+          userFriendlyMessage = errorMessage;
+        }
+
+        toast({
+          title: "Erro ao atualizar",
+          description: userFriendlyMessage,
+          variant: "destructive",
+        });
+
+      } catch (errorHandlingError) {
+        console.error('Erro crítico ao processar erro:', errorHandlingError);
+        toast({
+          title: "Erro crítico",
+          description: "Ocorreu um erro inesperado. Recarregue a página.",
+          variant: "destructive",
+        });
+      }
+    }
+  });
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const inputValue = e.target.value || '';
+      console.log('Alterando telefone:', inputValue);
+      
+      if (inputValue.length > 15) {
+        toast({
+          title: "Limite de caracteres",
+          description: "Telefone não pode ter mais de 15 caracteres.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const formatted = formatPhone(inputValue);
+      
+      setFormData(prevData => ({
+        ...prevData, 
+        phone: formatted
+      }));
+
+    } catch (phoneError) {
+      console.error('Erro ao formatar telefone:', phoneError);
+      toast({
+        title: "Erro de formatação",
+        description: "Erro ao formatar telefone. Digite apenas números.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSave = () => {
+    try {
       console.log('Iniciando salvamento do perfil...');
+      
+      if (!formData.firstName?.trim()) {
+        toast({
+          title: "Campo obrigatório",
+          description: "Nome é obrigatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formData.lastName?.trim()) {
+        toast({
+          title: "Campo obrigatório", 
+          description: "Sobrenome é obrigatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!formData.email?.trim()) {
+        toast({
+          title: "Campo obrigatório",
+          description: "Email é obrigatório.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast({
+          title: "Email inválido",
+          description: "Por favor, insira um email válido.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      let processedPhone = '';
+      if (formData.phone?.trim()) {
+        processedPhone = formData.phone.replace(/\D/g, '');
+        
+        if (processedPhone && (processedPhone.length < 10 || processedPhone.length > 11)) {
+          toast({
+            title: "Telefone inválido",
+            description: "Telefone deve ter 10 ou 11 dígitos (incluindo DDD).",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      const dataToSend = {
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: processedPhone,
+        address: formData.address?.trim() || '',
+        schoolYear: formData.schoolYear || '',
+        dateOfBirth: formData.dateOfBirth || '',
+        specialization: formData.specialization?.trim() || '',
+        bio: formData.bio?.trim() || ''
+      };
+
       console.log('=== DADOS EDITADOS NA TELA ===');
       console.log('formData atual:', formData);
-      
-      // Limpar telefone (manter apenas números)
-      const cleanPhone = data.phone.replace(/\D/g, '');
-      
-      const dataToSend = {
-        ...data,
-        phone: cleanPhone
-      };
-      
       console.log('=== DADOS PREPARADOS PARA ENVIO ===');
       console.log('dataToSend:', dataToSend);
       
-      console.log('=== DIFERENÇAS COM DADOS ORIGINAIS ===');
-      console.log('Original firstName:', user?.firstName, '-> Novo:', dataToSend.firstName);
-      console.log('Original lastName:', user?.lastName, '-> Novo:', dataToSend.lastName);
-      console.log('Original email:', user?.email, '-> Novo:', dataToSend.email);
-      console.log('Original phone:', user?.phone, '-> Novo:', dataToSend.phone);
-      console.log('Original address:', user?.address, '-> Novo:', dataToSend.address);
-      console.log('Original schoolYear:', user?.schoolYear, '-> Novo:', dataToSend.schoolYear);
-      console.log('Original dateOfBirth:', user?.dateOfBirth, '-> Novo:', dataToSend.dateOfBirth);
-      
-      console.log('Enviando dados para atualização:', dataToSend);
+      updateProfileMutation.mutate(dataToSend);
 
-      const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(dataToSend),
-      });
-
-      console.log('Content-Type da resposta:', response.headers.get('content-type'));
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Erro na resposta:', errorText);
-        throw new Error('Erro ao atualizar perfil');
-      }
-
-      const result = await response.json();
-      console.log('Perfil atualizado com sucesso:', result);
-      console.log('Processando sucesso da atualização:', result);
-      
-      return result;
-    },
-    onSuccess: (data) => {
-      setIsEditing(false);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    } catch (saveError) {
+      console.error('Erro ao preparar salvamento:', saveError);
       toast({
-        title: "Perfil atualizado!",
-        description: "Suas informações foram salvas com sucesso.",
-      });
-    },
-    onError: (error) => {
-      console.error('Erro na mutation:', error);
-      toast({
-        title: "Erro ao atualizar",
-        description: "Não foi possível salvar as alterações. Tente novamente.",
+        title: "Erro de validação",
+        description: "Erro ao processar dados. Verifique os campos e tente novamente.",
         variant: "destructive",
       });
-    },
-  });
-
-  const handleSaveProfile = () => {
-    updateProfileMutation.mutate(formData);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setFormData({
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      address: user?.address || '',
-      schoolYear: user?.schoolYear || '',
-      dateOfBirth: user?.dateOfBirth || ''
-    });
-  };
-
-  // Formatação de telefone em tempo real
-  const formatPhone = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length <= 11) {
-      const match = cleaned.match(/^(\d{2})(\d{5})(\d{4})$/);
-      if (match) {
-        return `(${match[1]}) ${match[2]}-${match[3]}`;
-      }
-      const partialMatch = cleaned.match(/^(\d{2})(\d{1,5})(\d{0,4})$/);
-      if (partialMatch) {
-        return `(${partialMatch[1]}) ${partialMatch[2]}${partialMatch[3] ? '-' + partialMatch[3] : ''}`;
-      }
     }
-    return value;
+  };
+
+  const handleCancel = () => {
+    try {
+      console.log('Cancelando edição e restaurando dados originais...');
+      
+      const originalData = {
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email: user?.email || '',
+        phone: user?.phone ? formatPhone(user.phone) : '',
+        address: user?.address || '',
+        schoolYear: user?.schoolYear || '',
+        dateOfBirth: user?.dateOfBirth || '',
+        specialization: (user as any)?.specialization || '',
+        bio: (user as any)?.bio || ''
+      };
+
+      setFormData(originalData);
+      setIsEditing(false);
+
+      toast({
+        title: "Edição cancelada",
+        description: "Alterações descartadas.",
+      });
+
+    } catch (cancelError) {
+      console.error('Erro ao cancelar edição:', cancelError);
+      setIsEditing(false);
+      
+      toast({
+        title: "Aviso",
+        description: "Edição cancelada, mas alguns dados podem não ter sido restaurados.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getInitials = () => {
+    const first = user?.firstName?.[0] || '';
+    const last = user?.lastName?.[0] || '';
+    return (first + last).toUpperCase();
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return 'Não informado';
+    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
   return (
     <>
       <Helmet>
-        <title>Perfil do Professor - IAverse</title>
-        <meta name="description" content="Perfil e configurações do professor" />
+        <title>Meu Perfil - Professor - IAprender</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="flex">
-          {/* Sidebar Esquerda - Design do Aluno */}
-          <div className="w-80 bg-white/90 backdrop-blur-xl border-r border-slate-200 shadow-xl min-h-screen">
-            <div className="p-6">
-              {/* Profile Section */}
-              <Card className="mb-6 border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg">
-                <CardHeader className="text-center pb-4">
-                  <div className="flex justify-center mb-4">
-                    <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
-                      <AvatarImage src={user?.profileImage || ''} />
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-bold">
-                        {user?.firstName?.[0]}{user?.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <CardTitle className="text-xl font-bold text-slate-800">
-                    Prof. {user?.firstName} {user?.lastName}
-                  </CardTitle>
-                  <Badge variant="secondary" className="bg-indigo-100 text-indigo-800 font-semibold">
-                    Professor
-                  </Badge>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  {/* Informações do Perfil */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-slate-700 flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Informações Pessoais
-                      </h3>
-                      {!isEditing ? (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setIsEditing(true)}
-                          className="h-8 w-8 p-0 hover:bg-blue-100"
-                        >
-                          <Edit3 className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={handleSaveProfile}
-                            disabled={updateProfileMutation.isPending}
-                            className="h-8 w-8 p-0 hover:bg-green-100"
-                          >
-                            <Save className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={handleCancelEdit}
-                            className="h-8 w-8 p-0 hover:bg-red-100"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Nome */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <User className="h-4 w-4 text-blue-600" />
-                        Nome Completo
-                      </Label>
-                      {isEditing ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          <Input
-                            value={formData.firstName}
-                            onChange={(e) => {
-                              console.log('Alterando firstName:', e.target.value);
-                              setFormData(prev => ({...prev, firstName: e.target.value}));
-                            }}
-                            className="text-sm border-2 border-slate-300 focus:border-blue-500"
-                            placeholder="Nome"
-                          />
-                          <Input
-                            value={formData.lastName}
-                            onChange={(e) => {
-                              console.log('Alterando lastName:', e.target.value);
-                              setFormData(prev => ({...prev, lastName: e.target.value}));
-                            }}
-                            className="text-sm border-2 border-slate-300 focus:border-blue-500"
-                            placeholder="Sobrenome"
-                          />
-                        </div>
-                      ) : (
-                        <p className="text-slate-800 bg-white p-3 rounded-lg border-2 border-slate-200 text-sm font-medium">
-                          {user?.firstName} {user?.lastName}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                        Email
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => {
-                            console.log('Alterando email:', e.target.value);
-                            setFormData(prev => ({...prev, email: e.target.value}));
-                          }}
-                          className="text-sm border-2 border-slate-300 focus:border-blue-500"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-3 rounded-lg border-2 border-slate-200 text-sm font-medium">
-                          {user?.email || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Telefone */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-blue-600" />
-                        Telefone
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          value={formData.phone}
-                          onChange={(e) => {
-                            const formatted = formatPhone(e.target.value);
-                            console.log('Alterando telefone:', formatted);
-                            setFormData(prev => ({...prev, phone: formatted}));
-                          }}
-                          className="text-sm border-2 border-slate-300 focus:border-blue-500"
-                          placeholder="(00) 00000-0000"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-3 rounded-lg border-2 border-slate-200 text-sm font-medium">
-                          {user?.phone || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Endereço */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-blue-600" />
-                        Endereço
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          value={formData.address}
-                          onChange={(e) => {
-                            console.log('Alterando address:', e.target.value);
-                            setFormData(prev => ({...prev, address: e.target.value}));
-                          }}
-                          className="text-sm border-2 border-slate-300 focus:border-blue-500"
-                          placeholder="Endereço completo"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-3 rounded-lg border-2 border-slate-200 text-sm font-medium">
-                          {user?.address || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Especialização */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <Briefcase className="h-4 w-4 text-blue-600" />
-                        Especialização
-                      </Label>
-                      {isEditing ? (
-                        <Select 
-                          value={formData.schoolYear} 
-                          onValueChange={(value) => {
-                            console.log('Alterando schoolYear:', value);
-                            setFormData(prev => ({...prev, schoolYear: value}));
-                          }}
-                        >
-                          <SelectTrigger className="text-sm border-2 border-slate-300 focus:border-blue-500">
-                            <SelectValue placeholder="Selecione sua área" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Matemática">Matemática</SelectItem>
-                            <SelectItem value="Português">Português</SelectItem>
-                            <SelectItem value="História">História</SelectItem>
-                            <SelectItem value="Geografia">Geografia</SelectItem>
-                            <SelectItem value="Ciências">Ciências</SelectItem>
-                            <SelectItem value="Física">Física</SelectItem>
-                            <SelectItem value="Química">Química</SelectItem>
-                            <SelectItem value="Biologia">Biologia</SelectItem>
-                            <SelectItem value="Educação Física">Educação Física</SelectItem>
-                            <SelectItem value="Arte">Arte</SelectItem>
-                            <SelectItem value="Inglês">Inglês</SelectItem>
-                            <SelectItem value="Multidisciplinar">Multidisciplinar</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <p className="text-slate-800 bg-white p-3 rounded-lg border-2 border-slate-200 text-sm font-medium">
-                          {user?.schoolYear || 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Data de Nascimento */}
-                    <div className="space-y-2">
-                      <Label className="text-slate-700 font-semibold flex items-center gap-2">
-                        <CalendarDays className="h-4 w-4 text-blue-600" />
-                        Data de Nascimento
-                      </Label>
-                      {isEditing ? (
-                        <Input
-                          type="date"
-                          value={formData.dateOfBirth}
-                          onChange={(e) => {
-                            console.log('Alterando dateOfBirth:', e.target.value);
-                            setFormData(prev => ({...prev, dateOfBirth: e.target.value}));
-                          }}
-                          className="text-sm border-2 border-slate-300 focus:border-blue-500"
-                        />
-                      ) : (
-                        <p className="text-slate-800 bg-white p-3 rounded-lg border-2 border-slate-200 text-sm font-medium">
-                          {user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString('pt-BR') : 'Não informado'}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Navigation Menu */}
-              <div className="space-y-2">
-                <Link href="/teacher">
-                  <Button variant="ghost" className="w-full justify-start bg-blue-100 text-blue-800 hover:bg-blue-200">
-                    <BookOpen className="mr-3 h-5 w-5" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Link href="/courses">
-                  <Button variant="ghost" className="w-full justify-start hover:bg-slate-100">
-                    <Users className="mr-3 h-5 w-5" />
-                    Meus Alunos
-                  </Button>
-                </Link>
-                <Link href="/ai/lesson-planner">
-                  <Button variant="ghost" className="w-full justify-start hover:bg-slate-100">
-                    <FileText className="mr-3 h-5 w-5" />
-                    Planos de Aula
-                  </Button>
-                </Link>
-                <Link href="/ai/central">
-                  <Button variant="ghost" className="w-full justify-start hover:bg-slate-100">
-                    <Target className="mr-3 h-5 w-5" />
-                    Central IA
-                  </Button>
-                </Link>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 lg:p-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-4">
+            <Link href="/teacher/dashboard">
+              <Button variant="outline" size="sm" className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+              Meu Perfil
+            </h1>
           </div>
+          <p className="text-slate-600">Visualize e edite suas informações pessoais</p>
+        </div>
 
-          {/* Conteúdo Principal */}
-          <div className="flex-1 p-8">
-            {/* Header */}
-            <div className="mb-8">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Profile Header Card */}
+          <Card className="border-0 shadow-2xl bg-white backdrop-blur-sm ring-1 ring-slate-200">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                {/* Avatar Section */}
+                <div className="relative flex-shrink-0">
+                  <Avatar className="h-32 w-32 border-4 border-white shadow-2xl ring-4 ring-blue-100">
+                    <AvatarImage src="" />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-3xl font-bold">
+                      {getInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button 
+                    size="sm" 
+                    className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 shadow-lg"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Basic Info */}
+                <div className="flex-1 text-center md:text-left">
+                  <h2 className="text-3xl font-bold text-slate-900 mb-2">
+                    {user?.firstName} {user?.lastName}
+                  </h2>
+                  <p className="text-lg text-slate-600 mb-4">{user?.email}</p>
+                  
+                  <div className="flex flex-wrap gap-3 justify-center md:justify-start mb-6">
+                    <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 px-4 py-2 text-sm font-medium">
+                      <GraduationCap className="h-4 w-4 mr-2" />
+                      Professor
+                    </Badge>
+                    {formData.specialization && (
+                      <Badge variant="outline" className="border-slate-300 text-slate-700 px-4 py-2 text-sm">
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        {formData.specialization}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-xl border border-blue-200">
+                      <div className="text-2xl font-bold text-blue-700">
+                        {formatDate(user?.dateOfBirth || '')}
+                      </div>
+                      <div className="text-xs text-blue-600 font-medium">Data de Nasc.</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-xl border border-green-200">
+                      <div className="text-2xl font-bold text-green-700">
+                        {user?.phone ? formatPhone(user.phone) : 'N/A'}
+                      </div>
+                      <div className="text-xs text-green-600 font-medium">Telefone</div>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-xl border border-purple-200">
+                      <div className="text-2xl font-bold text-purple-700">
+                        {formData.schoolYear || 'N/A'}
+                      </div>
+                      <div className="text-xs text-purple-600 font-medium">Ano Lecionado</div>
+                    </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-xl border border-orange-200">
+                      <div className="text-2xl font-bold text-orange-700">
+                        {user?.address ? 'Sim' : 'N/A'}
+                      </div>
+                      <div className="text-xs text-orange-600 font-medium">Endereço</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Profile Details */}
+          <Card className="border-0 shadow-2xl bg-white backdrop-blur-sm ring-1 ring-slate-200">
+            <CardHeader className="border-b border-slate-100 pb-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-4xl font-bold text-slate-900 mb-2">
-                    Perfil do Professor 👩‍🏫
-                  </h1>
-                  <p className="text-lg text-slate-600">
-                    Gerencie suas informações pessoais e configurações
-                  </p>
+                <CardTitle className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+                  <div className="p-3 bg-blue-100 rounded-xl">
+                    <User className="h-6 w-6 text-blue-600" />
+                  </div>
+                  Informações Pessoais
+                </CardTitle>
+                <Button
+                  onClick={() => setIsEditing(!isEditing)}
+                  variant={isEditing ? "destructive" : "default"}
+                  className={`gap-2 font-medium transition-all duration-200 ${
+                    isEditing 
+                      ? "bg-red-600 hover:bg-red-700" 
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {isEditing ? <X className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
+                  {isEditing ? "Cancelar" : "Editar Perfil"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Nome */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Nome
+                  </Label>
+                  <Input
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    disabled={!isEditing}
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-500">
-                    {new Date().toLocaleDateString('pt-BR', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </p>
+
+                {/* Sobrenome */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Sobrenome
+                  </Label>
+                  <Input
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    disabled={!isEditing}
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    E-mail
+                  </Label>
+                  <Input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    disabled={!isEditing}
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Telefone */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Telefone
+                  </Label>
+                  <Input
+                    value={formData.phone}
+                    onChange={handlePhoneChange}
+                    disabled={!isEditing}
+                    placeholder="(11) 99999-9999"
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Data de Nascimento */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Data de Nascimento
+                  </Label>
+                  <Input
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+                    disabled={!isEditing}
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Ano Escolar que Leciona */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <School className="h-4 w-4" />
+                    Ano Escolar que Leciona
+                  </Label>
+                  <Select 
+                    value={formData.schoolYear} 
+                    onValueChange={(value) => setFormData({...formData, schoolYear: value})}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium">
+                      <SelectValue placeholder="Selecione o ano" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1-ano">1º Ano</SelectItem>
+                      <SelectItem value="2-ano">2º Ano</SelectItem>
+                      <SelectItem value="3-ano">3º Ano</SelectItem>
+                      <SelectItem value="4-ano">4º Ano</SelectItem>
+                      <SelectItem value="5-ano">5º Ano</SelectItem>
+                      <SelectItem value="6-ano">6º Ano</SelectItem>
+                      <SelectItem value="7-ano">7º Ano</SelectItem>
+                      <SelectItem value="8-ano">8º Ano</SelectItem>
+                      <SelectItem value="9-ano">9º Ano</SelectItem>
+                      <SelectItem value="ensino-medio">Ensino Médio</SelectItem>
+                      <SelectItem value="superior">Ensino Superior</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Especialização */}
+                <div className="space-y-2 md:col-span-1">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Especialização
+                  </Label>
+                  <Input
+                    value={formData.specialization}
+                    onChange={(e) => setFormData({...formData, specialization: e.target.value})}
+                    disabled={!isEditing}
+                    placeholder="Ex: Matemática, Português, Ciências..."
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Endereço */}
+                <div className="space-y-2 md:col-span-1">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Endereço
+                  </Label>
+                  <Input
+                    value={formData.address}
+                    onChange={(e) => setFormData({...formData, address: e.target.value})}
+                    disabled={!isEditing}
+                    placeholder="Seu endereço completo"
+                    className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
+                </div>
+
+                {/* Biografia */}
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Biografia Profissional
+                  </Label>
+                  <Textarea
+                    value={formData.bio}
+                    onChange={(e) => setFormData({...formData, bio: e.target.value})}
+                    disabled={!isEditing}
+                    placeholder="Conte um pouco sobre sua experiência, formação e paixão pela educação..."
+                    className="min-h-[120px] bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200 focus:border-blue-400 focus:ring-blue-400/20 text-slate-800 font-medium"
+                  />
                 </div>
               </div>
-            </div>
 
-            {/* Conteúdo principal vazio ou outras configurações */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card className="shadow-lg border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-slate-800">
-                    <Settings className="h-5 w-5" />
-                    Configurações da Conta
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-slate-600">
-                    Suas informações estão na barra lateral esquerda. 
-                    Clique no ícone de edição para alterar seus dados.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-lg border-0">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-slate-800">
-                    <Award className="h-5 w-5" />
-                    Estatísticas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span>Total de Alunos:</span>
-                      <span className="font-bold">47</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Aulas Criadas:</span>
-                      <span className="font-bold">23</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Atividades:</span>
-                      <span className="font-bold">156</span>
-                    </div>
+              {/* Save/Cancel Buttons */}
+              {isEditing && (
+                <>
+                  <Separator className="my-8" />
+                  <div className="flex flex-col sm:flex-row gap-4 justify-end">
+                    <Button 
+                      onClick={handleCancel}
+                      variant="outline"
+                      className="flex-1 sm:flex-none px-8 py-3 border-red-300 text-red-700 hover:bg-red-50 font-medium"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Cancelar
+                    </Button>
+                    <Button 
+                      onClick={handleSave}
+                      disabled={updateProfileMutation.isPending}
+                      className="flex-1 sm:flex-none px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium shadow-lg"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      {updateProfileMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>
