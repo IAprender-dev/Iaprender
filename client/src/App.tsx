@@ -25,6 +25,8 @@ import TeacherTools from "@/pages/teacher/TeacherTools";
 import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
+import SecretaryDashboard from "@/pages/secretary/SecretaryDashboard";
+import UserManagement from "@/pages/secretary/UserManagement";
 
 import StudentProfile from "@/pages/student/StudentProfile";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
@@ -127,6 +129,10 @@ function Router() {
       <Route path="/aluno/gerador-plano" component={StudyPlanGenerator} />
       <Route path="/aluno/tutor-ia" component={AITutorChat} />
       <Route path="/aluno/tutor-voz" component={VoiceTutorTeacher} />
+      
+      {/* Secretary routes */}
+      <ProtectedRoute path="/secretary" component={SecretaryDashboard} roles={['admin']} />
+      <ProtectedRoute path="/secretary/users" component={UserManagement} roles={['admin']} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

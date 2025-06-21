@@ -104,6 +104,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Login bem-sucedido",
         description: `Bem-vindo, ${userData.firstName}!`,
       });
+      
+      // Redirect based on user role
+      if (userData.role === 'admin') {
+        setLocation('/secretary');
+      } else if (userData.role === 'teacher') {
+        setLocation('/professor');
+      } else if (userData.role === 'student') {
+        setLocation('/aluno');
+      }
     },
     onError: (error: Error) => {
       toast({
