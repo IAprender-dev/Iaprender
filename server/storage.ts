@@ -186,6 +186,16 @@ export interface IStorage {
   getTeacherNotifications(teacherId: number): Promise<TeacherNotification[]>;
   createTeacherNotification(notification: InsertTeacherNotification): Promise<TeacherNotification>;
   getNotificationHistory(teacherId: number, limit?: number): Promise<TeacherNotification[]>;
+  
+  // Secretary Functions
+  getDashboardStats(): Promise<any>;
+  getAllNotificationsForSecretary(): Promise<any[]>;
+  getUsersForSecretary(filters?: any): Promise<User[]>;
+  createUserBySecretary(userData: any): Promise<User>;
+  updateUserBySecretary(id: number, userData: any): Promise<User | undefined>;
+  deleteUserBySecretary(id: number): Promise<boolean>;
+  approveUser(id: number, approvedBy: number): Promise<User | undefined>;
+  getSatisfactionData(): Promise<any>;
 }
 
 export interface ITokenStorage {
