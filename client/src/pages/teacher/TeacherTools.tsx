@@ -17,7 +17,8 @@ import { FileUploader } from "@/components/ui/file-uploader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Upload, Sparkles, FileText, Image, Beer, Wand2, Pencil, BookOpen, MessageSquare, Calculator, Send, User, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { Loader2, Upload, Sparkles, FileText, Image, Beer, Wand2, Pencil, BookOpen, MessageSquare, Calculator, Send, User, AlertTriangle, CheckCircle, Clock, History, Eye } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 // Grade Calculator component
 function GradeCalculator() {
@@ -213,6 +214,8 @@ function NotificationSender() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [priority, setPriority] = useState("normal");
+  const [notificationDate, setNotificationDate] = useState("");
+  const [notificationTime, setNotificationTime] = useState("");
   const [isSending, setIsSending] = useState(false);
 
   const notificationTypes = {
@@ -227,10 +230,10 @@ function NotificationSender() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!studentName.trim() || !subject.trim() || !message.trim()) {
+    if (!studentName.trim() || !subject.trim() || !message.trim() || !notificationDate || !notificationTime) {
       toast({
         title: "Campos obrigatórios",
-        description: "Preencha todos os campos obrigatórios.",
+        description: "Preencha todos os campos obrigatórios incluindo data e hora.",
         variant: "destructive",
       });
       return;
@@ -239,12 +242,32 @@ function NotificationSender() {
     setIsSending(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const notificationDateTime = new Date(`${notificationDate}T${notificationTime}`);
+      
+      const response = await fetch('/api/teacher/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          notificationType,
+          studentName: studentName.trim(),
+          subject: subject.trim(),
+          message: message.trim(),
+          priority,
+          notificationDate: notificationDateTime.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao enviar notificação');
+      }
+
+      const result = await response.json();
       
       toast({
         title: "Notificação enviada!",
-        description: "A notificação foi enviada para a secretaria com sucesso.",
+        description: `Notificação ${result.sequentialNumber} enviada para a secretaria com sucesso.`,
       });
       
       // Reset form
@@ -252,6 +275,9 @@ function NotificationSender() {
       setSubject("");
       setMessage("");
       setPriority("normal");
+      setNotificationDate("");
+      setNotificationTime("");
+      setNotificationType("performance");
       
     } catch (error) {
       toast({
@@ -265,37 +291,38 @@ function NotificationSender() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="notificationType">Tipo de Notificação</Label>
-          <Select value={notificationType} onValueChange={setNotificationType}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(notificationTypes).map(([key, label]) => (
-                <SelectItem key={key} value={key}>{label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="notificationType">Tipo de Notificação</Label>
+            <Select value={notificationType} onValueChange={setNotificationType}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(notificationTypes).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="priority">Prioridade</Label>
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Baixa</SelectItem>
+                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="high">Alta</SelectItem>
+                <SelectItem value="urgent">Urgente</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        
-        <div>
-          <Label htmlFor="priority">Prioridade</Label>
-          <Select value={priority} onValueChange={setPriority}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Baixa</SelectItem>
-              <SelectItem value="normal">Normal</SelectItem>
-              <SelectItem value="high">Alta</SelectItem>
-              <SelectItem value="urgent">Urgente</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
       <div>
         <Label htmlFor="studentName">Nome do Aluno *</Label>
@@ -317,6 +344,30 @@ function NotificationSender() {
           placeholder="Assunto da notificação"
           required
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="notificationDate">Data da Ocorrência *</Label>
+          <Input
+            id="notificationDate"
+            type="date"
+            value={notificationDate}
+            onChange={(e) => setNotificationDate(e.target.value)}
+            required
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="notificationTime">Hora da Ocorrência *</Label>
+          <Input
+            id="notificationTime"
+            type="time"
+            value={notificationTime}
+            onChange={(e) => setNotificationTime(e.target.value)}
+            required
+          />
+        </div>
       </div>
 
       <div>
@@ -341,8 +392,13 @@ function NotificationSender() {
             <span className="font-medium">Email:</span> {user?.email}
           </div>
           <div>
-            <span className="font-medium">Data/Hora:</span> {new Date().toLocaleString('pt-BR')}
+            <span className="font-medium">Data/Hora Atual:</span> {new Date().toLocaleString('pt-BR')}
           </div>
+          {notificationDate && notificationTime && (
+            <div>
+              <span className="font-medium">Data/Hora da Ocorrência:</span> {new Date(`${notificationDate}T${notificationTime}`).toLocaleString('pt-BR')}
+            </div>
+          )}
           <div>
             <span className="font-medium">Tipo:</span> {notificationTypes[notificationType as keyof typeof notificationTypes]}
           </div>
@@ -365,6 +421,113 @@ function NotificationSender() {
         </Button>
       </div>
     </form>
+      
+    <NotificationHistory />
+    </div>
+  );
+}
+
+// Notification History component
+function NotificationHistory() {
+  const { data: notifications, isLoading } = useQuery({
+    queryKey: ['/api/teacher/notifications/history'],
+    queryFn: async () => {
+      const response = await fetch('/api/teacher/notifications/history');
+      if (!response.ok) throw new Error('Failed to fetch notifications');
+      return response.json();
+    },
+  });
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-100 text-red-800';
+      case 'high': return 'bg-orange-100 text-orange-800';
+      case 'normal': return 'bg-blue-100 text-blue-800';
+      case 'low': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            Histórico de Notificações
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <History className="h-5 w-5" />
+          Histórico de Notificações
+        </CardTitle>
+        <CardDescription>
+          Últimas notificações enviadas para a secretaria
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {notifications && notifications.length > 0 ? (
+          <div className="space-y-4">
+            {notifications.map((notification: any) => (
+              <div key={notification.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-sm text-blue-600 font-medium">
+                      {notification.sequentialNumber}
+                    </span>
+                    <Badge className={getPriorityColor(notification.priority)}>
+                      {notification.priority}
+                    </Badge>
+                  </div>
+                  <span className="text-sm text-gray-500">
+                    {new Date(notification.createdAt).toLocaleString('pt-BR')}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <span className="font-medium">Aluno:</span> {notification.studentName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Tipo:</span> {notification.notificationType}
+                  </div>
+                  <div>
+                    <span className="font-medium">Data/Hora:</span> {new Date(notification.notificationDate).toLocaleString('pt-BR')}
+                  </div>
+                </div>
+                
+                <div className="mt-2">
+                  <span className="font-medium text-sm">Assunto:</span>
+                  <p className="text-sm text-gray-600">{notification.subject}</p>
+                </div>
+                
+                <div className="mt-2">
+                  <span className="font-medium text-sm">Mensagem:</span>
+                  <p className="text-sm text-gray-600 line-clamp-2">{notification.message}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>Nenhuma notificação enviada ainda</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

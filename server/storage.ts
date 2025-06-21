@@ -45,6 +45,72 @@ import {
   type InsertStudySchedule,
   type InsertExam
 } from "@shared/schema";
+
+// Tipos para as novas tabelas
+interface GradeCalculation {
+  id: number;
+  teacherId: number;
+  title: string;
+  subject?: string;
+  schoolYear?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface InsertGradeCalculation {
+  teacherId: number;
+  title: string;
+  subject?: string;
+  schoolYear?: string;
+}
+
+interface StudentGrade {
+  id: number;
+  calculationId: number;
+  studentName: string;
+  grade1?: number;
+  grade2?: number;
+  grade3?: number;
+  average?: number;
+  status?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface InsertStudentGrade {
+  calculationId: number;
+  studentName: string;
+  grade1?: number;
+  grade2?: number;
+  grade3?: number;
+  average?: number;
+  status?: string;
+}
+
+interface TeacherNotification {
+  id: number;
+  sequentialNumber: string;
+  teacherId: number;
+  notificationType: string;
+  priority: string;
+  studentName: string;
+  subject: string;
+  message: string;
+  notificationDate: Date;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface InsertTeacherNotification {
+  teacherId: number;
+  notificationType: string;
+  priority: string;
+  studentName: string;
+  subject: string;
+  message: string;
+  notificationDate: Date;
+}
 import { db } from "./db";
 import { eq, and, desc, gte, lte } from "drizzle-orm";
 
@@ -109,6 +175,17 @@ export interface IStorage {
   createExam(exam: InsertExam): Promise<Exam>;
   updateExam(id: number, exam: Partial<Exam>): Promise<Exam | undefined>;
   deleteExam(id: number, userId: number): Promise<boolean>;
+  
+  // Grade Calculations
+  getGradeCalculationsByTeacher(teacherId: number): Promise<GradeCalculation[]>;
+  createGradeCalculation(calculation: InsertGradeCalculation): Promise<GradeCalculation>;
+  getStudentGradesByCalculation(calculationId: number): Promise<StudentGrade[]>;
+  saveStudentGrades(grades: InsertStudentGrade[]): Promise<StudentGrade[]>;
+  
+  // Teacher Notifications
+  getTeacherNotifications(teacherId: number): Promise<TeacherNotification[]>;
+  createTeacherNotification(notification: InsertTeacherNotification): Promise<TeacherNotification>;
+  getNotificationHistory(teacherId: number, limit?: number): Promise<TeacherNotification[]>;
 }
 
 export interface ITokenStorage {
