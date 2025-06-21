@@ -212,7 +212,7 @@ export default function UserManagement() {
     createUserMutation.mutate({
       ...newUser,
       username: `${newUser.firstName.toLowerCase()}.${newUser.lastName.toLowerCase()}`,
-      password: 'senha123', // Senha temporária
+      password: 'usuario123', // Senha temporária
       status: 'active',
     });
   };
