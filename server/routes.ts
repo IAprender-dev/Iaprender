@@ -2627,9 +2627,10 @@ Fale sempre em português brasileiro claro e natural.`,
           return res.status(400).json({ message: 'Email é obrigatório' });
         }
         
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Validação específica: deve ter @ seguido de .com
+        const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
         if (!emailRegex.test(email)) {
-          return res.status(400).json({ message: 'Formato de email inválido' });
+          return res.status(400).json({ message: 'Email deve ter formato válido com @ seguido de .com (exemplo: usuario@dominio.com)' });
         }
       }
 

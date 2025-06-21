@@ -198,6 +198,17 @@ export default function UserManagement() {
       return;
     }
 
+    // Validação específica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
+    if (!emailRegex.test(newUser.email)) {
+      toast({
+        title: "Email inválido",
+        description: "O email deve ter formato válido com @ seguido de .com (exemplo: usuario@dominio.com)",
+        variant: "destructive",
+      });
+      return;
+    }
+
     createUserMutation.mutate({
       ...newUser,
       username: `${newUser.firstName.toLowerCase()}.${newUser.lastName.toLowerCase()}`,
@@ -292,8 +303,12 @@ export default function UserManagement() {
                       type="email"
                       value={newUser.email}
                       onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                      placeholder="usuario@dominio.com"
                       required
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Email deve conter @ seguido de .com
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
