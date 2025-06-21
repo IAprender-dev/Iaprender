@@ -41,21 +41,214 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 
+// Edit User Form Component
+function EditUserForm({ user, onSave, onCancel, isLoading }: {
+  user: User;
+  onSave: (userData: any) => void;
+  onCancel: () => void;
+  isLoading: boolean;
+}) {
+  const [formData, setFormData] = useState({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    role: user.role,
+    status: user.status,
+    schoolYear: user.schoolYear || "",
+    phone: user.phone || "",
+    address: user.address || "",
+    dateOfBirth: user.dateOfBirth || "",
+  });
+
+  const handleSave = () => {
+    if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.email.trim()) {
+      return;
+    }
+    onSave(formData);
+  };
+
+  return (
+    <div className="space-y-6 py-4">
+      {/* Personal Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Nome
+          </Label>
+          <Input
+            value={formData.firstName}
+            onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+            placeholder="Digite o nome"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Sobrenome
+          </Label>
+          <Input
+            value={formData.lastName}
+            onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+            placeholder="Digite o sobrenome"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <Mail className="h-4 w-4" />
+          E-mail
+        </Label>
+        <Input
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+          placeholder="usuario@dominio.com"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <GraduationCap className="h-4 w-4" />
+            Cargo
+          </Label>
+          <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
+            <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="student">Aluno</SelectItem>
+              <SelectItem value="teacher">Professor</SelectItem>
+              <SelectItem value="admin">Administrador</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Status
+          </Label>
+          <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+            <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Ativo</SelectItem>
+              <SelectItem value="inactive">Inativo</SelectItem>
+              <SelectItem value="pending">Pendente</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {formData.role === 'student' && (
+        <div className="space-y-2">
+          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <School className="h-4 w-4" />
+            Ano Escolar
+          </Label>
+          <Select value={formData.schoolYear} onValueChange={(value) => setFormData({...formData, schoolYear: value})}>
+            <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
+              <SelectValue placeholder="Selecione o ano" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1ano">1º Ano</SelectItem>
+              <SelectItem value="2ano">2º Ano</SelectItem>
+              <SelectItem value="3ano">3º Ano</SelectItem>
+              <SelectItem value="4ano">4º Ano</SelectItem>
+              <SelectItem value="5ano">5º Ano</SelectItem>
+              <SelectItem value="6ano">6º Ano</SelectItem>
+              <SelectItem value="7ano">7º Ano</SelectItem>
+              <SelectItem value="8ano">8º Ano</SelectItem>
+              <SelectItem value="9ano">9º Ano</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            Telefone
+          </Label>
+          <Input
+            value={formData.phone}
+            onChange={(e) => setFormData({...formData, phone: e.target.value})}
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+            placeholder="(11) 99999-9999"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Data de Nascimento
+          </Label>
+          <Input
+            type="date"
+            value={formData.dateOfBirth}
+            onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
+          Endereço
+        </Label>
+        <Textarea
+          value={formData.address}
+          onChange={(e) => setFormData({...formData, address: e.target.value})}
+          className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+          placeholder="Endereço completo"
+          rows={3}
+        />
+      </div>
+
+      <div className="flex justify-end gap-3 pt-4 border-t">
+        <Button 
+          variant="outline" 
+          onClick={onCancel}
+          className="border-slate-300 hover:bg-slate-50"
+        >
+          Cancelar
+        </Button>
+        <Button 
+          onClick={handleSave}
+          disabled={isLoading}
+          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+        >
+          {isLoading ? "Salvando..." : "Salvar Alterações"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 interface User {
   id: number;
   username: string;
   firstName: string;
   lastName: string;
   email: string;
-  role: 'student' | 'teacher';
+  role: 'student' | 'teacher' | 'admin';
   status: 'active' | 'inactive' | 'pending';
   schoolYear?: string;
   phone?: string;
   address?: string;
   dateOfBirth?: string;
   createdAt: string;
-  approvedAt?: string;
-  approvedBy?: number;
+  lastLoginAt?: string;
 }
 
 export default function UserManagement() {
@@ -251,6 +444,15 @@ export default function UserManagement() {
   };
 
   const handleCreateUser = () => {
+    if (!newUser.firstName.trim() || !newUser.lastName.trim() || !newUser.email.trim()) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha nome, sobrenome e email",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createUserMutation.mutate(newUser);
   };
 
@@ -768,43 +970,12 @@ export default function UserManagement() {
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6 py-4">
-                {/* Edit form similar to create form but with editingUser data */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold text-slate-700">Nome</Label>
-                    <Input
-                      defaultValue={editingUser.firstName}
-                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-bold text-slate-700">Sobrenome</Label>
-                    <Input
-                      defaultValue={editingUser.lastName}
-                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500"
-                    />
-                  </div>
-                </div>
-                {/* Add more fields as needed */}
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setEditingUser(null)}
-                  className="border-slate-300 hover:bg-slate-50"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  onClick={() => handleUpdateUser({})}
-                  disabled={updateUserMutation.isPending}
-                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-                >
-                  {updateUserMutation.isPending ? "Salvando..." : "Salvar Alterações"}
-                </Button>
-              </div>
+              <EditUserForm 
+                user={editingUser} 
+                onSave={handleUpdateUser}
+                onCancel={() => setEditingUser(null)}
+                isLoading={updateUserMutation.isPending}
+              />
             </DialogContent>
           </Dialog>
         )}

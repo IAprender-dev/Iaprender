@@ -1179,6 +1179,313 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // SECRETARY ROUTES - USER MANAGEMENT
+  // Get all users for secretary dashboard
+  app.get("/api/secretary/users", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const { search, role, status } = req.query;
+      
+      // Build query with filters
+      let query = db.select({
+        id: users.id,
+        username: users.username,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        role: users.role,
+        status: users.status,
+        schoolYear: users.schoolYear,
+        phone: users.phone,
+        address: users.address,
+        dateOfBirth: users.dateOfBirth,
+        createdAt: users.createdAt,
+        lastLoginAt: users.lastLoginAt
+      }).from(users);
+      
+      const allUsers = await query;
+      
+      // Apply filters
+      let filteredUsers = allUsers;
+      
+      if (search) {
+        const searchTerm = search.toString().toLowerCase();
+        filteredUsers = filteredUsers.filter(user => 
+          user.firstName.toLowerCase().includes(searchTerm) ||
+          user.lastName.toLowerCase().includes(searchTerm) ||
+          user.email.toLowerCase().includes(searchTerm) ||
+          user.username.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      if (role && role !== 'all') {
+        filteredUsers = filteredUsers.filter(user => user.role === role);
+      }
+      
+      if (status && status !== 'all') {
+        filteredUsers = filteredUsers.filter(user => user.status === status);
+      }
+      
+      return res.status(200).json(filteredUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Create new user (secretary)
+  app.post("/api/secretary/users", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const userData = req.body;
+      
+      // Validate required fields
+      if (!userData.firstName || !userData.lastName || !userData.email) {
+        return res.status(400).json({ 
+          message: "Nome, sobrenome e email são obrigatórios" 
+        });
+      }
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
+      if (!emailRegex.test(userData.email)) {
+        return res.status(400).json({ 
+          message: "Email deve ter formato válido com @ seguido de .com" 
+        });
+      }
+      
+      // Check if email already exists
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, userData.email));
+      
+      if (existingUser) {
+        return res.status(400).json({ 
+          message: "Email já está em uso" 
+        });
+      }
+      
+      // Generate username from email
+      const username = userData.email.split('@')[0];
+      
+      // Check if username exists and make it unique
+      let finalUsername = username;
+      let counter = 1;
+      while (true) {
+        const [existingUsername] = await db
+          .select()
+          .from(users)
+          .where(eq(users.username, finalUsername));
+        
+        if (!existingUsername) break;
+        finalUsername = `${username}${counter}`;
+        counter++;
+      }
+      
+      // Default password (should be changed on first login)
+      const defaultPassword = await hashPassword("123456");
+      
+      // Create user
+      const [newUser] = await db.insert(users).values({
+        username: finalUsername,
+        password: defaultPassword,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        role: userData.role || 'student',
+        status: 'active',
+        firstLogin: true,
+        forcePasswordChange: true,
+        schoolYear: userData.schoolYear || null,
+        phone: userData.phone || null,
+        address: userData.address || null,
+        dateOfBirth: userData.dateOfBirth || null
+      }).returning();
+      
+      return res.status(201).json(newUser);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Update user (secretary)
+  app.patch("/api/secretary/users/:id", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const userData = req.body;
+      
+      // Check if user exists
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      
+      if (!existingUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Validate email if being updated
+      if (userData.email && userData.email !== existingUser.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
+        if (!emailRegex.test(userData.email)) {
+          return res.status(400).json({ 
+            message: "Email deve ter formato válido com @ seguido de .com" 
+          });
+        }
+        
+        // Check if new email already exists
+        const [duplicateEmail] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, userData.email));
+        
+        if (duplicateEmail) {
+          return res.status(400).json({ 
+            message: "Email já está em uso" 
+          });
+        }
+      }
+      
+      // Update user
+      const [updatedUser] = await db
+        .update(users)
+        .set({
+          firstName: userData.firstName || existingUser.firstName,
+          lastName: userData.lastName || existingUser.lastName,
+          email: userData.email || existingUser.email,
+          role: userData.role || existingUser.role,
+          status: userData.status || existingUser.status,
+          schoolYear: userData.schoolYear !== undefined ? userData.schoolYear : existingUser.schoolYear,
+          phone: userData.phone !== undefined ? userData.phone : existingUser.phone,
+          address: userData.address !== undefined ? userData.address : existingUser.address,
+          dateOfBirth: userData.dateOfBirth !== undefined ? userData.dateOfBirth : existingUser.dateOfBirth
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Delete user (secretary)
+  app.delete("/api/secretary/users/:id", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Check if user exists
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId));
+      
+      if (!existingUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Prevent deleting admin users
+      if (existingUser.role === 'admin') {
+        return res.status(403).json({ 
+          message: "Não é possível excluir usuários administradores" 
+        });
+      }
+      
+      // Delete user
+      await db.delete(users).where(eq(users.id, userId));
+      
+      return res.status(200).json({ message: "Usuário removido com sucesso" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Approve user (secretary)
+  app.post("/api/secretary/users/:id/approve", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      const [updatedUser] = await db
+        .update(users)
+        .set({ 
+          status: 'active',
+          lastLoginAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      console.error("Error approving user:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get dashboard statistics for secretary
+  app.get("/api/secretary/dashboard-stats", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const allUsers = await db.select().from(users);
+      
+      const stats = {
+        totalStudents: allUsers.filter(u => u.role === 'student').length,
+        totalTeachers: allUsers.filter(u => u.role === 'teacher').length,
+        totalUsers: allUsers.length,
+        activeUsers: allUsers.filter(u => u.status === 'active').length,
+        pendingUsers: allUsers.filter(u => u.status === 'pending').length,
+        pendingNotifications: 3, // Mock value
+        totalNotifications: 10, // Mock value
+        averageSatisfaction: 4.5
+      };
+      
+      return res.status(200).json(stats);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get notifications for secretary
+  app.get("/api/secretary/notifications", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      // Mock notifications - replace with real data when implemented
+      const notifications = [
+        {
+          id: 1,
+          sequentialNumber: "NOT-2025-001",
+          teacherName: "Prof. João Silva",
+          studentName: "Maria Santos",
+          priority: "high",
+          message: "Aluna apresentando dificuldades em matemática",
+          notificationDate: new Date(),
+          createdAt: new Date(),
+          status: "pending"
+        },
+        {
+          id: 2,
+          sequentialNumber: "NOT-2025-002", 
+          teacherName: "Prof. Ana Costa",
+          studentName: "Pedro Oliveira",
+          priority: "medium",
+          message: "Solicitação de material adicional para projeto",
+          notificationDate: new Date(),
+          createdAt: new Date(),
+          status: "pending"
+        }
+      ];
+      
+      return res.status(200).json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
   // Configure upload for documents (PDF, Word)
   const documentUpload = multer({
     storage: multer.memoryStorage(),
