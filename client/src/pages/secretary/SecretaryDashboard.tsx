@@ -1,28 +1,29 @@
-import { useState } from "react";
-import { Helmet } from "react-helmet";
-import { useAuth } from "@/lib/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/lib/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'wouter';
 import { 
+  User, 
+  LogOut, 
   Users, 
-  GraduationCap, 
-  MessageSquare, 
   BarChart3, 
-  Star, 
-  TrendingUp, 
-  UserPlus,
-  FileText,
-  AlertCircle,
+  Star,
+  GraduationCap,
+  MessageSquare,
   CheckCircle,
-  Clock,
-  School
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+  AlertTriangle,
+  FileText,
+  Building,
+  Shield
+} from 'lucide-react';
+import alverseLogo from '@/assets/aiverse-logo-new.png';
 
 export default function SecretaryDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Fetch dashboard statistics
   const { data: stats, isLoading: statsLoading } = useQuery({
@@ -44,6 +45,23 @@ export default function SecretaryDashboard() {
     },
   });
 
+  // Get current date
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString('pt-BR', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // Get greeting based on time
+  const getGreeting = () => {
+    const hour = currentDate.getHours();
+    if (hour < 12) return "Bom dia";
+    if (hour < 18) return "Boa tarde";
+    return "Boa noite";
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
@@ -54,403 +72,386 @@ export default function SecretaryDashboard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'sent': return 'text-blue-600';
-      case 'read': return 'text-green-600';
-      case 'resolved': return 'text-gray-600';
-      default: return 'text-gray-600';
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Helmet>
-        <title>Dashboard Secretaria - IAverse</title>
-      </Helmet>
+    <>
+      <div className="min-h-screen bg-slate-50">
+        {/* Main Dashboard Container */}
+        <div className="flex h-screen bg-slate-50">
+          {/* Left Sidebar - Profile Summary */}
+          <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-lg">
+            {/* Profile Header */}
+            <div className="p-6 border-b border-slate-200">
+              <Card className="mb-6 border border-slate-200 bg-white shadow-sm">
+                <CardHeader className="text-center pb-4">
+                  <div className="flex justify-center mb-4">
+                    <Avatar className="h-20 w-20 border-2 border-slate-200">
+                      <AvatarImage src="" />
+                      <AvatarFallback className="bg-slate-100 text-slate-700 text-xl font-semibold">
+                        {user?.firstName?.[0]}{user?.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900 mb-1">
+                      {user?.firstName} {user?.lastName}
+                    </h2>
+                    <p className="text-sm text-slate-600 mb-2">{user?.email}</p>
+                    <Badge className="bg-purple-50 text-purple-700 border border-purple-200 font-medium">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Secretaria
+                    </Badge>
+                  </div>
+                </CardHeader>
+              </Card>
+            </div>
 
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard da Secretaria</h1>
-              <p className="text-gray-600">Visão geral da instituição e gestão administrativa</p>
+            {/* Navigation and Actions */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              <div className="space-y-4">
+                <Link href="/secretary/users">
+                  <Button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium h-12">
+                    <Users className="h-5 w-5 mr-2" />
+                    Gestão de Usuários
+                  </Button>
+                </Link>
+                
+                <div className="grid gap-3">
+                  <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                    <BarChart3 className="h-4 w-4 mr-3" />
+                    Relatórios e Análises
+                  </Button>
+                  
+                  <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                    <MessageSquare className="h-4 w-4 mr-3" />
+                    Central de Notificações
+                  </Button>
+                  
+                  <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                    <Building className="h-4 w-4 mr-3" />
+                    Configurações da Escola
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <School className="h-5 w-5 text-blue-600" />
-              <span className="text-sm text-gray-600">Bem-vinda, {user?.firstName}</span>
-            </div>
+          </div>
+
+          {/* Right Content Area */}
+          <div className="flex-1 flex flex-col">
+            {/* Header */}
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+              <div className="px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-slate-100 rounded-lg border border-slate-200">
+                      <img src={alverseLogo} alt="Alverse" className="h-8 w-8 object-contain" />
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-semibold text-slate-900">Dashboard da Secretaria</h1>
+                      <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button 
+                      onClick={logout}
+                      size="sm"
+                      className="gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Sair
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            {/* Main Content */}
+            <main className="flex-1 p-6 overflow-auto">
+              {/* Welcome Section */}
+              <Card className="mb-8 bg-gradient-to-br from-purple-500 via-indigo-600 to-blue-700 text-white border-0 shadow-2xl transform hover:scale-[1.02] transition-all duration-500">
+                <CardContent className="p-8 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-4xl font-bold mb-3 drop-shadow-lg">{getGreeting()}, {user?.firstName}!</h2>
+                        <p className="text-white/90 text-xl font-medium mb-6">Central administrativa da instituição</p>
+                        <div className="flex items-center gap-8 mt-4">
+                          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                            <Users className="h-5 w-5" />
+                            <span className="font-bold">{statsLoading ? '...' : stats?.totalStudents || 0} Alunos</span>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                            <GraduationCap className="h-5 w-5" />
+                            <span className="font-bold">{statsLoading ? '...' : stats?.totalTeachers || 0} Professores</span>
+                          </div>
+                          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                            <MessageSquare className="h-5 w-5" />
+                            <span className="font-bold">{statsLoading ? '...' : stats?.pendingNotifications || 0} Pendentes</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 mb-2 px-4 py-2 text-base font-bold shadow-lg">
+                          <Star className="h-4 w-4 mr-2" />
+                          Admin
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-blue-200 shadow-lg">
+                          <Users className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-600">Total de Alunos</p>
+                          <p className="text-2xl font-bold text-slate-900">
+                            {statsLoading ? '...' : stats?.totalStudents || 0}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-blue-600">+5%</div>
+                        <div className="text-xs text-slate-500">este mês</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-green-200 shadow-lg">
+                          <GraduationCap className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-600">Total de Professores</p>
+                          <p className="text-2xl font-bold text-slate-900">
+                            {statsLoading ? '...' : stats?.totalTeachers || 0}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-green-600">+2</div>
+                        <div className="text-xs text-slate-500">novos</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-amber-200 shadow-lg">
+                          <MessageSquare className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-600">Notificações Pendentes</p>
+                          <p className="text-2xl font-bold text-slate-900">
+                            {statsLoading ? '...' : stats?.pendingNotifications || 0}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-amber-600">
+                          {statsLoading ? '...' : Math.round((stats?.pendingNotifications || 0) / (stats?.totalNotifications || 1) * 100)}%
+                        </div>
+                        <div className="text-xs text-slate-500">pendente</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-purple-200 shadow-lg">
+                          <Star className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-600">Satisfação Média</p>
+                          <p className="text-2xl font-bold text-slate-900">
+                            {statsLoading ? '...' : `${stats?.averageSatisfaction || 0}/5`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xl font-bold text-purple-600">★★★★☆</div>
+                        <div className="text-xs text-slate-500">avaliação</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Notifications */}
+              <Card className="mb-8 border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300">
+                <CardHeader className="border-b border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg shadow-amber-200 shadow-lg">
+                        <MessageSquare className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl font-bold text-slate-900">Notificações Recentes</CardTitle>
+                        <p className="text-sm text-slate-600">Comunicações importantes dos professores</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm" className="border-slate-300 hover:bg-slate-50">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Ver Todas
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {notificationsLoading ? (
+                    <div className="space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="border border-slate-200 rounded-lg p-4 animate-pulse">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-slate-200 rounded-lg"></div>
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : notifications && notifications.length > 0 ? (
+                    <div className="space-y-4">
+                      {notifications.slice(0, 5).map((notification: any) => (
+                        <div key={notification.id} className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-all duration-200 hover:shadow-md">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`p-2 rounded-lg ${
+                                notification.priority === 'urgent' ? 'bg-red-100' :
+                                notification.priority === 'high' ? 'bg-orange-100' :
+                                'bg-blue-100'
+                              }`}>
+                                <AlertTriangle className={`h-4 w-4 ${
+                                  notification.priority === 'urgent' ? 'text-red-600' :
+                                  notification.priority === 'high' ? 'text-orange-600' :
+                                  'text-blue-600'
+                                }`} />
+                              </div>
+                              <div>
+                                <span className="font-mono text-sm text-blue-600 font-medium">
+                                  {notification.sequentialNumber}
+                                </span>
+                                <Badge className={`ml-2 ${getPriorityColor(notification.priority)}`}>
+                                  {notification.priority.toUpperCase()}
+                                </Badge>
+                              </div>
+                            </div>
+                            <span className="text-sm text-slate-500">
+                              {new Date(notification.createdAt).toLocaleString('pt-BR')}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3 text-sm">
+                            <div>
+                              <span className="font-medium text-slate-700">Professor:</span>
+                              <p className="text-slate-600">{notification.teacherName}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium text-slate-700">Aluno:</span>
+                              <p className="text-slate-600">{notification.studentName}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-3">
+                            <span className="font-medium text-slate-700 text-sm">Mensagem:</span>
+                            <p className="text-slate-600 text-sm">{notification.message}</p>
+                          </div>
+
+                          <div className="flex justify-between items-center pt-3 border-t border-slate-100">
+                            <span className="text-xs text-slate-500">
+                              {new Date(notification.notificationDate).toLocaleString('pt-BR')}
+                            </span>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" className="border-slate-300 hover:bg-slate-50">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Marcar Lida
+                              </Button>
+                              <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                                Responder
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-slate-500">
+                      <MessageSquare className="h-16 w-16 mx-auto mb-4 text-slate-300" />
+                      <h3 className="text-lg font-medium text-slate-600 mb-2">Nenhuma notificação</h3>
+                      <p>Não há notificações recentes para exibir</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Link href="/secretary/users">
+                  <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group hover:scale-[1.02]">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-4 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-purple-200 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                          <Users className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-slate-900 mb-1">Gestão de Usuários</h3>
+                          <p className="text-sm text-slate-600">Cadastrar e gerenciar alunos e professores</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group hover:scale-[1.02]">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-green-200 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                        <BarChart3 className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-1">Relatórios</h3>
+                        <p className="text-sm text-slate-600">Análises e métricas da instituição</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group hover:scale-[1.02]">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-blue-200 shadow-lg group-hover:shadow-xl transition-all duration-300">
+                        <Building className="h-8 w-8 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-1">Configurações</h3>
+                        <p className="text-sm text-slate-600">Configurar a escola e sistema</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </main>
           </div>
         </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="h-6 w-6 text-blue-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total de Alunos</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {statsLoading ? '...' : stats?.totalStudents || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <GraduationCap className="h-6 w-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total de Professores</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {statsLoading ? '...' : stats?.totalTeachers || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <MessageSquare className="h-6 w-6 text-yellow-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Notificações Pendentes</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {statsLoading ? '...' : stats?.pendingNotifications || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Star className="h-6 w-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Satisfação Média</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {statsLoading ? '...' : `${stats?.averageSatisfaction || 0}/5`}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="notifications" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="notifications">Notificações</TabsTrigger>
-            <TabsTrigger value="analytics">Análises</TabsTrigger>
-            <TabsTrigger value="users">Gestão de Usuários</TabsTrigger>
-            <TabsTrigger value="satisfaction">Satisfação</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="notifications" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Notificações Recebidas
-                </CardTitle>
-                <CardDescription>
-                  Notificações enviadas por professores e comunicações importantes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {notificationsLoading ? (
-                  <div className="flex justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : notifications && notifications.length > 0 ? (
-                  <div className="space-y-4">
-                    {notifications.map((notification: any) => (
-                      <div key={notification.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex items-center gap-3">
-                            <span className="font-mono text-sm text-blue-600 font-medium">
-                              {notification.sequentialNumber}
-                            </span>
-                            <Badge className={getPriorityColor(notification.priority)}>
-                              {notification.priority.toUpperCase()}
-                            </Badge>
-                            <span className={`text-sm font-medium ${getStatusColor(notification.status)}`}>
-                              {notification.status === 'sent' && <Clock className="h-4 w-4 inline mr-1" />}
-                              {notification.status === 'read' && <CheckCircle className="h-4 w-4 inline mr-1" />}
-                              {notification.status}
-                            </span>
-                          </div>
-                          <span className="text-sm text-gray-500">
-                            {new Date(notification.createdAt).toLocaleString('pt-BR')}
-                          </span>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3 text-sm">
-                          <div>
-                            <span className="font-medium text-gray-700">Professor:</span>
-                            <p className="text-gray-600">{notification.teacherName}</p>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">Aluno:</span>
-                            <p className="text-gray-600">{notification.studentName}</p>
-                          </div>
-                          <div>
-                            <span className="font-medium text-gray-700">Tipo:</span>
-                            <p className="text-gray-600">{notification.notificationType}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="mb-3">
-                          <span className="font-medium text-gray-700 text-sm">Assunto:</span>
-                          <p className="text-gray-800 font-medium">{notification.subject}</p>
-                        </div>
-                        
-                        <div className="mb-3">
-                          <span className="font-medium text-gray-700 text-sm">Mensagem:</span>
-                          <p className="text-gray-600 text-sm">{notification.message}</p>
-                        </div>
-
-                        <div className="flex justify-between items-center pt-3 border-t">
-                          <span className="text-xs text-gray-500">
-                            Data da ocorrência: {new Date(notification.notificationDate).toLocaleString('pt-BR')}
-                          </span>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
-                              Marcar como Lida
-                            </Button>
-                            <Button size="sm">
-                              Responder
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                    <p>Nenhuma notificação recebida</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Análises da Instituição
-                </CardTitle>
-                <CardDescription>
-                  Métricas e indicadores de performance da escola
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-lg">Performance Acadêmica</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                        <span className="text-sm font-medium">Taxa de Aprovação</span>
-                        <span className="text-lg font-bold text-green-600">85%</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                        <span className="text-sm font-medium">Média Geral</span>
-                        <span className="text-lg font-bold text-blue-600">7.3</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                        <span className="text-sm font-medium">Taxa de Frequência</span>
-                        <span className="text-lg font-bold text-yellow-600">92%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-lg">Indicadores Operacionais</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                        <span className="text-sm font-medium">Alunos por Professor</span>
-                        <span className="text-lg font-bold text-purple-600">28</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
-                        <span className="text-sm font-medium">Utilização de Salas</span>
-                        <span className="text-lg font-bold text-indigo-600">78%</span>
-                      </div>
-                      <div className="flex justify-between items-center p-3 bg-pink-50 rounded-lg">
-                        <span className="text-sm font-medium">Eventos este Mês</span>
-                        <span className="text-lg font-bold text-pink-600">12</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="users">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    Gestão de Usuários
-                  </CardTitle>
-                  <CardDescription>
-                    Cadastrar, editar e gerenciar alunos e professores
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Button className="w-full justify-start" variant="outline">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Cadastrar Novo Aluno
-                    </Button>
-                    <Button className="w-full justify-start" variant="outline">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Cadastrar Novo Professor
-                    </Button>
-                    <Button className="w-full justify-start" variant="outline">
-                      <Users className="h-4 w-4 mr-2" />
-                      Gerenciar Usuários Existentes
-                    </Button>
-                    <Button className="w-full justify-start" variant="outline">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Relatórios de Usuários
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Usuários Pendentes de Aprovação</CardTitle>
-                  <CardDescription>
-                    Novos cadastros aguardando validação
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">João Silva</p>
-                        <p className="text-sm text-gray-600">Professor - Matemática</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive">
-                          <AlertCircle className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">Maria Santos</p>
-                        <p className="text-sm text-gray-600">Aluna - 8º Ano</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <CheckCircle className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="destructive">
-                          <AlertCircle className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="satisfaction">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  Índice de Satisfação
-                </CardTitle>
-                <CardDescription>
-                  Feedback de alunos e pais sobre a instituição
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">4.2</p>
-                    <p className="text-sm text-gray-600">Ensino</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">4.0</p>
-                    <p className="text-sm text-gray-600">Instalações</p>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">4.5</p>
-                    <p className="text-sm text-gray-600">Comunicação</p>
-                  </div>
-                  <div className="text-center p-4 bg-orange-50 rounded-lg">
-                    <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">4.3</p>
-                    <p className="text-sm text-gray-600">Geral</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Comentários Recentes</h3>
-                  <div className="space-y-3">
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="flex">
-                          {[1,2,3,4,5].map((star) => (
-                            <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          ))}
-                        </div>
-                        <span className="text-sm text-gray-600">- Pai/Mãe de Ana Clara</span>
-                      </div>
-                      <p className="text-sm text-gray-700">"Excelente qualidade de ensino. Professores muito dedicados."</p>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="flex">
-                          {[1,2,3,4].map((star) => (
-                            <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          ))}
-                          <Star className="h-4 w-4 text-gray-300" />
-                        </div>
-                        <span className="text-sm text-gray-600">- Pedro Santos (Aluno)</span>
-                      </div>
-                      <p className="text-sm text-gray-700">"Gosto muito da escola, mas as instalações poderiam ser melhoradas."</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+    </>
   );
 }
