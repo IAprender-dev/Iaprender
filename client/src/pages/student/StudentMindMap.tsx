@@ -74,6 +74,7 @@ interface MindMapData {
 export default function StudentMindMap() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isGenerating, setIsGenerating] = useState(false);
   const [mindMapData, setMindMapData] = useState<MindMapData | null>(null);
   const [config, setConfig] = useState({
