@@ -21,9 +21,14 @@ import {
   Sparkles,
   Book,
   Home,
-  ArrowLeft
+  ArrowLeft,
+  Star,
+  Zap,
+  Award,
+  TrendingUp
 } from "lucide-react";
 import { Link } from "wouter";
+import iaprenderLogo from "@assets/IAprender_1750262542315.png";
 
 interface Question {
   id: string;
@@ -185,75 +190,101 @@ export default function StudentQuiz() {
           <title>Quiz Educativo - IAprender</title>
         </Helmet>
 
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 p-4 lg:p-8">
-          <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-4 mb-4">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+          {/* Header with Logo */}
+          <div className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
+            <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <img src={iaprenderLogo} alt="IAprender" className="h-10 w-10" />
+                  <div>
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                      Quiz Educativo
+                    </h1>
+                    <p className="text-slate-600 text-sm">Teste seus conhecimentos com IA</p>
+                  </div>
+                </div>
                 <Link href="/student">
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2 border-blue-200 hover:bg-blue-50">
                     <ArrowLeft className="h-4 w-4" />
-                    Voltar ao Dashboard
+                    Dashboard
                   </Button>
                 </Link>
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent">
-                    Quiz Educativo
-                  </h1>
-                  <p className="text-slate-600">Teste seus conhecimentos com perguntas geradas por IA</p>
-                </div>
               </div>
+            </div>
+          </div>
+
+          <div className="max-w-5xl mx-auto p-4 lg:p-8">
+
+            {/* Welcome Section */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-100 to-indigo-100 px-6 py-3 rounded-full mb-4">
+                <Brain className="h-6 w-6 text-blue-600" />
+                <span className="text-blue-800 font-semibold">Desafie seu conhecimento</span>
+              </div>
+              <h2 className="text-3xl font-bold text-slate-900 mb-2">Configure seu Quiz Personalizado</h2>
+              <p className="text-slate-600 text-lg">Nossa IA criará perguntas exclusivas baseadas no seu tema de interesse</p>
             </div>
 
             {/* Quiz Configuration */}
-            <Card className="border-0 bg-white/70 backdrop-blur-sm shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                  <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl">
-                    <Brain className="h-6 w-6 text-white" />
+            <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-2xl hover:shadow-3xl transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl">
+                <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <Sparkles className="h-6 w-6 text-white" />
                   </div>
-                  Criar Novo Quiz
+                  Configuração do Quiz
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-2 space-y-2">
-                    <Label className="text-base font-bold text-slate-700">Tema do Quiz</Label>
+              <CardContent className="p-8 space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 space-y-3">
+                    <Label className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Book className="h-5 w-5 text-blue-600" />
+                      Tema do Quiz
+                    </Label>
                     <Input
-                      placeholder="Ex: Matemática básica, História do Brasil, Ciências..."
+                      placeholder="Digite o tema que deseja estudar..."
                       value={quizConfig.topic}
                       onChange={(e) => setQuizConfig({...quizConfig, topic: e.target.value})}
-                      className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+                      className="h-14 bg-white border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-200 text-slate-900 text-lg placeholder:text-slate-400 rounded-xl"
                     />
+                    <p className="text-sm text-slate-500">Exemplos: Matemática do 9º ano, História do Brasil, Ciências da Natureza</p>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-base font-bold text-slate-700">Número de Perguntas</Label>
+                  <div className="space-y-3">
+                    <Label className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <Target className="h-5 w-5 text-blue-600" />
+                      Perguntas
+                    </Label>
                     <Select value={quizConfig.questionCount.toString()} onValueChange={(value) => setQuizConfig({...quizConfig, questionCount: parseInt(value)})}>
-                      <SelectTrigger className="h-12 bg-white border-slate-300">
+                      <SelectTrigger className="h-14 bg-white border-2 border-slate-200 focus:border-blue-500 text-slate-900 text-lg rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="3">3 perguntas</SelectItem>
-                        <SelectItem value="5">5 perguntas</SelectItem>
-                        <SelectItem value="10">10 perguntas</SelectItem>
-                        <SelectItem value="15">15 perguntas</SelectItem>
+                        <SelectItem value="3">3 perguntas - Rápido</SelectItem>
+                        <SelectItem value="5">5 perguntas - Padrão</SelectItem>
+                        <SelectItem value="10">10 perguntas - Completo</SelectItem>
+                        <SelectItem value="15">15 perguntas - Desafio</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-base font-bold text-slate-700">Nível de Dificuldade</Label>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <Label className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-blue-600" />
+                      Nível de Dificuldade
+                    </Label>
                     <Select value={quizConfig.difficulty} onValueChange={(value) => setQuizConfig({...quizConfig, difficulty: value})}>
-                      <SelectTrigger className="h-12 bg-white border-slate-300">
+                      <SelectTrigger className="h-14 bg-white border-2 border-slate-200 focus:border-blue-500 text-slate-900 text-lg rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="easy">Fácil</SelectItem>
-                        <SelectItem value="medium">Médio</SelectItem>
-                        <SelectItem value="hard">Difícil</SelectItem>
+                        <SelectItem value="easy">🟢 Fácil - Conceitos básicos</SelectItem>
+                        <SelectItem value="medium">🟡 Médio - Conhecimento intermediário</SelectItem>
+                        <SelectItem value="hard">🔴 Difícil - Nível avançado</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -262,17 +293,17 @@ export default function StudentQuiz() {
                     <Button
                       onClick={generateQuiz}
                       disabled={isGenerating || !quizConfig.topic.trim()}
-                      className="w-full h-12 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold"
+                      className="w-full h-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                     >
                       {isGenerating ? (
                         <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                          Gerando Quiz...
+                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent mr-3"></div>
+                          Gerando Quiz Inteligente...
                         </>
                       ) : (
                         <>
-                          <Sparkles className="h-5 w-5 mr-2" />
-                          Gerar Quiz
+                          <Zap className="h-6 w-6 mr-3" />
+                          Gerar Quiz com IA
                         </>
                       )}
                     </Button>
@@ -298,67 +329,106 @@ export default function StudentQuiz() {
           <title>Resultado do Quiz - IAprender</title>
         </Helmet>
 
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 p-4 lg:p-8">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-0 bg-white/70 backdrop-blur-sm shadow-xl">
-              <CardContent className="p-8 text-center">
-                <div className="mb-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Trophy className="h-12 w-12 text-white" />
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+          {/* Header with Logo */}
+          <div className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
+            <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <img src={iaprenderLogo} alt="IAprender" className="h-10 w-10" />
+                  <div>
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
+                      Resultado do Quiz
+                    </h1>
+                    <p className="text-slate-600 text-sm">Parabéns por completar o desafio!</p>
                   </div>
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">Quiz Concluído!</h2>
-                  <p className="text-slate-600">Confira seu desempenho</p>
+                </div>
+                <Link href="/student">
+                  <Button variant="outline" size="sm" className="gap-2 border-blue-200 hover:bg-blue-50">
+                    <Home className="h-4 w-4" />
+                    Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-5xl mx-auto p-4 lg:p-8">
+            <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-2xl hover:shadow-3xl transition-all duration-300">
+              <CardContent className="p-8 lg:p-12 text-center">
+                <div className="mb-8">
+                  <div className="relative inline-block mb-6">
+                    <div className="w-32 h-32 bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto shadow-2xl">
+                      <Trophy className="h-16 w-16 text-white" />
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                      <Star className="h-5 w-5 text-white" />
+                    </div>
+                  </div>
+                  <h2 className="text-4xl font-bold text-slate-900 mb-3">Quiz Concluído!</h2>
+                  <p className="text-slate-600 text-lg">Veja como você se saiu neste desafio</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
-                    <CardContent className="p-6 text-center">
-                      <Target className="h-8 w-8 text-green-600 mx-auto mb-3" />
-                      <div className={`text-3xl font-bold mb-1 ${getScoreColor(percentage)}`}>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                  <Card className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-2 border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <CardContent className="p-8 text-center">
+                      <div className="p-4 bg-green-500 rounded-full w-fit mx-auto mb-4">
+                        <Target className="h-10 w-10 text-white" />
+                      </div>
+                      <div className={`text-4xl font-bold mb-2 ${getScoreColor(percentage)}`}>
                         {quizSession.score}/{quizSession.questions.length}
                       </div>
-                      <div className="text-sm text-slate-600">Acertos</div>
+                      <div className="text-lg font-semibold text-slate-700">Respostas Corretas</div>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-                    <CardContent className="p-6 text-center">
-                      <CheckCircle className="h-8 w-8 text-blue-600 mx-auto mb-3" />
-                      <div className={`text-3xl font-bold mb-1 ${getScoreColor(percentage)}`}>
+                  <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <CardContent className="p-8 text-center">
+                      <div className="p-4 bg-blue-500 rounded-full w-fit mx-auto mb-4">
+                        <Award className="h-10 w-10 text-white" />
+                      </div>
+                      <div className={`text-4xl font-bold mb-2 ${getScoreColor(percentage)}`}>
                         {percentage}%
                       </div>
-                      <div className="text-sm text-slate-600">Aproveitamento</div>
+                      <div className="text-lg font-semibold text-slate-700">Aproveitamento</div>
                     </CardContent>
                   </Card>
 
-                  <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-                    <CardContent className="p-6 text-center">
-                      <Clock className="h-8 w-8 text-purple-600 mx-auto mb-3" />
-                      <div className="text-3xl font-bold text-purple-600 mb-1">
+                  <Card className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <CardContent className="p-8 text-center">
+                      <div className="p-4 bg-purple-500 rounded-full w-fit mx-auto mb-4">
+                        <Clock className="h-10 w-10 text-white" />
+                      </div>
+                      <div className="text-4xl font-bold text-purple-600 mb-2">
                         {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
                       </div>
-                      <div className="text-sm text-slate-600">Tempo</div>
+                      <div className="text-lg font-semibold text-slate-700">Tempo Total</div>
                     </CardContent>
                   </Card>
                 </div>
 
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8">
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">Feedback</h3>
-                  <p className="text-slate-700">{getScoreMessage(percentage)}</p>
+                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-xl p-8 mb-10 shadow-lg">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <Brain className="h-6 w-6 text-white" />
+                    </div>
+                    Feedback do seu Desempenho
+                  </h3>
+                  <p className="text-slate-800 text-lg leading-relaxed">{getScoreMessage(percentage)}</p>
                 </div>
 
-                <div className="flex gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-6 justify-center">
                   <Button
                     onClick={resetQuiz}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8"
+                    className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    <RotateCcw className="h-5 w-5 mr-2" />
-                    Novo Quiz
+                    <RotateCcw className="h-6 w-6 mr-3" />
+                    Fazer Novo Quiz
                   </Button>
                   <Link href="/student">
-                    <Button variant="outline" className="px-8">
-                      <Home className="h-5 w-5 mr-2" />
-                      Dashboard
+                    <Button variant="outline" className="px-10 py-4 text-lg font-semibold border-2 border-slate-300 hover:bg-slate-50">
+                      <Home className="h-6 w-6 mr-3" />
+                      Voltar ao Dashboard
                     </Button>
                   </Link>
                 </div>
@@ -400,117 +470,117 @@ export default function StudentQuiz() {
             <Progress value={progress} className="h-3 bg-slate-200" />
           </div>
 
-          {/* Question Card */}
-          <Card className="border-0 bg-white/70 backdrop-blur-sm shadow-xl">
-            <CardContent className="p-8">
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <Badge className={`${
-                    currentQ.difficulty === 'easy' ? 'bg-green-100 text-green-700 border-green-200' :
-                    currentQ.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                    'bg-red-100 text-red-700 border-red-200'
-                  }`}>
-                    {currentQ.difficulty === 'easy' ? 'Fácil' : 
-                     currentQ.difficulty === 'medium' ? 'Médio' : 'Difícil'}
-                  </Badge>
+            {/* Question Card */}
+            <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-2xl hover:shadow-3xl transition-all duration-300">
+              <CardContent className="p-8 lg:p-12">
+                <div className="mb-10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">
+                      <Brain className="h-6 w-6 text-white" />
+                    </div>
+                    <span className="text-lg font-bold text-slate-700">
+                      Pergunta {quizSession.currentQuestion + 1}
+                    </span>
+                  </div>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 leading-relaxed">
+                    {currentQ.question}
+                  </h2>
                 </div>
-                <h2 className="text-2xl font-bold text-slate-900 leading-relaxed">
-                  {currentQ.question}
-                </h2>
-              </div>
 
-              <div className="space-y-4 mb-8">
-                {currentQ.options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => !showExplanation && setSelectedAnswer(index)}
-                    disabled={showExplanation}
-                    className={`w-full p-4 text-left rounded-xl border-2 transition-all duration-200 ${
-                      showExplanation
-                        ? index === currentQ.correctAnswer
-                          ? 'border-green-500 bg-green-50 text-green-800'
-                          : index === selectedAnswer && index !== currentQ.correctAnswer
-                          ? 'border-red-500 bg-red-50 text-red-800'
-                          : 'border-slate-200 bg-slate-50 text-slate-600'
-                        : selectedAnswer === index
-                        ? 'border-purple-500 bg-purple-50 text-purple-800'
-                        : 'border-slate-300 bg-white hover:border-purple-300 hover:bg-purple-50 text-slate-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                <div className="space-y-4 mb-10">
+                  {currentQ.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => !showExplanation && setSelectedAnswer(index)}
+                      disabled={showExplanation}
+                      className={`group w-full p-6 text-left rounded-xl border-2 transition-all duration-300 transform hover:scale-[1.02] ${
                         showExplanation
                           ? index === currentQ.correctAnswer
-                            ? 'bg-green-500 text-white'
+                            ? 'border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 text-green-900 shadow-lg shadow-green-200/50'
                             : index === selectedAnswer && index !== currentQ.correctAnswer
-                            ? 'bg-red-500 text-white'
-                            : 'bg-slate-300 text-slate-600'
+                            ? 'border-red-500 bg-gradient-to-r from-red-50 to-rose-50 text-red-900 shadow-lg shadow-red-200/50'
+                            : 'border-slate-200 bg-slate-50 text-slate-600'
                           : selectedAnswer === index
-                          ? 'bg-purple-500 text-white'
-                          : 'bg-slate-200 text-slate-600'
-                      }`}>
-                        {String.fromCharCode(65 + index)}
+                          ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-900 shadow-lg shadow-blue-200/50'
+                          : 'border-slate-300 bg-white hover:border-blue-300 hover:bg-blue-50 text-slate-900 hover:shadow-lg'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 ${
+                          showExplanation
+                            ? index === currentQ.correctAnswer
+                              ? 'bg-green-500 text-white shadow-lg'
+                              : index === selectedAnswer && index !== currentQ.correctAnswer
+                              ? 'bg-red-500 text-white shadow-lg'
+                              : 'bg-slate-300 text-slate-600'
+                            : selectedAnswer === index
+                            ? 'bg-blue-500 text-white shadow-lg'
+                            : 'bg-slate-200 text-slate-700 group-hover:bg-blue-500 group-hover:text-white'
+                        }`}>
+                          {String.fromCharCode(65 + index)}
+                        </div>
+                        <span className="font-semibold text-lg flex-1">{option}</span>
+                        {showExplanation && index === currentQ.correctAnswer && (
+                          <CheckCircle className="h-6 w-6 text-green-500 animate-pulse" />
+                        )}
+                        {showExplanation && index === selectedAnswer && index !== currentQ.correctAnswer && (
+                          <XCircle className="h-6 w-6 text-red-500 animate-pulse" />
+                        )}
                       </div>
-                      <span className="font-medium">{option}</span>
-                      {showExplanation && index === currentQ.correctAnswer && (
-                        <CheckCircle className="h-5 w-5 text-green-500 ml-auto" />
-                      )}
-                      {showExplanation && index === selectedAnswer && index !== currentQ.correctAnswer && (
-                        <XCircle className="h-5 w-5 text-red-500 ml-auto" />
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {showExplanation && (
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6">
-                  <h3 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-blue-600" />
-                    Explicação
-                  </h3>
-                  <p className="text-slate-700 leading-relaxed">{currentQ.explanation}</p>
+                    </button>
+                  ))}
                 </div>
-              )}
 
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={resetQuiz}
-                  className="border-slate-300 hover:bg-slate-50"
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reiniciar
-                </Button>
-
-                {showExplanation ? (
-                  <Button
-                    onClick={nextQuestion}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
-                  >
-                    {quizSession.currentQuestion + 1 >= quizSession.questions.length ? (
-                      <>
-                        <Trophy className="h-4 w-4 mr-2" />
-                        Ver Resultado
-                      </>
-                    ) : (
-                      <>
-                        Próxima Pergunta
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={submitAnswer}
-                    disabled={selectedAnswer === null}
-                    className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white disabled:opacity-50"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirmar Resposta
-                  </Button>
+                {showExplanation && (
+                  <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-xl p-8 mb-8 shadow-lg">
+                    <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-3 text-xl">
+                      <div className="p-2 bg-blue-500 rounded-lg">
+                        <Brain className="h-6 w-6 text-white" />
+                      </div>
+                      Explicação Detalhada
+                    </h3>
+                    <p className="text-slate-800 leading-relaxed text-lg">{currentQ.explanation}</p>
+                  </div>
                 )}
-              </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={resetQuiz}
+                    className="border-2 border-slate-300 hover:bg-slate-50 px-6 py-3 text-lg font-semibold"
+                  >
+                    <RotateCcw className="h-5 w-5 mr-2" />
+                    Reiniciar Quiz
+                  </Button>
+
+                  {showExplanation ? (
+                    <Button
+                      onClick={nextQuestion}
+                      className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      {quizSession.currentQuestion + 1 >= quizSession.questions.length ? (
+                        <>
+                          <Trophy className="h-5 w-5 mr-2" />
+                          Ver Resultado Final
+                        </>
+                      ) : (
+                        <>
+                          Próxima Pergunta
+                          <ArrowRight className="h-5 w-5 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={submitAnswer}
+                      disabled={selectedAnswer === null}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      Confirmar Resposta
+                    </Button>
+                  )}
+                </div>
             </CardContent>
           </Card>
         </div>
