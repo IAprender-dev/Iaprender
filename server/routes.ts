@@ -2148,6 +2148,246 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   // TRANSLATION ROUTES
   app.use("/api/translate", translateRoutes);
 
+  // AI Mind Map Generation with BNCC validation
+  app.post('/api/ai/generate-mindmap', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { topic, complexity = 'medium', includeExamples = true } = req.body;
+      const userId = req.session.user?.id;
+      const userGrade = req.session.user?.schoolYear;
+
+      if (!topic || typeof topic !== 'string') {
+        return res.status(400).json({ error: 'Tema é obrigatório' });
+      }
+
+      if (!userGrade) {
+        return res.status(400).json({ 
+          error: 'Ano escolar não encontrado no seu perfil. Atualize suas informações no perfil.' 
+        });
+      }
+
+      // Same BNCC content mapping as quiz
+      const bnccContent = {
+        "1º ano": [
+          "alfabetização", "números de 0 a 9", "adição simples", "subtração simples", "formas geométricas básicas", 
+          "cores", "família", "corpo humano", "plantas", "animais", "estações do ano", "dia e noite",
+          "vogais", "consoantes", "sílabas", "palavras simples"
+        ],
+        "2º ano": [
+          "números até 100", "operações básicas", "sistema monetário", "medidas de tempo", "calendário",
+          "leitura e escrita", "textos simples", "pontuação básica", "substantivos", "adjetivos",
+          "meio ambiente", "seres vivos", "água", "ar", "solo", "bairro", "escola", "comunidade"
+        ],
+        "3º ano": [
+          "números até 1000", "multiplicação", "divisão", "frações simples", "geometria básica",
+          "produção de texto", "gramática básica", "verbos", "ortografia", "interpretação de texto",
+          "estados físicos da matéria", "ciclo da água", "sistema solar", "município", "zona rural e urbana"
+        ],
+        "4º ano": [
+          "números até 10000", "operações com decimais", "frações", "porcentagem básica", "área e perímetro",
+          "gêneros textuais", "concordância", "acentuação", "sinônimos e antônimos", "literatura infantil",
+          "ecossistemas", "cadeia alimentar", "estados brasileiros", "relevo", "clima", "vegetação"
+        ],
+        "5º ano": [
+          "números até 100000", "frações decimais", "regra de três simples", "gráficos e tabelas",
+          "dissertação", "crônica", "sintaxe", "figuras de linguagem", "literatura brasileira",
+          "sistema digestório", "sistema respiratório", "regiões brasileiras", "economia", "cultura brasileira"
+        ],
+        "6º ano": [
+          "números inteiros", "potenciação", "expressões algébricas", "equações simples", "razão e proporção",
+          "épico", "lírico", "dramático", "morfologia", "sintaxe", "semântica",
+          "célula", "tecidos", "sistemas do corpo humano", "rochas e minerais", "placas tectônicas",
+          "pré-história", "antiguidade", "idade média", "civilizações antigas"
+        ],
+        "7º ano": [
+          "números racionais", "equações de 1º grau", "sistemas de equações", "geometria plana", "estatística básica",
+          "romance", "novela", "conto", "classes de palavras", "período simples e composto",
+          "reino animal", "reino vegetal", "genética básica", "atmosfera", "hidrosfera", "biosfera",
+          "idade moderna", "descobrimentos", "colonização", "absolutismo", "iluminismo"
+        ],
+        "8º ano": [
+          "potências e raízes", "produtos notáveis", "fatoração", "sistemas lineares", "geometria espacial",
+          "teatro", "auto", "sermão", "orações coordenadas", "orações subordinadas",
+          "química básica", "física básica", "evolução", "ecologia", "revolução industrial",
+          "independências americanas", "século XIX", "imperialismo"
+        ],
+        "9º ano": [
+          "equações de 2º grau", "funções", "progressões", "trigonometria básica", "geometria analítica",
+          "realismo", "naturalismo", "parnasianismo", "simbolismo", "análise sintática",
+          "genética", "biotecnologia", "astronomia", "física moderna", "química orgânica",
+          "primeira guerra mundial", "revolução russa", "crise de 1929", "segunda guerra mundial"
+        ],
+        "1º ano médio": [
+          "conjuntos", "funções", "função afim", "função quadrática", "progressões",
+          "literatura medieval", "classicismo", "barroco", "arcadismo", "romantismo",
+          "citologia", "histologia", "embriologia", "mecânica", "termologia", "óptica",
+          "química inorgânica", "tabela periódica", "ligações químicas",
+          "brasil colônia", "brasil império", "república velha"
+        ],
+        "2º ano médio": [
+          "logaritmos", "trigonometria", "matrizes", "determinantes", "geometria analítica",
+          "realismo", "naturalismo", "parnasianismo", "simbolismo", "pré-modernismo",
+          "fisiologia", "anatomia", "genética", "evolução", "ecologia",
+          "ondulatória", "eletromagnetismo", "físico-química", "química orgânica",
+          "era vargas", "república populista", "ditadura militar"
+        ],
+        "3º ano médio": [
+          "números complexos", "polinômios", "análise combinatória", "probabilidade", "estatística",
+          "modernismo", "literatura contemporânea", "análise literária", "redação enem",
+          "biotecnologia", "imunologia", "reprodução", "desenvolvimento",
+          "física moderna", "relatividade", "física quântica", "radioatividade",
+          "nova república", "brasil contemporâneo", "globalização", "atualidades"
+        ]
+      };
+
+      // Validate topic against BNCC
+      let userContent = bnccContent[userGrade as keyof typeof bnccContent];
+      
+      if (!userContent && userGrade) {
+        const gradeVariations = [
+          userGrade.replace(' fundamental', ''),
+          userGrade.replace(' médio', ' médio'),
+          userGrade + ' fundamental',
+          userGrade.replace('º', '°')
+        ];
+        
+        for (const variation of gradeVariations) {
+          userContent = bnccContent[variation as keyof typeof bnccContent];
+          if (userContent) break;
+        }
+      }
+      
+      if (!userContent) {
+        return res.status(400).json({ 
+          error: `Ano escolar "${userGrade}" não reconhecido. Entre em contato com o suporte.`
+        });
+      }
+
+      const topicLower = topic.toLowerCase();
+      const isValidTopic = userContent.some(content => 
+        topicLower.includes(content.toLowerCase()) || 
+        content.toLowerCase().includes(topicLower)
+      );
+
+      if (!isValidTopic) {
+        return res.status(400).json({ 
+          error: `O tema "${topic}" não está no conteúdo programático do ${userGrade} segundo a BNCC. Escolha um tema adequado para sua série escolar.`,
+          suggestedTopics: userContent.slice(0, 8)
+        });
+      }
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          max_tokens: 3000,
+          temperature: 0.7,
+          messages: [
+            {
+              role: 'system',
+              content: `Você é um especialista em educação brasileira e criação de mapas mentais pedagógicos baseados na BNCC.
+
+MISSÃO: Criar um mapa mental educacional estruturado sobre "${topic}" especificamente para alunos do ${userGrade}.
+
+DIRETRIZES PEDAGÓGICAS:
+- Adequar linguagem e complexidade ao ${userGrade}
+- Seguir rigorosamente os objetivos da BNCC para esta série
+- Usar metodologias de aprendizagem visual e cognitiva
+- Incluir conexões lógicas entre conceitos
+- Facilitar memorização e compreensão
+
+ESTRUTURA OBRIGATÓRIA - Retorne APENAS JSON válido:
+{
+  "title": "${topic}",
+  "grade": "${userGrade}",
+  "bnccAlignment": "Código/descrição da competência BNCC",
+  "mindMap": {
+    "centralConcept": {
+      "text": "Conceito central",
+      "color": "#cor_hexadecimal"
+    },
+    "mainBranches": [
+      {
+        "id": "branch1",
+        "text": "Conceito Principal",
+        "color": "#cor_hexadecimal",
+        "subBranches": [
+          {
+            "text": "Subconceito",
+            "examples": ["exemplo1", "exemplo2"],
+            "keyWords": ["palavra-chave1", "palavra-chave2"]
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "from": "branch1",
+        "to": "branch2",
+        "relationship": "descrição da relação"
+      }
+    ],
+    "studyTips": [
+      "Dica de estudo específica para ${userGrade}",
+      "Técnica de memorização adequada"
+    ],
+    "practiceQuestions": [
+      "Pergunta reflexiva sobre o tema"
+    ]
+  },
+  "metadata": {
+    "complexity": "${complexity}",
+    "estimatedStudyTime": "X minutos",
+    "prerequisites": ["pré-requisito1", "pré-requisito2"]
+  }
+}`
+            },
+            {
+              role: 'user',
+              content: `Crie um mapa mental educacional completo sobre "${topic}" para alunos do ${userGrade}, seguindo as diretrizes da BNCC. 
+
+REQUISITOS:
+- Linguagem adequada ao ${userGrade}
+- 4-6 ramos principais com sub-ramos
+- Cores diferenciadas para organização visual
+- ${includeExamples ? 'Incluir exemplos práticos brasileiros' : 'Focar em conceitos teóricos'}
+- Dicas de estudo específicas para a faixa etária
+- Conexões entre conceitos quando aplicável
+
+TEMA: ${topic}
+SÉRIE: ${userGrade}
+COMPLEXIDADE: ${complexity}`
+            }
+          ],
+          response_format: { type: "json_object" }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha na API do OpenAI');
+      }
+
+      const data = await response.json();
+      const mindMapData = JSON.parse(data.choices[0].message.content);
+      
+      // Add generation metadata
+      mindMapData.generated = {
+        userGrade,
+        topic,
+        timestamp: new Date().toISOString(),
+        bnccCompliant: true
+      };
+      
+      res.json(mindMapData);
+    } catch (error) {
+      console.error('Erro na geração do mapa mental:', error);
+      res.status(500).json({ error: 'Erro interno do servidor ao gerar mapa mental' });
+    }
+  });
+
   // AI Quiz Generation with BNCC validation
   app.post('/api/ai/generate-quiz', authenticate, async (req: Request, res: Response) => {
     try {
