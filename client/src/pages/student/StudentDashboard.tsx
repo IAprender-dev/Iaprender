@@ -203,8 +203,8 @@ export default function StudentDashboard() {
 
   const menuItems = [
     { icon: Bot, label: "Central de Inteligências", href: "/central-ia", isActive: location === "/central-ia" },
+    { icon: CheckSquare, label: "Quiz Educativo", href: "/student/quiz", isActive: location === "/student/quiz" },
     { icon: MessageSquare, label: "Tutor por Texto", href: "/aluno/tutor-ia", isActive: location === "/aluno/tutor-ia" },
-
     { icon: Mic, label: "Tutor por Voz", href: "/aluno/tutor-voz", isActive: location === "/aluno/tutor-voz" },
     { icon: Languages, label: "Tradutor Escolar", href: "/student/translator", isActive: location === "/student/translator" },
     { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
@@ -494,30 +494,54 @@ export default function StudentDashboard() {
               </div>
 
               {/* Essential Actions - Simplified */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <Link href="/central-ia">
                   <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <CardContent className="p-8 relative z-10">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                          <Bot className="h-8 w-8 text-white" />
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                          <Bot className="h-6 w-6 text-white" />
                         </div>
-                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-bold px-3 py-1 text-sm">
-                          <Sparkles className="h-4 w-4 mr-1" />
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 font-bold px-2 py-1 text-xs">
                           Central IA
                         </Badge>
                       </div>
-                      <div className="space-y-3">
-                        <h3 className="font-bold text-2xl text-white">Central de Inteligências</h3>
-                        <p className="text-white/90 text-base leading-relaxed">
-                          Acesse ChatGPT, Claude e Gemini em uma interface unificada para seus estudos
+                      <div className="space-y-2">
+                        <h3 className="font-bold text-lg text-white">Central de IAs</h3>
+                        <p className="text-white/90 text-sm leading-relaxed">
+                          ChatGPT, Claude e Gemini unificados
                         </p>
-                        <div className="flex items-center gap-2 pt-4">
-                          <div className="flex items-center text-white/80 font-medium">
-                            <span>Acessar Central</span>
-                            <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                          </div>
+                        <div className="flex items-center text-white/80 font-medium text-sm pt-2">
+                          <span>Acessar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
+                <Link href="/student/quiz">
+                  <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                          <CheckSquare className="h-6 w-6 text-white" />
+                        </div>
+                        <Badge className="bg-gradient-to-r from-emerald-400 to-teal-500 text-white border-0 font-bold px-2 py-1 text-xs">
+                          <Target className="h-3 w-3 mr-1" />
+                          Quiz
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="font-bold text-lg text-white">Quiz Educativo</h3>
+                        <p className="text-white/90 text-sm leading-relaxed">
+                          Responda perguntas geradas por IA
+                        </p>
+                        <div className="flex items-center text-white/80 font-medium text-sm pt-2">
+                          <span>Começar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </CardContent>
@@ -527,26 +551,23 @@ export default function StudentDashboard() {
                 <Link href="/aluno/tutor-ia">
                   <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 text-white overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <CardContent className="p-8 relative z-10">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                          <MessageSquare className="h-8 w-8 text-white" />
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                          <MessageSquare className="h-6 w-6 text-white" />
                         </div>
-                        <Badge className="bg-gradient-to-r from-purple-400 to-indigo-500 text-white border-0 font-bold px-3 py-1 text-sm">
-                          <Bot className="h-4 w-4 mr-1" />
+                        <Badge className="bg-gradient-to-r from-purple-400 to-indigo-500 text-white border-0 font-bold px-2 py-1 text-xs">
                           Tutor
                         </Badge>
                       </div>
-                      <div className="space-y-3">
-                        <h3 className="font-bold text-2xl text-white">Tutor Chat IA</h3>
-                        <p className="text-white/90 text-base leading-relaxed">
-                          Converse por texto com sua tutora especializada em ensino personalizado
+                      <div className="space-y-2">
+                        <h3 className="font-bold text-lg text-white">Tutor Chat IA</h3>
+                        <p className="text-white/90 text-sm leading-relaxed">
+                          Converse por texto com sua tutora
                         </p>
-                        <div className="flex items-center gap-2 pt-4">
-                          <div className="flex items-center text-white/80 font-medium">
-                            <span>Conversar</span>
-                            <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                          </div>
+                        <div className="flex items-center text-white/80 font-medium text-sm pt-2">
+                          <span>Conversar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </CardContent>
@@ -556,26 +577,23 @@ export default function StudentDashboard() {
                 <Link href="/aluno/tutor-voz">
                   <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-pink-600 via-purple-600 to-indigo-700 text-white overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <CardContent className="p-8 relative z-10">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                          <Mic className="h-8 w-8 text-white" />
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                          <Mic className="h-6 w-6 text-white" />
                         </div>
-                        <Badge className="bg-gradient-to-r from-pink-400 to-purple-500 text-white border-0 font-bold px-3 py-1 text-sm">
-                          <GraduationCap className="h-4 w-4 mr-1" />
+                        <Badge className="bg-gradient-to-r from-pink-400 to-purple-500 text-white border-0 font-bold px-2 py-1 text-xs">
                           NOVO
                         </Badge>
                       </div>
-                      <div className="space-y-3">
-                        <h3 className="font-bold text-2xl text-white">ProVersa</h3>
-                        <p className="text-white/90 text-base leading-relaxed">
-                          Converse por voz com sua tutora virtual inteligente
+                      <div className="space-y-2">
+                        <h3 className="font-bold text-lg text-white">ProVersa</h3>
+                        <p className="text-white/90 text-sm leading-relaxed">
+                          Converse por voz com tutora virtual
                         </p>
-                        <div className="flex items-center gap-2 pt-4">
-                          <div className="flex items-center text-white/80 font-medium">
-                            <span>Falar Agora</span>
-                            <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                          </div>
+                        <div className="flex items-center text-white/80 font-medium text-sm pt-2">
+                          <span>Falar</span>
+                          <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
                     </CardContent>
