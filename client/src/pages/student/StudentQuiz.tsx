@@ -205,9 +205,9 @@ export default function StudentQuiz() {
                   </div>
                 </div>
                 <Link href="/student">
-                  <Button variant="outline" size="sm" className="gap-2 border-blue-200 hover:bg-blue-50">
+                  <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-md">
                     <ArrowLeft className="h-4 w-4" />
-                    Dashboard
+                    Voltar
                   </Button>
                 </Link>
               </div>
@@ -344,9 +344,9 @@ export default function StudentQuiz() {
                   </div>
                 </div>
                 <Link href="/student">
-                  <Button variant="outline" size="sm" className="gap-2 border-blue-200 hover:bg-blue-50">
+                  <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-md">
                     <Home className="h-4 w-4" />
-                    Dashboard
+                    Voltar
                   </Button>
                 </Link>
               </div>
@@ -426,9 +426,9 @@ export default function StudentQuiz() {
                     Fazer Novo Quiz
                   </Button>
                   <Link href="/student">
-                    <Button variant="outline" className="px-10 py-4 text-lg font-semibold border-2 border-slate-300 hover:bg-slate-50">
+                    <Button className="px-10 py-4 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                       <Home className="h-6 w-6 mr-3" />
-                      Voltar ao Dashboard
+                      Voltar
                     </Button>
                   </Link>
                 </div>
