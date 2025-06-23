@@ -35,6 +35,7 @@ import WikipediaExplorer from "@/pages/student/WikipediaExplorer";
 import Translator from "@/pages/student/Translator";
 import AITutorChat from "@/pages/student/AITutorChat";
 import VoiceTutorTeacher from "@/pages/student/VoiceTutorTeacher";
+import StudentQuiz from "@/pages/student/StudentQuiz";
 import NotFound from "@/pages/not-found";
 
 // Ferramentas IA
@@ -116,12 +117,14 @@ function Router() {
       <Route path="/tokens" component={TokenDashboard} />
       
       {/* Student routes */}
+      <Route path="/student" component={StudentDashboard} />
       <Route path="/student/dashboard" component={StudentDashboard} />
       <Route path="/student/courses" component={StudentCourses} />
 
       <Route path="/student/profile" component={StudentProfile} />
       <Route path="/student/wikipedia" component={WikipediaExplorer} />
       <Route path="/student/translator" component={Translator} />
+      <Route path="/student/quiz" component={StudentQuiz} />
       <Route path="/aluno/dashboard" component={StudentDashboard} />
       <Route path="/aluno/cursos" component={StudentCourses} />
 
