@@ -229,9 +229,9 @@ export default function StudentMindMap() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-900">Complexidade</Label>
+                  <Label className="text-sm font-semibold text-black">Complexidade</Label>
                   <Select value={config.complexity} onValueChange={(value) => setConfig({...config, complexity: value})}>
-                    <SelectTrigger className="h-12 bg-slate-50 border-slate-200">
+                    <SelectTrigger className="h-12 bg-slate-50 border-slate-200 text-black">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -250,7 +250,7 @@ export default function StudentMindMap() {
                     onChange={(e) => setConfig({...config, includeExamples: e.target.checked})}
                     className="w-4 h-4 text-indigo-600 rounded"
                   />
-                  <Label htmlFor="includeExamples" className="text-sm text-slate-700">
+                  <Label htmlFor="includeExamples" className="text-sm text-black">
                     Incluir exemplos práticos brasileiros
                   </Label>
                 </div>

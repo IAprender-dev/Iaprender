@@ -2286,17 +2286,20 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
         });
       }
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-          'anthropic-version': '2023-06-01'
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
         },
         body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
-          max_tokens: 4000,
-          system: `Você é um especialista em educação brasileira, pedagogo especializado em BNCC e criador de mapas mentais educacionais de excelência.
+          model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          max_tokens: 3000,
+          temperature: 0.7,
+          messages: [
+            {
+              role: 'system',
+              content: `Você é um especialista em educação brasileira, pedagogo especializado em BNCC e criador de mapas mentais educacionais de excelência.
 
 MISSÃO: Criar um mapa mental pedagógico estruturado sobre "${topic}" especificamente para alunos do ${userGrade}, seguindo rigorosamente as competências e habilidades da BNCC.
 
@@ -2362,8 +2365,8 @@ ESTRUTURA OBRIGATÓRIA - Retorne APENAS JSON válido:
     "bnccCompetencies": ["competência BNCC específica"],
     "learningObjectives": ["objetivo de aprendizagem claro"]
   }
-}`,
-          messages: [
+}`
+            },
             {
               role: 'user',
               content: `Crie um mapa mental educacional EXCEPCIONAL sobre "${topic}" para alunos do ${userGrade}, aplicando as melhores técnicas pedagógicas e alinhamento rigoroso com a BNCC.
@@ -2395,20 +2398,17 @@ ESTRUTURA ESPERADA:
 
 Aplique todo seu conhecimento pedagógico para criar um mapa mental que realmente facilite a aprendizagem significativa do tema "${topic}" para estudantes do ${userGrade}.`
             }
-          ]
+          ],
+          response_format: { type: "json_object" }
         })
       });
 
       if (!response.ok) {
-        throw new Error('Falha na API do Anthropic');
+        throw new Error('Falha na API do OpenAI');
       }
 
       const data = await response.json();
-      const content = data.content[0].text;
-      
-      // Clean JSON response
-      const cleanContent = content.replace(/```json\n?|```\n?/g, '').trim();
-      const mindMapData = JSON.parse(cleanContent);
+      const mindMapData = JSON.parse(data.choices[0].message.content);
       
       // Add generation metadata
       mindMapData.generated = {
