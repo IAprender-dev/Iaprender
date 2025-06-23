@@ -2275,50 +2275,54 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
         });
       }
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+          'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-          max_tokens: 3000,
-          temperature: 0.7,
-          messages: [
-            {
-              role: 'system',
-              content: `Você é um especialista em educação brasileira e criação de mapas mentais pedagógicos baseados na BNCC.
+          model: 'claude-3-sonnet-20240229',
+          max_tokens: 4000,
+          system: `Você é um especialista em educação brasileira, pedagogo especializado em BNCC e criador de mapas mentais educacionais de excelência.
 
-MISSÃO: Criar um mapa mental educacional estruturado sobre "${topic}" especificamente para alunos do ${userGrade}.
+MISSÃO: Criar um mapa mental pedagógico estruturado sobre "${topic}" especificamente para alunos do ${userGrade}, seguindo rigorosamente as competências e habilidades da BNCC.
 
-DIRETRIZES PEDAGÓGICAS:
-- Adequar linguagem e complexidade ao ${userGrade}
-- Seguir rigorosamente os objetivos da BNCC para esta série
-- Usar metodologias de aprendizagem visual e cognitiva
-- Incluir conexões lógicas entre conceitos
-- Facilitar memorização e compreensão
+DIRETRIZES PEDAGÓGICAS AVANÇADAS:
+- Aplicar teorias de aprendizagem visual e cognitiva (Ausubel, Novak, Gowin)
+- Seguir os objetivos específicos da BNCC para o ${userGrade}
+- Usar técnicas de memorização ativa e conexões significativas
+- Organizar hierarquicamente do geral para o específico
+- Incluir elementos que facilitem a metacognição
+- Aplicar princípios da neuroeducação para otimizar retenção
+
+METODOLOGIA BNCC:
+- Identificar competências gerais e específicas relacionadas ao tema
+- Mapear habilidades específicas do ${userGrade}
+- Conectar com objetos de conhecimento apropriados
+- Integrar práticas pedagógicas recomendadas
 
 ESTRUTURA OBRIGATÓRIA - Retorne APENAS JSON válido:
 {
   "title": "${topic}",
   "grade": "${userGrade}",
-  "bnccAlignment": "Código/descrição da competência BNCC",
+  "bnccAlignment": "Competência específica da BNCC com código",
   "mindMap": {
     "centralConcept": {
-      "text": "Conceito central",
-      "color": "#cor_hexadecimal"
+      "text": "Conceito central do tema",
+      "color": "#3B82F6"
     },
     "mainBranches": [
       {
         "id": "branch1",
-        "text": "Conceito Principal",
+        "text": "Ramo Principal",
         "color": "#cor_hexadecimal",
         "subBranches": [
           {
-            "text": "Subconceito",
-            "examples": ["exemplo1", "exemplo2"],
-            "keyWords": ["palavra-chave1", "palavra-chave2"]
+            "text": "Subconceito específico",
+            "examples": ["exemplo prático brasileiro", "aplicação cotidiana"],
+            "keyWords": ["termo-chave1", "termo-chave2", "conceito-essencial"]
           }
         ]
       }
@@ -2327,51 +2331,73 @@ ESTRUTURA OBRIGATÓRIA - Retorne APENAS JSON válido:
       {
         "from": "branch1",
         "to": "branch2",
-        "relationship": "descrição da relação"
+        "relationship": "explicação da relação conceitual"
       }
     ],
     "studyTips": [
-      "Dica de estudo específica para ${userGrade}",
-      "Técnica de memorização adequada"
+      "Técnica de estudo baseada em evidências para ${userGrade}",
+      "Estratégia de memorização eficaz para a faixa etária",
+      "Método de revisão espaçada adequado"
     ],
     "practiceQuestions": [
-      "Pergunta reflexiva sobre o tema"
+      "Pergunta reflexiva que desenvolve pensamento crítico",
+      "Questão que conecta teoria e prática"
     ]
   },
   "metadata": {
     "complexity": "${complexity}",
-    "estimatedStudyTime": "X minutos",
-    "prerequisites": ["pré-requisito1", "pré-requisito2"]
+    "estimatedStudyTime": "tempo baseado em pesquisas pedagógicas",
+    "prerequisites": ["conhecimento prévio necessário"],
+    "bnccCompetencies": ["competência BNCC específica"],
+    "learningObjectives": ["objetivo de aprendizagem claro"]
   }
-}`
-            },
+}`,
+          messages: [
             {
               role: 'user',
-              content: `Crie um mapa mental educacional completo sobre "${topic}" para alunos do ${userGrade}, seguindo as diretrizes da BNCC. 
+              content: `Crie um mapa mental educacional EXCEPCIONAL sobre "${topic}" para alunos do ${userGrade}, aplicando as melhores técnicas pedagógicas e alinhamento rigoroso com a BNCC.
 
-REQUISITOS:
-- Linguagem adequada ao ${userGrade}
-- 4-6 ramos principais com sub-ramos
-- Cores diferenciadas para organização visual
-- ${includeExamples ? 'Incluir exemplos práticos brasileiros' : 'Focar em conceitos teóricos'}
-- Dicas de estudo específicas para a faixa etária
-- Conexões entre conceitos quando aplicável
+ESPECIFICAÇÕES TÉCNICAS:
+- Tema: ${topic}
+- Ano escolar: ${userGrade}
+- Complexidade: ${complexity}
+- Incluir exemplos: ${includeExamples}
 
-TEMA: ${topic}
-SÉRIE: ${userGrade}
-COMPLEXIDADE: ${complexity}`
+REQUISITOS PEDAGÓGICOS OBRIGATÓRIOS:
+1. BNCC ALIGNMENT: Identificar competências e habilidades específicas do ${userGrade}
+2. HIERARQUIA CONCEITUAL: Organizar do conceito central para ramificações específicas
+3. APRENDIZAGEM SIGNIFICATIVA: Conectar novos conceitos com conhecimentos prévios
+4. EXEMPLOS CONTEXTUALIZADOS: ${includeExamples ? 'Usar exemplos da realidade brasileira relevantes para a faixa etária' : 'Focar em conceitos teóricos fundamentais'}
+5. TÉCNICAS DE MEMORIZAÇÃO: Incluir estratégias baseadas em neuroeducação
+6. METACOGNIÇÃO: Promover reflexão sobre o próprio aprendizado
+7. LINGUAGEM ADEQUADA: Adaptar vocabulário e complexidade ao desenvolvimento cognitivo do ${userGrade}
+
+ESTRUTURA ESPERADA:
+- 1 conceito central claro e impactante
+- 4-6 ramos principais bem organizados
+- 2-4 sub-ramos por ramo principal
+- Cores pedagógicas que facilitem organização mental
+- Palavras-chave que ancorem conceitos
+- Conexões que mostrem relações entre ideias
+- Dicas práticas de estudo para a faixa etária
+- Perguntas que estimulem reflexão crítica
+
+Aplique todo seu conhecimento pedagógico para criar um mapa mental que realmente facilite a aprendizagem significativa do tema "${topic}" para estudantes do ${userGrade}.`
             }
-          ],
-          response_format: { type: "json_object" }
+          ]
         })
       });
 
       if (!response.ok) {
-        throw new Error('Falha na API do OpenAI');
+        throw new Error('Falha na API do Anthropic');
       }
 
       const data = await response.json();
-      const mindMapData = JSON.parse(data.choices[0].message.content);
+      const content = data.content[0].text;
+      
+      // Clean JSON response
+      const cleanContent = content.replace(/```json\n?|```\n?/g, '').trim();
+      const mindMapData = JSON.parse(cleanContent);
       
       // Add generation metadata
       mindMapData.generated = {

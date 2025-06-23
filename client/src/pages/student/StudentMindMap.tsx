@@ -111,6 +111,14 @@ export default function StudentMindMap() {
           });
           return;
         }
+        if (data.error && data.error.includes('Ano escolar não encontrado')) {
+          toast({
+            title: "Complete seu perfil",
+            description: "Acesse 'Perfil' e informe seu ano escolar para usar esta funcionalidade.",
+            variant: "destructive"
+          });
+          return;
+        }
         throw new Error(data.error || 'Erro ao gerar mapa mental');
       }
 
@@ -342,12 +350,14 @@ export default function StudentMindMap() {
                   <CardContent className="p-8">
                     <div className="text-center">
                       <div 
-                        className="inline-flex items-center justify-center w-32 h-32 rounded-full text-white text-xl font-bold shadow-2xl mx-auto mb-4"
+                        className="inline-flex items-center justify-center w-32 h-32 rounded-full text-black text-xl font-bold shadow-2xl mx-auto mb-4 border-4 border-white"
                         style={{ backgroundColor: mindMapData.mindMap.centralConcept.color }}
                       >
-                        {mindMapData.mindMap.centralConcept.text}
+                        <span className="text-black drop-shadow-lg px-2 py-1 bg-white/90 rounded-lg">
+                          {mindMapData.mindMap.centralConcept.text}
+                        </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-slate-700">Conceito Central</h3>
+                      <h3 className="text-lg font-semibold text-slate-900">Conceito Central</h3>
                     </div>
                   </CardContent>
                 </Card>
@@ -357,10 +367,10 @@ export default function StudentMindMap() {
                   {mindMapData.mindMap.mainBranches.map((branch, index) => (
                     <Card key={branch.id} className="bg-white shadow-lg border-0 rounded-2xl">
                       <CardHeader 
-                        className="rounded-t-2xl text-white"
+                        className="rounded-t-2xl text-black"
                         style={{ backgroundColor: branch.color }}
                       >
-                        <CardTitle className="text-lg font-bold">
+                        <CardTitle className="text-lg font-bold text-black drop-shadow-sm">
                           {branch.text}
                         </CardTitle>
                       </CardHeader>
@@ -368,7 +378,7 @@ export default function StudentMindMap() {
                         <div className="space-y-4">
                           {branch.subBranches.map((subBranch, subIndex) => (
                             <div key={subIndex} className="border-l-4 border-slate-200 pl-4">
-                              <h4 className="font-semibold text-slate-900 mb-2">{subBranch.text}</h4>
+                              <h4 className="font-semibold text-black mb-2">{subBranch.text}</h4>
                               
                               {subBranch.keyWords && subBranch.keyWords.length > 0 && (
                                 <div className="mb-2">
@@ -386,7 +396,7 @@ export default function StudentMindMap() {
                               {subBranch.examples && subBranch.examples.length > 0 && (
                                 <div>
                                   <p className="text-xs text-slate-500 mb-1">Exemplos:</p>
-                                  <ul className="text-sm text-slate-600 space-y-1">
+                                  <ul className="text-sm text-black space-y-1">
                                     {subBranch.examples.map((example, eIndex) => (
                                       <li key={eIndex} className="flex items-start gap-2">
                                         <ChevronRight className="w-3 h-3 mt-0.5 flex-shrink-0 text-slate-400" />
