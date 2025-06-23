@@ -550,6 +550,33 @@ export default function StudentDashboard() {
                   </Card>
                 </Link>
 
+                <Link href="/student/mindmap">
+                  <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 text-white overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <CardContent className="p-6 relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                          <Network className="h-6 w-6 text-white" />
+                        </div>
+                        <Badge className="bg-gradient-to-r from-violet-400 to-purple-500 text-white border-0 font-bold px-2 py-1 text-xs">
+                          <Sparkles className="h-3 w-3 mr-1" />
+                          NOVO
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="font-bold text-lg text-white">Mapas Mentais IA</h3>
+                        <p className="text-white/90 text-sm leading-relaxed">
+                          Crie mapas visuais para estudar melhor
+                        </p>
+                        <div className="flex items-center text-white/80 font-medium text-sm pt-2">
+                          <span>Criar Mapa</span>
+                          <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+
                 <Link href="/aluno/tutor-ia">
                   <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-700 text-white overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
