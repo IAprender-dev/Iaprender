@@ -566,7 +566,7 @@ export default function StudentDashboard() {
                       <div className="space-y-2">
                         <h3 className="font-bold text-lg text-white">Mapas Mentais IA</h3>
                         <p className="text-white/90 text-sm leading-relaxed">
-                          Crie mapas visuais para estudar melhor
+                          Crie mapas de estudo
                         </p>
                         <div className="flex items-center text-white/80 font-medium text-sm pt-2">
                           <span>Criar Mapa</span>
