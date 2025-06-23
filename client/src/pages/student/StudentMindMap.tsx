@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/AuthContext';
+import { useLocation } from 'wouter';
 import { 
   Brain, 
   Sparkles, 
@@ -22,7 +23,8 @@ import {
   ChevronRight,
   Network,
   Eye,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react';
 
 interface MindMapNode {
@@ -161,6 +163,13 @@ export default function StudentMindMap() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
+              <Button
+                onClick={() => setLocation('/student/dashboard')}
+                className="bg-blue-600 hover:bg-blue-700 text-white mr-4"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar
+              </Button>
               <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <Brain className="w-6 h-6 text-white" />
               </div>
