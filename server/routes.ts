@@ -2153,15 +2153,26 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
     try {
       const { topic, complexity = 'medium', includeExamples = true } = req.body;
       const userId = req.session.user?.id;
-      const userGrade = req.session.user?.schoolYear;
+      let userGrade = req.session.user?.schoolYear;
 
       if (!topic || typeof topic !== 'string') {
         return res.status(400).json({ error: 'Tema é obrigatório' });
       }
 
+      // Enhanced grade detection
+      if (!userGrade && userId) {
+        try {
+          const user = await storage.getUser(userId);
+          userGrade = user?.schoolYear;
+        } catch (error) {
+          console.error('Error fetching user:', error);
+        }
+      }
+
       if (!userGrade) {
         return res.status(400).json({ 
-          error: 'Ano escolar não encontrado no seu perfil. Atualize suas informações no perfil.' 
+          error: 'Complete seu perfil informando o ano escolar para usar mapas mentais.',
+          requiresProfile: true
         });
       }
 
