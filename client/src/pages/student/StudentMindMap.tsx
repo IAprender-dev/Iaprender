@@ -103,22 +103,6 @@ export default function StudentMindMap() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (data.error && data.suggestedTopics) {
-          toast({
-            title: "Tema não adequado para sua série",
-            description: data.error,
-            variant: "destructive"
-          });
-          return;
-        }
-        if (data.error && data.error.includes('Ano escolar não encontrado')) {
-          toast({
-            title: "Complete seu perfil",
-            description: "Acesse 'Perfil' e informe seu ano escolar para usar esta funcionalidade.",
-            variant: "destructive"
-          });
-          return;
-        }
         throw new Error(data.error || 'Erro ao gerar mapa mental');
       }
 
@@ -212,27 +196,27 @@ export default function StudentMindMap() {
               
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-900">Tema de Estudo</Label>
+                  <Label className="text-sm font-semibold text-black">Tema de Estudo</Label>
                   <Input
                     placeholder="Ex: Produtos Notáveis, Sistema Digestório..."
                     value={config.topic}
                     onChange={(e) => setConfig({...config, topic: e.target.value})}
-                    className="h-12 bg-slate-50 border-slate-200 focus:border-indigo-500 focus:ring-indigo-200"
+                    className="h-12 bg-white border-slate-300 focus:border-indigo-500 focus:ring-indigo-200 text-black placeholder:text-slate-500"
                   />
                   <p className="text-xs text-slate-500">
-                    Digite um tema do conteúdo programático do <strong>{user?.schoolYear}</strong>
+                    Digite qualquer tema que deseja estudar através de mapas mentais
                   </p>
-                  <div className="flex items-center gap-1 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">
+                  <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 p-2 rounded-lg">
                     <AlertCircle className="w-3 h-3" />
-                    O tema deve estar alinhado com a BNCC para sua série
+                    Tema livre - explore qualquer assunto de seu interesse
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-black">Complexidade</Label>
                   <Select value={config.complexity} onValueChange={(value) => setConfig({...config, complexity: value})}>
-                    <SelectTrigger className="h-12 bg-slate-50 border-slate-200 text-black">
-                      <SelectValue />
+                    <SelectTrigger className="h-12 bg-white border-slate-300 text-black">
+                      <SelectValue className="text-black" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="easy">Básico - Conceitos fundamentais</SelectItem>

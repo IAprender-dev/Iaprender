@@ -2159,7 +2159,7 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
         return res.status(400).json({ error: 'Tema é obrigatório' });
       }
 
-      // Enhanced grade detection
+      // Enhanced grade detection - tema livre
       if (!userGrade && userId) {
         try {
           const user = await storage.getUser(userId);
@@ -2169,11 +2169,9 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
         }
       }
 
+      // Se não tiver ano escolar, use um padrão genérico
       if (!userGrade) {
-        return res.status(400).json({ 
-          error: 'Complete seu perfil informando o ano escolar para usar mapas mentais.',
-          requiresProfile: true
-        });
+        userGrade = "Ensino Fundamental";
       }
 
       // Same BNCC content mapping as quiz
