@@ -207,6 +207,7 @@ export default function StudentDashboard() {
     { icon: Bot, label: "Central de Inteligências", href: "/central-ia", isActive: location === "/central-ia" },
     { icon: CheckSquare, label: "Quiz Educativo", href: "/student/quiz", isActive: location === "/student/quiz" },
     { icon: MessageSquare, label: "Tutor por Texto", href: "/aluno/tutor-ia", isActive: location === "/aluno/tutor-ia" },
+    { icon: Network, label: "Mapas Mentais", href: "/student/mindmap", isActive: location === "/student/mindmap" },
     { icon: Mic, label: "Tutor por Voz", href: "/aluno/tutor-voz", isActive: location === "/aluno/tutor-voz" },
     { icon: Languages, label: "Tradutor Escolar", href: "/student/translator", isActive: location === "/student/translator" },
     { icon: BookOpen, label: "Cursos", href: "/student/courses", isActive: location === "/student/courses" },
