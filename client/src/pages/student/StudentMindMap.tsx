@@ -305,17 +305,15 @@ export default function StudentMindMap() {
                       <div className="flex items-center gap-2">
                         <Button
                           onClick={downloadMindMap}
-                          variant="outline"
                           size="sm"
-                          className="text-slate-600 hover:text-slate-900"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <Download className="w-4 h-4 mr-2" />
                           Baixar
                         </Button>
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="text-slate-600 hover:text-slate-900"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <Share2 className="w-4 h-4 mr-2" />
                           Compartilhar
