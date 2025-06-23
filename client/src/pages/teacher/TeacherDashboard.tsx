@@ -151,21 +151,21 @@ export default function TeacherDashboard() {
                 
                 <div className="grid gap-3">
                   <Link href="/professor/ferramentas">
-                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:text-slate-900">
                       <BookOpen className="h-4 w-4 mr-3" />
                       Ferramentas de Ensino
                     </Button>
                   </Link>
                   
                   <Link href="/professor/planejamento">
-                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:text-slate-900">
                       <Calendar className="h-4 w-4 mr-3" />
                       Planejamento de Aulas
                     </Button>
                   </Link>
                   
                   <Link href="/tokens">
-                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50 text-slate-700 hover:text-slate-900">
                       <Zap className="h-4 w-4 mr-3" />
                       Gestão de Tokens
                     </Button>
