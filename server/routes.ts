@@ -2149,100 +2149,167 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
   app.use("/api/translate", translateRoutes);
 
   // AI Quiz Generation with BNCC validation
-  app.post('/api/ai/generate-quiz', async (req: Request, res: Response) => {
+  app.post('/api/ai/generate-quiz', authenticate, async (req: Request, res: Response) => {
     try {
-      const { subject, topic, grade, questionCount = 1, validateTopic, previousQuestions = [] } = req.body;
-      
-      if (!topic) {
-        return res.status(400).json({ error: 'Topic is required' });
+      const { topic, questionCount = 5, difficulty = 'medium', grade, subject, validateTopic, previousQuestions = [] } = req.body;
+      const userId = req.session.user?.id;
+      const userGrade = req.session.user?.schoolYear;
+
+      if (!topic || typeof topic !== 'string') {
+        return res.status(400).json({ error: 'Tema é obrigatório' });
       }
 
-      // BNCC subject topics mapping for validation
-      const bnccTopics: { [key: string]: string[] } = {
-        'português': ['interpretação', 'gramática', 'ortografia', 'produção textual', 'literatura', 'leitura', 'escrita', 'oralidade', 'análise linguística'],
-        'matemática': ['números', 'álgebra', 'geometria', 'estatística', 'probabilidade', 'medidas', 'operações', 'frações', 'equações', 'funções'],
-        'ciências': ['matéria', 'energia', 'vida', 'evolução', 'terra', 'universo', 'corpo humano', 'ecologia', 'física', 'química', 'biologia'],
-        'história': ['brasil', 'colonização', 'independência', 'república', 'civilizações', 'idade média', 'moderna', 'contemporânea', 'cultura', 'sociedade'],
-        'geografia': ['espaço', 'território', 'lugar', 'região', 'paisagem', 'cartografia', 'clima', 'relevo', 'população', 'urbanização', 'globalização'],
-        'biologia': ['citologia', 'genética', 'evolução', 'ecologia', 'anatomia', 'fisiologia', 'botânica', 'zoologia', 'microbiologia', 'biotecnologia'],
-        'química': ['átomo', 'tabela periódica', 'ligações', 'reações', 'orgânica', 'inorgânica', 'físico-química', 'estequiometria', 'termoquímica'],
-        'física': ['mecânica', 'termologia', 'óptica', 'ondulatória', 'eletromagnetismo', 'movimento', 'força', 'energia', 'calor', 'luz'],
-        'inglês': ['gramática', 'vocabulário', 'reading', 'listening', 'speaking', 'writing', 'cultura', 'comunicação', 'texto', 'conversação'],
-        'filosofia': ['ética', 'moral', 'política', 'conhecimento', 'lógica', 'metafísica', 'existência', 'valores', 'razão', 'pensamento'],
-        'sociologia': ['sociedade', 'cultura', 'estratificação', 'movimentos sociais', 'globalização', 'desigualdade', 'instituições', 'mudança social'],
-        'literatura': ['gêneros', 'escolas literárias', 'análise', 'interpretação', 'autores', 'obras', 'contexto histórico', 'figuras de linguagem']
+      if (questionCount < 1 || questionCount > 20) {
+        return res.status(400).json({ error: 'Número de perguntas deve ser entre 1 e 20' });
+      }
+
+      if (!userGrade) {
+        return res.status(400).json({ 
+          error: 'Ano escolar não encontrado no seu perfil. Atualize suas informações no perfil.' 
+        });
+      }
+
+      // BNCC content mapping for each grade level
+      const bnccContent = {
+        "1º ano fundamental": [
+          "alfabetização", "números de 0 a 9", "adição simples", "subtração simples", "formas geométricas básicas", 
+          "cores", "família", "corpo humano", "plantas", "animais", "estações do ano", "dia e noite",
+          "vogais", "consoantes", "sílabas", "palavras simples"
+        ],
+        "2º ano fundamental": [
+          "números até 100", "operações básicas", "sistema monetário", "medidas de tempo", "calendário",
+          "leitura e escrita", "textos simples", "pontuação básica", "substantivos", "adjetivos",
+          "meio ambiente", "seres vivos", "água", "ar", "solo", "bairro", "escola", "comunidade"
+        ],
+        "3º ano fundamental": [
+          "números até 1000", "multiplicação", "divisão", "frações simples", "geometria básica",
+          "produção de texto", "gramática básica", "verbos", "ortografia", "interpretação de texto",
+          "estados físicos da matéria", "ciclo da água", "sistema solar", "município", "zona rural e urbana"
+        ],
+        "4º ano fundamental": [
+          "números até 10000", "operações com decimais", "frações", "porcentagem básica", "área e perímetro",
+          "gêneros textuais", "concordância", "acentuação", "sinônimos e antônimos", "literatura infantil",
+          "ecossistemas", "cadeia alimentar", "estados brasileiros", "relevo", "clima", "vegetação"
+        ],
+        "5º ano fundamental": [
+          "números até 100000", "frações decimais", "regra de três simples", "gráficos e tabelas",
+          "dissertação", "crônica", "sintaxe", "figuras de linguagem", "literatura brasileira",
+          "sistema digestório", "sistema respiratório", "regiões brasileiras", "economia", "cultura brasileira"
+        ],
+        "6º ano fundamental": [
+          "números inteiros", "potenciação", "expressões algébricas", "equações simples", "razão e proporção",
+          "épico", "lírico", "dramático", "morfologia", "sintaxe", "semântica",
+          "célula", "tecidos", "sistemas do corpo humano", "rochas e minerais", "placas tectônicas",
+          "pré-história", "antiguidade", "idade média", "civilizações antigas"
+        ],
+        "7º ano fundamental": [
+          "números racionais", "equações de 1º grau", "sistemas de equações", "geometria plana", "estatística básica",
+          "romance", "novela", "conto", "classes de palavras", "período simples e composto",
+          "reino animal", "reino vegetal", "genética básica", "atmosfera", "hidrosfera", "biosfera",
+          "idade moderna", "descobrimentos", "colonização", "absolutismo", "iluminismo"
+        ],
+        "8º ano fundamental": [
+          "potências e raízes", "produtos notáveis", "fatoração", "sistemas lineares", "geometria espacial",
+          "teatro", "auto", "sermão", "orações coordenadas", "orações subordinadas",
+          "química básica", "física básica", "evolução", "ecologia", "revolução industrial",
+          "independências americanas", "século XIX", "imperialismo"
+        ],
+        "9º ano fundamental": [
+          "equações de 2º grau", "funções", "progressões", "trigonometria básica", "geometria analítica",
+          "realismo", "naturalismo", "parnasianismo", "simbolismo", "análise sintática",
+          "genética", "biotecnologia", "astronomia", "física moderna", "química orgânica",
+          "primeira guerra mundial", "revolução russa", "crise de 1929", "segunda guerra mundial"
+        ],
+        "1º ano médio": [
+          "conjuntos", "funções", "função afim", "função quadrática", "progressões",
+          "literatura medieval", "classicismo", "barroco", "arcadismo", "romantismo",
+          "citologia", "histologia", "embriologia", "mecânica", "termologia", "óptica",
+          "química inorgânica", "tabela periódica", "ligações químicas",
+          "brasil colônia", "brasil império", "república velha"
+        ],
+        "2º ano médio": [
+          "logaritmos", "trigonometria", "matrizes", "determinantes", "geometria analítica",
+          "realismo", "naturalismo", "parnasianismo", "simbolismo", "pré-modernismo",
+          "fisiologia", "anatomia", "genética", "evolução", "ecologia",
+          "ondulatória", "eletromagnetismo", "físico-química", "química orgânica",
+          "era vargas", "república populista", "ditadura militar"
+        ],
+        "3º ano médio": [
+          "números complexos", "polinômios", "análise combinatória", "probabilidade", "estatística",
+          "modernismo", "literatura contemporânea", "análise literária", "redação enem",
+          "biotecnologia", "imunologia", "reprodução", "desenvolvimento",
+          "física moderna", "relatividade", "física quântica", "radioatividade",
+          "nova república", "brasil contemporâneo", "globalização", "atualidades"
+        ]
       };
 
-      // Smart BNCC validation for any topic
-      let detectedSubject = subject || 'geral';
-      let bnccAlignment = '';
-      
-      if (validateTopic) {
-        // Try to detect subject from topic
-        for (const [subjectKey, topics] of Object.entries(bnccTopics)) {
-          const isRelated = topics.some(validTopic => 
-            topic.toLowerCase().includes(validTopic) || validTopic.includes(topic.toLowerCase())
-          );
-          if (isRelated) {
-            detectedSubject = subjectKey;
-            bnccAlignment = `Alinhado com BNCC - ${subjectKey}`;
-            break;
-          }
-        }
-        
-        // If no specific subject detected, it's still valid as general knowledge
-        if (!bnccAlignment) {
-          bnccAlignment = 'Tema educacional válido para aprendizado geral';
-        }
+      // Check if topic is appropriate for user's grade level
+      const userContent = bnccContent[userGrade as keyof typeof bnccContent];
+      if (!userContent) {
+        return res.status(400).json({ 
+          error: 'Ano escolar não reconhecido. Entre em contato com o suporte.' 
+        });
+      }
+
+      // Validate topic against BNCC content for the grade level
+      const topicLower = topic.toLowerCase();
+      const isValidTopic = userContent.some(content => 
+        topicLower.includes(content.toLowerCase()) || 
+        content.toLowerCase().includes(topicLower)
+      );
+
+      if (!isValidTopic) {
+        return res.status(400).json({ 
+          error: `O tema "${topic}" não está no conteúdo programático do ${userGrade} segundo a BNCC. Escolha um tema adequado para sua série escolar.`,
+          suggestedTopics: userContent.slice(0, 10) // Show first 10 topics as suggestions
+        });
       }
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 3000,
-          system: `Você é um especialista em educação brasileira que cria exercícios educacionais baseados na BNCC.
+          model: 'claude-3-sonnet-20240229',
+          max_tokens: 4000,
+          system: `Você é um especialista em educação brasileira com conhecimento profundo da BNCC (Base Nacional Comum Curricular) e das diretrizes do MEC.
 
-IMPORTANTE: Crie exatamente ${questionCount} questão(ões) de múltipla escolha sobre "${topic}" para estudantes do ensino fundamental/médio.
+IMPORTANTE: Você está criando perguntas especificamente para um aluno do ${userGrade}. As perguntas devem:
+1. Estar alinhadas com os objetivos de aprendizagem da BNCC para o ${userGrade}
+2. Usar linguagem adequada para a faixa etária
+3. Abordar competências e habilidades específicas do ano escolar
+4. Incluir contextos do cotidiano brasileiro e regional
 
-DIRETRIZES:
-- Questões devem ser educativas e apropriadas para estudantes brasileiros
-- Linguagem clara e adequada para a faixa etária
-- Contextualização com a realidade brasileira quando possível
-- Conteúdo preciso e pedagogicamente correto
-- EVITE REPETIR perguntas já feitas anteriormente
-- Explore diferentes aspectos e níveis de complexidade do tema
-- Varie o tipo de pergunta: conceitual, aplicação, análise, comparação
+Crie perguntas educacionais de múltipla escolha seguindo exatamente este formato JSON:
 
-${previousQuestions.length > 0 ? `PERGUNTAS JÁ FEITAS (NÃO REPETIR):
-${previousQuestions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
-
-CRIE PERGUNTAS COMPLETAMENTE DIFERENTES das listadas acima.` : ''}
-
-FORMATO OBRIGATÓRIO - Retorne APENAS JSON válido:
 {
-  "topic": "${topic}",
-  "validatedTopic": "${topic}",
-  "bnccAlignment": "${bnccAlignment || 'Conteúdo educacional'}",
   "questions": [
     {
-      "question": "Pergunta clara e objetiva sobre ${topic}?",
+      "question": "Texto da pergunta adequada ao ${userGrade}",
       "options": ["Alternativa A", "Alternativa B", "Alternativa C", "Alternativa D"],
       "correctAnswer": 0,
-      "explanation": "Explicação pedagógica detalhada da resposta correta",
-      "difficulty": "easy"
+      "explanation": "Explicação pedagógica detalhada adequada ao nível do ${userGrade}, conectando com objetivos da BNCC",
+      "difficulty": "easy",
+      "bnccCode": "Código da habilidade BNCC relacionada (se aplicável)"
     }
   ]
 }`,
           messages: [
             {
               role: 'user',
-              content: `Crie ${questionCount} questão(ões) educacional(is) ÚNICA(S) e ORIGINAL(IS) sobre "${topic}" para estudantes brasileiros, seguindo as diretrizes da BNCC quando aplicável. ${previousQuestions.length > 0 ? 'IMPORTANTE: Não repita nenhuma das perguntas já feitas anteriormente. Explore aspectos diferentes do tema.' : ''}`
+              content: `Crie ${questionCount} questão(ões) educacional(is) sobre "${topic}" especificamente para alunos do ${userGrade}, seguindo rigorosamente as diretrizes da BNCC para esta série. 
+
+REQUISITOS OBRIGATÓRIOS:
+- Adequar a linguagem e complexidade ao ${userGrade}
+- Abordar competências e habilidades específicas da BNCC para o ${userGrade}
+- Incluir contextos brasileiros relevantes
+- Garantir que o conteúdo seja apropriado para a faixa etária
+- Conectar com objetivos de aprendizagem do ano escolar
+
+${previousQuestions.length > 0 ? 'IMPORTANTE: Não repita nenhuma das perguntas já feitas anteriormente. Explore aspectos diferentes do tema dentro do escopo do ' + userGrade + '.' : ''}`
             }
           ]
         })

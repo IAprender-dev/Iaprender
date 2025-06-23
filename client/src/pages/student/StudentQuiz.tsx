@@ -86,11 +86,19 @@ export default function StudentQuiz() {
         })
       });
 
-      if (!response.ok) {
-        throw new Error('Erro ao gerar quiz');
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        if (data.error && data.suggestedTopics) {
+          toast({
+            title: "Tema não adequado para sua série",
+            description: data.error,
+            variant: "destructive"
+          });
+          return;
+        }
+        throw new Error(data.error || 'Erro ao gerar quiz');
+      }
       
       if (data.questions && data.questions.length > 0) {
         setQuizSession({
@@ -106,6 +114,11 @@ export default function StudentQuiz() {
         });
         setSelectedAnswer(null);
         setShowExplanation(false);
+        
+        toast({
+          title: "Quiz gerado com sucesso!",
+          description: `${data.questions.length} perguntas criadas seguindo a BNCC para o ${user?.schoolYear}`,
+        });
       } else {
         throw new Error('Nenhuma pergunta foi gerada');
       }
@@ -113,7 +126,7 @@ export default function StudentQuiz() {
       console.error('Error generating quiz:', error);
       toast({
         title: "Erro ao gerar quiz",
-        description: "Tente novamente com um tema diferente",
+        description: error instanceof Error ? error.message : "Tente novamente com um tema diferente",
         variant: "destructive"
       });
     } finally {
@@ -249,7 +262,12 @@ export default function StudentQuiz() {
                       onChange={(e) => setQuizConfig({...quizConfig, topic: e.target.value})}
                       className="h-14 bg-white border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-200 text-slate-900 text-lg placeholder:text-slate-400 rounded-xl"
                     />
-                    <p className="text-sm text-slate-500">Exemplos: Matemática do 9º ano, História do Brasil, Ciências da Natureza</p>
+                    <p className="text-sm text-slate-500">
+                      Digite um tema do conteúdo programático do <strong>{user?.schoolYear}</strong> segundo a BNCC
+                    </p>
+                    <p className="text-xs text-blue-600 font-medium mt-1">
+                      ⚠️ O quiz só será gerado se o tema for adequado para sua série escolar
+                    </p>
                   </div>
 
                   <div className="space-y-3">
