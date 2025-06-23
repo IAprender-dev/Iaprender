@@ -2171,55 +2171,58 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
 
       // BNCC content mapping for each grade level
       const bnccContent = {
-        "1º ano fundamental": [
+        // Fundamental I
+        "1º ano": [
           "alfabetização", "números de 0 a 9", "adição simples", "subtração simples", "formas geométricas básicas", 
           "cores", "família", "corpo humano", "plantas", "animais", "estações do ano", "dia e noite",
           "vogais", "consoantes", "sílabas", "palavras simples"
         ],
-        "2º ano fundamental": [
+        "2º ano": [
           "números até 100", "operações básicas", "sistema monetário", "medidas de tempo", "calendário",
           "leitura e escrita", "textos simples", "pontuação básica", "substantivos", "adjetivos",
           "meio ambiente", "seres vivos", "água", "ar", "solo", "bairro", "escola", "comunidade"
         ],
-        "3º ano fundamental": [
+        "3º ano": [
           "números até 1000", "multiplicação", "divisão", "frações simples", "geometria básica",
           "produção de texto", "gramática básica", "verbos", "ortografia", "interpretação de texto",
           "estados físicos da matéria", "ciclo da água", "sistema solar", "município", "zona rural e urbana"
         ],
-        "4º ano fundamental": [
+        "4º ano": [
           "números até 10000", "operações com decimais", "frações", "porcentagem básica", "área e perímetro",
           "gêneros textuais", "concordância", "acentuação", "sinônimos e antônimos", "literatura infantil",
           "ecossistemas", "cadeia alimentar", "estados brasileiros", "relevo", "clima", "vegetação"
         ],
-        "5º ano fundamental": [
+        "5º ano": [
           "números até 100000", "frações decimais", "regra de três simples", "gráficos e tabelas",
           "dissertação", "crônica", "sintaxe", "figuras de linguagem", "literatura brasileira",
           "sistema digestório", "sistema respiratório", "regiões brasileiras", "economia", "cultura brasileira"
         ],
-        "6º ano fundamental": [
+        // Fundamental II
+        "6º ano": [
           "números inteiros", "potenciação", "expressões algébricas", "equações simples", "razão e proporção",
           "épico", "lírico", "dramático", "morfologia", "sintaxe", "semântica",
           "célula", "tecidos", "sistemas do corpo humano", "rochas e minerais", "placas tectônicas",
           "pré-história", "antiguidade", "idade média", "civilizações antigas"
         ],
-        "7º ano fundamental": [
+        "7º ano": [
           "números racionais", "equações de 1º grau", "sistemas de equações", "geometria plana", "estatística básica",
           "romance", "novela", "conto", "classes de palavras", "período simples e composto",
           "reino animal", "reino vegetal", "genética básica", "atmosfera", "hidrosfera", "biosfera",
           "idade moderna", "descobrimentos", "colonização", "absolutismo", "iluminismo"
         ],
-        "8º ano fundamental": [
+        "8º ano": [
           "potências e raízes", "produtos notáveis", "fatoração", "sistemas lineares", "geometria espacial",
           "teatro", "auto", "sermão", "orações coordenadas", "orações subordinadas",
           "química básica", "física básica", "evolução", "ecologia", "revolução industrial",
           "independências americanas", "século XIX", "imperialismo"
         ],
-        "9º ano fundamental": [
+        "9º ano": [
           "equações de 2º grau", "funções", "progressões", "trigonometria básica", "geometria analítica",
           "realismo", "naturalismo", "parnasianismo", "simbolismo", "análise sintática",
           "genética", "biotecnologia", "astronomia", "física moderna", "química orgânica",
           "primeira guerra mundial", "revolução russa", "crise de 1929", "segunda guerra mundial"
         ],
+        // Ensino Médio
         "1º ano médio": [
           "conjuntos", "funções", "função afim", "função quadrática", "progressões",
           "literatura medieval", "classicismo", "barroco", "arcadismo", "romantismo",
@@ -2244,10 +2247,27 @@ Gere um plano completo seguindo a estrutura pedagógica brasileira com cronogram
       };
 
       // Check if topic is appropriate for user's grade level
-      const userContent = bnccContent[userGrade as keyof typeof bnccContent];
+      let userContent = bnccContent[userGrade as keyof typeof bnccContent];
+      
+      // If not found, try with common variations
+      if (!userContent && userGrade) {
+        const gradeVariations = [
+          userGrade.replace(' fundamental', ''),
+          userGrade.replace(' médio', ' médio'),
+          userGrade + ' fundamental',
+          userGrade.replace('º', '°')
+        ];
+        
+        for (const variation of gradeVariations) {
+          userContent = bnccContent[variation as keyof typeof bnccContent];
+          if (userContent) break;
+        }
+      }
+      
       if (!userContent) {
         return res.status(400).json({ 
-          error: 'Ano escolar não reconhecido. Entre em contato com o suporte.' 
+          error: `Ano escolar "${userGrade}" não reconhecido. Entre em contato com o suporte.`,
+          debug: `Tentativas: ${userGrade}, variações testadas`
         });
       }
 
