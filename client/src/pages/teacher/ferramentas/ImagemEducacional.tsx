@@ -204,7 +204,7 @@ export default function ImagemEducacional() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/professor/dashboard">
+              <Link href="/professor">
                 <Button size="sm" className="gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar

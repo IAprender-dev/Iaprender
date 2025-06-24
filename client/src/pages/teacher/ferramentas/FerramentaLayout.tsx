@@ -43,7 +43,7 @@ export default function FerramentaLayout({
             <div className="container mx-auto">
               {/* Breadcrumb and back button */}
               <div className="flex items-center mb-4">
-                <Link href="/professor/dashboard">
+                <Link href="/professor">
                   <Button variant="ghost" size="sm" className="gap-1 text-neutral-600 hover:text-blue-600">
                     <ArrowLeft className="h-4 w-4" />
                     <span>Voltar ao Dashboard</span>

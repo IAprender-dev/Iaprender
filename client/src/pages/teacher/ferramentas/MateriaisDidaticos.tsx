@@ -511,7 +511,7 @@ export default function ResumosDidaticos() {
       <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-3">
           <div className="flex items-center gap-3">
-            <Link href="/professor/dashboard">
+            <Link href="/professor">
               <Button size="sm" className="gap-2 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar

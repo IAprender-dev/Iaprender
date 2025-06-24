@@ -316,7 +316,7 @@ export default function NoticiasPodcasts() {
           {/* Header with Logo and Back Button */}
           <div className="flex items-center gap-6 mb-6">
             {/* Back Button - moved to left */}
-            <Link href="/professor/dashboard">
+            <Link href="/professor">
               <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar

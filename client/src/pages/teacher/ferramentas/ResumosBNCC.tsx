@@ -194,7 +194,7 @@ export default function ResumosBNCC() {
         <div className="border-b border-slate-200/50 bg-white/80 backdrop-blur-xl sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
             <div className="flex items-center gap-3">
-              <Link href="/professor/dashboard">
+              <Link href="/professor">
                 <Button 
                   size="sm"
                   className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"

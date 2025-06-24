@@ -32,8 +32,8 @@ export default function TeacherSidebar() {
     {
       name: "Dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
-      href: "/professor/dashboard",
-      active: location === "/professor/dashboard"
+      href: "/professor",
+      active: location === "/professor"
     },
     {
       name: "Cursos",
