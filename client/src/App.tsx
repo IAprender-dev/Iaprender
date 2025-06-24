@@ -22,7 +22,7 @@ import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
 import TeacherProfile from "@/pages/teacher/TeacherProfile";
 import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
-import TeacherTools from "@/pages/teacher/TeacherTools";
+
 import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
@@ -128,7 +128,7 @@ function Router() {
       <Route path="/teacher/profile" component={TeacherProfile} />
       <Route path="/professor/cursos" component={TeacherCourses} />
       <Route path="/professor/planejamento" component={TeacherPlanning} />
-      <Route path="/professor/ferramentas" component={TeacherTools} />
+
       <Route path="/professor/redacoes" component={EssaysDashboard} />
       <Route path="/professor/noticias-podcasts" component={NoticiasPodcasts} />
       
