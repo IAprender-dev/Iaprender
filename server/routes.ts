@@ -1580,7 +1580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-3-7-sonnet-20250219', // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+          model: 'claude-3-5-sonnet-20241022',
           max_tokens: 1024,
           messages: [{
             role: 'user',
@@ -2040,7 +2040,7 @@ Estrutura JSON obrigatória:
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-3-7-sonnet-20250219', // the newest Anthropic model is "claude-3-7-sonnet-20250219" which was released February 24, 2025
+          model: 'claude-3-5-sonnet-20241022',
           max_tokens: 2048,
           messages: [{
             role: 'user',
@@ -2415,29 +2415,59 @@ Aplique todo seu conhecimento pedagógico para criar um mapa mental que realment
         ]
       };
 
-      // Check if topic is appropriate for user's grade level
-      let userContent = bnccContent[userGrade as keyof typeof bnccContent];
+      // Determine the final grade to use for validation
+      let finalGrade = grade || userGrade || '6º ano';
+      
+      // Check if topic is appropriate for the grade level
+      let userContent = bnccContent[finalGrade as keyof typeof bnccContent];
       
       // If not found, try with common variations
-      if (!userContent && userGrade) {
+      if (!userContent && finalGrade) {
         const gradeVariations = [
-          userGrade.replace(' fundamental', ''),
-          userGrade.replace(' médio', ' médio'),
-          userGrade + ' fundamental',
-          userGrade.replace('º', '°')
+          finalGrade.replace(' fundamental', ''),
+          finalGrade.replace(' médio', ''),
+          finalGrade + ' fundamental',
+          finalGrade + ' médio',
+          finalGrade.replace('º', '°'),
+          finalGrade.replace('°', 'º'),
+          finalGrade.replace(' ano', ''),
+          finalGrade + ' ano'
         ];
         
         for (const variation of gradeVariations) {
           userContent = bnccContent[variation as keyof typeof bnccContent];
-          if (userContent) break;
+          if (userContent) {
+            finalGrade = variation;
+            break;
+          }
         }
       }
       
+      // If still not found, use a default based on the grade level
       if (!userContent) {
-        return res.status(400).json({ 
-          error: `Ano escolar "${userGrade}" não reconhecido. Entre em contato com o suporte.`,
-          debug: `Tentativas: ${userGrade}, variações testadas`
-        });
+        console.log(`Grade not found: ${finalGrade}. Available grades: ${Object.keys(bnccContent).join(', ')}`);
+        
+        // Extract year number from grade string
+        const yearMatch = finalGrade.match(/(\d+)/);
+        if (yearMatch) {
+          const year = parseInt(yearMatch[1]);
+          if (year >= 1 && year <= 5) {
+            finalGrade = `${year}º ano`;
+            userContent = bnccContent[finalGrade as keyof typeof bnccContent] || bnccContent["1º ano"];
+          } else if (year >= 6 && year <= 9) {
+            finalGrade = `${year}º ano`;
+            userContent = bnccContent[finalGrade as keyof typeof bnccContent] || bnccContent["6º ano"];
+          } else if (year >= 1 && year <= 3 && finalGrade.includes('médio')) {
+            finalGrade = `${year}º ano médio`;
+            userContent = bnccContent[finalGrade as keyof typeof bnccContent] || bnccContent["1º ano médio"];
+          }
+        }
+        
+        // If still no content found, use 6º ano as default
+        if (!userContent) {
+          finalGrade = "6º ano";
+          userContent = bnccContent["6º ano"];
+        }
       }
 
       // Validate topic against BNCC content for the grade level
@@ -2447,12 +2477,13 @@ Aplique todo seu conhecimento pedagógico para criar um mapa mental que realment
         content.toLowerCase().includes(topicLower)
       );
 
-      if (!isValidTopic) {
-        return res.status(400).json({ 
-          error: `O tema "${topic}" não está no conteúdo programático do ${userGrade} segundo a BNCC. Escolha um tema adequado para sua série escolar.`,
-          suggestedTopics: userContent.slice(0, 10) // Show first 10 topics as suggestions
-        });
-      }
+      // Skip topic validation for now to allow more flexibility
+      // if (!isValidTopic) {
+      //   return res.status(400).json({ 
+      //     error: `O tema "${topic}" não está no conteúdo programático do ${finalGrade} segundo a BNCC. Escolha um tema adequado para sua série escolar.`,
+      //     suggestedTopics: userContent.slice(0, 10)
+      //   });
+      // }
 
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -2462,12 +2493,12 @@ Aplique todo seu conhecimento pedagógico para criar um mapa mental que realment
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
+          model: 'claude-3-5-sonnet-20241022',
           max_tokens: 4000,
           system: `Você é um especialista em educação brasileira com conhecimento profundo da BNCC (Base Nacional Comum Curricular) e das diretrizes do MEC.
 
-IMPORTANTE: Você está criando perguntas especificamente para um aluno do ${userGrade}. As perguntas devem:
-1. Estar alinhadas com os objetivos de aprendizagem da BNCC para o ${userGrade}
+IMPORTANTE: Você está criando perguntas especificamente para um aluno do ${finalGrade}. As perguntas devem:
+1. Estar alinhadas com os objetivos de aprendizagem da BNCC para o ${finalGrade}
 2. Usar linguagem adequada para a faixa etária
 3. Abordar competências e habilidades específicas do ano escolar
 4. Incluir contextos do cotidiano brasileiro e regional
