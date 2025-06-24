@@ -2890,10 +2890,8 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
   });
 
   // AWS Cognito OAuth routes
-  // Root route - homepage
-  app.get('/', (req: Request, res: Response) => {
-    res.send('Página inicial');
-  });
+  // Root route serves the frontend (Home page)
+  // The frontend routing will handle displaying the landing page
 
   // Rota para redirecionar para o login do Cognito
   app.get('/start-login', (req: Request, res: Response) => {

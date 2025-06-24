@@ -122,12 +122,12 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 
 ## Recent Changes
 - June 24, 2025: AWS Cognito OAuth integration implemented
-  - Root route (/) displays homepage
-  - /start-login redirects to Cognito authentication  
+  - Root route (/) now serves the Home landing page (AIverseLanding component)
+  - /start-login redirects to Cognito authentication when user clicks IA access buttons
   - /callback exchanges authorization codes for JWT tokens
   - Group-based redirection (Administrador/SecretariaAdm/EscolaAdm → secretary, Professores → teacher, default → student)
   - dotenv configuration for environment variables
-  - Landing page buttons updated to use /start-login endpoint
+  - Landing page serves as main entry point with buttons to access IA platform
 
 ## Changelog
 - June 23, 2025. Initial setup
