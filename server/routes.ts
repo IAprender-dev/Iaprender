@@ -2895,7 +2895,18 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
   // Rota para redirecionar para o login do Cognito
   app.get('/start-login', (req: Request, res: Response) => {
-    const redirectUrl = `https://${process.env.COGNITO_DOMAIN}/login?` +
+    // Temporary redirect to test page since Cognito domain needs configuration
+    console.log('Cognito ainda não configurado. Redirecionando para página de teste.');
+    res.send(`
+      <h1>Login do Cognito</h1>
+      <p>Domínio Cognito: ${process.env.COGNITO_USER_POOL_ID}</p>
+      <p>Client ID: ${process.env.COGNITO_CLIENT_ID}</p>
+      <p>Redirect URI: ${process.env.COGNITO_REDIRECT_URI}</p>
+      <p>Para configurar o Cognito corretamente, verifique se o User Pool tem um domínio personalizado configurado.</p>
+      <button onclick="window.history.back()">Voltar</button>
+    `);
+    return;
+    const redirectUrl = `${cognitoDomain}/login?` +
       `client_id=${process.env.COGNITO_CLIENT_ID}` +
       `&response_type=code` +
       `&scope=openid+profile+email` +
