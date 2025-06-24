@@ -599,7 +599,7 @@ export default function TeacherDashboard() {
                 </Card>
 
                 {/* Tools & Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mt-8">
                   {/* Central de Inteligências */}
                   <Card className="border border-purple-200/60 bg-gradient-to-br from-purple-50 to-violet-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
                     <CardContent className="p-6">
