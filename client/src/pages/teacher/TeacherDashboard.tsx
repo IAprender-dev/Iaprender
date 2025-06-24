@@ -599,7 +599,7 @@ export default function TeacherDashboard() {
                 </Card>
 
                 {/* Tools & Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                   {/* Central de Inteligências */}
                   <Card className="border border-purple-200/60 bg-gradient-to-br from-purple-50 to-violet-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
                     <CardContent className="p-6">
@@ -700,30 +700,7 @@ export default function TeacherDashboard() {
                     </CardContent>
                   </Card>
 
-                  {/* Planejamento de Aula */}
-                  <Card className="border border-rose-200/60 bg-gradient-to-br from-rose-50 to-pink-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                    <CardContent className="p-6">
-                      <Link href="/professor/planejamento">
-                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
-                          <div className="p-4 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
-                            <Calendar className="h-8 w-8 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-rose-700 transition-colors mb-2">
-                              Planejamento de Aula
-                            </h3>
-                            <p className="text-sm text-slate-600 leading-relaxed">
-                              Crie planos de aula personalizados
-                            </p>
-                          </div>
-                          <div className="flex items-center text-rose-600 font-medium text-sm">
-                            <span>Acessar</span>
-                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                          </div>
-                        </div>
-                      </Link>
-                    </CardContent>
-                  </Card>
+
 
                   {/* Gerador de Atividades */}
                   <Card className="border border-cyan-200/60 bg-gradient-to-br from-cyan-50 to-teal-50 shadow-lg hover:shadow-xl transition-all duration-300 group">

@@ -121,14 +121,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
-- June 24, 2025: Complete teacher dashboard redesign
-  - Integrated tools bar (calculator, notifications, analytics) directly into main dashboard
-  - Added specialized dashboard cards for Essays and News/Podcasts with modern UI/UX
-  - Removed duplicate routes (/professor/dashboard) - now only /professor is valid
-  - Updated all internal links to use single /professor route
-  - Enhanced layout with gradient cards, hover effects, and improved accessibility
-  - Maintained consistent IAprender branding and color scheme
-  - Added proper responsive grid layout for dashboard cards
+- June 24, 2025: Dashboard cleanup and route optimization
+  - Removed redundant "Planejamento de Aula" button from dashboard (red card)
+  - Removed duplicate route /professor/planejamento to avoid confusion
+  - Kept only /professor/ferramentas/planejamento-aula for lesson planning
+  - Adjusted grid layout from 4 columns to 3 columns for better spacing
+  - Created dedicated dashboards for Calculator, Notifications, and Analytics with clean layouts
+  - Removed sidebars from specialized dashboards for focused user experience
+  - Added consistent "Voltar ao Dashboard" navigation buttons
 - June 24, 2025: AWS Cognito OAuth integration implemented
   - Root route (/) now serves the Home landing page (AIverseLanding component)
   - /start-login redirects to Cognito authentication when user clicks IA access buttons
