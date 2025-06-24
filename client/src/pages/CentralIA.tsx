@@ -28,7 +28,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   Sheet,
   SheetContent,
@@ -74,6 +74,7 @@ interface SavedItem {
 export default function CentralIA() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [currentModel, setCurrentModel] = useState<AIModel>("chatgpt");
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -98,7 +99,7 @@ export default function CentralIA() {
       borderColor: "border-green-200",
       hoverColor: "hover:border-green-400",
       description: "Conversação avançada e análise de texto",
-      route: "/ai/chatgpt"
+      route: "/central-ia/chatgpt"
     },
     "claude": {
       name: "Claude",
@@ -108,7 +109,7 @@ export default function CentralIA() {
       borderColor: "border-purple-200",
       hoverColor: "hover:border-purple-400",
       description: "Análise profunda e raciocínio complexo",
-      route: "/ai/claude"
+      route: "/central-ia/claude"
     },
     "perplexity": {
       name: "Perplexity",
@@ -128,7 +129,7 @@ export default function CentralIA() {
       borderColor: "border-orange-200",
       hoverColor: "hover:border-orange-400",
       description: "Criação de imagens educacionais",
-      route: "/ai/image-gen"
+      route: "/central-ia/image-gen"
     }
   };
 
@@ -164,8 +165,7 @@ export default function CentralIA() {
 
   // Navegar para a IA selecionada
   const handleAISelection = (model: AIModel) => {
-    // Usar window.location.assign para navegação mais suave
-    window.location.assign(modelInfo[model].route);
+    setLocation(modelInfo[model].route);
   };
 
   // Lidar com envio de prompt
