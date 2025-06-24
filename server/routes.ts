@@ -2899,36 +2899,151 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
   // Rota para redirecionar para o login do Cognito
   app.get('/start-login', (req: Request, res: Response) => {
-    // Temporary redirect to test page since Cognito domain needs configuration
-    console.log('Cognito ainda não configurado. Redirecionando para página de teste.');
-    res.send(`
-      <h1>Login do Cognito</h1>
-      <p>Domínio Cognito: ${process.env.COGNITO_USER_POOL_ID}</p>
-      <p>Client ID: ${process.env.COGNITO_CLIENT_ID}</p>
-      <p>Redirect URI: ${process.env.COGNITO_REDIRECT_URI}</p>
-      <p>Para configurar o Cognito corretamente, verifique se o User Pool tem um domínio personalizado configurado.</p>
-      <button onclick="window.history.back()">Voltar</button>
-    `);
-    return;
-    const redirectUrl = `${cognitoDomain}/login?` +
-      `client_id=${process.env.COGNITO_CLIENT_ID}` +
-      `&response_type=code` +
-      `&scope=openid+profile+email` +
-      `&redirect_uri=${process.env.COGNITO_REDIRECT_URI}`;
+    try {
+      const cognitoDomain = process.env.COGNITO_DOMAIN;
+      const clientId = process.env.COGNITO_CLIENT_ID;
+      const redirectUri = process.env.COGNITO_REDIRECT_URI;
 
-    console.log('Redirecionando para o Cognito:', redirectUrl); // Debug
-    res.redirect(redirectUrl); // Redirecionamento para o Cognito
+      if (!cognitoDomain || !clientId || !redirectUri) {
+        console.error('Configuração do Cognito incompleta:', {
+          domain: !!cognitoDomain,
+          clientId: !!clientId,
+          redirectUri: !!redirectUri
+        });
+        return res.status(500).send('Configuração de autenticação incompleta');
+      }
+
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: 'openid email profile'
+      });
+
+      const redirectUrl = `${cognitoDomain}/login?${params.toString()}`;
+      
+      console.log('Redirecionando para o Cognito:', redirectUrl);
+      res.redirect(redirectUrl);
+    } catch (error) {
+      console.error('Erro ao configurar redirecionamento do Cognito:', error);
+      res.status(500).send('Erro interno do servidor');
+    }
   });
 
   // Rota callback para pegar o código de autorização
-  app.get('/callback', (req: Request, res: Response) => {
-    const code = req.query.code;
-    if (!code) {
-      return res.status(400).send('Código não encontrado');
+  app.get('/callback', async (req: Request, res: Response) => {
+    try {
+      const { code } = req.query;
+      
+      if (!code) {
+        return res.status(400).send('Código de autorização não encontrado');
+      }
+
+      console.log('Código de autorização recebido:', code);
+
+      // Trocar código por tokens
+      const tokenParams = new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: process.env.COGNITO_CLIENT_ID!,
+        code: code as string,
+        redirect_uri: process.env.COGNITO_REDIRECT_URI!
+      });
+
+      const tokenResponse = await axios.post(
+        `${process.env.COGNITO_DOMAIN}/oauth2/token`,
+        tokenParams.toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': `Basic ${Buffer.from(`${process.env.COGNITO_CLIENT_ID}:${process.env.COGNITO_CLIENT_SECRET}`).toString('base64')}`
+          }
+        }
+      );
+
+      const { access_token, id_token } = tokenResponse.data;
+
+      // Obter informações do usuário
+      const userResponse = await axios.get(
+        `${process.env.COGNITO_DOMAIN}/oauth2/userInfo`,
+        {
+          headers: {
+            'Authorization': `Bearer ${access_token}`
+          }
+        }
+      );
+
+      const userData = userResponse.data;
+      console.log('Dados do usuário do Cognito:', userData);
+
+      // Decodificar o JWT do id_token para obter grupos
+      const decodedToken = jwt.decode(id_token) as any;
+      const groups = decodedToken['cognito:groups'] || [];
+      
+      console.log('Grupos do usuário:', groups);
+
+      // Determinar tipo de usuário baseado nos grupos
+      let userType = 'student'; // padrão
+      if (groups.includes('Administrador') || groups.includes('SecretariaAdm') || groups.includes('EscolaAdm')) {
+        userType = 'secretary';
+      } else if (groups.includes('Professores')) {
+        userType = 'teacher';
+      }
+
+      // Verificar se usuário já existe no banco
+      let user = await storage.getUserByEmail(userData.email);
+      
+      if (!user) {
+        // Criar novo usuário
+        const newUser = {
+          firstName: userData.given_name || userData.name?.split(' ')[0] || 'Usuário',
+          lastName: userData.family_name || userData.name?.split(' ').slice(1).join(' ') || '',
+          email: userData.email,
+          username: userData.email,
+          password: 'cognito_auth', // Placeholder para autenticação externa
+          role: userType,
+          isActive: true
+        };
+        
+        user = await storage.createUser(newUser);
+        console.log('Novo usuário criado:', user.id);
+      }
+
+      // Criar sessão
+      req.session.user = {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive
+      };
+
+      console.log('Usuário logado:', req.session.user);
+
+      // Redirecionar baseado no tipo de usuário
+      const redirectPaths = {
+        secretary: '/secretary',
+        teacher: '/teacher',
+        student: '/student'
+      };
+
+      const redirectPath = redirectPaths[userType as keyof typeof redirectPaths] || '/student';
+      
+      res.redirect(redirectPath);
+
+    } catch (error) {
+      console.error('Erro no callback do Cognito:', error);
+      
+      if (axios.isAxiosError(error)) {
+        console.error('Detalhes do erro Axios:', error.response?.data);
+      }
+      
+      res.status(500).send(`
+        <h1>Erro na autenticação</h1>
+        <p>Ocorreu um erro durante o processo de login. Tente novamente.</p>
+        <a href="/">Voltar ao início</a>
+      `);
     }
-    
-    console.log('Código de autorização:', code);
-    res.send('Código recebido com sucesso!');
   });
 
   // Apply token monitoring middleware to AI routes
