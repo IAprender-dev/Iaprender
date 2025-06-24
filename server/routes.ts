@@ -2889,6 +2889,29 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     }
   });
 
+  // AWS Cognito OAuth routes
+  // Root route redirects to Cognito login
+  app.get('/', (req: Request, res: Response) => {
+    const redirectUrl = `${process.env.COGNITO_DOMAIN}/login?` +
+      `client_id=${process.env.COGNITO_CLIENT_ID}` +
+      `&response_type=code` +
+      `&scope=openid+profile+email` +
+      `&redirect_uri=${process.env.COGNITO_REDIRECT_URI}`;
+
+    console.log('Redirecionando para:', redirectUrl); // DEBUG
+    res.redirect(redirectUrl);
+  });
+
+  // Simple callback endpoint for testing
+  app.get('/callback', (req: Request, res: Response) => {
+    const code = req.query.code;
+    if (!code) {
+      return res.status(400).send('Código não fornecido.');
+    }
+
+    res.send(`Código recebido: ${code}`);
+  });
+
   // Apply token monitoring middleware to AI routes
   app.use('/api/ai', tokenAlertMiddleware);
   app.use('/api/ai', tokenInterceptor);
