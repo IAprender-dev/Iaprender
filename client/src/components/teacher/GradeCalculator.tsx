@@ -9,12 +9,12 @@ import { User, AlertTriangle, CheckCircle, Clock, FileText } from "lucide-react"
 export default function GradeCalculator() {
   const { toast } = useToast();
   const [students, setStudents] = useState([
-    { id: 1, name: "", grade1: "", grade2: "", grade3: "", average: 0, status: "" }
+    { id: 1, name: "", registration: "", grade1: "", grade2: "", grade3: "", average: 0, status: "" }
   ]);
 
   const addStudent = () => {
     const newId = Math.max(...students.map(s => s.id), 0) + 1;
-    setStudents([...students, { id: newId, name: "", grade1: "", grade2: "", grade3: "", average: 0, status: "" }]);
+    setStudents([...students, { id: newId, name: "", registration: "", grade1: "", grade2: "", grade3: "", average: 0, status: "" }]);
   };
 
   const removeStudent = (id: number) => {
@@ -62,8 +62,8 @@ export default function GradeCalculator() {
     }
 
     const csvContent = "data:text/csv;charset=utf-8," + 
-      "Nome,Nota 1,Nota 2,Nota 3,Média,Status\n" +
-      validStudents.map(s => `${s.name},${s.grade1},${s.grade2},${s.grade3},${s.average},${s.status}`).join("\n");
+      "Nome,Matrícula,Nota 1,Nota 2,Nota 3,Média,Status\n" +
+      validStudents.map(s => `${s.name},${s.registration},${s.grade1},${s.grade2},${s.grade3},${s.average},${s.status}`).join("\n");
     
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -98,7 +98,7 @@ export default function GradeCalculator() {
       <div className="space-y-4">
         {students.map((student) => (
           <Card key={student.id} className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-8 gap-4 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-9 gap-4 items-center">
               <div className="md:col-span-2">
                 <Label htmlFor={`name-${student.id}`}>Nome do Aluno</Label>
                 <Input
@@ -106,6 +106,16 @@ export default function GradeCalculator() {
                   value={student.name}
                   onChange={(e) => updateStudent(student.id, 'name', e.target.value)}
                   placeholder="Nome completo"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor={`registration-${student.id}`}>Matrícula</Label>
+                <Input
+                  id={`registration-${student.id}`}
+                  value={student.registration}
+                  onChange={(e) => updateStudent(student.id, 'registration', e.target.value)}
+                  placeholder="Matrícula"
                 />
               </div>
               
