@@ -338,7 +338,9 @@ export default function IAprenderLanding() {
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-12 py-6 text-lg shadow-xl shadow-indigo-500/25 group"
-                onClick={() => window.location.href = '/auth'}
+                onClick={() => {
+                  window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/';
+                }}
               >
                 Explorar o IAprender
                 <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
