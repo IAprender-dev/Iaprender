@@ -121,6 +121,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 24, 2025: Teacher tools reorganization
+  - Moved tools bar (calculator, notifications, analytics) from /professor/ferramentas to main teacher dashboard
+  - Excluded essays function from main tools bar
+  - Created separate EssaysDashboard.tsx with dedicated route /professor/redacoes
+  - Added prominent Essays Dashboard button in teacher dashboard for easy access
+  - TeacherTools page now shows redirect notice to new locations
+  - Improved dashboard layout with integrated tools section
 - June 24, 2025: AWS Cognito OAuth integration implemented
   - Root route (/) now serves the Home landing page (AIverseLanding component)
   - /start-login redirects to Cognito authentication when user clicks IA access buttons

@@ -1254,134 +1254,34 @@ export default function TeacherTools() {
                   </Card>
                 </div>
 
-                <Tabs defaultValue="calculator" className="w-full">
-                  <div className="relative mb-8">
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-100 to-white rounded-2xl"></div>
-                    <TabsList className="relative h-auto p-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-lg">
-                      <TabsTrigger value="calculator" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                        <Calculator className="h-5 w-5" />
-                        <span>Calculadora de Notas</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="notifications" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                        <Send className="h-5 w-5" />
-                        <span>Notificações</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="essays" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                        <Pencil className="h-5 w-5" />
-                        <span>Redações</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="analytics" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                        <Brain className="h-5 w-5" />
-                        <span>Análises</span>
-                      </TabsTrigger>
-                    </TabsList>
-                  </div>
-                
-                <ScrollArea className="h-[calc(100vh-240px)]">
-                  <TabsContent value="calculator" className="mt-0">
-                    <Card className="border-0 shadow-none">
-                      <CardContent className="pt-6">
-                        <GradeCalculator />
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="notifications" className="mt-0">
-                    <Card className="border-0 shadow-none">
-                      <CardContent className="pt-6">
-                        <NotificationSender />
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-                  
-                  <TabsContent value="essays" className="mt-0">
-                    <EssayCorrector />
-                  </TabsContent>
-                  
-                  <TabsContent value="analytics" className="mt-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      <div className="lg:col-span-2">
-                        <PerformanceAnalyzer />
-                      </div>
-                      
-                      <div className="space-y-6">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Estatísticas Rápidas</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm text-neutral-500">Média geral</p>
-                                  <p className="text-2xl font-bold">7.6</p>
-                                </div>
-                                <div className="p-3 bg-primary-50 rounded-full">
-                                  <Beer className="h-5 w-5 text-primary" />
-                                </div>
-                              </div>
-                              
-                              <Separator />
-                              
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm text-neutral-500">Alunos abaixo da média</p>
-                                  <p className="text-2xl font-bold">23%</p>
-                                </div>
-                                <div className="p-3 bg-red-50 rounded-full">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
-                                    <path d="M22 12l-4 4-4-4"></path>
-                                    <path d="M6 12l4-4 4 4"></path>
-                                    <path d="M20 16V8"></path>
-                                    <path d="M4 8v8"></path>
-                                  </svg>
-                                </div>
-                              </div>
-                              
-                              <Separator />
-                              
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm text-neutral-500">Aproveitamento</p>
-                                  <p className="text-2xl font-bold">82%</p>
-                                </div>
-                                <div className="p-3 bg-green-50 rounded-full">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                  </svg>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                        
-                        <Card>
-                          <CardHeader>
-                            <CardTitle>Dicas de Melhoria</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-3">
-                              <div className="bg-primary-50 p-3 rounded-md">
-                                <p className="text-sm font-medium text-primary-700">Matemática - 8º ano A</p>
-                                <p className="text-sm mt-1">Promova exercícios adicionais sobre frações para melhorar o desempenho geral.</p>
-                              </div>
-                              
-                              <div className="bg-primary-50 p-3 rounded-md">
-                                <p className="text-sm font-medium text-primary-700">Português - 9º ano A</p>
-                                <p className="text-sm mt-1">Os alunos estão se saindo bem em interpretação, mas precisam de reforço em gramática.</p>
-                              </div>
-                              
-                              <Button variant="outline" className="w-full mt-2">
-                                Ver todas as recomendações
-                              </Button>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
+                {/* Redirect Notice */}
+                <div className="text-center py-12">
+                  <div className="max-w-md mx-auto">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Zap className="h-8 w-8 text-white" />
                     </div>
-                  </TabsContent>
-                </ScrollArea>
-                </Tabs>
+                    <h3 className="text-xl font-bold text-slate-900 mb-3">
+                      Ferramentas Movidas para o Dashboard
+                    </h3>
+                    <p className="text-slate-600 mb-6">
+                      As ferramentas de calculadora, notificações e análises agora estão disponíveis no dashboard principal do professor para melhor acessibilidade.
+                    </p>
+                    <div className="space-y-3">
+                      <Link href="/professor/dashboard">
+                        <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800">
+                          <ArrowRight className="h-4 w-4 mr-2" />
+                          Ir para o Dashboard
+                        </Button>
+                      </Link>
+                      <Link href="/professor/redacoes">
+                        <Button variant="outline" className="w-full border-purple-200 text-purple-700 hover:bg-purple-50">
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Dashboard de Redações
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </main>
