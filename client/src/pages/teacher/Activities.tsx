@@ -25,7 +25,7 @@ export default function Activities() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/teacher/dashboard">
+            <Link href="/professor">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Voltar ao Dashboard

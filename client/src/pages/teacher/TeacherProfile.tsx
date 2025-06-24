@@ -329,7 +329,7 @@ export default function TeacherProfile() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <Link href="/teacher/dashboard">
+            <Link href="/professor">
               <Button variant="outline" size="sm" className="gap-2">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
