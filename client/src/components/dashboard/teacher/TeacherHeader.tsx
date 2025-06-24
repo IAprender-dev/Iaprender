@@ -37,9 +37,9 @@ export default function TeacherHeader() {
             </Link>
             <div className="hidden lg:ml-10 lg:flex lg:space-x-8">
               <Link
-                href="/professor/dashboard"
+                href="/professor"
                 className={`${
-                  location === "/professor/dashboard"
+                  location === "/professor"
                     ? "text-primary border-b-2 border-primary"
                     : "text-neutral-600 hover:text-primary"
                 } px-3 py-5 text-sm font-medium`}
