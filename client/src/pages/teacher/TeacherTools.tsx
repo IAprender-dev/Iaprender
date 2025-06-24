@@ -1162,14 +1162,14 @@ export default function TeacherTools() {
         <title>Ferramentas IA | Professor | IAprender</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
         <TeacherSidebar />
         
-        <div className="flex-1 flex flex-col overflow-hidden ml-64">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <TeacherHeader />
           
-          <main className="flex-1 overflow-y-auto p-8">
-            <div className="max-w-7xl mx-auto">
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="container mx-auto">
               {/* Modern Page Header with IAprender branding */}
               <div className="relative mb-12">
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-blue-500/5 rounded-3xl"></div>
