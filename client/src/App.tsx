@@ -1,4 +1,4 @@
-import { Switch, Route, useRoute } from "wouter";
+import { Switch, Route, useRoute, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import { StudyPlanProvider } from "@/lib/StudyPlanContext";
 import { ThemeProvider } from "next-themes";
+import { useEffect } from "react";
 
 // Pages
 import AIverseLanding from "@/pages/AIverseLanding";
@@ -76,6 +77,34 @@ const ProtectedRoute = ({ component: Component, roles = [], ...rest }: {
 };
 
 function Router() {
+  const [location, setLocation] = useLocation();
+  
+  // Ensure platform always starts with landing page for unauthenticated users
+  useEffect(() => {
+    const isProtectedRoute = location.startsWith("/professor") || 
+                            location.startsWith("/student") || 
+                            location.startsWith("/secretary") ||
+                            location.startsWith("/teacher") ||
+                            location.startsWith("/aluno");
+    
+    if (isProtectedRoute) {
+      // Check authentication status for protected routes
+      const checkAuth = async () => {
+        try {
+          const response = await fetch('/api/auth/me');
+          if (!response.ok) {
+            // Not authenticated, redirect to landing page
+            setLocation("/");
+          }
+        } catch (error) {
+          // Error checking auth, redirect to landing page  
+          setLocation("/");
+        }
+      };
+      checkAuth();
+    }
+  }, [location, setLocation]);
+  
   return (
     <Switch>
       {/* Public routes - Always serve landing page first */}
