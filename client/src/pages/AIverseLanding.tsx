@@ -208,7 +208,9 @@ export default function IAprenderLanding() {
               <Button 
                 size="sm" 
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25"
-                onClick={() => window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/login'}
+                onClick={() => {
+                  window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/start-login';
+                }}
               >
                 Acessar IAprender
                 <ArrowRight className="ml-2 h-4 w-4" />
