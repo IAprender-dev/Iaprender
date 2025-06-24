@@ -128,6 +128,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Group-based redirection (Administrador/SecretariaAdm/EscolaAdm → secretary, Professores → teacher, default → student)
   - dotenv configuration for environment variables
   - Landing page serves as main entry point with buttons to access IA platform
+  - Updated "Explorar o IAprender" buttons to redirect to /auth instead of start-login
 
 ## Changelog
 - June 23, 2025. Initial setup

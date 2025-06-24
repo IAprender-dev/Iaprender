@@ -17,8 +17,9 @@ import { FileUploader } from "@/components/ui/file-uploader";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Upload, Sparkles, FileText, Image, Beer, Wand2, Pencil, BookOpen, MessageSquare, Calculator, Send, User, AlertTriangle, CheckCircle, Clock, History, Eye } from "lucide-react";
+import { Loader2, Upload, Sparkles, FileText, Image, Beer, Wand2, Pencil, BookOpen, MessageSquare, Calculator, Send, User, AlertTriangle, CheckCircle, Clock, History, Eye, Brain, Zap, Target, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 // Grade Calculator component
 function GradeCalculator() {

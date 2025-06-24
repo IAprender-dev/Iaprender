@@ -341,7 +341,7 @@ export default function IAprenderLanding() {
                 size="lg" 
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-12 py-6 text-lg shadow-xl shadow-indigo-500/25 group"
                 onClick={() => {
-                  window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/start-login';
+                  window.location.href = '/auth';
                 }}
               >
                 Explorar o IAprender
@@ -865,38 +865,10 @@ export default function IAprenderLanding() {
               Junte-se à revolução educacional. O futuro está aqui, e ele fala português.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 px-8 py-4 text-lg font-semibold shadow-xl transition-all duration-300 hover:scale-105"
-                onClick={() => {
-                  window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/teacher';
-                }}
-              >
-                <GraduationCap className="mr-2 h-5 w-5" />
-                Dashboard Professor
-              </Button>
-              
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800 px-8 py-4 text-lg font-semibold shadow-xl transition-all duration-300 hover:scale-105"
-                onClick={() => {
-                  window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/student';
-                }}
-              >
-                <BookOpen className="mr-2 h-5 w-5" />
-                Dashboard Aluno
-              </Button>
-              
-              <Button 
-                size="lg" 
-                className="bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 px-8 py-4 text-lg font-semibold shadow-xl transition-all duration-300 hover:scale-105"
-                onClick={() => {
-                  window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/secretary';
-                }}
-              >
-                <Building2 className="mr-2 h-5 w-5" />
-                Dashboard Secretaria
+            <div className="flex justify-center">
+              <Button size="lg" className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 px-10 py-6 text-lg font-semibold shadow-xl">
+                <MessageSquare className="mr-2 h-5 w-5" />
+                Fale Conosco
               </Button>
             </div>
           </div>
