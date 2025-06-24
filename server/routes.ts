@@ -2890,19 +2890,12 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
   });
 
   // AWS Cognito OAuth routes
-  // Root route redirects to Cognito login
+  // Root route - homepage
   app.get('/', (req: Request, res: Response) => {
-    const redirectUrl = `${process.env.COGNITO_DOMAIN}/login?` +
-      `client_id=${process.env.COGNITO_CLIENT_ID}` +
-      `&response_type=code` +
-      `&scope=openid+profile+email` +
-      `&redirect_uri=${process.env.COGNITO_REDIRECT_URI}`;
-
-    console.log('Redirecionando para:', redirectUrl); // DEBUG
-    res.redirect(redirectUrl);
+    res.send('Página inicial');
   });
 
-  // Alternative login endpoint
+  // Rota para redirecionar para o login do Cognito
   app.get('/start-login', (req: Request, res: Response) => {
     const redirectUrl = `https://${process.env.COGNITO_DOMAIN}/login?` +
       `client_id=${process.env.COGNITO_CLIENT_ID}` +
@@ -2910,18 +2903,19 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
       `&scope=openid+profile+email` +
       `&redirect_uri=${process.env.COGNITO_REDIRECT_URI}`;
 
-    console.log('➡️ Redirecionando para o Cognito:', redirectUrl);
-    res.redirect(redirectUrl);
+    console.log('Redirecionando para o Cognito:', redirectUrl); // Debug
+    res.redirect(redirectUrl); // Redirecionamento para o Cognito
   });
 
-  // Simple callback endpoint for testing
+  // Rota callback para pegar o código de autorização
   app.get('/callback', (req: Request, res: Response) => {
     const code = req.query.code;
+
     if (!code) {
-      return res.status(400).send('Código não fornecido.');
+      return res.status(400).send('Código não encontrado');
     }
 
-    res.send(`Código recebido: ${code}`);
+    res.send(`Código recebido do Cognito: ${code}`);
   });
 
   // Apply token monitoring middleware to AI routes
