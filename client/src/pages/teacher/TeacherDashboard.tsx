@@ -650,7 +650,7 @@ export default function TeacherDashboard() {
                     </CardContent>
                   </Card>
 
-                  {/* Central de Notificações */}
+                  {/* Notificações de Comportamento */}
                   <Card className="border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-green-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
                     <CardContent className="p-6">
                       <Link href="/professor/notificacoes">
@@ -660,7 +660,7 @@ export default function TeacherDashboard() {
                           </div>
                           <div>
                             <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mb-2">
-                              Central de Notificações
+                              Notificações de Comportamento
                             </h3>
                             <p className="text-sm text-slate-600 leading-relaxed">
                               Envie notificações para a secretaria
