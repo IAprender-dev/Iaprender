@@ -267,24 +267,24 @@ export default function NotificationSender() {
         </div>
 
         <div className="bg-slate-50 p-4 rounded-lg">
-          <h4 className="font-medium mb-2">Informações do Remetente</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <h4 className="font-medium mb-2 text-slate-900">Informações do Remetente</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-800">
             <div>
-              <span className="font-medium">Professor(a):</span> {user?.firstName} {user?.lastName}
+              <span className="font-medium text-slate-900">Professor(a):</span> {user?.firstName} {user?.lastName}
             </div>
             <div>
-              <span className="font-medium">Email:</span> {user?.email}
+              <span className="font-medium text-slate-900">Email:</span> {user?.email}
             </div>
             <div>
-              <span className="font-medium">Data/Hora Atual:</span> {new Date().toLocaleString('pt-BR')}
+              <span className="font-medium text-slate-900">Data/Hora Atual:</span> {new Date().toLocaleString('pt-BR')}
             </div>
             {notificationDate && notificationTime && (
               <div>
-                <span className="font-medium">Data/Hora da Ocorrência:</span> {new Date(`${notificationDate}T${notificationTime}`).toLocaleString('pt-BR')}
+                <span className="font-medium text-slate-900">Data/Hora da Ocorrência:</span> {new Date(`${notificationDate}T${notificationTime}`).toLocaleString('pt-BR')}
               </div>
             )}
             <div>
-              <span className="font-medium">Tipo:</span> {notificationTypes[notificationType as keyof typeof notificationTypes]}
+              <span className="font-medium text-slate-900">Tipo:</span> {notificationTypes[notificationType as keyof typeof notificationTypes]}
             </div>
           </div>
         </div>
