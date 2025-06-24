@@ -2709,6 +2709,10 @@ ${conversationContext ? `\nCONVERSA ANTERIOR:\n${conversationContext}\n` : ''}`,
         originalname: req.file.originalname
       });
 
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(503).json({ message: "OpenAI API key not configured. Audio transcription is not available." });
+      }
+
       const openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
       });

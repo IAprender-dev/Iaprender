@@ -4,10 +4,14 @@ import path from "path";
 import https from "https";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
 
 export async function generateLogo(logoName: string, description?: string): Promise<{ url: string, localPath: string }> {
   try {
+    if (!openai) {
+      throw new Error('OpenAI API key not configured. Logo generation is not available.');
+    }
+
     // Create logos directory if it doesn't exist
     const logosDir = path.join(process.cwd(), 'generated-logos');
     if (!fs.existsSync(logosDir)) {
