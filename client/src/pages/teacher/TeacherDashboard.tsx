@@ -598,93 +598,26 @@ export default function TeacherDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* Teacher Tools Section */}
-                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 mt-8">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-3">
-                      <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
-                        <Zap className="h-6 w-6 text-white" />
-                      </div>
-                      Ferramentas do Professor
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Tabs defaultValue="calculator" className="w-full">
-                      <div className="relative mb-8">
-                        <div className="absolute inset-0 bg-gradient-to-r from-slate-100 to-white rounded-2xl"></div>
-                        <TabsList className="relative h-auto p-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-lg">
-                          <TabsTrigger value="calculator" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                            <Calculator className="h-5 w-5" />
-                            <span>Calculadora de Notas</span>
-                          </TabsTrigger>
-                          <TabsTrigger value="notifications" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                            <Send className="h-5 w-5" />
-                            <span>Notificações</span>
-                          </TabsTrigger>
-                          <TabsTrigger value="analytics" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
-                            <Brain className="h-5 w-5" />
-                            <span>Análises</span>
-                          </TabsTrigger>
-                        </TabsList>
-                      </div>
-                    
-                      <ScrollArea className="h-[calc(100vh-400px)]">
-                        <TabsContent value="calculator" className="mt-0">
-                          <Card className="border-0 shadow-none">
-                            <CardContent className="pt-6">
-                              <GradeCalculator />
-                            </CardContent>
-                          </Card>
-                        </TabsContent>
-                        
-                        <TabsContent value="notifications" className="mt-0">
-                          <Card className="border-0 shadow-none">
-                            <CardContent className="pt-6">
-                              <NotificationSender />
-                            </CardContent>
-                          </Card>
-                        </TabsContent>
-                        
-                        <TabsContent value="analytics" className="mt-0">
-                          <Card className="border-0 shadow-none">
-                            <CardContent className="pt-6">
-                              <div className="text-center py-8">
-                                <Brain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                                <p className="text-gray-500 mb-4">
-                                  Análises avançadas de desempenho em desenvolvimento
-                                </p>
-                                <p className="text-sm text-gray-400">
-                                  Em breve você terá acesso a relatórios detalhados sobre o desempenho dos seus alunos.
-                                </p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </TabsContent>
-                      </ScrollArea>
-                    </Tabs>
-                  </CardContent>
-                </Card>
-
-                {/* Specialized Dashboards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                  {/* Essays Dashboard */}
+                {/* Tools & Features Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
+                  {/* Central de Inteligências */}
                   <Card className="border border-purple-200/60 bg-gradient-to-br from-purple-50 to-violet-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
                     <CardContent className="p-6">
-                      <Link href="/professor/redacoes">
+                      <Link href="/central-ia">
                         <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
                           <div className="p-4 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
-                            <Pencil className="h-8 w-8 text-white" />
+                            <Bot className="h-8 w-8 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-bold text-slate-900 group-hover:text-purple-700 transition-colors mb-2">
-                              Dashboard de Redações
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-purple-700 transition-colors mb-2">
+                              Central de Inteligências
                             </h3>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                              Analise e avalie redações com inteligência artificial avançada
+                              Acesse ChatGPT, Claude e outras IAs
                             </p>
                           </div>
-                          <div className="flex items-center text-purple-600 font-medium">
-                            <span>Acessar Dashboard</span>
+                          <div className="flex items-center text-purple-600 font-medium text-sm">
+                            <span>Acessar</span>
                             <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>
@@ -692,24 +625,224 @@ export default function TeacherDashboard() {
                     </CardContent>
                   </Card>
 
-                  {/* News & Podcasts Dashboard */}
-                  <Card className="border border-amber-200/60 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                  {/* Calculadora de Notas */}
+                  <Card className="border border-blue-200/60 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/calculadora">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <Calculator className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-700 transition-colors mb-2">
+                              Calculadora de Notas
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Gerencie e calcule notas dos alunos
+                            </p>
+                          </div>
+                          <div className="flex items-center text-blue-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Central de Notificações */}
+                  <Card className="border border-emerald-200/60 bg-gradient-to-br from-emerald-50 to-green-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/notificacoes">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <Send className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors mb-2">
+                              Central de Notificações
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Envie notificações para a secretaria
+                            </p>
+                          </div>
+                          <div className="flex items-center text-emerald-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Dashboard de Análises */}
+                  <Card className="border border-orange-200/60 bg-gradient-to-br from-orange-50 to-amber-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/analises">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <Brain className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-orange-700 transition-colors mb-2">
+                              Dashboard de Análises
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Análises e estatísticas avançadas
+                            </p>
+                          </div>
+                          <div className="flex items-center text-orange-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Planejamento de Aula */}
+                  <Card className="border border-rose-200/60 bg-gradient-to-br from-rose-50 to-pink-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/planejamento">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <Calendar className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-rose-700 transition-colors mb-2">
+                              Planejamento de Aula
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Crie planos de aula personalizados
+                            </p>
+                          </div>
+                          <div className="flex items-center text-rose-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Gerador de Atividades */}
+                  <Card className="border border-cyan-200/60 bg-gradient-to-br from-cyan-50 to-teal-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/ferramentas/gerador-atividades">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <ClipboardList className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-cyan-700 transition-colors mb-2">
+                              Gerador de Atividades
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Crie atividades educacionais
+                            </p>
+                          </div>
+                          <div className="flex items-center text-cyan-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Materiais Didáticos */}
+                  <Card className="border border-green-200/60 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/ferramentas/materiais-didaticos">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <BookOpen className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-green-700 transition-colors mb-2">
+                              Materiais Didáticos
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Resumos didáticos com IA
+                            </p>
+                          </div>
+                          <div className="flex items-center text-green-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Análise de Documentos */}
+                  <Card className="border border-indigo-200/60 bg-gradient-to-br from-indigo-50 to-blue-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/ferramentas/analisar-documentos">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <Search className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-700 transition-colors mb-2">
+                              Análise de Documentos
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Analise PDFs e documentos
+                            </p>
+                          </div>
+                          <div className="flex items-center text-indigo-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Dashboard de Redações */}
+                  <Card className="border border-violet-200/60 bg-gradient-to-br from-violet-50 to-purple-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                    <CardContent className="p-6">
+                      <Link href="/professor/redacoes">
+                        <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
+                          <div className="p-4 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                            <Pencil className="h-8 w-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-violet-700 transition-colors mb-2">
+                              Dashboard de Redações
+                            </h3>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              Analise redações com IA
+                            </p>
+                          </div>
+                          <div className="flex items-center text-violet-600 font-medium text-sm">
+                            <span>Acessar</span>
+                            <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        </div>
+                      </Link>
+                    </CardContent>
+                  </Card>
+
+                  {/* Notícias & Podcasts */}
+                  <Card className="border border-yellow-200/60 bg-gradient-to-br from-yellow-50 to-amber-50 shadow-lg hover:shadow-xl transition-all duration-300 group">
                     <CardContent className="p-6">
                       <Link href="/professor/noticias-podcasts">
                         <div className="flex flex-col items-center text-center space-y-4 cursor-pointer">
-                          <div className="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
+                          <div className="p-4 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-2xl group-hover:scale-105 transition-transform shadow-lg">
                             <PlayCircle className="h-8 w-8 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-xl font-bold text-slate-900 group-hover:text-amber-700 transition-colors mb-2">
+                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-yellow-700 transition-colors mb-2">
                               Notícias & Podcasts
                             </h3>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                              Mantenha-se atualizado com conteúdo educacional relevante
+                              Conteúdo educacional atualizado
                             </p>
                           </div>
-                          <div className="flex items-center text-amber-600 font-medium">
-                            <span>Acessar Dashboard</span>
+                          <div className="flex items-center text-yellow-600 font-medium text-sm">
+                            <span>Acessar</span>
                             <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                           </div>
                         </div>

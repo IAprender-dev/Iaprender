@@ -51,6 +51,9 @@ import ModelosPlanejamento from "@/pages/teacher/ferramentas/ModelosPlanejamento
 import AnaliseDocumentos from "@/pages/teacher/AnaliseDocumentos";
 import LogoShowcase from "@/pages/LogoShowcase";
 import EssaysDashboard from "@/pages/teacher/EssaysDashboard";
+import CalculatorDashboard from "@/pages/teacher/CalculatorDashboard";
+import NotificationsDashboard from "@/pages/teacher/NotificationsDashboard";
+import AnalyticsDashboard from "@/pages/teacher/AnalyticsDashboard";
 import TokenDashboard from "@/pages/TokenDashboard";
 
 // Protected route component
@@ -128,6 +131,9 @@ function Router() {
       <Route path="/professor/planejamento" component={TeacherPlanning} />
 
       <Route path="/professor/redacoes" component={EssaysDashboard} />
+      <Route path="/professor/calculadora" component={CalculatorDashboard} />
+      <Route path="/professor/notificacoes" component={NotificationsDashboard} />
+      <Route path="/professor/analises" component={AnalyticsDashboard} />
       <Route path="/professor/noticias-podcasts" component={NoticiasPodcasts} />
       
       {/* Teacher AI Tools routes */}
