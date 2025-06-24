@@ -110,7 +110,7 @@ export default function TeacherDashboard() {
       borderColor: "border-violet-200"
     },
     {
-      title: "Notificações de Comportamento",
+      title: "Notificações",
       description: "Envie alertas para secretaria",
       icon: Send,
       href: "/professor/notificacoes",
