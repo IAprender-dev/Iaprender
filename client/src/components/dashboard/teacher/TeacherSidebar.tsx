@@ -23,7 +23,7 @@ import {
   ListChecks,
   BookOpenCheck
 } from "lucide-react";
-import iaverseLogo from "@/assets/IAverse.png";
+import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function TeacherSidebar() {
   const [location] = useLocation();
@@ -141,8 +141,8 @@ export default function TeacherSidebar() {
       {/* Logo e cabeçalho */}
       <div className="px-6 py-6 bg-blue-950">
         <Link href="/" className="flex items-center space-x-3">
-          <img src={iaverseLogo} alt="IAverse" className="w-8 h-8" />
-          <span className="text-white text-2xl font-bold">IAverse</span>
+          <img src={iAprenderLogo} alt="IAprender" className="w-8 h-8" />
+          <span className="text-white text-2xl font-bold">IAprender</span>
         </Link>
       </div>
       
