@@ -2937,7 +2937,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
   });
 
   // Rota para redirecionar para o login do Cognito
-  app.get('/start-login', (req: Request, res: Response) => {
+  app.get('/start-login', async (req: Request, res: Response) => {
     try {
       const userPoolId = process.env.COGNITO_USER_POOL_ID;
       const clientId = process.env.COGNITO_CLIENT_ID;
@@ -2947,23 +2947,72 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
         return res.redirect('/cognito-debug');
       }
 
-      // Construir o domínio correto usando o User Pool ID
-      const cognitoDomain = `https://${userPoolId}.auth.us-east-1.amazoncognito.com`;
+      // Tentar diferentes formatos de domínio até encontrar um que funcione
+      const possibleDomains = [
+        `https://${userPoolId}.auth.us-east-1.amazoncognito.com`,
+        `https://us-east-1-sduwfxm8p.auth.us-east-1.amazoncognito.com`,
+        `https://us-east-1sduwfxm8p.auth.us-east-1.amazoncognito.com`
+      ];
 
-      const params = new URLSearchParams({
-        response_type: 'code',
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        scope: 'openid email profile'
-      });
+      for (const domain of possibleDomains) {
+        try {
+          // Testar se o domínio responde
+          const testResponse = await axios.head(`${domain}/login`, { timeout: 3000 });
+          
+          if (testResponse.status === 200 || testResponse.status === 302) {
+            const params = new URLSearchParams({
+              response_type: 'code',
+              client_id: clientId,
+              redirect_uri: redirectUri,
+              scope: 'openid email profile'
+            });
 
-      const redirectUrl = `${cognitoDomain}/login?${params.toString()}`;
-      
-      console.log('Redirecionando para o Cognito:', redirectUrl);
-      res.redirect(redirectUrl);
+            const redirectUrl = `${domain}/login?${params.toString()}`;
+            console.log('Domínio funcionando encontrado:', redirectUrl);
+            return res.redirect(redirectUrl);
+          }
+        } catch (error) {
+          console.log(`Domínio ${domain} não está disponível`);
+          continue;
+        }
+      }
+
+      // Se nenhum domínio funcionar, mostrar página de configuração
+      console.error('Nenhum domínio do Cognito está disponível');
+      return res.send(`
+        <h1>Configuração do AWS Cognito Necessária</h1>
+        <p>O User Pool <strong>${userPoolId}</strong> não tem um domínio configurado ou não está acessível.</p>
+        
+        <h2>Para configurar:</h2>
+        <ol>
+          <li>Acesse o <a href="https://console.aws.amazon.com/cognito" target="_blank">AWS Cognito Console</a></li>
+          <li>Selecione o User Pool: <strong>${userPoolId}</strong></li>
+          <li>Vá para <strong>App integration</strong> → <strong>Domain</strong></li>
+          <li>Configure um domínio personalizado ou use o prefixo da Amazon Cognito</li>
+          <li>Certifique-se de que o <strong>Hosted UI</strong> esteja habilitado</li>
+          <li>Configure as URLs de callback: <code>${redirectUri}</code></li>
+        </ol>
+        
+        <h2>Configuração Atual:</h2>
+        <ul>
+          <li><strong>User Pool ID:</strong> ${userPoolId}</li>
+          <li><strong>Client ID:</strong> ${clientId}</li>
+          <li><strong>Redirect URI:</strong> ${redirectUri}</li>
+        </ul>
+        
+        <p><a href="/">← Voltar ao início</a></p>
+        
+        <style>
+          body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+          code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
+          h1 { color: #d32f2f; }
+          h2 { color: #1976d2; }
+        </style>
+      `);
+
     } catch (error) {
       console.error('Erro ao configurar redirecionamento do Cognito:', error);
-      res.redirect('/cognito-debug');
+      res.status(500).send('Erro interno do servidor ao configurar autenticação');
     }
   });
 
