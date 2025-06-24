@@ -78,7 +78,7 @@ const ProtectedRoute = ({ component: Component, roles = [], ...rest }: {
 function Router() {
   return (
     <Switch>
-      {/* Public routes */}
+      {/* Public routes - Always serve landing page first */}
       <Route path="/" component={AIverseLanding} />
       <Route path="/auth" component={Auth} />
       <Route path="/cursos" component={Courses} />
