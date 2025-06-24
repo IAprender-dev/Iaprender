@@ -2,8 +2,6 @@ import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import TeacherHeader from "@/components/dashboard/teacher/TeacherHeader";
-import TeacherSidebar from "@/components/dashboard/teacher/TeacherSidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Upload, FileText, Eye, Download, Star, Pencil, BookOpen, Brain } from "lucide-react";
+import { Link } from "wouter";
+import { Loader2, Upload, FileText, Eye, Download, Star, Pencil, BookOpen, Brain, ArrowLeft } from "lucide-react";
 
 // Essay Analyzer component
 function EssayAnalyzer() {
@@ -229,25 +228,40 @@ export default function EssaysDashboard() {
         <title>Dashboard de Redações | Professor | IAprender</title>
       </Helmet>
 
-      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
-        <TeacherSidebar />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+        {/* Header com botão Voltar */}
+        <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link href="/professor">
+                  <Button className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg border-0">
+                    <ArrowLeft className="h-4 w-4" />
+                    Voltar ao Dashboard
+                  </Button>
+                </Link>
+                <div>
+                  <h1 className="text-2xl font-bold text-slate-900">Dashboard de Redações</h1>
+                  <p className="text-slate-600">Analise e corrija redações com inteligência artificial</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
         
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <TeacherHeader />
-          
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="container mx-auto">
-              {/* Page Header */}
-              <div className="relative mb-12">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-violet-500/5 to-pink-500/5 rounded-3xl"></div>
-                <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/50 shadow-lg shadow-purple-500/10">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-6">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl blur-lg opacity-20"></div>
-                        <div className="relative bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl p-4">
-                          <Pencil className="h-8 w-8 text-white" />
-                        </div>
+        <main className="p-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Page Header */}
+            <div className="relative mb-12">
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-violet-500/5 to-pink-500/5 rounded-3xl"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/50 shadow-lg shadow-purple-500/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-6">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl blur-lg opacity-20"></div>
+                      <div className="relative bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl p-4">
+                        <Pencil className="h-8 w-8 text-white" />
+                      </div>
                       </div>
                       <div>
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
@@ -285,7 +299,6 @@ export default function EssaysDashboard() {
               </Card>
             </div>
           </main>
-        </div>
       </div>
     </>
   );
