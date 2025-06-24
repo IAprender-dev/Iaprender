@@ -13,7 +13,7 @@ export default function NotificationsDashboard() {
   return (
     <>
       <Helmet>
-        <title>Notificações de Comportamento | Professor | IAprender</title>
+        <title>Notificações | Professor | IAprender</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/30">
@@ -33,7 +33,7 @@ export default function NotificationsDashboard() {
                   <img src={iAprenderLogo} alt="IAprender" className="h-8 w-8" />
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">IAprender</h2>
-                    <p className="text-sm text-slate-600">Notificações de Comportamento</p>
+                    <p className="text-sm text-slate-600">Notificações</p>
                   </div>
                 </div>
               </div>
@@ -66,7 +66,7 @@ export default function NotificationsDashboard() {
                   </div>
                   <div>
                     <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 bg-clip-text text-transparent">
-                      Notificações de Comportamento
+                      Notificações
                     </h1>
                     <p className="text-slate-600 text-lg mt-2 max-w-2xl">
                       Envie notificações importantes para a secretaria da escola
