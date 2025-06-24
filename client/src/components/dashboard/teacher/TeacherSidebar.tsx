@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard,
   BookOpen,
@@ -27,6 +28,11 @@ import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function TeacherSidebar() {
   const [location] = useLocation();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   const menuItems = [
     {
@@ -236,15 +242,15 @@ export default function TeacherSidebar() {
           Configurações
         </Link>
         
-        <Link 
-          href="/logout"
-          className="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors text-blue-100 hover:bg-blue-800/60 hover:text-white mt-2"
+        <button 
+          onClick={handleLogout}
+          className="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors text-blue-100 hover:bg-blue-800/60 hover:text-white mt-2 w-full text-left"
         >
           <span className="flex items-center justify-center h-8 w-8 rounded-lg mr-3 bg-blue-800/40">
             <LogOut className="h-5 w-5" />
           </span>
           Sair
-        </Link>
+        </button>
       </div>
     </aside>
   );
