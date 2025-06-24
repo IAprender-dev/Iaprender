@@ -36,8 +36,26 @@ import {
   Palette,
   Zap,
   AlertTriangle,
-  TrendingUp
+  TrendingUp,
+  Calculator,
+  Send,
+  Brain,
+  Pencil,
+  CheckCircle,
+  Clock,
+  History,
+  Eye
 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import GradeCalculator from "@/components/teacher/GradeCalculator";
+import NotificationSender from "@/components/teacher/NotificationSender";
 import alverseLogo from '@/assets/aiverse-logo-new.png';
 
 
