@@ -2906,56 +2906,14 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
   });
 
   // Rota callback para pegar o código de autorização
-  app.get('/callback', async (req: Request, res: Response) => {
+  app.get('/callback', (req: Request, res: Response) => {
     const code = req.query.code;
     if (!code) {
       return res.status(400).send('Código não encontrado');
     }
-
-    try {
-      // Troca o código por tokens
-      const tokenResponse = await axios.post(`${process.env.COGNITO_DOMAIN}/oauth2/token`, new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: process.env.COGNITO_CLIENT_ID!,
-        code: code as string,
-        redirect_uri: process.env.COGNITO_REDIRECT_URI!
-      }), {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        auth: {
-          username: process.env.COGNITO_CLIENT_ID!,
-          password: process.env.COGNITO_CLIENT_SECRET!
-        }
-      });
-
-      const idToken = tokenResponse.data.id_token;
-
-      // Decodifica o token para pegar as claims
-      const decoded = jwt.decode(idToken) as any;
-      console.log('Decoded JWT:', decoded);
-
-      // Pega o grupo do usuário no token (supondo que esteja em "cognito:groups")
-      const groups = decoded['cognito:groups'] || [];
-      console.log('User groups:', groups);
-
-      // Redireciona conforme grupo
-      if (groups.includes('Administrador')) {
-        return res.redirect('/secretary/dashboard');
-      } else if (groups.includes('SecretariaAdm')) {
-        return res.redirect('/secretary/dashboard');
-      } else if (groups.includes('EscolaAdm')) {
-        return res.redirect('/secretary/dashboard');
-      } else if (groups.includes('Professores')) {
-        return res.redirect('/teacher/dashboard');
-      } else {
-        return res.redirect('/student/dashboard');
-      }
-
-    } catch (err: any) {
-      console.error('Erro ao processar token:', err);
-      return res.status(500).send('Erro ao processar token: ' + err.message);
-    }
+    
+    console.log('Código de autorização:', code);
+    res.send('Código recebido com sucesso!');
   });
 
   // Apply token monitoring middleware to AI routes
