@@ -2897,21 +2897,58 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
   // Root route serves the frontend (Home page)
   // The frontend routing will handle displaying the landing page
 
+  // Diagnóstico e configuração do Cognito
+  app.get('/cognito-debug', (req: Request, res: Response) => {
+    const userPoolId = process.env.COGNITO_USER_POOL_ID;
+    const clientId = process.env.COGNITO_CLIENT_ID;
+    const redirectUri = process.env.COGNITO_REDIRECT_URI;
+    
+    const possibleDomains = [
+      `https://${userPoolId}.auth.us-east-1.amazoncognito.com`,
+      `https://us-east-1-sduwfxm8p.auth.us-east-1.amazoncognito.com`,
+      `https://us-east-1sduwfxm8p.auth.us-east-1.amazoncognito.com`
+    ];
+
+    res.send(`
+      <h1>Diagnóstico do AWS Cognito</h1>
+      <h2>Configuração Atual:</h2>
+      <p><strong>User Pool ID:</strong> ${userPoolId}</p>
+      <p><strong>Client ID:</strong> ${clientId}</p>
+      <p><strong>Redirect URI:</strong> ${redirectUri}</p>
+      
+      <h2>Domínios Possíveis:</h2>
+      ${possibleDomains.map(domain => `
+        <p><a href="${domain}/login?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=openid+email+profile" target="_blank">
+          Testar: ${domain}
+        </a></p>
+      `).join('')}
+      
+      <h2>Passos para Configurar:</h2>
+      <ol>
+        <li>Acesse o AWS Cognito Console</li>
+        <li>Vá para User Pools → ${userPoolId}</li>
+        <li>Em "App integration" → "Domain"</li>
+        <li>Configure um domínio personalizado ou use o domínio padrão</li>
+        <li>Verifique se o "Hosted UI" está habilitado</li>
+      </ol>
+      
+      <p><a href="/">Voltar ao início</a></p>
+    `);
+  });
+
   // Rota para redirecionar para o login do Cognito
   app.get('/start-login', (req: Request, res: Response) => {
     try {
-      const cognitoDomain = process.env.COGNITO_DOMAIN;
+      const userPoolId = process.env.COGNITO_USER_POOL_ID;
       const clientId = process.env.COGNITO_CLIENT_ID;
       const redirectUri = process.env.COGNITO_REDIRECT_URI;
 
-      if (!cognitoDomain || !clientId || !redirectUri) {
-        console.error('Configuração do Cognito incompleta:', {
-          domain: !!cognitoDomain,
-          clientId: !!clientId,
-          redirectUri: !!redirectUri
-        });
-        return res.status(500).send('Configuração de autenticação incompleta');
+      if (!userPoolId || !clientId || !redirectUri) {
+        return res.redirect('/cognito-debug');
       }
+
+      // Construir o domínio correto usando o User Pool ID
+      const cognitoDomain = `https://${userPoolId}.auth.us-east-1.amazoncognito.com`;
 
       const params = new URLSearchParams({
         response_type: 'code',
@@ -2926,7 +2963,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
       res.redirect(redirectUrl);
     } catch (error) {
       console.error('Erro ao configurar redirecionamento do Cognito:', error);
-      res.status(500).send('Erro interno do servidor');
+      res.redirect('/cognito-debug');
     }
   });
 
@@ -2941,6 +2978,10 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
       console.log('Código de autorização recebido:', code);
 
+      // Construir o domínio correto usando o User Pool ID
+      const userPoolId = process.env.COGNITO_USER_POOL_ID;
+      const cognitoDomain = `https://${userPoolId}.auth.us-east-1.amazoncognito.com`;
+
       // Trocar código por tokens
       const tokenParams = new URLSearchParams({
         grant_type: 'authorization_code',
@@ -2950,7 +2991,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
       });
 
       const tokenResponse = await axios.post(
-        `${process.env.COGNITO_DOMAIN}/oauth2/token`,
+        `${cognitoDomain}/oauth2/token`,
         tokenParams.toString(),
         {
           headers: {
@@ -2964,7 +3005,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
       // Obter informações do usuário
       const userResponse = await axios.get(
-        `${process.env.COGNITO_DOMAIN}/oauth2/userInfo`,
+        `${cognitoDomain}/oauth2/userInfo`,
         {
           headers: {
             'Authorization': `Bearer ${access_token}`
