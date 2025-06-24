@@ -282,7 +282,7 @@ export default function IAprenderLanding() {
               <div className="pt-4 border-t border-slate-300/50 relative">
                 <Button 
                   className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-500 hover:scale-105 rounded-xl py-3 font-semibold tracking-wide relative overflow-hidden group"
-                  onClick={() => window.location.href = '/auth'}
+                  onClick={() => window.location.href = 'https://learningsphere.nandoroliveira.replit.app/'}
                 >
                   <span className="relative z-10">Explorar o IAprender</span>
                   <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-12 transition-transform relative z-10" />
