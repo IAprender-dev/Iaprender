@@ -92,7 +92,7 @@ export default function TeacherDashboard() {
       borderColor: "border-indigo-200"
     },
     {
-      title: "Materiais Didáticos",
+      title: "Resumos Didáticos",
       description: "Resumos e conteúdos educacionais",
       icon: FileText,
       href: "/professor/ferramentas/materiais-didaticos",
