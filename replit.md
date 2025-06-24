@@ -121,6 +121,15 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 24, 2025: Complete teacher dashboard redesign from scratch
+  - Created new intuitive dashboard with modern UI/UX principles
+  - Added welcome bar with gradient background and user greeting
+  - Added token consumption bar with progress indicator and usage statistics
+  - Implemented main tools section: "Central de Inteligências" and "Planejamento de Aulas" side by side
+  - Added 8 tool buttons in 2x4 grid: Gerador de Atividades, Redações, Notícias & Podcasts, Análise de Documentos, Materiais Didáticos, Calculadora de Notas, Notificações de Comportamento, Análise de Desempenho
+  - All buttons are functional with proper routing to respective dashboards
+  - Enhanced visual hierarchy with gradients, shadows, and hover effects
+  - Added footer with user account information
 - June 24, 2025: Dashboard cleanup and route optimization
   - Removed redundant "Planejamento de Aula" button from dashboard (red card)
   - Removed duplicate route /professor/planejamento to avoid confusion
