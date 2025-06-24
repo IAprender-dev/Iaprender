@@ -1159,44 +1159,123 @@ export default function TeacherTools() {
   return (
     <>
       <Helmet>
-        <title>Ferramentas IA | Professor | iAula</title>
+        <title>Ferramentas IA | Professor | IAprender</title>
       </Helmet>
 
-      <div className="flex h-screen overflow-hidden bg-neutral-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
         <TeacherSidebar />
         
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden ml-64">
           <TeacherHeader />
           
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="container mx-auto">
-              {/* Page Header */}
-              <div className="mb-8">
-                <h1 className="text-2xl font-bold text-neutral-900 font-heading">Ferramentas de IA</h1>
-                <p className="text-neutral-600 mt-1">
-                  Potencialize seu trabalho com nossas ferramentas de inteligência artificial
-                </p>
+          <main className="flex-1 overflow-y-auto p-8">
+            <div className="max-w-7xl mx-auto">
+              {/* Modern Page Header with IAprender branding */}
+              <div className="relative mb-12">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/5 to-blue-500/5 rounded-3xl"></div>
+                <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/50 shadow-lg shadow-indigo-500/10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-6">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl blur-lg opacity-20"></div>
+                        <div className="relative bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-4">
+                          <img 
+                            src={iAprenderLogo} 
+                            alt="IAprender" 
+                            className="w-12 h-12 object-contain filter brightness-0 invert"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent">
+                          Ferramentas de IA
+                        </h1>
+                        <p className="text-slate-600 text-lg mt-2 max-w-2xl">
+                          Potencialize seu ensino com inteligência artificial avançada do IAprender
+                        </p>
+                      </div>
+                    </div>
+                    <div className="hidden lg:flex items-center space-x-4">
+                      <div className="flex items-center space-x-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl px-4 py-3 border border-emerald-200">
+                        <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <span className="text-emerald-700 font-medium text-sm">IA Ativa</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               
-              <Tabs defaultValue="calculator" className="w-full">
-                <TabsList className="mb-6 grid w-full grid-cols-2 md:grid-cols-4">
-                  <TabsTrigger value="calculator" className="flex items-center gap-1">
-                    <Calculator className="h-4 w-4" />
-                    <span className="hidden md:inline">Calculadora de Notas</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="notifications" className="flex items-center gap-1">
-                    <Send className="h-4 w-4" />
-                    <span className="hidden md:inline">Notificações</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="essays" className="flex items-center gap-1">
-                    <Pencil className="h-4 w-4" />
-                    <span className="hidden md:inline">Redações</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="analytics" className="flex items-center gap-1">
-                    <Beer className="h-4 w-4" />
-                    <span className="hidden md:inline">Análises</span>
-                  </TabsTrigger>
-                </TabsList>
+              <div className="space-y-8">
+                {/* Modern Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-indigo-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10"></div>
+                    <CardContent className="p-6 relative">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-blue-600 text-sm font-medium uppercase tracking-wide">Produtividade</p>
+                          <p className="text-2xl font-bold text-blue-900 mt-1">+85%</p>
+                        </div>
+                        <div className="bg-blue-500 rounded-xl p-3">
+                          <TrendingUp className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-green-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/10 rounded-full -mr-10 -mt-10"></div>
+                    <CardContent className="p-6 relative">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-emerald-600 text-sm font-medium uppercase tracking-wide">Precisão IA</p>
+                          <p className="text-2xl font-bold text-emerald-900 mt-1">97%</p>
+                        </div>
+                        <div className="bg-emerald-500 rounded-xl p-3">
+                          <Target className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-50 to-violet-100 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full -mr-10 -mt-10"></div>
+                    <CardContent className="p-6 relative">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-purple-600 text-sm font-medium uppercase tracking-wide">Tempo Economizado</p>
+                          <p className="text-2xl font-bold text-purple-900 mt-1">12h/sem</p>
+                        </div>
+                        <div className="bg-purple-500 rounded-xl p-3">
+                          <Zap className="h-6 w-6 text-white" />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Tabs defaultValue="calculator" className="w-full">
+                  <div className="relative mb-8">
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-100 to-white rounded-2xl"></div>
+                    <TabsList className="relative h-auto p-2 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl shadow-lg">
+                      <TabsTrigger value="calculator" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                        <Calculator className="h-5 w-5" />
+                        <span>Calculadora de Notas</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="notifications" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                        <Send className="h-5 w-5" />
+                        <span>Notificações</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="essays" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                        <Pencil className="h-5 w-5" />
+                        <span>Redações</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="analytics" className="flex items-center gap-3 px-6 py-4 rounded-xl font-medium transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                        <Brain className="h-5 w-5" />
+                        <span>Análises</span>
+                      </TabsTrigger>
+                    </TabsList>
+                  </div>
                 
                 <ScrollArea className="h-[calc(100vh-240px)]">
                   <TabsContent value="calculator" className="mt-0">
@@ -1302,7 +1381,8 @@ export default function TeacherTools() {
                     </div>
                   </TabsContent>
                 </ScrollArea>
-              </Tabs>
+                </Tabs>
+              </div>
             </div>
           </main>
         </div>
