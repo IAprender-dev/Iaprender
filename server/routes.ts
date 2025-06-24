@@ -2902,6 +2902,18 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     res.redirect(redirectUrl);
   });
 
+  // Alternative login endpoint
+  app.get('/start-login', (req: Request, res: Response) => {
+    const redirectUrl = `https://${process.env.COGNITO_DOMAIN}/login?` +
+      `client_id=${process.env.COGNITO_CLIENT_ID}` +
+      `&response_type=code` +
+      `&scope=openid+profile+email` +
+      `&redirect_uri=${process.env.COGNITO_REDIRECT_URI}`;
+
+    console.log('➡️ Redirecionando para o Cognito:', redirectUrl);
+    res.redirect(redirectUrl);
+  });
+
   // Simple callback endpoint for testing
   app.get('/callback', (req: Request, res: Response) => {
     const code = req.query.code;
