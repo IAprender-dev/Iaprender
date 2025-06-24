@@ -123,8 +123,6 @@ function Router() {
       
       {/* Teacher routes */}
       <Route path="/professor" component={TeacherDashboard} />
-      <Route path="/professor/dashboard" component={TeacherDashboard} />
-      <Route path="/teacher/dashboard" component={TeacherDashboard} />
       <Route path="/teacher/profile" component={TeacherProfile} />
       <Route path="/professor/cursos" component={TeacherCourses} />
       <Route path="/professor/planejamento" component={TeacherPlanning} />
