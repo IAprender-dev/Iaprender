@@ -646,7 +646,6 @@ export default function UserManagement() {
                                 value={newUser.dateOfBirth}
                                 onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
                                 className="rounded-lg h-10 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 text-sm px-3 bg-white text-slate-800 font-medium"
-                                placeholder="15/03/2010"
                               />
                             </div>
                             
