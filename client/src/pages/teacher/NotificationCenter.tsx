@@ -223,7 +223,8 @@ export default function TeacherNotificationCenter() {
   const getRecipientOptions = () => {
     return [
       { value: 'admin', label: 'Secretaria' },
-      { value: 'student', label: 'Alunos' },
+      { value: 'student', label: 'Aluno Específico' },
+      { value: 'all_students', label: 'Todos os Alunos' },
     ];
   };
 
@@ -234,7 +235,17 @@ export default function TeacherNotificationCenter() {
       notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notification.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notification.senderName.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesPriority && matchesStatus && matchesSearch;
+    
+    // Filtrar por tipo de tab
+    let matchesTab = true;
+    if (selectedTab === 'received') {
+      matchesTab = notification.senderId !== user?.id;
+    } else if (selectedTab === 'sent') {
+      matchesTab = notification.senderId === user?.id;
+    }
+    // Para 'all', mostrar todas as notificações
+    
+    return matchesPriority && matchesStatus && matchesSearch && matchesTab;
   }) || [];
 
   if (isLoading) {
@@ -281,14 +292,22 @@ export default function TeacherNotificationCenter() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="received" className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
-              Recebidas ({filteredNotifications.length})
+              Recebidas
+            </TabsTrigger>
+            <TabsTrigger value="sent" className="flex items-center gap-2">
+              <Send className="h-4 w-4" />
+              Enviadas
+            </TabsTrigger>
+            <TabsTrigger value="all" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Todas
             </TabsTrigger>
             <TabsTrigger value="send" className="flex items-center gap-2">
-              <Send className="h-4 w-4" />
-              Enviar Nova
+              <Plus className="h-4 w-4" />
+              Nova
             </TabsTrigger>
           </TabsList>
 
@@ -305,7 +324,7 @@ export default function TeacherNotificationCenter() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <Label htmlFor="search">Pesquisar</Label>
+                    <Label htmlFor="search" className="text-sm font-medium text-slate-700">Pesquisar</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
@@ -318,7 +337,7 @@ export default function TeacherNotificationCenter() {
                     </div>
                   </div>
                   <div>
-                    <Label>Prioridade</Label>
+                    <Label className="text-sm font-medium text-slate-700">Prioridade</Label>
                     <Select value={filterPriority} onValueChange={setFilterPriority}>
                       <SelectTrigger>
                         <SelectValue />
@@ -333,7 +352,7 @@ export default function TeacherNotificationCenter() {
                     </Select>
                   </div>
                   <div>
-                    <Label>Status</Label>
+                    <Label className="text-sm font-medium text-slate-700">Status</Label>
                     <Select value={filterStatus} onValueChange={setFilterStatus}>
                       <SelectTrigger>
                         <SelectValue />
@@ -368,12 +387,10 @@ export default function TeacherNotificationCenter() {
               {filteredNotifications.length === 0 ? (
                 <Card>
                   <CardContent className="text-center py-12">
-                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma notificação encontrada</h3>
+                    <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma notificação recebida</h3>
                     <p className="text-gray-600">
-                      {notifications?.length === 0 
-                        ? "Ainda não há notificações registradas." 
-                        : "Tente ajustar os filtros para encontrar notificações."}
+                      Ainda não há notificações recebidas.
                     </p>
                   </CardContent>
                 </Card>
@@ -455,28 +472,332 @@ export default function TeacherNotificationCenter() {
               )}
             </div>
           </TabsContent>
-
-          {/* Send Notification Tab */}
-          <TabsContent value="send" className="space-y-6">
+          
+          {/* Sent Notifications Tab */}
+          <TabsContent value="sent" className="space-y-6">
+            {/* Filters */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  Filtros e Pesquisa
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label htmlFor="search" className="text-sm font-medium text-slate-700">Pesquisar</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="search"
+                        placeholder="Título, destinatário..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">Prioridade</Label>
+                    <Select value={filterPriority} onValueChange={setFilterPriority}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="urgent">Urgente</SelectItem>
+                        <SelectItem value="high">Alta</SelectItem>
+                        <SelectItem value="medium">Média</SelectItem>
+                        <SelectItem value="low">Baixa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">Status</Label>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                        <SelectItem value="read">Lida</SelectItem>
+                        <SelectItem value="archived">Arquivada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => {
+                        setFilterPriority('all');
+                        setFilterStatus('all');
+                        setSearchTerm('');
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Limpar Filtros
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Sent Notifications List */}
+            <div className="space-y-4">
+              {filteredNotifications.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <Send className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma notificação enviada</h3>
+                    <p className="text-gray-600">
+                      Ainda não foram enviadas notificações.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredNotifications.map((notification: NotificationData) => (
+                  <Card key={notification.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-start gap-4">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                              <Send className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h3 className="font-semibold text-slate-900 mb-1">{notification.title}</h3>
+                                  <p className="text-sm text-slate-600 mb-2">
+                                    Para: {notification.recipientType} • {notification.sequentialNumber}
+                                  </p>
+                                  <p className="text-sm text-slate-700 mb-3">{notification.message}</p>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                  <div className="flex gap-2">
+                                    <Badge className={getPriorityColor(notification.priority)}>
+                                      {notification.priority}
+                                    </Badge>
+                                    <Badge className={getStatusColor(notification.status)}>
+                                      {notification.status}
+                                    </Badge>
+                                  </div>
+                                  <span className="text-sm text-slate-500">
+                                    {new Date(notification.createdAt).toLocaleDateString('pt-BR')}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+          
+          {/* All Notifications Tab */}
+          <TabsContent value="all" className="space-y-6">
+            {/* Filters */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  Filtros e Pesquisa
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label htmlFor="search" className="text-sm font-medium text-slate-700">Pesquisar</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="search"
+                        placeholder="Título, remetente..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">Prioridade</Label>
+                    <Select value={filterPriority} onValueChange={setFilterPriority}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="urgent">Urgente</SelectItem>
+                        <SelectItem value="high">Alta</SelectItem>
+                        <SelectItem value="medium">Média</SelectItem>
+                        <SelectItem value="low">Baixa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">Status</Label>
+                    <Select value={filterStatus} onValueChange={setFilterStatus}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="pending">Pendente</SelectItem>
+                        <SelectItem value="read">Lida</SelectItem>
+                        <SelectItem value="archived">Arquivada</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-end">
+                    <Button 
+                      onClick={() => {
+                        setFilterPriority('all');
+                        setFilterStatus('all');
+                        setSearchTerm('');
+                      }}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Limpar Filtros
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* All Notifications List */}
+            <div className="space-y-4">
+              {filteredNotifications.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma notificação encontrada</h3>
+                    <p className="text-gray-600">
+                      {notifications?.length === 0 
+                        ? "Ainda não há notificações registradas." 
+                        : "Tente ajustar os filtros para encontrar notificações."}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredNotifications.map((notification: NotificationData) => (
+                  <Card key={notification.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-start gap-4">
+                            <div className={`p-2 rounded-lg ${notification.senderId === user?.id ? 'bg-green-100' : 'bg-slate-100'}`}>
+                              {notification.senderId === user?.id ? 
+                                <Send className="h-4 w-4 text-green-600" /> : 
+                                getTypeIcon(notification.type)
+                              }
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h3 className="font-semibold text-slate-900 mb-1">{notification.title}</h3>
+                                  <p className="text-sm text-slate-600 mb-2">
+                                    {notification.senderId === user?.id ? 
+                                      `Para: ${notification.recipientType}` : 
+                                      `De: ${notification.senderName}`
+                                    } • {notification.sequentialNumber}
+                                  </p>
+                                  <p className="text-sm text-slate-700 mb-3">{notification.message}</p>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                  <div className="flex gap-2">
+                                    <Badge className={getPriorityColor(notification.priority)}>
+                                      {notification.priority}
+                                    </Badge>
+                                    <Badge className={getStatusColor(notification.status)}>
+                                      {notification.status}
+                                    </Badge>
+                                    {notification.senderId === user?.id && (
+                                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                                        Enviada
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <span className="text-sm text-slate-500">
+                                    {new Date(notification.createdAt).toLocaleDateString('pt-BR')}
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              {notification.senderId !== user?.id && (
+                                <div className="flex gap-2">
+                                  {notification.status === 'pending' && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleMarkAsRead(notification.id)}
+                                      className="gap-2"
+                                    >
+                                      <CheckCircle className="h-4 w-4" />
+                                      Marcar como Lida
+                                    </Button>
+                                  )}
+                                  
+                                  {notification.requiresResponse && !notification.responseText && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setSelectedNotification(notification)}
+                                      className="gap-2"
+                                    >
+                                      <Reply className="h-4 w-4" />
+                                      Responder
+                                    </Button>
+                                  )}
+                                  
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleArchive(notification.id)}
+                                    className="gap-2"
+                                  >
+                                    <Archive className="h-4 w-4" />
+                                    Arquivar
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Send Notification Tab */}
+          <TabsContent value="send" className="space-y-6">
+            <Card className="border-2 border-blue-200 bg-blue-50/30">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <Plus className="h-5 w-5" />
                   Nova Notificação
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-blue-100">
                   Envie uma notificação para outros usuários do sistema
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Destinatário</Label>
+              <CardContent className="space-y-6 p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-800">Destinatário</Label>
                     <Select 
                       value={newNotification.recipientType} 
                       onValueChange={(value) => setNewNotification({...newNotification, recipientType: value})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue placeholder="Selecione o destinatário" />
                       </SelectTrigger>
                       <SelectContent>
@@ -489,13 +810,31 @@ export default function TeacherNotificationCenter() {
                     </Select>
                   </div>
                   
-                  <div>
-                    <Label>Prioridade</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-800">Tipo de Notificação</Label>
+                    <Select 
+                      value={newNotification.type} 
+                      onValueChange={(value) => setNewNotification({...newNotification, type: value as any})}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="communication">Comunicação</SelectItem>
+                        <SelectItem value="academic">Acadêmico</SelectItem>
+                        <SelectItem value="behavior">Comportamento</SelectItem>
+                        <SelectItem value="administrative">Administrativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-800">Prioridade</Label>
                     <Select 
                       value={newNotification.priority} 
                       onValueChange={(value) => setNewNotification({...newNotification, priority: value as any})}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -506,32 +845,64 @@ export default function TeacherNotificationCenter() {
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold text-slate-800">Requer Resposta?</Label>
+                    <Select 
+                      value={newNotification.requiresResponse.toString()} 
+                      onValueChange={(value) => setNewNotification({...newNotification, requiresResponse: value === 'true'})}
+                    >
+                      <SelectTrigger className="h-11">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="false">Não</SelectItem>
+                        <SelectItem value="true">Sim</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div>
-                  <Label>Título</Label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-800">Título da Notificação</Label>
                   <Input
                     value={newNotification.title}
                     onChange={(e) => setNewNotification({...newNotification, title: e.target.value})}
                     placeholder="Digite o título da notificação"
+                    className="h-11"
                   />
                 </div>
 
-                <div>
-                  <Label>Mensagem</Label>
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-slate-800">Mensagem</Label>
                   <Textarea
                     value={newNotification.message}
                     onChange={(e) => setNewNotification({...newNotification, message: e.target.value})}
                     placeholder="Digite a mensagem da notificação"
-                    rows={4}
+                    rows={5}
+                    className="resize-none"
                   />
                 </div>
 
-                <div className="flex justify-end gap-3">
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setNewNotification({
+                      recipientType: '',
+                      recipientId: '',
+                      title: '',
+                      message: '',
+                      type: 'communication',
+                      priority: 'medium',
+                      requiresResponse: false
+                    })}
+                  >
+                    Limpar Formulário
+                  </Button>
                   <Button 
                     onClick={handleSendNotification}
                     disabled={!newNotification.recipientType || !newNotification.title || !newNotification.message || sendNotificationMutation.isPending}
-                    className="gap-2"
+                    className="gap-2 bg-blue-600 hover:bg-blue-700"
                   >
                     <Send className="h-4 w-4" />
                     {sendNotificationMutation.isPending ? "Enviando..." : "Enviar Notificação"}
