@@ -440,7 +440,7 @@ export default function TeacherNotificationCenter() {
                                   </Button>
                                 )}
                                 
-                                {notification.requiresResponse && !notification.responseText && (
+                                {notification.requiresResponse && !notification.responseText && notification.senderId !== user?.id && (
                                   <Button
                                     size="sm"
                                     variant="outline"
@@ -450,6 +450,12 @@ export default function TeacherNotificationCenter() {
                                     <Reply className="h-4 w-4" />
                                     Responder
                                   </Button>
+                                )}
+                                
+                                {notification.responseText && notification.senderId !== user?.id && (
+                                  <Badge className="bg-green-100 text-green-800 border-green-200">
+                                    Respondida
+                                  </Badge>
                                 )}
                                 
                                 <Button
@@ -707,6 +713,11 @@ export default function TeacherNotificationCenter() {
                                       `Para: ${notification.recipientType}` : 
                                       `De: ${notification.senderName}`
                                     } • {notification.sequentialNumber}
+                                    {notification.isResponse && notification.parentNotificationId && (
+                                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                        Resposta
+                                      </span>
+                                    )}
                                   </p>
                                   <p className="text-sm text-slate-700 mb-3">{notification.message}</p>
                                 </div>
@@ -753,6 +764,12 @@ export default function TeacherNotificationCenter() {
                                       <Reply className="h-4 w-4" />
                                       Responder
                                     </Button>
+                                  )}
+                                  
+                                  {notification.responseText && (
+                                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                                      Respondida
+                                    </Badge>
                                   )}
                                   
                                   <Button
