@@ -77,7 +77,7 @@ export default function NotificationCenter() {
     title: '',
     message: '',
     type: 'communication' as const,
-    priority: 'medium' as const,
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     requiresResponse: false
   });
 
@@ -194,13 +194,13 @@ export default function NotificationCenter() {
     }
   };
 
-  const filteredNotifications = (notifications || []).filter((notification: NotificationData) => {
+  const filteredNotifications = Array.isArray(notifications) ? notifications.filter((notification: NotificationData) => {
     const matchesPriority = filterPriority === 'all' || notification.priority === filterPriority;
     const matchesStatus = filterStatus === 'all' || notification.status === filterStatus;
     const matchesSearch = !searchTerm || 
-      notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      notification.senderName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.message?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notification.senderName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notification.studentName?.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Filter by tab type
@@ -213,7 +213,7 @@ export default function NotificationCenter() {
     // For 'all', show all notifications
     
     return matchesPriority && matchesStatus && matchesSearch && matchesTab;
-  });
+  }) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
@@ -476,7 +476,7 @@ export default function NotificationCenter() {
                     <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma notificação encontrada</h3>
                     <p className="text-gray-600">
-                      {(notifications || []).length === 0 
+                      {!Array.isArray(notifications) || notifications.length === 0 
                         ? "Ainda não há notificações registradas." 
                         : "Tente ajustar os filtros para encontrar notificações."}
                     </p>

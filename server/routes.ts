@@ -1473,15 +1473,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/secretary/dashboard-stats", authenticate, authorize(["admin"]), async (req, res) => {
     try {
       const allUsers = await db.select().from(users);
+      const allNotifications = await db.select().from(notifications);
       
       const stats = {
         totalStudents: allUsers.filter(u => u.role === 'student').length,
         totalTeachers: allUsers.filter(u => u.role === 'teacher').length,
         totalUsers: allUsers.length,
         activeUsers: allUsers.filter(u => u.status === 'active').length,
-        pendingUsers: allUsers.filter(u => u.status === 'pending').length,
-        pendingNotifications: 3, // Mock value
-        totalNotifications: 10, // Mock value
+        pendingUsers: allUsers.filter(u => u.status === 'inactive').length,
+        pendingNotifications: allNotifications.filter(n => n.status === 'pending').length,
+        totalNotifications: allNotifications.length,
         averageSatisfaction: 4.5
       };
       
@@ -1495,33 +1496,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get notifications for secretary
   app.get("/api/secretary/notifications", authenticate, authorize(["admin"]), async (req, res) => {
     try {
-      // Mock notifications - replace with real data when implemented
-      const notifications = [
-        {
-          id: 1,
-          sequentialNumber: "NOT-2025-001",
-          teacherName: "Prof. João Silva",
-          studentName: "Maria Santos",
-          priority: "high",
-          message: "Aluna apresentando dificuldades em matemática",
-          notificationDate: new Date(),
-          createdAt: new Date(),
-          status: "pending"
-        },
-        {
-          id: 2,
-          sequentialNumber: "NOT-2025-002", 
-          teacherName: "Prof. Ana Costa",
-          studentName: "Pedro Oliveira",
-          priority: "medium",
-          message: "Solicitação de material adicional para projeto",
-          notificationDate: new Date(),
-          createdAt: new Date(),
-          status: "pending"
-        }
-      ];
+      // Fetch real notifications from database with sender and recipient information
+      const notificationsData = await db
+        .select({
+          id: notifications.id,
+          sequentialNumber: notifications.sequentialNumber,
+          senderId: notifications.senderId,
+          senderName: sql<string>`CONCAT(sender.first_name, ' ', sender.last_name)`.as('senderName'),
+          recipientId: notifications.recipientId,
+          recipientType: notifications.recipientType,
+          title: notifications.title,
+          message: notifications.message,
+          type: notifications.type,
+          priority: notifications.priority,
+          status: notifications.status,
+          requiresResponse: notifications.requiresResponse,
+          responseText: notifications.responseText,
+          respondedAt: notifications.respondedAt,
+          readAt: notifications.readAt,
+          createdAt: notifications.createdAt,
+          updatedAt: notifications.updatedAt
+        })
+        .from(notifications)
+        .leftJoin(sql`${users} AS sender`, eq(notifications.senderId, sql`sender.id`))
+        .orderBy(sql`${notifications.createdAt} DESC`);
       
-      return res.status(200).json(notifications);
+      return res.status(200).json(notificationsData);
     } catch (error) {
       console.error("Error fetching notifications:", error);
       return res.status(500).json({ message: "Server error" });
