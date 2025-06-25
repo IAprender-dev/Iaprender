@@ -515,7 +515,8 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-// Notification types already defined above
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
 
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof courses.$inferSelect;
@@ -591,7 +592,5 @@ export type TokenUsageLog = typeof tokenUsageLogs.$inferSelect;
 
 export type InsertTokenProviderRate = z.infer<typeof insertTokenProviderRateSchema>;
 
-// Notifications types
-export type Notification = typeof notifications.$inferSelect;
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+// Notifications types already defined above
 export type TokenProviderRate = typeof tokenProviderRates.$inferSelect;

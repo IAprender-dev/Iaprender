@@ -110,12 +110,18 @@ export default function NotificationCenter() {
   // Send notification mutation
   const sendNotificationMutation = useMutation({
     mutationFn: async (notificationData: any) => {
-      const response = await fetch('/api/secretary/notifications', {
+      console.log('Sending notification:', notificationData);
+      const response = await fetch('/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(notificationData),
       });
-      if (!response.ok) throw new Error('Failed to send notification');
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Notification send error:', errorData);
+        throw new Error(`Failed to send notification: ${response.status}`);
+      }
       return response.json();
     },
     onSuccess: () => {

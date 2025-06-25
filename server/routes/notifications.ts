@@ -29,14 +29,18 @@ async function generateSequentialNumber(): Promise<string> {
 // GET /api/notifications - Buscar notificações para o usuário logado
 router.get('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const userId = req.session.user.id;
-    const userRole = req.session.user.role;
+    const userId = req.session?.user?.id;
+    const userRole = req.session?.user?.role;
+    
+    if (!userId || !userRole) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
 
     // Buscar notificações baseadas no role do usuário
     let whereCondition;
     
-    if (userRole === 'secretary') {
-      // Secretaria vê todas as notificações
+    if (userRole === 'admin') {
+      // Admin/Secretaria vê todas as notificações
       whereCondition = sql`1=1`;
     } else {
       // Outros usuários veem notificações direcionadas a eles ou ao seu grupo
@@ -85,8 +89,13 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
 // POST /api/notifications - Criar nova notificação
 router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
-    const senderId = req.session.user.id;
-    const senderRole = req.session.user.role;
+    console.log('Creating notification:', req.body);
+    const senderId = req.session?.user?.id;
+    const senderRole = req.session?.user?.role;
+    
+    if (!senderId || !senderRole) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
     const {
       recipientType,
       recipientId,
@@ -101,26 +110,33 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       selectedRecipients = []
     } = req.body;
 
+    // Validate required fields
+    if (!recipientType || !title || !message) {
+      return res.status(400).json({ message: 'recipientType, title, and message are required' });
+    }
+
     // Validações baseadas no role
     if (senderRole === 'student') {
-      // Estudantes só podem enviar para secretaria e professores
-      if (!['secretary', 'teacher'].includes(recipientType)) {
-        return res.status(403).json({ message: 'Students can only send notifications to secretary and teachers' });
+      // Estudantes só podem enviar para admin e professores
+      if (!['admin', 'teacher'].includes(recipientType)) {
+        return res.status(403).json({ message: 'Students can only send notifications to admin and teachers' });
       }
     } else if (senderRole === 'teacher') {
-      // Professores podem enviar para secretaria e estudantes
-      if (!['secretary', 'student'].includes(recipientType)) {
-        return res.status(403).json({ message: 'Teachers can only send notifications to secretary and students' });
+      // Professores podem enviar para admin e estudantes
+      if (!['admin', 'student'].includes(recipientType)) {
+        return res.status(403).json({ message: 'Teachers can only send notifications to admin and students' });
       }
     }
-    // Secretaria pode enviar para todos
+    // Admin pode enviar para todos
 
     const sequentialNumber = await generateSequentialNumber();
+    console.log('Generated sequential number:', sequentialNumber);
 
     // Se há destinatários específicos, criar uma notificação para cada um
-    if (selectedRecipients.length > 0) {
-      const notificationsToCreate = selectedRecipients.map(recipientIdStr => ({
-        sequentialNumber: `${sequentialNumber}-${recipientIdStr}`,
+    if (selectedRecipients && selectedRecipients.length > 0) {
+      console.log('Creating notifications for specific recipients:', selectedRecipients);
+      const notificationsToCreate = selectedRecipients.map((recipientIdStr: string, index: number) => ({
+        sequentialNumber: `${sequentialNumber}-${index + 1}`,
         senderId,
         recipientId: parseInt(recipientIdStr),
         recipientType,
@@ -128,33 +144,40 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
         message,
         type,
         priority,
-        studentId,
-        parentEmail,
-        parentPhone,
+        studentId: studentId || null,
+        parentEmail: parentEmail || null,
+        parentPhone: parentPhone || null,
         requiresResponse,
         sentAt: new Date(),
       }));
 
-      await db.insert(notifications).values(notificationsToCreate);
+      const result = await db.insert(notifications).values(notificationsToCreate).returning();
+      console.log('Created notifications:', result);
     } else {
       // Notificação geral para o grupo
-      await db.insert(notifications).values({
+      console.log('Creating general notification for group:', recipientType);
+      const notificationData = {
         sequentialNumber,
         senderId,
-        recipientId,
+        recipientId: recipientId || null,
         recipientType,
         title,
         message,
         type,
         priority,
-        studentId,
-        parentEmail,
-        parentPhone,
+        studentId: studentId || null,
+        parentEmail: parentEmail || null,
+        parentPhone: parentPhone || null,
         requiresResponse,
         sentAt: new Date(),
-      });
+      };
+      
+      console.log('Notification data to insert:', notificationData);
+      const result = await db.insert(notifications).values(notificationData).returning();
+      console.log('Created notification:', result);
     }
 
+    console.log('Notification creation successful');
     res.status(201).json({ message: 'Notification sent successfully', sequentialNumber });
   } catch (error) {
     console.error('Error creating notification:', error);

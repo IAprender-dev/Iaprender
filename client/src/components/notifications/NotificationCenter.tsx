@@ -93,21 +93,28 @@ export default function NotificationCenter() {
       if (!response.ok) throw new Error('Failed to fetch users');
       return response.json();
     },
-    enabled: user?.role === 'secretary',
+    enabled: user?.role === 'admin',
   });
 
   // Send notification mutation
   const sendNotificationMutation = useMutation({
     mutationFn: async (notificationData: any) => {
+      console.log('Sending notification:', notificationData);
       const response = await fetch('/api/notifications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(notificationData),
       });
-      if (!response.ok) throw new Error('Failed to send notification');
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Notification send error:', errorData);
+        throw new Error(`Failed to send notification: ${response.status}`);
+      }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Notification sent successfully:', data);
       toast({
         title: "Notificação enviada",
         description: "A notificação foi enviada com sucesso.",
@@ -123,10 +130,11 @@ export default function NotificationCenter() {
         requiresResponse: false
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Notification send error:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível enviar a notificação.",
+        description: `Não foi possível enviar a notificação: ${error.message}`,
         variant: "destructive",
       });
     },
@@ -224,7 +232,7 @@ export default function NotificationCenter() {
   };
 
   const getRecipientOptions = () => {
-    if (user?.role === 'secretary') {
+    if (user?.role === 'admin') {
       return [
         { value: 'student', label: 'Todos os Alunos' },
         { value: 'teacher', label: 'Todos os Professores' },
@@ -232,12 +240,12 @@ export default function NotificationCenter() {
       ];
     } else if (user?.role === 'teacher') {
       return [
-        { value: 'secretary', label: 'Secretaria' },
+        { value: 'admin', label: 'Secretaria' },
         { value: 'student', label: 'Alunos' },
       ];
     } else if (user?.role === 'student') {
       return [
-        { value: 'secretary', label: 'Secretaria' },
+        { value: 'admin', label: 'Secretaria' },
         { value: 'teacher', label: 'Professores' },
       ];
     }
