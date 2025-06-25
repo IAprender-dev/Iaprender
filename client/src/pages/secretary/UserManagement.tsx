@@ -614,11 +614,11 @@ export default function UserManagement() {
                               <Users className="h-4 w-4" />
                               Nome
                             </Label>
-                            <div className="bg-[#9ca3af] p-2 rounded">
+                            <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                               <Input
                                 value={newUser.firstName}
                                 onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                                className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
+                                className="h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-black placeholder:text-gray-500 shadow-sm"
                                 placeholder="Digite o nome"
                               />
                             </div>
@@ -629,11 +629,11 @@ export default function UserManagement() {
                               <Users className="h-4 w-4" />
                               Sobrenome
                             </Label>
-                            <div className="bg-[#9ca3af] p-2 rounded">
+                            <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                               <Input
                                 value={newUser.lastName}
                                 onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                                className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
+                                className="h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-black placeholder:text-gray-500 shadow-sm"
                                 placeholder="Digite o sobrenome"
                               />
                             </div>
@@ -645,12 +645,12 @@ export default function UserManagement() {
                             <Mail className="h-4 w-4" />
                             E-mail
                           </Label>
-                          <div className="bg-[#9ca3af] p-2 rounded">
+                          <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                             <Input
                               type="email"
                               value={newUser.email}
                               onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                              className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
+                              className="h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-black placeholder:text-gray-500 shadow-sm"
                               placeholder="usuario@dominio.com"
                             />
                           </div>
@@ -662,9 +662,9 @@ export default function UserManagement() {
                               <GraduationCap className="h-4 w-4" />
                               Cargo
                             </Label>
-                            <div className="bg-[#9ca3af] p-2 rounded">
+                            <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                               <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
-                                <SelectTrigger className="h-12 bg-white border-slate-300 focus:border-purple-500 text-black">
+                                <SelectTrigger className="h-12 bg-white border-gray-300 focus:border-blue-500 text-black shadow-sm">
                                   <SelectValue />
                                 </SelectTrigger>
                               <SelectContent>
@@ -681,9 +681,9 @@ export default function UserManagement() {
                                 <School className="h-4 w-4" />
                                 Ano Escolar
                               </Label>
-                              <div className="bg-[#9ca3af] p-2 rounded">
+                              <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                                 <Select value={newUser.schoolYear} onValueChange={(value) => setNewUser({...newUser, schoolYear: value})}>
-                                  <SelectTrigger className="h-12 bg-white border-slate-300 focus:border-purple-500 text-black">
+                                  <SelectTrigger className="h-12 bg-white border-gray-300 focus:border-blue-500 text-black shadow-sm">
                                     <SelectValue placeholder="Selecione o ano" />
                                   </SelectTrigger>
                                 <SelectContent>
@@ -763,11 +763,11 @@ export default function UserManagement() {
                               <Phone className="h-4 w-4" />
                               Telefone
                             </Label>
-                            <div className="bg-[#9ca3af] p-2 rounded">
+                            <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                               <Input
                                 value={newUser.phone}
                                 onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                                className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
+                                className="h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-black placeholder:text-gray-500 shadow-sm"
                                 placeholder="(11) 99999-9999"
                               />
                             </div>
@@ -778,12 +778,12 @@ export default function UserManagement() {
                               <Calendar className="h-4 w-4" />
                               Data de Nascimento
                             </Label>
-                            <div className="bg-[#9ca3af] p-2 rounded">
+                            <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                               <Input
                                 type="date"
                                 value={newUser.dateOfBirth}
                                 onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
-                                className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black"
+                                className="h-12 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-black shadow-sm"
                               />
                             </div>
                           </div>
@@ -794,11 +794,11 @@ export default function UserManagement() {
                             <MapPin className="h-4 w-4" />
                             Endereço
                           </Label>
-                          <div className="bg-[#9ca3af] p-2 rounded">
+                          <div className="bg-[#f8f9fa] p-3 rounded-lg border border-gray-200">
                             <Textarea
                               value={newUser.address}
                               onChange={(e) => setNewUser({...newUser, address: e.target.value})}
-                              className="bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
+                              className="bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-200 text-black placeholder:text-gray-500 shadow-sm"
                               placeholder="Endereço completo"
                               rows={3}
                             />
