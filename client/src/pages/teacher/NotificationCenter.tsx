@@ -209,6 +209,16 @@ export default function TeacherNotificationCenter() {
     }
   };
 
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'behavior': return <AlertTriangle className="h-6 w-6 text-white drop-shadow-sm" />;
+      case 'academic': return <User className="h-6 w-6 text-white drop-shadow-sm" />;
+      case 'administrative': return <Users className="h-6 w-6 text-white drop-shadow-sm" />;
+      case 'communication': return <MessageSquare className="h-6 w-6 text-white drop-shadow-sm" />;
+      default: return <MessageSquare className="h-6 w-6 text-white drop-shadow-sm" />;
+    }
+  };
+
   const filteredNotifications = notifications?.filter((notification: NotificationData) => {
     const matchesPriority = filterPriority === 'all' || notification.priority === filterPriority;
     const matchesStatus = filterStatus === 'all' || notification.status === filterStatus;
@@ -343,7 +353,7 @@ export default function TeacherNotificationCenter() {
                         <div className="flex items-start gap-4">
                           <div className="flex-shrink-0">
                             <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-lg flex items-center justify-center shadow-md">
-                              <MessageSquare className="h-6 w-6 text-white" />
+                              {getTypeIcon(notification.type)}
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
