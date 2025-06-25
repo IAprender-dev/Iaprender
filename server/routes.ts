@@ -16,12 +16,14 @@ import {
   insertCompanySchema,
   insertContractSchema,
   insertContractUserSchema,
+  insertNotificationSchema,
   users,
   companies,
   contracts,
   tokenUsage,
   aiTools,
-  newsletter
+  newsletter,
+  notifications
 } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";

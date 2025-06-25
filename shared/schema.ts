@@ -12,6 +12,9 @@ export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'susp
 export const contractStatusEnum = pgEnum('contract_status', ['active', 'pending', 'expired', 'cancelled']);
 export const aiToolTypeEnum = pgEnum('ai_tool_type', ['openai', 'gemini', 'anthropic', 'perplexity', 'image_generation', 'other']);
 export const newsletterStatusEnum = pgEnum('newsletter_status', ['subscribed', 'unsubscribed']);
+export const notificationStatusEnum = pgEnum('notification_status', ['pending', 'read', 'archived']);
+export const notificationPriorityEnum = pgEnum('notification_priority', ['low', 'medium', 'high', 'urgent']);
+export const notificationTypeEnum = pgEnum('notification_type', ['behavior', 'academic', 'administrative', 'communication']);
 
 // Users table
 export const users = pgTable("users", {
@@ -334,6 +337,31 @@ export const tokenProviderRates = pgTable("token_provider_rates", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Notifications table - Sistema de notificações da secretaria
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  sequentialNumber: text("sequential_number").notNull().unique(),
+  senderId: integer("sender_id").references(() => users.id).notNull(), // quem enviou
+  recipientId: integer("recipient_id").references(() => users.id), // destinatário específico (opcional)
+  recipientType: text("recipient_type").notNull(), // 'teacher', 'student', 'parent', 'secretary', 'all'
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  type: notificationTypeEnum("type").default('communication').notNull(),
+  priority: notificationPriorityEnum("priority").default('medium').notNull(),
+  status: notificationStatusEnum("status").default('pending').notNull(),
+  studentId: integer("student_id").references(() => users.id), // se relacionado a um aluno específico
+  parentEmail: text("parent_email"), // email dos responsáveis
+  parentPhone: text("parent_phone"), // telefone dos responsáveis
+  requiresResponse: boolean("requires_response").default(false).notNull(),
+  responseText: text("response_text"), // resposta do destinatário
+  respondedAt: timestamp("responded_at"),
+  sentAt: timestamp("sent_at"),
+  readAt: timestamp("read_at"),
+  metadata: jsonb("metadata"), // dados adicionais como anexos, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -471,6 +499,15 @@ export const insertTokenProviderRateSchema = createInsertSchema(tokenProviderRat
   updatedAt: true,
 });
 
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  sentAt: true,
+  readAt: true,
+  respondedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -548,4 +585,8 @@ export type InsertTokenUsageLog = z.infer<typeof insertTokenUsageLogSchema>;
 export type TokenUsageLog = typeof tokenUsageLogs.$inferSelect;
 
 export type InsertTokenProviderRate = z.infer<typeof insertTokenProviderRateSchema>;
+
+// Notifications types
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type TokenProviderRate = typeof tokenProviderRates.$inferSelect;

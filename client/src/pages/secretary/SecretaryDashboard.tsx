@@ -145,10 +145,12 @@ export default function SecretaryDashboard() {
                     Relatórios e Análises
                   </Button>
                   
-                  <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
-                    <MessageSquare className="h-4 w-4 mr-3" />
-                    Central de Notificações
-                  </Button>
+                  <Link href="/secretary/notifications">
+                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
+                      <MessageSquare className="h-4 w-4 mr-3" />
+                      Central de Notificações
+                    </Button>
+                  </Link>
                   
                   <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
                     <Building className="h-4 w-4 mr-3" />

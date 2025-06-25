@@ -28,6 +28,7 @@ import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import SecretaryDashboard from "@/pages/secretary/SecretaryDashboard";
 import UserManagement from "@/pages/secretary/UserManagement";
+import NotificationCenter from "@/pages/secretary/NotificationCenter";
 
 import StudentProfile from "@/pages/student/StudentProfile";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
@@ -173,6 +174,7 @@ function Router() {
       {/* Secretary routes */}
       <ProtectedRoute path="/secretary" component={SecretaryDashboard} roles={['admin']} />
       <ProtectedRoute path="/secretary/users" component={UserManagement} roles={['admin']} />
+      <ProtectedRoute path="/secretary/notifications" component={NotificationCenter} roles={['admin']} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

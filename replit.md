@@ -121,6 +121,19 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 25, 2025: Complete notification management system for secretary dashboard
+  - Added comprehensive notifications database table with all required fields
+  - Created NotificationCenter component with full CRUD functionality
+  - Implemented notification filtering, search, and status management
+  - Added API routes for creating, reading, updating, and deleting notifications
+  - Integrated notification system with secretary dashboard navigation
+  - Support for different notification types (behavior, academic, administrative, communication)
+  - Priority levels (low, medium, high, urgent) with color-coded badges
+  - Contact information for parents (email, phone)
+  - Response tracking for notifications requiring feedback
+  - Sequential numbering system (NOT-YYYY-XXX format)
+  - Real-time status updates and analytics dashboard
+
 - June 24, 2025: Complete teacher dashboard redesign from scratch
   - Created new intuitive dashboard with modern UI/UX principles
   - Added welcome bar with gradient background and user greeting
