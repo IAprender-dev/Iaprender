@@ -1054,7 +1054,7 @@ export default function UserManagement() {
         {/* Edit User Dialog */}
         {editingUser && (
           <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#e1e7ef]">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent">
                   Editar Usuário
