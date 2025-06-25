@@ -42,7 +42,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 
-// Edit User Form Component
+// Edit User Form Component - Seguindo o mesmo padrão do formulário de criação
 function EditUserForm({ user, onSave, onCancel, isLoading }: {
   user: User;
   onSave: (userData: any) => void;
@@ -72,180 +72,275 @@ function EditUserForm({ user, onSave, onCancel, isLoading }: {
     onSave(formData);
   };
 
+  // Dados das funções e anos acadêmicos (mesmo do formulário de criação)
+  const roleOptions = [
+    { id: 1, name: 'Aluno', description: 'Acesso aos conteúdos educacionais e atividades', icon: '🎓' },
+    { id: 2, name: 'Professor', description: 'Criação de conteúdos e gestão de turmas', icon: '👨‍🏫' },
+    { id: 3, name: 'Administrador', description: 'Acesso completo ao sistema', icon: '⚙️' },
+    { id: 4, name: 'Secretaria', description: 'Gestão administrativa da escola', icon: '📋' }
+  ];
+
+  const academicYears = [
+    { id: 1, code: '1º ano fundamental', name: '1º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 2, code: '2º ano fundamental', name: '2º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 3, code: '3º ano fundamental', name: '3º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 4, code: '4º ano fundamental', name: '4º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 5, code: '5º ano fundamental', name: '5º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 6, code: '6º ano fundamental', name: '6º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 7, code: '7º ano fundamental', name: '7º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 8, code: '8º ano fundamental', name: '8º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 9, code: '9º ano fundamental', name: '9º Ano do Ensino Fundamental', stage: 'fundamental' },
+    { id: 10, code: '1º ano médio', name: '1º Ano do Ensino Médio', stage: 'medio' },
+    { id: 11, code: '2º ano médio', name: '2º Ano do Ensino Médio', stage: 'medio' },
+    { id: 12, code: '3º ano médio', name: '3º Ano do Ensino Médio', stage: 'medio' }
+  ];
+
+  const selectedRole = roleOptions.find(r => 
+    (r.name === 'Aluno' && formData.role === 'student') ||
+    (r.name === 'Professor' && formData.role === 'teacher') ||
+    (r.name === 'Administrador' && formData.role === 'admin') ||
+    (r.name === 'Secretaria' && formData.role === 'secretary')
+  );
+  const isStudentRole = formData.role === 'student';
+
   return (
-    <div className="space-y-6 py-4 bg-[#9ca3af] p-6 rounded-lg">
-      {/* Personal Info */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-black font-medium flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Nome
-          </Label>
-          <div className="bg-[#9ca3af] p-2 rounded">
+    <div className="space-y-6 px-2">
+      {/* Identificação do Usuário - Card único com todos os campos */}
+      <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-xl p-6 border border-blue-200/60 shadow-lg">
+        <h3 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
+            <Users className="h-4 w-4 text-white" />
+          </div>
+          Identificação do Usuário
+        </h3>
+        
+        <div className="space-y-4">
+          {/* Função */}
+          <div className="space-y-2">
+            <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Função</Label>
+            <Select 
+              value={formData.role} 
+              onValueChange={(value) => setFormData({...formData, role: value})}
+            >
+              <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
+                  <SelectValue placeholder="Selecione a função do usuário" className="text-slate-600" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
+                {roleOptions.map((role) => (
+                  <SelectItem key={role.id} value={role.name === 'Aluno' ? 'student' : role.name === 'Professor' ? 'teacher' : role.name === 'Administrador' ? 'admin' : 'secretary'} className="py-4 px-4 hover:bg-blue-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <span className="text-white text-sm">{role.icon}</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">{role.name}</p>
+                        <p className="text-xs text-slate-600">{role.description}</p>
+                      </div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Status */}
+          <div className="space-y-2">
+            <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Status do Usuário</Label>
+            <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+              <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                <div className="flex items-center space-x-3">
+                  <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-white" />
+                  </div>
+                  <SelectValue placeholder="Selecione o status" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
+                <SelectItem value="active" className="py-4 px-4 hover:bg-green-50/50 rounded-lg cursor-pointer">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-sm">✅</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">Ativo</p>
+                      <p className="text-xs text-slate-600">Usuário com acesso liberado</p>
+                    </div>
+                  </div>
+                </SelectItem>
+                <SelectItem value="inactive" className="py-4 px-4 hover:bg-red-50/50 rounded-lg cursor-pointer">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-sm">❌</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">Inativo</p>
+                      <p className="text-xs text-slate-600">Usuário sem acesso ao sistema</p>
+                    </div>
+                  </div>
+                </SelectItem>
+                <SelectItem value="pending" className="py-4 px-4 hover:bg-yellow-50/50 rounded-lg cursor-pointer">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-sm">⏳</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">Pendente</p>
+                      <p className="text-xs text-slate-600">Aguardando aprovação</p>
+                    </div>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Nome e Sobrenome */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Nome</Label>
+              <Input
+                value={formData.firstName}
+                onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                placeholder="Digite o primeiro nome"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Sobrenome</Label>
+              <Input
+                value={formData.lastName}
+                onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                placeholder="Digite o sobrenome completo"
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className="space-y-2">
+            <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Email</Label>
             <Input
-              value={formData.firstName}
-              onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-              className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
-              placeholder="Digite o nome"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+              placeholder="Digite o email principal do usuário"
             />
           </div>
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label className="text-black font-medium flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Sobrenome
-          </Label>
-          <div className="bg-[#9ca3af] p-2 rounded">
-            <Input
-              value={formData.lastName}
-              onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-              className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
-              placeholder="Digite o sobrenome"
+      {/* Informações Pessoais */}
+      <div className="bg-gradient-to-br from-green-50/80 to-emerald-50/80 rounded-xl p-6 border border-green-200/60 shadow-lg">
+        <h3 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center">
+            <Users className="h-4 w-4 text-white" />
+          </div>
+          Informações Pessoais
+        </h3>
+        
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Telefone</Label>
+              <Input
+                value={formData.phone}
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Data de Nascimento</Label>
+              <Input
+                type="date"
+                value={formData.dateOfBirth}
+                onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Endereço Completo</Label>
+            <Textarea
+              value={formData.address}
+              onChange={(e) => setFormData({...formData, address: e.target.value})}
+              className="rounded-2xl border-2 border-slate-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 text-base p-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium resize-none"
+              placeholder="Digite o endereço completo (rua, número, bairro, cidade, CEP)"
+              rows={3}
             />
           </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label className="text-black font-medium flex items-center gap-2">
-          <Mail className="h-4 w-4" />
-          E-mail
-        </Label>
-        <div className="bg-[#9ca3af] p-2 rounded">
-          <Input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({...formData, email: e.target.value})}
-            className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
-            placeholder="usuario@dominio.com"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <GraduationCap className="h-4 w-4" />
-            Cargo
-          </Label>
-          <Select value={formData.role} onValueChange={(value) => setFormData({...formData, role: value})}>
-            <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="student">Aluno</SelectItem>
-              <SelectItem value="teacher">Professor</SelectItem>
-              <SelectItem value="admin">Administrador</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Status
-          </Label>
-          <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
-            <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">Ativo</SelectItem>
-              <SelectItem value="inactive">Inativo</SelectItem>
-              <SelectItem value="pending">Pendente</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {formData.role === 'student' && (
-        <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-            <School className="h-4 w-4" />
-            Ano Escolar
-          </Label>
-          <Select value={formData.schoolYear} onValueChange={(value) => setFormData({...formData, schoolYear: value})}>
-            <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
-              <SelectValue placeholder="Selecione o ano" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1ano">1º Ano</SelectItem>
-              <SelectItem value="2ano">2º Ano</SelectItem>
-              <SelectItem value="3ano">3º Ano</SelectItem>
-              <SelectItem value="4ano">4º Ano</SelectItem>
-              <SelectItem value="5ano">5º Ano</SelectItem>
-              <SelectItem value="6ano">6º Ano</SelectItem>
-              <SelectItem value="7ano">7º Ano</SelectItem>
-              <SelectItem value="8ano">8º Ano</SelectItem>
-              <SelectItem value="9ano">9º Ano</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Informações Acadêmicas - só aparece se for aluno */}
+      {isStudentRole && (
+        <div className="bg-gradient-to-br from-purple-50/80 to-pink-50/80 rounded-xl p-6 border border-purple-200/60 shadow-lg">
+          <h3 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+              <BookOpen className="h-4 w-4 text-white" />
+            </div>
+            Informações Acadêmicas
+          </h3>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Ano Escolar</Label>
+              <Select 
+                value={formData.schoolYear} 
+                onValueChange={(value) => setFormData({...formData, schoolYear: value})}
+              >
+                <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-purple-500 focus:ring-purple-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                      <BookOpen className="w-4 h-4 text-white" />
+                    </div>
+                    <SelectValue placeholder="Selecione o ano escolar do aluno" className="text-slate-600" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
+                  {academicYears.map((year) => (
+                    <SelectItem key={year.id} value={year.code} className="py-4 px-4 hover:bg-purple-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white text-sm font-bold">{year.code.split('º')[0]}º</span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800">{year.name}</p>
+                          <p className="text-xs text-slate-600">Ensino {year.stage === 'fundamental' ? 'Fundamental' : 'Médio'}</p>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className="text-black font-medium flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            Telefone
-          </Label>
-          <div className="bg-[#9ca3af] p-2 rounded">
-            <Input
-              value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
-              placeholder="(11) 99999-9999"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label className="text-black font-medium flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Data de Nascimento
-          </Label>
-          <div className="bg-[#9ca3af] p-2 rounded">
-            <Input
-              type="date"
-              value={formData.dateOfBirth}
-              onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-              className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label className="text-black font-medium flex items-center gap-2">
-          <MapPin className="h-4 w-4" />
-          Endereço
-        </Label>
-        <div className="bg-[#9ca3af] p-2 rounded">
-          <Textarea
-            value={formData.address}
-            onChange={(e) => setFormData({...formData, address: e.target.value})}
-            className="bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-gray-500"
-            placeholder="Endereço completo"
-            rows={3}
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-3 pt-4 border-t">
+      {/* Botões de Ação */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between pt-6 border-t-2 border-slate-200">
         <Button 
-          variant="outline" 
+          type="button"
+          variant="outline"
           onClick={onCancel}
-          className="border-red-500 text-red-500 hover:bg-red-50"
+          className="order-2 sm:order-1 h-14 px-8 rounded-2xl border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-300 font-bold text-base"
         >
-          Cancelar
+          Cancelar Edição
         </Button>
         <Button 
+          type="button"
           onClick={handleSave}
           disabled={isLoading}
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+          className="order-1 sm:order-2 h-14 px-8 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-base transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          {isLoading ? "Salvando..." : "Salvar Alterações"}
+          {isLoading ? "Salvando Alterações..." : "Salvar Alterações"}
         </Button>
       </div>
     </div>
@@ -1483,12 +1578,12 @@ export default function UserManagement() {
         {/* Edit User Dialog */}
         {editingUser && (
           <Dialog open={!!editingUser} onOpenChange={() => setEditingUser(null)}>
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-[#e1e7ef]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent">
+            <DialogContent className="sm:max-w-3xl max-h-[95vh] overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl">
+              <DialogHeader className="space-y-4 pb-6 pt-2">
+                <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
                   Editar Usuário
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-slate-600 font-medium text-center text-lg">
                   Altere as informações do usuário {editingUser.firstName} {editingUser.lastName}
                 </DialogDescription>
               </DialogHeader>
