@@ -397,55 +397,71 @@ export default function NotificationCenter() {
           <TabsContent value="sent" className="space-y-6">
             <div className="space-y-4">
               {isLoading ? (
-                <Card>
+                <Card className="bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-lg">
                   <CardContent className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Carregando notificações...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-700 mx-auto"></div>
+                    <p className="mt-4 text-slate-600">Carregando notificações...</p>
                   </CardContent>
                 </Card>
               ) : filteredNotifications.length === 0 ? (
-                <Card>
+                <Card className="bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-lg">
                   <CardContent className="text-center py-12">
-                    <Send className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma notificação enviada</h3>
-                    <p className="text-gray-600">
+                    <div className="p-4 bg-gradient-to-br from-slate-100 to-slate-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                      <Send className="h-8 w-8 text-slate-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-700 mb-2">Nenhuma notificação enviada</h3>
+                    <p className="text-slate-500">
                       Ainda não foram enviadas notificações.
                     </p>
                   </CardContent>
                 </Card>
               ) : (
                 filteredNotifications.map((notification: NotificationData) => (
-                  <Card key={notification.id} className="hover:shadow-md transition-shadow">
+                  <Card key={notification.id} className="bg-white/70 backdrop-blur-sm border border-slate-200/50 shadow-lg hover:shadow-xl hover:bg-white/80 transition-all duration-300 group">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-start gap-4">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                              <Send className="h-4 w-4 text-green-600" />
+                            <div className="p-3 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl shadow-sm">
+                              <Send className="h-4 w-4 text-white" />
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-start justify-between mb-2">
-                                <div>
-                                  <h3 className="font-semibold text-slate-900 mb-1">{notification.title}</h3>
-                                  <p className="text-sm text-slate-600 mb-2">
-                                    Para: {notification.recipientType} • {notification.sequentialNumber}
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1 pr-4">
+                                  <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-slate-900 transition-colors">
+                                    {notification.title}
+                                  </h3>
+                                  <p className="text-sm text-slate-600 mb-2 font-medium">
+                                    Para: <span className="text-slate-700">{notification.recipientType}</span> • 
+                                    <span className="text-slate-500 ml-1">{notification.sequentialNumber}</span>
                                   </p>
-                                  <p className="text-sm text-slate-700 mb-3">{notification.message}</p>
+                                  <p className="text-sm text-slate-700 mb-4 leading-relaxed bg-slate-50/50 p-3 rounded-lg border border-slate-200/30">
+                                    {notification.message}
+                                  </p>
                                 </div>
-                                <div className="flex flex-col items-end gap-2">
-                                  <div className="flex gap-2">
+                                <div className="flex flex-col items-end gap-3 min-w-max">
+                                  <div className="flex gap-2 flex-wrap justify-end">
                                     <Badge className={getPriorityColor(notification.priority)}>
-                                      {notification.priority}
+                                      {notification.priority === 'urgent' ? 'Urgente' : 
+                                       notification.priority === 'high' ? 'Alta' : 
+                                       notification.priority === 'medium' ? 'Média' : 'Baixa'}
                                     </Badge>
                                     <Badge className={getStatusColor(notification.status)}>
-                                      {notification.status}
+                                      {notification.status === 'pending' ? 'Pendente' :
+                                       notification.status === 'read' ? 'Lida' : 'Arquivada'}
                                     </Badge>
-                                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                                    <Badge className="bg-gradient-to-r from-slate-600 to-slate-700 text-white border-slate-500">
                                       Enviada
                                     </Badge>
                                   </div>
-                                  <span className="text-sm text-slate-500">
-                                    {new Date(notification.createdAt).toLocaleDateString('pt-BR')}
+                                  <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-md">
+                                    {new Date(notification.createdAt).toLocaleDateString('pt-BR', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
                                   </span>
                                 </div>
                               </div>
@@ -464,18 +480,20 @@ export default function NotificationCenter() {
           <TabsContent value="all" className="space-y-6">
             <div className="space-y-4">
               {isLoading ? (
-                <Card>
+                <Card className="bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-lg">
                   <CardContent className="text-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Carregando notificações...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-700 mx-auto"></div>
+                    <p className="mt-4 text-slate-600">Carregando notificações...</p>
                   </CardContent>
                 </Card>
               ) : filteredNotifications.length === 0 ? (
-                <Card>
+                <Card className="bg-white/60 backdrop-blur-sm border border-slate-200/50 shadow-lg">
                   <CardContent className="text-center py-12">
-                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma notificação encontrada</h3>
-                    <p className="text-gray-600">
+                    <div className="p-4 bg-gradient-to-br from-gray-100 to-gray-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                      <MessageSquare className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-slate-700 mb-2">Nenhuma notificação encontrada</h3>
+                    <p className="text-slate-500">
                       {!Array.isArray(notifications) || notifications.length === 0 
                         ? "Ainda não há notificações registradas." 
                         : "Tente ajustar os filtros para encontrar notificações."}
@@ -484,51 +502,68 @@ export default function NotificationCenter() {
                 </Card>
               ) : (
                 filteredNotifications.map((notification: NotificationData) => (
-                  <Card key={notification.id} className="hover:shadow-md transition-shadow">
+                  <Card key={notification.id} className="bg-white/70 backdrop-blur-sm border border-slate-200/50 shadow-lg hover:shadow-xl hover:bg-white/80 transition-all duration-300 group">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-start gap-4">
-                            <div className={`p-2 rounded-lg ${notification.senderId === user?.id ? 'bg-green-100' : 'bg-slate-100'}`}>
+                            <div className={`p-3 rounded-xl shadow-sm group-hover:shadow-md transition-shadow ${
+                              notification.senderId === user?.id 
+                                ? 'bg-gradient-to-br from-gray-600 to-gray-700' 
+                                : 'bg-gradient-to-br from-slate-100 to-slate-50'
+                            }`}>
                               {notification.senderId === user?.id ? 
-                                <Send className="h-4 w-4 text-green-600" /> : 
+                                <Send className="h-4 w-4 text-white" /> : 
                                 getTypeIcon(notification.type)
                               }
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-start justify-between mb-2">
-                                <div>
-                                  <h3 className="font-semibold text-slate-900 mb-1">{notification.title}</h3>
-                                  <p className="text-sm text-slate-600 mb-2">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1 pr-4">
+                                  <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-slate-900 transition-colors">
+                                    {notification.title}
+                                  </h3>
+                                  <p className="text-sm text-slate-600 mb-2 font-medium">
                                     {notification.senderId === user?.id ? 
-                                      `Para: ${notification.recipientType}` : 
-                                      `De: ${notification.senderName}`
-                                    } • {notification.sequentialNumber}
+                                      <>Para: <span className="text-slate-700">{notification.recipientType}</span></> : 
+                                      <>De: <span className="text-indigo-600">{notification.senderName}</span></>
+                                    } • <span className="text-slate-500">{notification.sequentialNumber}</span>
                                   </p>
-                                  <p className="text-sm text-slate-700 mb-3">{notification.message}</p>
+                                  <p className="text-sm text-slate-700 mb-4 leading-relaxed bg-slate-50/50 p-3 rounded-lg border border-slate-200/30">
+                                    {notification.message}
+                                  </p>
                                 </div>
-                                <div className="flex flex-col items-end gap-2">
-                                  <div className="flex gap-2">
+                                <div className="flex flex-col items-end gap-3 min-w-max">
+                                  <div className="flex gap-2 flex-wrap justify-end">
                                     <Badge className={getPriorityColor(notification.priority)}>
-                                      {notification.priority}
+                                      {notification.priority === 'urgent' ? 'Urgente' : 
+                                       notification.priority === 'high' ? 'Alta' : 
+                                       notification.priority === 'medium' ? 'Média' : 'Baixa'}
                                     </Badge>
                                     <Badge className={getStatusColor(notification.status)}>
-                                      {notification.status}
+                                      {notification.status === 'pending' ? 'Pendente' :
+                                       notification.status === 'read' ? 'Lida' : 'Arquivada'}
                                     </Badge>
                                     {notification.senderId === user?.id && (
-                                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                                      <Badge className="bg-gradient-to-r from-gray-600 to-gray-700 text-white border-gray-500">
                                         Enviada
                                       </Badge>
                                     )}
                                   </div>
-                                  <span className="text-sm text-slate-500">
-                                    {new Date(notification.createdAt).toLocaleDateString('pt-BR')}
+                                  <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-md">
+                                    {new Date(notification.createdAt).toLocaleDateString('pt-BR', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
                                   </span>
                                 </div>
                               </div>
                               
                               {notification.senderId !== user?.id && (
-                                <div className="flex gap-2">
+                                <div className="flex gap-3 pt-2 border-t border-slate-200/40">
                                   {notification.status === 'pending' && (
                                     <Button
                                       size="sm"
@@ -536,7 +571,7 @@ export default function NotificationCenter() {
                                         id: notification.id,
                                         status: 'read'
                                       })}
-                                      className="gap-2"
+                                      className="gap-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
                                     >
                                       <CheckCircle className="h-4 w-4" />
                                       Marcar como Lida
@@ -550,7 +585,7 @@ export default function NotificationCenter() {
                                       id: notification.id,
                                       status: 'archived'
                                     })}
-                                    className="gap-2"
+                                    className="gap-2 border-slate-300 hover:bg-slate-100 hover:border-slate-400 transition-all duration-200"
                                   >
                                     <Archive className="h-4 w-4" />
                                     Arquivar
