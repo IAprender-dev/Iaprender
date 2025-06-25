@@ -669,102 +669,28 @@ export default function UserManagement() {
                         </DialogDescription>
                       </DialogHeader>
                       
-                      <div className="space-y-8 px-2">
-                        {/* User Identification Section */}
-                        <div className="bg-gradient-to-br from-blue-100/70 to-indigo-100/70 rounded-xl p-5 border border-blue-200/80">
-                          <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
-                            <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
-                              <Users className="h-3 w-3 text-white" />
+                      <div className="space-y-6 px-2">
+                        {/* Identificação do Usuário - Card único com todos os campos */}
+                        <div className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 rounded-xl p-6 border border-blue-200/60 shadow-lg">
+                          <h3 className="text-xl font-bold text-slate-700 mb-6 flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
+                              <Users className="h-4 w-4 text-white" />
                             </div>
                             Identificação do Usuário
                           </h3>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Nome</Label>
-                              <Input
-                                value={newUser.firstName}
-                                onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                                className="rounded-lg h-10 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 text-sm px-3 bg-white text-slate-800 font-medium"
-                                placeholder="Nome"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Sobrenome</Label>
-                              <Input
-                                value={newUser.lastName}
-                                onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                                className="rounded-lg h-10 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 text-sm px-3 bg-white text-slate-800 font-medium"
-                                placeholder="Sobrenome"
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Data de Nascimento</Label>
-                              <Input
-                                type="date"
-                                value={newUser.dateOfBirth}
-                                onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
-                                className="rounded-lg h-10 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 text-sm px-3 bg-white text-slate-800 font-medium"
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Filiação</Label>
-                              <Input
-                                value={newUser.filiation}
-                                onChange={(e) => setNewUser({...newUser, filiation: e.target.value})}
-                                className="rounded-lg h-10 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 text-sm px-3 bg-white text-slate-800 font-medium"
-                                placeholder="Nome dos pais"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Contact & Role Section */}
-                        <div className="bg-gradient-to-br from-emerald-100/70 to-teal-100/70 rounded-xl p-5 border border-emerald-200/80">
-                          <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
-                            <div className="w-6 h-6 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full flex items-center justify-center">
-                              <Mail className="h-3 w-3 text-white" />
-                            </div>
-                            Contato & Função
-                          </h3>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">E-mail</Label>
-                              <Input
-                                type="email"
-                                value={newUser.email}
-                                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                                className="rounded-lg h-10 border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 text-sm px-3 bg-white text-slate-800 font-medium"
-                                placeholder="email@exemplo.com"
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Telefone</Label>
-                              <Input
-                                value={newUser.phone}
-                                onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                                className="rounded-lg h-10 border border-slate-300 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 text-sm px-3 bg-white text-slate-800 font-medium"
-                                placeholder="(11) 99999-9999"
-                              />
-                            </div>
-                            
+                          <div className="space-y-4">
+                            {/* Função */}
                             <div className="space-y-2">
                               <Label className="text-slate-700 font-semibold text-sm">Função</Label>
                               <Select 
                                 value={newUser.roleId?.toString()} 
                                 onValueChange={(value) => setNewUser({...newUser, roleId: parseInt(value)})}
                               >
-                                <SelectTrigger className="rounded-lg h-10 border border-slate-300 focus:border-emerald-600 text-sm px-3 bg-white text-slate-800 font-medium">
+                                <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
                                   <SelectValue placeholder="Selecione a função" />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-lg bg-white border-slate-300">
+                                <SelectContent>
                                   {roles.map((role: Role) => (
                                     <SelectItem key={role.id} value={role.id.toString()}>
                                       {role.name}
@@ -773,114 +699,256 @@ export default function UserManagement() {
                                 </SelectContent>
                               </Select>
                             </div>
+
+                            {/* Nome e Sobrenome */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label className="text-slate-700 font-semibold text-sm">Nome</Label>
+                                <Input
+                                  value={newUser.firstName}
+                                  onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                  placeholder="Digite o nome"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-slate-700 font-semibold text-sm">Sobrenome</Label>
+                                <Input
+                                  value={newUser.lastName}
+                                  onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                  placeholder="Digite o sobrenome"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Data de Nascimento */}
+                            <div className="space-y-2">
+                              <Label className="text-slate-700 font-semibold text-sm">Data de Nascimento</Label>
+                              <Input
+                                type="date"
+                                value={newUser.dateOfBirth}
+                                onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
+                                className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                              />
+                            </div>
+
+                            {/* E-mail e Telefone */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label className="text-slate-700 font-semibold text-sm">E-mail</Label>
+                                <Input
+                                  type="email"
+                                  value={newUser.email}
+                                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                  placeholder="email@exemplo.com"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="text-slate-700 font-semibold text-sm">Telefone</Label>
+                                <Input
+                                  value={newUser.phone}
+                                  onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
+                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                  placeholder="(11) 99999-9999"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Endereço */}
+                            <div className="space-y-2">
+                              <Label className="text-slate-700 font-semibold text-sm">Endereço</Label>
+                              <Textarea
+                                value={newUser.address}
+                                onChange={(e) => setNewUser({...newUser, address: e.target.value})}
+                                className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none"
+                                placeholder="Rua, número, bairro, cidade, CEP..."
+                                rows={3}
+                              />
+                            </div>
+
+                            {/* Ano Escolar - Apenas para Alunos */}
+                            {isStudentRole && (
+                              <div className="space-y-2">
+                                <Label className="text-slate-700 font-semibold text-sm">Ano Escolar</Label>
+                                <Select 
+                                  value={newUser.academicYearId?.toString()} 
+                                  onValueChange={(value) => setNewUser({...newUser, academicYearId: parseInt(value)})}
+                                >
+                                  <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                                    <SelectValue placeholder="Selecione o ano escolar" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {academicYears.map((year: AcademicYear) => (
+                                      <SelectItem key={year.id} value={year.id.toString()}>
+                                        {year.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        {/* Academic Information Section */}
+                        {/* Separador */}
                         {isStudentRole && (
-                          <div className="bg-gradient-to-br from-purple-100/70 to-violet-100/70 rounded-xl p-5 border border-purple-200/80">
-                            <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
-                              <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-violet-600 rounded-full flex items-center justify-center">
-                                <GraduationCap className="h-3 w-3 text-white" />
-                              </div>
-                              Informações Acadêmicas
-                            </h3>
-                            
-                            <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Ano Escolar</Label>
-                              <Select 
-                                value={newUser.academicYearId?.toString()} 
-                                onValueChange={(value) => setNewUser({...newUser, academicYearId: parseInt(value)})}
-                              >
-                                <SelectTrigger className="rounded-lg h-10 border border-slate-300 focus:border-purple-600 text-sm px-3 bg-white text-slate-800 font-medium">
-                                  <SelectValue placeholder="Selecione o ano" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-lg bg-white border-slate-300">
-                                  {academicYears.map((year: AcademicYear) => (
-                                    <SelectItem key={year.id} value={year.id.toString()}>
-                                      {year.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                          <div className="flex items-center justify-center">
+                            <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent w-full"></div>
+                            <div className="px-4">
+                              <div className="w-2 h-2 bg-slate-300 rounded-full"></div>
                             </div>
+                            <div className="h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent w-full"></div>
                           </div>
                         )}
 
-                        {newUser.role === 'student' && (
-                          <>
-                            <div className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id="isMinor"
-                                checked={newUser.isMinor}
-                                onChange={(e) => setNewUser({ ...newUser, isMinor: e.target.checked })}
-                                className="h-4 w-4"
-                              />
-                              <Label htmlFor="isMinor" className="text-[#0f172a] font-medium">
-                                Aluno menor de idade (necessário dados dos responsáveis)
-                              </Label>
+                        {/* Dados dos Responsáveis - Apenas para Alunos menores de idade */}
+                        {isStudentRole && (
+                          <div className="bg-gradient-to-br from-amber-50/80 to-yellow-50/80 rounded-xl p-6 border border-amber-200/60 shadow-lg">
+                            <div className="flex items-center gap-3 mb-6">
+                              <div className="w-8 h-8 bg-gradient-to-r from-amber-600 to-yellow-600 rounded-full flex items-center justify-center">
+                                <Users className="h-4 w-4 text-white" />
+                              </div>
+                              <div className="flex items-center space-x-3">
+                                <input
+                                  type="checkbox"
+                                  id="isMinor"
+                                  checked={newUser.isMinor}
+                                  onChange={(e) => setNewUser({ ...newUser, isMinor: e.target.checked })}
+                                  className="h-5 w-5 rounded border-2 border-amber-400 text-amber-600 focus:ring-amber-500 focus:ring-2"
+                                />
+                                <Label htmlFor="isMinor" className="text-xl font-bold text-slate-700 cursor-pointer">
+                                  Menor de idade (dados dos responsáveis obrigatórios)
+                                </Label>
+                              </div>
                             </div>
 
                             {newUser.isMinor && (
-                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
-                                <h4 className="text-lg font-semibold text-slate-800">Dados dos Responsáveis</h4>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                  <div className="space-y-2">
-                                    <Label className="text-[#0f172a] font-medium">Nome do Responsável</Label>
-                                    <Input
-                                      value={newUser.parentName}
-                                      onChange={(e) => setNewUser({...newUser, parentName: e.target.value})}
-                                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
-                                      placeholder="Nome completo do responsável"
-                                    />
+                              <div className="space-y-6">
+                                {/* Primeiro Responsável */}
+                                <div className="space-y-4">
+                                  <h4 className="text-lg font-semibold text-slate-700 border-b border-amber-300/50 pb-2">
+                                    1º Responsável
+                                  </h4>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Nome do Responsável</Label>
+                                      <Input
+                                        value={newUser.parentName}
+                                        onChange={(e) => setNewUser({...newUser, parentName: e.target.value})}
+                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                                        placeholder="Nome completo do responsável"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Grau de Parentesco</Label>
+                                      <Select 
+                                        value={newUser.parent1Relationship} 
+                                        onValueChange={(value) => setNewUser({...newUser, parent1Relationship: value})}
+                                      >
+                                        <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+                                          <SelectValue placeholder="Selecione o parentesco" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="pai">Pai</SelectItem>
+                                          <SelectItem value="mae">Mãe</SelectItem>
+                                          <SelectItem value="avo">Avô/Avó</SelectItem>
+                                          <SelectItem value="tio">Tio/Tia</SelectItem>
+                                          <SelectItem value="responsavel">Responsável Legal</SelectItem>
+                                          <SelectItem value="tutor">Tutor</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
                                   </div>
-                                  <div className="space-y-2">
-                                    <Label className="text-[#0f172a] font-medium">Email do Responsável</Label>
-                                    <Input
-                                      type="email"
-                                      value={newUser.parentEmail}
-                                      onChange={(e) => setNewUser({...newUser, parentEmail: e.target.value})}
-                                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
-                                      placeholder="email@responsavel.com"
-                                    />
+
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Email do Responsável</Label>
+                                      <Input
+                                        type="email"
+                                        value={newUser.parentEmail}
+                                        onChange={(e) => setNewUser({...newUser, parentEmail: e.target.value})}
+                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                                        placeholder="email@responsavel.com"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Telefone do Responsável</Label>
+                                      <Input
+                                        value={newUser.parentPhone}
+                                        onChange={(e) => setNewUser({...newUser, parentPhone: e.target.value})}
+                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                                        placeholder="(11) 99999-9999"
+                                      />
+                                    </div>
                                   </div>
-                                  <div className="space-y-2">
-                                    <Label className="text-[#0f172a] font-medium">Telefone do Responsável</Label>
-                                    <Input
-                                      value={newUser.parentPhone}
-                                      onChange={(e) => setNewUser({...newUser, parentPhone: e.target.value})}
-                                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
-                                      placeholder="(11) 99999-9999"
-                                    />
+                                </div>
+
+                                {/* Segundo Responsável */}
+                                <div className="space-y-4">
+                                  <h4 className="text-lg font-semibold text-slate-700 border-b border-amber-300/50 pb-2">
+                                    2º Responsável
+                                  </h4>
+                                  
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Nome do Responsável</Label>
+                                      <Input
+                                        value={newUser.parent2Name}
+                                        onChange={(e) => setNewUser({...newUser, parent2Name: e.target.value})}
+                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                                        placeholder="Nome completo do segundo responsável"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Grau de Parentesco</Label>
+                                      <Select 
+                                        value={newUser.parent2Relationship} 
+                                        onValueChange={(value) => setNewUser({...newUser, parent2Relationship: value})}
+                                      >
+                                        <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
+                                          <SelectValue placeholder="Selecione o parentesco" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="pai">Pai</SelectItem>
+                                          <SelectItem value="mae">Mãe</SelectItem>
+                                          <SelectItem value="avo">Avô/Avó</SelectItem>
+                                          <SelectItem value="tio">Tio/Tia</SelectItem>
+                                          <SelectItem value="responsavel">Responsável Legal</SelectItem>
+                                          <SelectItem value="tutor">Tutor</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Email do Responsável</Label>
+                                      <Input
+                                        type="email"
+                                        value={newUser.parent2Email}
+                                        onChange={(e) => setNewUser({...newUser, parent2Email: e.target.value})}
+                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                                        placeholder="email@responsavel2.com"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label className="text-slate-700 font-semibold text-sm">Telefone do Responsável</Label>
+                                      <Input
+                                        value={newUser.parent2Phone}
+                                        onChange={(e) => setNewUser({...newUser, parent2Phone: e.target.value})}
+                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                                        placeholder="(11) 99999-9999"
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             )}
-                          </>
-                        )}
-
-                        {/* Address Section */}
-                        <div className="bg-gradient-to-br from-slate-100/70 to-gray-100/70 rounded-xl p-5 border border-slate-200/80">
-                          <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
-                            <div className="w-6 h-6 bg-gradient-to-r from-slate-600 to-gray-600 rounded-full flex items-center justify-center">
-                              <MapPin className="h-3 w-3 text-white" />
-                            </div>
-                            Endereço
-                          </h3>
-                          
-                          <div className="space-y-2">
-                            <Label className="text-slate-700 font-semibold text-sm">Endereço Completo</Label>
-                            <Textarea
-                              value={newUser.address}
-                              onChange={(e) => setNewUser({...newUser, address: e.target.value})}
-                              className="rounded-lg border border-slate-300 focus:border-slate-600 focus:ring-2 focus:ring-slate-200 text-sm px-3 py-2 bg-white text-slate-800 font-medium resize-none"
-                              placeholder="Rua, número, bairro, cidade, CEP..."
-                              rows={3}
-                            />
                           </div>
-                        </div>
+                        )}
                       </div>
 
                       <div className="flex justify-end gap-3 pt-4 border-t">
