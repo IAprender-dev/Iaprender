@@ -1,0 +1,374 @@
+/* IAverse Form Template Styles */
+
+/* Base theme variables for consistent styling */
+:root {
+  /* Primary Colors */
+  --form-primary-start: #2563eb;
+  --form-primary-end: #9333ea;
+  --form-primary-light: rgba(37, 99, 235, 0.1);
+  --form-primary-border: rgba(37, 99, 235, 0.2);
+
+  /* Secondary Colors */
+  --form-secondary-start: #9333ea;
+  --form-secondary-end: #6366f1;
+  --form-secondary-light: rgba(147, 51, 234, 0.1);
+  --form-secondary-border: rgba(147, 51, 234, 0.2);
+
+  /* Success Colors */
+  --form-success-start: #059669;
+  --form-success-end: #10b981;
+  --form-success-light: rgba(5, 150, 105, 0.1);
+  --form-success-border: rgba(5, 150, 105, 0.2);
+
+  /* Warning Colors */
+  --form-warning-start: #d97706;
+  --form-warning-end: #f59e0b;
+  --form-warning-light: rgba(217, 119, 6, 0.1);
+  --form-warning-border: rgba(217, 119, 6, 0.2);
+
+  /* Danger Colors */
+  --form-danger-start: #dc2626;
+  --form-danger-end: #ec4899;
+  --form-danger-light: rgba(220, 38, 38, 0.1);
+  --form-danger-border: rgba(220, 38, 38, 0.2);
+
+  /* Neutral Colors */
+  --form-background: rgba(255, 255, 255, 0.95);
+  --form-surface: rgba(248, 250, 252, 0.8);
+  --form-border: #e2e8f0;
+  --form-text: #334155;
+  --form-text-muted: #64748b;
+  --form-placeholder: #94a3b8;
+
+  /* Spacing */
+  --form-radius: 1rem;
+  --form-radius-lg: 1.5rem;
+  --form-spacing-xs: 0.5rem;
+  --form-spacing-sm: 0.75rem;
+  --form-spacing-md: 1rem;
+  --form-spacing-lg: 1.5rem;
+  --form-spacing-xl: 2rem;
+
+  /* Shadows */
+  --form-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --form-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --form-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --form-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --form-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --form-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form container styles */
+.form-template-container {
+  background: var(--form-background);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--form-border);
+  border-radius: var(--form-radius-lg);
+  box-shadow: var(--form-shadow-xl);
+  max-width: 64rem;
+  max-height: 95vh;
+  overflow-y: auto;
+}
+
+/* Form section cards */
+.form-template-section {
+  background: linear-gradient(135deg, var(--form-surface), transparent);
+  border: 1px solid var(--form-border);
+  border-radius: var(--form-radius);
+  padding: var(--form-spacing-xl);
+  box-shadow: var(--form-shadow-md);
+  transition: var(--form-transition);
+}
+
+.form-template-section:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--form-shadow-lg);
+}
+
+/* Form inputs */
+.form-template-input {
+  height: 3.5rem;
+  border: 2px solid var(--form-border);
+  border-radius: var(--form-radius);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(4px);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--form-text);
+  padding: 0 1rem;
+  transition: var(--form-transition);
+}
+
+.form-template-input::placeholder {
+  color: var(--form-placeholder);
+}
+
+.form-template-input:focus {
+  outline: none;
+  border-color: var(--form-primary-start);
+  box-shadow: 0 0 0 4px var(--form-primary-light);
+}
+
+/* Form input with icon */
+.form-template-input-with-icon {
+  padding-left: 3.5rem;
+}
+
+.form-template-input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(135deg, var(--form-primary-start), var(--form-primary-end));
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Form buttons */
+.form-template-button {
+  height: 3.5rem;
+  padding: 0 2.5rem;
+  border-radius: var(--form-radius);
+  font-size: 1rem;
+  font-weight: 700;
+  transition: var(--form-transition);
+  transform: scale(1);
+  box-shadow: var(--form-shadow-md);
+}
+
+.form-template-button:hover {
+  transform: scale(1.05);
+  box-shadow: var(--form-shadow-lg);
+}
+
+.form-template-button:active {
+  transform: scale(0.98);
+}
+
+/* Button variants */
+.form-template-button-primary {
+  background: linear-gradient(135deg, var(--form-primary-start), var(--form-primary-end));
+  color: white;
+  border: none;
+}
+
+.form-template-button-secondary {
+  background: linear-gradient(135deg, var(--form-secondary-start), var(--form-secondary-end));
+  color: white;
+  border: none;
+}
+
+.form-template-button-success {
+  background: linear-gradient(135deg, var(--form-success-start), var(--form-success-end));
+  color: white;
+  border: none;
+}
+
+.form-template-button-warning {
+  background: linear-gradient(135deg, var(--form-warning-start), var(--form-warning-end));
+  color: white;
+  border: none;
+}
+
+.form-template-button-danger {
+  background: linear-gradient(135deg, var(--form-danger-start), var(--form-danger-end));
+  color: white;
+  border: none;
+}
+
+.form-template-button-outline {
+  background: white;
+  color: var(--form-text);
+  border: 2px solid var(--form-border);
+}
+
+.form-template-button-outline:hover {
+  background: var(--form-surface);
+  border-color: var(--form-primary-start);
+}
+
+/* Form labels */
+.form-template-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--form-text);
+  margin-bottom: var(--form-spacing-sm);
+  display: block;
+}
+
+/* Form section titles */
+.form-template-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--form-text);
+  margin-bottom: var(--form-spacing-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--form-spacing-sm);
+}
+
+/* Form grid layouts */
+.form-template-grid {
+  display: grid;
+  gap: var(--form-spacing-md);
+}
+
+.form-template-grid-1 {
+  grid-template-columns: 1fr;
+}
+
+.form-template-grid-2 {
+  grid-template-columns: 1fr;
+}
+
+.form-template-grid-3 {
+  grid-template-columns: 1fr;
+}
+
+.form-template-grid-4 {
+  grid-template-columns: 1fr;
+}
+
+/* Responsive grid breakpoints */
+@media (min-width: 768px) {
+  .form-template-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .form-template-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .form-template-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .form-template-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .form-template-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Form field spacing */
+.form-template-field {
+  margin-bottom: var(--form-spacing-md);
+}
+
+/* Form actions area */
+.form-template-actions {
+  display: flex;
+  gap: var(--form-spacing-md);
+  padding-top: var(--form-spacing-lg);
+  border-top: 1px solid var(--form-border);
+  margin-top: var(--form-spacing-xl);
+}
+
+.form-template-actions-center {
+  justify-content: center;
+}
+
+.form-template-actions-between {
+  justify-content: space-between;
+}
+
+.form-template-actions-end {
+  justify-content: flex-end;
+}
+
+/* Animations */
+@keyframes form-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes form-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.form-template-animate-in {
+  animation: form-slide-in 0.4s ease-out;
+}
+
+.form-template-fade-in {
+  animation: form-fade-in 0.3s ease-out;
+}
+
+/* Color scheme variations */
+.form-template-primary {
+  --form-accent-start: var(--form-primary-start);
+  --form-accent-end: var(--form-primary-end);
+  --form-accent-light: var(--form-primary-light);
+  --form-accent-border: var(--form-primary-border);
+}
+
+.form-template-secondary {
+  --form-accent-start: var(--form-secondary-start);
+  --form-accent-end: var(--form-secondary-end);
+  --form-accent-light: var(--form-secondary-light);
+  --form-accent-border: var(--form-secondary-border);
+}
+
+.form-template-success {
+  --form-accent-start: var(--form-success-start);
+  --form-accent-end: var(--form-success-end);
+  --form-accent-light: var(--form-success-light);
+  --form-accent-border: var(--form-success-border);
+}
+
+.form-template-warning {
+  --form-accent-start: var(--form-warning-start);
+  --form-accent-end: var(--form-warning-end);
+  --form-accent-light: var(--form-warning-light);
+  --form-accent-border: var(--form-warning-border);
+}
+
+.form-template-danger {
+  --form-accent-start: var(--form-danger-start);
+  --form-accent-end: var(--form-danger-end);
+  --form-accent-light: var(--form-danger-light);
+  --form-accent-border: var(--form-danger-border);
+}
+
+/* Scroll customization for form containers */
+.form-template-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.form-template-container::-webkit-scrollbar-track {
+  background: var(--form-surface);
+  border-radius: var(--form-radius);
+}
+
+.form-template-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--form-primary-start), var(--form-primary-end));
+  border-radius: var(--form-radius);
+}
+
+.form-template-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--form-secondary-start), var(--form-secondary-end));
+}

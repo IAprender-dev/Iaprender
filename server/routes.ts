@@ -32,6 +32,8 @@ import session from "express-session";
 import MemoryStore from "memorystore";
 import multer from "multer";
 import { importUsersFromCSV, hashPassword, generateSecurePassword } from "./utils/csv-importer";
+import { sendLoginCredentials } from "./utils/email-service";
+import { sendWhatsAppCredentials } from "./utils/whatsapp-service";
 import aiRouter from "./routes/ai-routes";
 import translateRoutes from "./routes/translate-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
@@ -1310,11 +1312,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isMinor: userData.isMinor || false
       }).returning();
       
+      // Send login credentials via email and WhatsApp
+      const credentialsData = {
+        to: newUser.email,
+        phone: newUser.phone || '',
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        username: newUser.username,
+        password: generatedPassword,
+        role: newUser.role
+      };
+
+      // Send email credentials
+      const emailSent = await sendLoginCredentials(credentialsData);
+      
+      // Send WhatsApp credentials if phone number is provided
+      let whatsappSent = false;
+      if (newUser.phone) {
+        whatsappSent = await sendWhatsAppCredentials(credentialsData);
+      }
+
       // Return user data without password, include generated password for display
       const { password, ...userWithoutPassword } = newUser;
       return res.status(201).json({
         ...userWithoutPassword,
-        temporaryPassword: generatedPassword
+        temporaryPassword: generatedPassword,
+        emailSent,
+        whatsappSent
       });
     } catch (error) {
       console.error("Error creating user:", error);

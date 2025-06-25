@@ -359,11 +359,25 @@ export default function UserManagement() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/secretary/users'] });
+      
+      let description = "O novo usuário foi adicionado à plataforma.";
+      if (data.temporaryPassword) {
+        description = `Senha temporária: ${data.temporaryPassword} (deve ser alterada no primeiro login)`;
+        
+        if (data.emailSent && data.whatsappSent) {
+          description += "\n📧 Email enviado ✅ | 📱 WhatsApp enviado ✅";
+        } else if (data.emailSent) {
+          description += "\n📧 Email enviado ✅ | 📱 WhatsApp não enviado";
+        } else if (data.whatsappSent) {
+          description += "\n📧 Email não enviado | 📱 WhatsApp enviado ✅";
+        } else {
+          description += "\n📧 Email não enviado | 📱 WhatsApp não enviado";
+        }
+      }
+      
       toast({ 
         title: "✅ Usuário criado com sucesso!", 
-        description: data.temporaryPassword 
-          ? `Senha temporária: ${data.temporaryPassword} (deve ser alterada no primeiro login)`
-          : "O novo usuário foi adicionado à plataforma."
+        description: description
       });
       setIsCreateDialogOpen(false);
       resetNewUserForm();
@@ -1289,7 +1303,20 @@ export default function UserManagement() {
                       )}
                       <div className="flex items-center gap-2 text-sm text-slate-600">
                         <Calendar className="h-4 w-4" />
-                        Criado em {new Date(userData.createdAt).toLocaleDateString('pt-BR')}
+                        <span title={`Criado em ${new Date(userData.createdAt).toLocaleDateString('pt-BR', { 
+                          weekday: 'long', 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}`}>
+                          Criado em {new Date(userData.createdAt).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: '2-digit', 
+                            year: 'numeric'
+                          })}
+                        </span>
                       </div>
                     </div>
 
@@ -1384,7 +1411,22 @@ export default function UserManagement() {
                             </div>
                           </TableCell>
                           <TableCell className="text-sm text-slate-600">
-                            {new Date(userData.createdAt).toLocaleDateString('pt-BR')}
+                            <span title={`Criado em ${new Date(userData.createdAt).toLocaleDateString('pt-BR', { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}`}>
+                              {new Date(userData.createdAt).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit', 
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">

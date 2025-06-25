@@ -1,3 +1,4 @@
+@import './styles/form-templates.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
