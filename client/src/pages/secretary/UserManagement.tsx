@@ -58,6 +58,10 @@ function EditUserForm({ user, onSave, onCancel, isLoading }: {
     phone: user.phone || "",
     address: user.address || "",
     dateOfBirth: user.dateOfBirth || "",
+    parentName: user.parentName || "",
+    parentEmail: user.parentEmail || "",
+    parentPhone: user.parentPhone || "",
+    isMinor: user.isMinor || false,
   });
 
   const handleSave = () => {
@@ -68,38 +72,38 @@ function EditUserForm({ user, onSave, onCancel, isLoading }: {
   };
 
   return (
-    <div className="space-y-6 py-4">
+    <div className="space-y-6 py-4 bg-[#9ca3af] p-6 rounded-lg">
       {/* Personal Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <Label className="text-[#0f172a] font-medium flex items-center gap-2">
             <Users className="h-4 w-4" />
             Nome
           </Label>
           <Input
             value={formData.firstName}
             onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
             placeholder="Digite o nome"
           />
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <Label className="text-[#0f172a] font-medium flex items-center gap-2">
             <Users className="h-4 w-4" />
             Sobrenome
           </Label>
           <Input
             value={formData.lastName}
             onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
             placeholder="Digite o sobrenome"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+        <Label className="text-[#0f172a] font-medium flex items-center gap-2">
           <Mail className="h-4 w-4" />
           E-mail
         </Label>
@@ -107,7 +111,7 @@ function EditUserForm({ user, onSave, onCancel, isLoading }: {
           type="email"
           value={formData.email}
           onChange={(e) => setFormData({...formData, email: e.target.value})}
-          className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+          className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
           placeholder="usuario@dominio.com"
         />
       </div>
@@ -175,20 +179,20 @@ function EditUserForm({ user, onSave, onCancel, isLoading }: {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <Label className="text-[#0f172a] font-medium flex items-center gap-2">
             <Phone className="h-4 w-4" />
             Telefone
           </Label>
           <Input
             value={formData.phone}
             onChange={(e) => setFormData({...formData, phone: e.target.value})}
-            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
             placeholder="(11) 99999-9999"
           />
         </div>
 
         <div className="space-y-2">
-          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+          <Label className="text-[#0f172a] font-medium flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Data de Nascimento
           </Label>
@@ -196,20 +200,20 @@ function EditUserForm({ user, onSave, onCancel, isLoading }: {
             type="date"
             value={formData.dateOfBirth}
             onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
           />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+        <Label className="text-[#0f172a] font-medium flex items-center gap-2">
           <MapPin className="h-4 w-4" />
           Endereço
         </Label>
         <Textarea
           value={formData.address}
           onChange={(e) => setFormData({...formData, address: e.target.value})}
-          className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+          className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
           placeholder="Endereço completo"
           rows={3}
         />
@@ -219,7 +223,7 @@ function EditUserForm({ user, onSave, onCancel, isLoading }: {
         <Button 
           variant="outline" 
           onClick={onCancel}
-          className="border-slate-300 hover:bg-slate-50"
+          className="border-red-500 text-red-500 hover:bg-red-50"
         >
           Cancelar
         </Button>
@@ -247,6 +251,10 @@ interface User {
   phone?: string;
   address?: string;
   dateOfBirth?: string;
+  parentName?: string;
+  parentEmail?: string;
+  parentPhone?: string;
+  isMinor?: boolean;
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -272,6 +280,10 @@ export default function UserManagement() {
     phone: "",
     address: "",
     dateOfBirth: "",
+    parentName: "",
+    parentEmail: "",
+    parentPhone: "",
+    isMinor: true,
   });
 
   // Fetch all users
@@ -586,34 +598,34 @@ export default function UserManagement() {
                         {/* Personal Info */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                               <Users className="h-4 w-4" />
                               Nome
                             </Label>
                             <Input
                               value={newUser.firstName}
                               onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
                               placeholder="Digite o nome"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                               <Users className="h-4 w-4" />
                               Sobrenome
                             </Label>
                             <Input
                               value={newUser.lastName}
                               onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
                               placeholder="Digite o sobrenome"
                             />
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                          <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                             <Mail className="h-4 w-4" />
                             E-mail
                           </Label>
@@ -621,19 +633,19 @@ export default function UserManagement() {
                             type="email"
                             value={newUser.email}
                             onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+                            className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
                             placeholder="usuario@dominio.com"
                           />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                               <GraduationCap className="h-4 w-4" />
                               Cargo
                             </Label>
                             <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
-                              <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
+                              <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 placeholder:text-[#334155]">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -645,12 +657,12 @@ export default function UserManagement() {
 
                           {newUser.role === 'student' && (
                             <div className="space-y-2">
-                              <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                              <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                                 <School className="h-4 w-4" />
                                 Ano Escolar
                               </Label>
                               <Select value={newUser.schoolYear} onValueChange={(value) => setNewUser({...newUser, schoolYear: value})}>
-                                <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500">
+                                <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 placeholder:text-[#334155]">
                                   <SelectValue placeholder="Selecione o ano" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -669,22 +681,76 @@ export default function UserManagement() {
                           )}
                         </div>
 
+                        {newUser.role === 'student' && (
+                          <>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id="isMinor"
+                                checked={newUser.isMinor}
+                                onChange={(e) => setNewUser({ ...newUser, isMinor: e.target.checked })}
+                                className="h-4 w-4"
+                              />
+                              <Label htmlFor="isMinor" className="text-[#0f172a] font-medium">
+                                Aluno menor de idade (necessário dados dos responsáveis)
+                              </Label>
+                            </div>
+
+                            {newUser.isMinor && (
+                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
+                                <h4 className="text-[#0f172a] font-medium text-lg">Dados dos Responsáveis</h4>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  <div className="space-y-2">
+                                    <Label className="text-[#0f172a] font-medium">Nome do Responsável</Label>
+                                    <Input
+                                      value={newUser.parentName}
+                                      onChange={(e) => setNewUser({...newUser, parentName: e.target.value})}
+                                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
+                                      placeholder="Nome completo do responsável"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-[#0f172a] font-medium">Email do Responsável</Label>
+                                    <Input
+                                      type="email"
+                                      value={newUser.parentEmail}
+                                      onChange={(e) => setNewUser({...newUser, parentEmail: e.target.value})}
+                                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
+                                      placeholder="email@responsavel.com"
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-[#0f172a] font-medium">Telefone do Responsável</Label>
+                                    <Input
+                                      value={newUser.parentPhone}
+                                      onChange={(e) => setNewUser({...newUser, parentPhone: e.target.value})}
+                                      className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
+                                      placeholder="(11) 99999-9999"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                               <Phone className="h-4 w-4" />
                               Telefone
                             </Label>
                             <Input
                               value={newUser.phone}
                               onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
                               placeholder="(11) 99999-9999"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                            <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                               <Calendar className="h-4 w-4" />
                               Data de Nascimento
                             </Label>
@@ -692,20 +758,20 @@ export default function UserManagement() {
                               type="date"
                               value={newUser.dateOfBirth}
                               onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
-                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+                              className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
                             />
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                          <Label className="text-[#0f172a] font-medium flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
                             Endereço
                           </Label>
                           <Textarea
                             value={newUser.address}
                             onChange={(e) => setNewUser({...newUser, address: e.target.value})}
-                            className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200"
+                            className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-purple-500 focus:ring-purple-200 placeholder:text-[#334155]"
                             placeholder="Endereço completo"
                             rows={3}
                           />
@@ -716,7 +782,7 @@ export default function UserManagement() {
                         <Button 
                           variant="outline" 
                           onClick={() => setIsCreateDialogOpen(false)}
-                          className="border-slate-300 hover:bg-slate-50"
+                          className="border-red-500 text-red-500 hover:bg-red-50"
                         >
                           Cancelar
                         </Button>
