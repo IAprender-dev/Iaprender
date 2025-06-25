@@ -28,7 +28,7 @@ export async function sendLoginCredentials(data: EmailCredentials): Promise<bool
 
   const msg = {
     to: data.to,
-    from: 'noreply@iaverse.com.br', // Substitua pelo seu email verificado no SendGrid
+    from: 'noreply@iaverse.com.br', // Email verificado no SendGrid
     subject: 'Bem-vindo à IAverse - Suas credenciais de acesso',
     html: `
       <!DOCTYPE html>

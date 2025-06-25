@@ -1,6 +1,6 @@
-# IAverse Form Template System - Guia de Uso
+# Sistema de Templates de Formulários IAverse - Guia de Uso
 
-Este documento descreve como usar o sistema de templates de formulários padronizado do IAverse.
+Este documento descreve como usar o sistema de templates de formulários padronizado da plataforma IAverse.
 
 ## Estrutura dos Templates
 

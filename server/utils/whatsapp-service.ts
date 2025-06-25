@@ -1,6 +1,6 @@
-// WhatsApp service for sending login credentials
-// Note: This is a placeholder implementation. For production, you would integrate with
-// WhatsApp Business API, Twilio, or another WhatsApp service provider.
+// Serviço WhatsApp para envio de credenciais de login
+// Nota: Esta é uma implementação temporária. Para produção, integre com
+// WhatsApp Business API, Twilio, ou outro provedor de serviços WhatsApp.
 
 interface WhatsAppCredentials {
   phone: string;
@@ -12,8 +12,8 @@ interface WhatsAppCredentials {
 }
 
 export async function sendWhatsAppCredentials(data: WhatsAppCredentials): Promise<boolean> {
-  // For now, we'll log the WhatsApp message that would be sent
-  // In production, integrate with WhatsApp Business API or Twilio
+  // Por enquanto, vamos registrar a mensagem WhatsApp que seria enviada
+  // Em produção, integre com WhatsApp Business API ou Twilio
   
   const roleTranslation = {
     student: 'Aluno',
@@ -41,20 +41,20 @@ Olá, ${data.firstName}! Sua conta foi criada com sucesso.
 Dúvidas? Entre em contato com a secretaria.
 `.trim();
 
-  console.log('WhatsApp message would be sent to:', data.phone);
-  console.log('Message content:', message);
+  console.log('Mensagem WhatsApp seria enviada para:', data.phone);
+  console.log('Conteúdo da mensagem:', message);
 
-  // TODO: Implement actual WhatsApp sending logic here
-  // Example integrations:
+  // TODO: Implementar lógica real de envio WhatsApp aqui
+  // Exemplos de integrações:
   // - WhatsApp Business API
   // - Twilio WhatsApp API
   // - Evolution API
-  // - Baileys (for local WhatsApp integration)
+  // - Baileys (para integração local WhatsApp)
   
-  return true; // Return true for now as placeholder
+  return true; // Retorna true por enquanto como placeholder
 }
 
-// Future implementation example with Twilio:
+// Exemplo de implementação futura com Twilio:
 /*
 import twilio from 'twilio';
 

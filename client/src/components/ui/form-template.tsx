@@ -13,7 +13,7 @@ import { ptBR } from 'date-fns/locale';
 import { Calendar as CalendarIcon, User, Mail, Phone, MapPin, BookOpen, Users, GraduationCap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Design System Constants
+// Constantes do Sistema de Design IAverse
 export const FORM_THEME = {
   colors: {
     primary: {
@@ -75,7 +75,7 @@ export const FORM_THEME = {
   }
 };
 
-// Icon mapping for different field types
+// Mapeamento de ícones para diferentes tipos de campos
 export const FIELD_ICONS = {
   user: User,
   email: Mail,
@@ -87,7 +87,7 @@ export const FIELD_ICONS = {
   calendar: CalendarIcon
 };
 
-// Template Components
+// Componentes do Template
 export const FormContainer: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
   children, 
   className = '' 
@@ -426,7 +426,7 @@ export const FormActions: React.FC<{
   );
 };
 
-// Grid layouts for responsive forms
+// Layouts de grid para formulários responsivos
 export const FormGrid: React.FC<{
   children: React.ReactNode;
   columns?: 1 | 2 | 3 | 4;
