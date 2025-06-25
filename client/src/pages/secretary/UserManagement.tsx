@@ -319,6 +319,11 @@ export default function UserManagement() {
     parentName: "",
     parentEmail: "",
     parentPhone: "",
+    parent2Name: "",
+    parent2Email: "",
+    parent2Phone: "",
+    parent1Relationship: "",
+    parent2Relationship: "",
     isMinor: true,
   });
 
@@ -444,6 +449,11 @@ export default function UserManagement() {
       parentName: "",
       parentEmail: "",
       parentPhone: "",
+      parent2Name: "",
+      parent2Email: "",
+      parent2Phone: "",
+      parent1Relationship: "",
+      parent2Relationship: "",
       isMinor: true,
     });
   };
