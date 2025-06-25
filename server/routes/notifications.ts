@@ -47,7 +47,9 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
       whereCondition = or(
         eq(notifications.recipientId, userId),
         eq(notifications.recipientType, userRole),
-        eq(notifications.recipientType, 'all')
+        eq(notifications.recipientType, 'all'),
+        eq(notifications.recipientType, 'all_teachers'),
+        eq(notifications.recipientType, 'all_students')
       );
     }
 
