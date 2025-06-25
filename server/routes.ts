@@ -1302,7 +1302,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         schoolYear: userData.schoolYear || null,
         phone: userData.phone || null,
         address: userData.address || null,
-        dateOfBirth: userData.dateOfBirth || null
+        dateOfBirth: userData.dateOfBirth || null,
+        parentName: userData.parentName || null,
+        parentEmail: userData.parentEmail || null,
+        parentPhone: userData.parentPhone || null,
+        isMinor: userData.isMinor || false
       }).returning();
       
       return res.status(201).json(newUser);
