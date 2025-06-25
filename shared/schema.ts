@@ -341,7 +341,7 @@ export const tokenProviderRates = pgTable("token_provider_rates", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Notifications table - Sistema de notificações da secretaria
+// Notifications table - Sistema de notificações completo
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
   sequentialNumber: text("sequential_number").notNull().unique(),
@@ -353,14 +353,14 @@ export const notifications = pgTable("notifications", {
   type: notificationTypeEnum("type").default('communication').notNull(),
   priority: notificationPriorityEnum("priority").default('medium').notNull(),
   status: notificationStatusEnum("status").default('pending').notNull(),
-  studentId: integer("student_id").references(() => users.id), // se relacionado a um aluno específico
+  studentId: integer("student_id").references(() => users.id), // para notificações específicas de aluno
   parentEmail: text("parent_email"), // email dos responsáveis
-  parentPhone: text("parent_phone"), // telefone dos responsáveis
+  parentPhone: text("parent_phone"), // telefone dos responsáveis  
   requiresResponse: boolean("requires_response").default(false).notNull(),
   responseText: text("response_text"), // resposta do destinatário
-  respondedAt: timestamp("responded_at"),
-  sentAt: timestamp("sent_at"),
-  readAt: timestamp("read_at"),
+  respondedAt: timestamp("responded_at"), // quando foi respondida
+  sentAt: timestamp("sent_at"), // quando foi enviada
+  readAt: timestamp("read_at"), // quando foi lida
   metadata: jsonb("metadata"), // dados adicionais como anexos, etc.
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -515,6 +515,7 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+// Notification types already defined above
 
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof courses.$inferSelect;

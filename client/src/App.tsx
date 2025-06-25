@@ -22,10 +22,12 @@ import TeacherDashboard from "@/pages/teacher/TeacherDashboard";
 import TeacherProfile from "@/pages/teacher/TeacherProfile";
 import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
+import TeacherNotificationCenter from "@/pages/teacher/NotificationCenter";
 
 import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
+import StudentNotificationCenter from "@/pages/student/NotificationCenter";
 import SecretaryDashboard from "@/pages/secretary/SecretaryDashboard";
 import UserManagement from "@/pages/secretary/UserManagement";
 import NotificationCenter from "@/pages/secretary/NotificationCenter";
@@ -156,6 +158,7 @@ function Router() {
       {/* Student routes */}
       <Route path="/student" component={StudentDashboard} />
       <Route path="/student/dashboard" component={StudentDashboard} />
+      <Route path="/student/notificacoes" component={StudentNotificationCenter} />
       <Route path="/student/courses" component={StudentCourses} />
 
       <Route path="/student/profile" component={StudentProfile} />

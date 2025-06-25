@@ -121,6 +121,18 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 25, 2025: Complete integrated notification system for all user roles
+  - Implemented comprehensive notification system between Secretary, Teachers, Students
+  - Secretary can send/receive notifications to/from all users (teachers, students, parents)
+  - Teachers can send/receive notifications to/from secretary and students
+  - Students can send/receive notifications to/from secretary and teachers
+  - Created unified NotificationCenter component with role-based functionality
+  - Added notification API routes with proper authorization and validation
+  - Integrated notification pages in all dashboards (/secretary/notifications, /professor/notificacoes, /student/notificacoes)
+  - Updated dashboard cards to link to notification centers
+  - Sequential numbering system for tracking (NOT-YYYY-XXX format)
+  - Priority levels, response tracking, read receipts, and status management
+  - Real-time notification count hooks for UI updates
 - June 25, 2025: Complete form template system and email/WhatsApp integration
   - Created comprehensive form template system with consistent colors, layout, fonts, and styles
   - Implemented email service using SendGrid for sending login credentials
@@ -130,18 +142,6 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Added color schemes (primary, secondary, success, warning, danger) for different form types
   - Integrated email and WhatsApp sending into user creation process
   - Updated success messages to show delivery status for credentials
-- June 25, 2025: Complete notification management system for secretary dashboard
-  - Added comprehensive notifications database table with all required fields
-  - Created NotificationCenter component with full CRUD functionality
-  - Implemented notification filtering, search, and status management
-  - Added API routes for creating, reading, updating, and deleting notifications
-  - Integrated notification system with secretary dashboard navigation
-  - Support for different notification types (behavior, academic, administrative, communication)
-  - Priority levels (low, medium, high, urgent) with color-coded badges
-  - Contact information for parents (email, phone)
-  - Response tracking for notifications requiring feedback
-  - Sequential numbering system (NOT-YYYY-XXX format)
-  - Real-time status updates and analytics dashboard
 
 - June 24, 2025: Complete teacher dashboard redesign from scratch
   - Created new intuitive dashboard with modern UI/UX principles

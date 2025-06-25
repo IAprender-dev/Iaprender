@@ -160,6 +160,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Import notification routes
+  const notificationRoutes = await import('./routes/notifications');
+  app.use('/api/notifications', notificationRoutes.default);
+
   // AUTH ROUTES
   // Register
   app.post("/api/auth/register", async (req, res) => {
