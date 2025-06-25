@@ -688,12 +688,40 @@ export default function UserManagement() {
                                 onValueChange={(value) => setNewUser({...newUser, roleId: parseInt(value)})}
                               >
                                 <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
-                                  <SelectValue placeholder="Selecione a função" className="text-slate-700 font-medium" />
+                                  <div className="flex items-center space-x-3">
+                                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                      <Users className="w-4 h-4 text-white" />
+                                    </div>
+                                    <SelectValue placeholder="Selecione a função do usuário" className="text-slate-600" />
+                                  </div>
                                 </SelectTrigger>
-                                <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
+                                <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
                                   {roles.map((role: Role) => (
-                                    <SelectItem key={role.id} value={role.id.toString()} className="rounded-xl m-1 text-slate-900 font-medium hover:bg-blue-50 focus:bg-blue-50">
-                                      {role.name}
+                                    <SelectItem key={role.id} value={role.id.toString()} className="py-4 px-4 hover:bg-blue-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                      <div className="flex items-center space-x-3">
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                          role.name === 'Professor' ? 'bg-gradient-to-br from-emerald-500 to-teal-600' :
+                                          role.name === 'Aluno' ? 'bg-gradient-to-br from-purple-500 to-pink-600' :
+                                          role.name === 'Secretário' ? 'bg-gradient-to-br from-orange-500 to-red-600' :
+                                          'bg-gradient-to-br from-slate-500 to-gray-600'
+                                        }`}>
+                                          <span className="text-white text-sm">
+                                            {role.name === 'Professor' ? '👨‍🏫' :
+                                             role.name === 'Aluno' ? '🎓' :
+                                             role.name === 'Secretário' ? '📝' :
+                                             '👤'}
+                                          </span>
+                                        </div>
+                                        <div>
+                                          <p className="font-semibold text-slate-800">{role.name}</p>
+                                          <p className="text-xs text-slate-600">
+                                            {role.name === 'Professor' ? 'Criar conteúdo e gerenciar turmas' :
+                                             role.name === 'Aluno' ? 'Aprender e acompanhar progresso' :
+                                             role.name === 'Secretário' ? 'Administrar usuários e sistema' :
+                                             'Usuário do sistema'}
+                                          </p>
+                                        </div>
+                                      </div>
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -777,14 +805,95 @@ export default function UserManagement() {
                                   onValueChange={(value) => setNewUser({...newUser, academicYearId: parseInt(value)})}
                                 >
                                   <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
-                                    <SelectValue placeholder="Selecione o ano letivo" className="text-slate-700 font-medium" />
+                                    <div className="flex items-center space-x-3">
+                                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                        <BookOpen className="w-4 h-4 text-white" />
+                                      </div>
+                                      <SelectValue placeholder="Selecione o ano escolar" className="text-slate-600" />
+                                    </div>
                                   </SelectTrigger>
-                                  <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
-                                    {academicYears.map((year: AcademicYear) => (
-                                      <SelectItem key={year.id} value={year.id.toString()} className="rounded-xl m-1 text-slate-900 font-medium hover:bg-blue-50 focus:bg-blue-50">
-                                        {year.name}
+                                  <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl max-h-80">
+                                    <div className="p-2">
+                                      <div className="mb-3">
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Fundamental I</p>
+                                      </div>
+                                      <SelectItem value="1" className="py-3 px-3 hover:bg-pink-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🎨
+                                          </div>
+                                          <span className="font-medium text-slate-800">1º ano - Mundo das Cores</span>
+                                        </div>
                                       </SelectItem>
-                                    ))}
+                                      <SelectItem value="2" className="py-3 px-3 hover:bg-orange-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🌟
+                                          </div>
+                                          <span className="font-medium text-slate-800">2º ano - Descoberta das Palavras</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="3" className="py-3 px-3 hover:bg-yellow-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🏃‍♂️
+                                          </div>
+                                          <span className="font-medium text-slate-800">3º ano - Aventura dos Números</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="4" className="py-3 px-3 hover:bg-green-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🌍
+                                          </div>
+                                          <span className="font-medium text-slate-800">4º ano - Exploradores da Natureza</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="5" className="py-3 px-3 hover:bg-teal-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-4">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🚀
+                                          </div>
+                                          <span className="font-medium text-slate-800">5º ano - Cientistas do Futuro</span>
+                                        </div>
+                                      </SelectItem>
+                                      
+                                      <div className="mb-3 mt-4">
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Fundamental II</p>
+                                      </div>
+                                      <SelectItem value="6" className="py-3 px-3 hover:bg-blue-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🎯
+                                          </div>
+                                          <span className="font-medium text-slate-800">6º ano - Desbravadores do Conhecimento</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="7" className="py-3 px-3 hover:bg-indigo-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🔬
+                                          </div>
+                                          <span className="font-medium text-slate-800">7º ano - Investigadores da Ciência</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="8" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            📚
+                                          </div>
+                                          <span className="font-medium text-slate-800">8º ano - Mestres da Razão</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="9" className="py-3 px-3 hover:bg-rose-50/40 rounded-lg cursor-pointer transition-colors duration-150">
+                                        <div className="flex items-center space-x-3">
+                                          <div className="w-8 h-8 bg-gradient-to-br from-rose-400 to-rose-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                            🏆
+                                          </div>
+                                          <span className="font-medium text-slate-800">9º ano - Campeões do Saber</span>
+                                        </div>
+                                      </SelectItem>
+                                    </div>
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -849,15 +958,80 @@ export default function UserManagement() {
                                         onValueChange={(value) => setNewUser({...newUser, parent1Relationship: value})}
                                       >
                                         <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
-                                          <SelectValue placeholder="Selecione o grau de parentesco" className="text-slate-700 font-medium" />
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-6 h-6 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center">
+                                              <Users className="w-4 h-4 text-white" />
+                                            </div>
+                                            <SelectValue placeholder="Selecione o grau de parentesco" className="text-slate-600" />
+                                          </div>
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
-                                          <SelectItem value="pai" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Pai</SelectItem>
-                                          <SelectItem value="mae" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Mãe</SelectItem>
-                                          <SelectItem value="avo" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Avô/Avó</SelectItem>
-                                          <SelectItem value="tio" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tio/Tia</SelectItem>
-                                          <SelectItem value="responsavel" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Responsável Legal</SelectItem>
-                                          <SelectItem value="tutor" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tutor</SelectItem>
+                                        <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
+                                          <SelectItem value="pai" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👨</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Pai</p>
+                                                <p className="text-xs text-slate-600">Responsável paterno</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="mae" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👩</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Mãe</p>
+                                                <p className="text-xs text-slate-600">Responsável materna</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="avo" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👴</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Avô/Avó</p>
+                                                <p className="text-xs text-slate-600">Responsável avós</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="tio" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👨‍👩‍👧</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Tio/Tia</p>
+                                                <p className="text-xs text-slate-600">Responsável tios</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="responsavel" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">⚖️</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Responsável Legal</p>
+                                                <p className="text-xs text-slate-600">Guardião designado</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="tutor" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">🎓</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Tutor</p>
+                                                <p className="text-xs text-slate-600">Responsável educacional</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
@@ -909,15 +1083,80 @@ export default function UserManagement() {
                                         onValueChange={(value) => setNewUser({...newUser, parent2Relationship: value})}
                                       >
                                         <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
-                                          <SelectValue placeholder="Selecione o grau de parentesco" className="text-slate-700 font-medium" />
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-6 h-6 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center">
+                                              <Users className="w-4 h-4 text-white" />
+                                            </div>
+                                            <SelectValue placeholder="Selecione o grau de parentesco" className="text-slate-600" />
+                                          </div>
                                         </SelectTrigger>
-                                        <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
-                                          <SelectItem value="pai" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Pai</SelectItem>
-                                          <SelectItem value="mae" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Mãe</SelectItem>
-                                          <SelectItem value="avo" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Avô/Avó</SelectItem>
-                                          <SelectItem value="tio" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tio/Tia</SelectItem>
-                                          <SelectItem value="responsavel" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Responsável Legal</SelectItem>
-                                          <SelectItem value="tutor" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tutor</SelectItem>
+                                        <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-md shadow-2xl">
+                                          <SelectItem value="pai" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👨</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Pai</p>
+                                                <p className="text-xs text-slate-600">Responsável paterno</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="mae" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👩</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Mãe</p>
+                                                <p className="text-xs text-slate-600">Responsável materna</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="avo" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👴</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Avô/Avó</p>
+                                                <p className="text-xs text-slate-600">Responsável avós</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="tio" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">👨‍👩‍👧</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Tio/Tia</p>
+                                                <p className="text-xs text-slate-600">Responsável tios</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="responsavel" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">⚖️</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Responsável Legal</p>
+                                                <p className="text-xs text-slate-600">Guardião designado</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                          <SelectItem value="tutor" className="py-4 px-4 hover:bg-amber-50/50 rounded-lg cursor-pointer transition-colors duration-200">
+                                            <div className="flex items-center space-x-3">
+                                              <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
+                                                <span className="text-white text-sm">🎓</span>
+                                              </div>
+                                              <div>
+                                                <p className="font-semibold text-slate-800">Tutor</p>
+                                                <p className="text-xs text-slate-600">Responsável educacional</p>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
