@@ -263,14 +263,14 @@ export default function NotificationCenter() {
             </TabsTrigger>
             <TabsTrigger 
               value="sent" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-700 data-[state=active]:to-slate-800 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
               <Send className="h-4 w-4" />
               Enviadas
             </TabsTrigger>
             <TabsTrigger 
               value="all" 
-              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+              className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-700 data-[state=active]:to-gray-800 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
               <MessageSquare className="h-4 w-4" />
               Todas
@@ -594,14 +594,14 @@ export default function NotificationCenter() {
                       onValueChange={(value) => setNewNotification({ ...newNotification, recipientType: value, selectedRecipients: [] })}
                     >
                       <SelectTrigger className="h-12 bg-white/60 border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200">
-                        <SelectValue placeholder="Selecione os destinatários" />
+                        <SelectValue placeholder="Selecione os destinatários" className="text-slate-700 placeholder:text-slate-500" />
                       </SelectTrigger>
                       <SelectContent className="bg-white/95 backdrop-blur-sm border border-slate-200">
-                        <SelectItem value="all_teachers">👨‍🏫 Todos os Professores</SelectItem>
-                        <SelectItem value="all_students">🎓 Todos os Estudantes</SelectItem>
-                        <SelectItem value="selected_teachers">✓ Professores Selecionados</SelectItem>
-                        <SelectItem value="selected_students">✓ Estudantes Selecionados</SelectItem>
-                        <SelectItem value="admin">⚙️ Administração</SelectItem>
+                        <SelectItem value="all_teachers" className="text-slate-700">👨‍🏫 Todos os Professores</SelectItem>
+                        <SelectItem value="all_students" className="text-slate-700">🎓 Todos os Estudantes</SelectItem>
+                        <SelectItem value="selected_teachers" className="text-slate-700">✓ Professores Selecionados</SelectItem>
+                        <SelectItem value="selected_students" className="text-slate-700">✓ Estudantes Selecionados</SelectItem>
+                        <SelectItem value="admin" className="text-slate-700">⚙️ Administração</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -616,13 +616,13 @@ export default function NotificationCenter() {
                       onValueChange={(value: string) => setNewNotification({ ...newNotification, priority: value as 'low' | 'medium' | 'high' | 'urgent' })}
                     >
                       <SelectTrigger className="h-12 bg-white/60 border-slate-300 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-200">
-                        <SelectValue />
+                        <SelectValue className="text-slate-700 placeholder:text-slate-500" />
                       </SelectTrigger>
                       <SelectContent className="bg-white/95 backdrop-blur-sm border border-slate-200">
-                        <SelectItem value="low">🟢 Baixa</SelectItem>
-                        <SelectItem value="medium">🔵 Média</SelectItem>
-                        <SelectItem value="high">🟠 Alta</SelectItem>
-                        <SelectItem value="urgent">🔴 Urgente</SelectItem>
+                        <SelectItem value="low" className="text-slate-700">🟢 Baixa</SelectItem>
+                        <SelectItem value="medium" className="text-slate-700">🔵 Média</SelectItem>
+                        <SelectItem value="high" className="text-slate-700">🟠 Alta</SelectItem>
+                        <SelectItem value="urgent" className="text-slate-700">🔴 Urgente</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -637,7 +637,7 @@ export default function NotificationCenter() {
                     value={newNotification.title}
                     onChange={(e) => setNewNotification({ ...newNotification, title: e.target.value })}
                     placeholder="Digite um título claro e descritivo"
-                    className="h-12 bg-white/60 border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                    className="h-12 bg-white/60 border-slate-300 hover:border-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 placeholder:text-slate-500"
                   />
                 </div>
 
@@ -651,7 +651,7 @@ export default function NotificationCenter() {
                     onChange={(e) => setNewNotification({ ...newNotification, message: e.target.value })}
                     placeholder="Digite a mensagem detalhada da notificação..."
                     rows={6}
-                    className="resize-none bg-white/60 border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200"
+                    className="resize-none bg-white/60 border-slate-300 hover:border-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 transition-all duration-200 placeholder:text-slate-500"
                   />
                 </div>
 
