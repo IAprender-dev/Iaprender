@@ -283,15 +283,39 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+  // Dados das funções e anos acadêmicos
+  const roles = [
+    { id: 1, name: 'Administrador', level: 1 },
+    { id: 2, name: 'Secretaria', level: 2 },
+    { id: 3, name: 'Professor', level: 3 },
+    { id: 4, name: 'Aluno', level: 4 }
+  ];
+
+  const academicYears = [
+    { id: 1, name: '1º Ano do Ensino Fundamental', code: '1ano' },
+    { id: 2, name: '2º Ano do Ensino Fundamental', code: '2ano' },
+    { id: 3, name: '3º Ano do Ensino Fundamental', code: '3ano' },
+    { id: 4, name: '4º Ano do Ensino Fundamental', code: '4ano' },
+    { id: 5, name: '5º Ano do Ensino Fundamental', code: '5ano' },
+    { id: 6, name: '6º Ano do Ensino Fundamental', code: '6ano' },
+    { id: 7, name: '7º Ano do Ensino Fundamental', code: '7ano' },
+    { id: 8, name: '8º Ano do Ensino Fundamental', code: '8ano' },
+    { id: 9, name: '9º Ano do Ensino Fundamental', code: '9ano' }
+  ];
+
   const [newUser, setNewUser] = useState({
     firstName: "",
     lastName: "", 
     email: "",
     role: "student",
+    roleId: 4, // Padrão: Aluno
+    academicYearId: null as number | null,
     schoolYear: "",
     phone: "",
     address: "",
     dateOfBirth: "",
+    filiation: "",
     parentName: "",
     parentEmail: "",
     parentPhone: "",
@@ -410,12 +434,23 @@ export default function UserManagement() {
       lastName: "", 
       email: "",
       role: "student",
+      roleId: 4, // Padrão: Aluno
+      academicYearId: null,
       schoolYear: "",
       phone: "",
       address: "",
       dateOfBirth: "",
+      filiation: "",
+      parentName: "",
+      parentEmail: "",
+      parentPhone: "",
+      isMinor: true,
     });
   };
+
+  // Obter função selecionada
+  const selectedRole = roles.find((r) => r.id === newUser.roleId);
+  const isStudentRole = selectedRole?.name === 'Aluno';
 
   // Filter users based on search and filters
   const filteredUsers = users?.filter((user: User) => {
@@ -476,8 +511,26 @@ export default function UserManagement() {
       });
       return;
     }
+
+    // Converter dados do formulário para o schema atual do backend
+    const userData = {
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      role: selectedRole?.name === 'Aluno' ? 'student' : 
+            selectedRole?.name === 'Professor' ? 'teacher' :
+            selectedRole?.name === 'Secretaria' ? 'secretary' : 'admin',
+      schoolYear: academicYears.find(y => y.id === newUser.academicYearId)?.code || newUser.schoolYear,
+      phone: newUser.phone,
+      address: newUser.address,
+      dateOfBirth: newUser.dateOfBirth,
+      parentName: newUser.parentName,
+      parentEmail: newUser.parentEmail,
+      parentPhone: newUser.parentPhone,
+      isMinor: newUser.isMinor,
+    };
     
-    createUserMutation.mutate(newUser);
+    createUserMutation.mutate(userData);
   };
 
   const handleUpdateUser = (userData: any) => {
