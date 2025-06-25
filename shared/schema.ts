@@ -34,6 +34,10 @@ export const users = pgTable("users", {
   phone: text("phone"),
   address: text("address"),
   dateOfBirth: date("date_of_birth"),
+  parentName: text("parent_name"), // Nome dos responsáveis
+  parentEmail: text("parent_email"), // Email dos responsáveis  
+  parentPhone: text("parent_phone"), // Telefone dos responsáveis
+  isMinor: boolean("is_minor").default(true), // Se é menor de idade
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLoginAt: timestamp("last_login_at"),
 });

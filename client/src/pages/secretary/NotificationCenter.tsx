@@ -69,14 +69,12 @@ export default function NotificationCenter() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [newNotification, setNewNotification] = useState({
-    recipientType: 'teacher',
+    recipientType: 'all_teachers',
     title: '',
     message: '',
     type: 'communication' as const,
     priority: 'medium' as const,
-    studentId: '',
-    parentEmail: '',
-    parentPhone: '',
+    selectedRecipients: [] as string[],
     requiresResponse: false
   });
 
@@ -90,12 +88,21 @@ export default function NotificationCenter() {
     },
   });
 
-  // Fetch users for student selection
+  // Fetch users for recipient selection
   const { data: students } = useQuery({
     queryKey: ['/api/secretary/students'],
     queryFn: async () => {
       const response = await fetch('/api/secretary/students');
       if (!response.ok) throw new Error('Failed to fetch students');
+      return response.json();
+    },
+  });
+
+  const { data: teachers } = useQuery({
+    queryKey: ['/api/secretary/teachers'],
+    queryFn: async () => {
+      const response = await fetch('/api/secretary/teachers');
+      if (!response.ok) throw new Error('Failed to fetch teachers');
       return response.json();
     },
   });
@@ -118,14 +125,12 @@ export default function NotificationCenter() {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/secretary/notifications/all'] });
       setNewNotification({
-        recipientType: 'teacher',
+        recipientType: 'all_teachers',
         title: '',
         message: '',
         type: 'communication',
         priority: 'medium',
-        studentId: '',
-        parentEmail: '',
-        parentPhone: '',
+        selectedRecipients: [],
         requiresResponse: false
       });
     },
@@ -177,11 +182,11 @@ export default function NotificationCenter() {
   });
 
   const handleSendNotification = () => {
-    const notificationData = {
-      ...newNotification,
-      studentId: newNotification.studentId && newNotification.studentId !== 'all' ? parseInt(newNotification.studentId) : null,
-    };
-    sendNotificationMutation.mutate(notificationData);
+    sendNotificationMutation.mutate(newNotification);
+  };
+
+  const handleRecipientChange = (recipients: string[]) => {
+    setNewNotification({ ...newNotification, selectedRecipients: recipients });
   };
 
   const getPriorityColor = (priority: string) => {
@@ -521,16 +526,21 @@ export default function NotificationCenter() {
                     <Label htmlFor="recipient-type">Destinatário</Label>
                     <Select
                       value={newNotification.recipientType}
-                      onValueChange={(value) => setNewNotification({ ...newNotification, recipientType: value })}
+                      onValueChange={(value) => setNewNotification({ 
+                        ...newNotification, 
+                        recipientType: value,
+                        selectedRecipients: [] // Reset selected recipients when type changes
+                      })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="teacher">Professor</SelectItem>
-                        <SelectItem value="student">Aluno</SelectItem>
-                        <SelectItem value="parent">Responsáveis</SelectItem>
-                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="all_teachers">Todos os Professores</SelectItem>
+                        <SelectItem value="all_students">Todos os Alunos</SelectItem>
+                        <SelectItem value="all_teachers_students">Todos os Alunos e Professores</SelectItem>
+                        <SelectItem value="selected_students">Alunos Selecionados</SelectItem>
+                        <SelectItem value="selected_teachers">Professores Selecionados</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -573,25 +583,70 @@ export default function NotificationCenter() {
                     </Select>
                   </div>
 
-                  {(newNotification.recipientType === 'student' || newNotification.recipientType === 'parent') && (
-                    <div>
-                      <Label htmlFor="student">Aluno (Opcional)</Label>
-                      <Select
-                        value={newNotification.studentId}
-                        onValueChange={(value) => setNewNotification({ ...newNotification, studentId: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um aluno" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos os alunos</SelectItem>
-                          {students?.map((student: any) => (
-                            <SelectItem key={student.id} value={student.id.toString()}>
-                              {student.firstName} {student.lastName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  {(newNotification.recipientType === 'selected_students' || newNotification.recipientType === 'selected_teachers') && (
+                    <div className="md:col-span-2">
+                      <Label>
+                        {newNotification.recipientType === 'selected_students' ? 'Selecionar Alunos' : 'Selecionar Professores'}
+                      </Label>
+                      <div className="mt-2 max-h-40 overflow-y-auto border rounded-lg p-3 bg-slate-50">
+                        {newNotification.recipientType === 'selected_students' ? (
+                          students?.map((student: any) => (
+                            <div key={student.id} className="flex items-center space-x-2 mb-2">
+                              <input
+                                type="checkbox"
+                                id={`student-${student.id}`}
+                                checked={newNotification.selectedRecipients.includes(student.id.toString())}
+                                onChange={(e) => {
+                                  const recipients = [...newNotification.selectedRecipients];
+                                  if (e.target.checked) {
+                                    recipients.push(student.id.toString());
+                                  } else {
+                                    const index = recipients.indexOf(student.id.toString());
+                                    if (index > -1) recipients.splice(index, 1);
+                                  }
+                                  handleRecipientChange(recipients);
+                                }}
+                                className="h-4 w-4"
+                              />
+                              <Label htmlFor={`student-${student.id}`} className="text-sm">
+                                {student.firstName} {student.lastName}
+                                {student.isMinor && student.parentEmail && (
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    (Responsáveis: {student.parentEmail})
+                                  </span>
+                                )}
+                              </Label>
+                            </div>
+                          ))
+                        ) : (
+                          teachers?.map((teacher: any) => (
+                            <div key={teacher.id} className="flex items-center space-x-2 mb-2">
+                              <input
+                                type="checkbox"
+                                id={`teacher-${teacher.id}`}
+                                checked={newNotification.selectedRecipients.includes(teacher.id.toString())}
+                                onChange={(e) => {
+                                  const recipients = [...newNotification.selectedRecipients];
+                                  if (e.target.checked) {
+                                    recipients.push(teacher.id.toString());
+                                  } else {
+                                    const index = recipients.indexOf(teacher.id.toString());
+                                    if (index > -1) recipients.splice(index, 1);
+                                  }
+                                  handleRecipientChange(recipients);
+                                }}
+                                className="h-4 w-4"
+                              />
+                              <Label htmlFor={`teacher-${teacher.id}`} className="text-sm">
+                                {teacher.firstName} {teacher.lastName}
+                              </Label>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2">
+                        {newNotification.selectedRecipients.length} selecionado(s)
+                      </p>
                     </div>
                   )}
                 </div>
@@ -617,27 +672,18 @@ export default function NotificationCenter() {
                   />
                 </div>
 
-                {/* Contact Information for Parents */}
-                {newNotification.recipientType === 'parent' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="parent-email">Email dos Responsáveis</Label>
-                      <Input
-                        id="parent-email"
-                        type="email"
-                        placeholder="email@exemplo.com"
-                        value={newNotification.parentEmail}
-                        onChange={(e) => setNewNotification({ ...newNotification, parentEmail: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="parent-phone">Telefone dos Responsáveis</Label>
-                      <Input
-                        id="parent-phone"
-                        placeholder="(11) 99999-9999"
-                        value={newNotification.parentPhone}
-                        onChange={(e) => setNewNotification({ ...newNotification, parentPhone: e.target.value })}
-                      />
+                {/* Information about automatic parent notification */}
+                {(newNotification.recipientType === 'all_students' || newNotification.recipientType === 'selected_students') && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-800">Notificação automática aos responsáveis</p>
+                        <p className="text-sm text-blue-700 mt-1">
+                          Os responsáveis de alunos menores de idade serão automaticamente notificados 
+                          via email e telefone cadastrados.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -657,14 +703,12 @@ export default function NotificationCenter() {
                   <Button
                     variant="outline"
                     onClick={() => setNewNotification({
-                      recipientType: 'teacher',
+                      recipientType: 'all_teachers',
                       title: '',
                       message: '',
                       type: 'communication',
                       priority: 'medium',
-                      studentId: '',
-                      parentEmail: '',
-                      parentPhone: '',
+                      selectedRecipients: [],
                       requiresResponse: false
                     })}
                   >
@@ -672,7 +716,13 @@ export default function NotificationCenter() {
                   </Button>
                   <Button
                     onClick={handleSendNotification}
-                    disabled={!newNotification.title || !newNotification.message || sendNotificationMutation.isPending}
+                    disabled={
+                      !newNotification.title || 
+                      !newNotification.message || 
+                      sendNotificationMutation.isPending ||
+                      ((newNotification.recipientType === 'selected_students' || newNotification.recipientType === 'selected_teachers') && 
+                       newNotification.selectedRecipients.length === 0)
+                    }
                   >
                     <Send className="h-4 w-4 mr-2" />
                     {sendNotificationMutation.isPending ? 'Enviando...' : 'Enviar Notificação'}
