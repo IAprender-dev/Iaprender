@@ -607,16 +607,16 @@ export default function UserManagement() {
                       </DialogHeader>
                       
                       <div className="space-y-8 px-2">
-                        {/* Basic Information Section */}
+                        {/* User Identification Section */}
                         <div className="bg-gradient-to-br from-blue-100/70 to-indigo-100/70 rounded-xl p-5 border border-blue-200/80">
                           <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
                             <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
                               <Users className="h-3 w-3 text-white" />
                             </div>
-                            Dados Básicos
+                            Identificação do Usuário
                           </h3>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div className="space-y-2">
                               <Label className="text-slate-700 font-semibold text-sm">Nome</Label>
                               <Input
@@ -636,7 +636,9 @@ export default function UserManagement() {
                                 placeholder="Sobrenome"
                               />
                             </div>
-                            
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label className="text-slate-700 font-semibold text-sm">Data de Nascimento</Label>
                               <Input
@@ -644,6 +646,17 @@ export default function UserManagement() {
                                 value={newUser.dateOfBirth}
                                 onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
                                 className="rounded-lg h-10 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 text-sm px-3 bg-white text-slate-800 font-medium"
+                                placeholder="15/03/2010"
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label className="text-slate-700 font-semibold text-sm">Filiação</Label>
+                              <Input
+                                value={newUser.filiation}
+                                onChange={(e) => setNewUser({...newUser, filiation: e.target.value})}
+                                className="rounded-lg h-10 border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 text-sm px-3 bg-white text-slate-800 font-medium"
+                                placeholder="Nome dos pais"
                               />
                             </div>
                           </div>
@@ -682,13 +695,19 @@ export default function UserManagement() {
                             
                             <div className="space-y-2">
                               <Label className="text-slate-700 font-semibold text-sm">Função</Label>
-                              <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
+                              <Select 
+                                value={newUser.roleId?.toString()} 
+                                onValueChange={(value) => setNewUser({...newUser, roleId: parseInt(value)})}
+                              >
                                 <SelectTrigger className="rounded-lg h-10 border border-slate-300 focus:border-emerald-600 text-sm px-3 bg-white text-slate-800 font-medium">
-                                  <SelectValue placeholder="Selecione" />
+                                  <SelectValue placeholder="Selecione a função" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-lg bg-white border-slate-300">
-                                  <SelectItem value="student">Aluno</SelectItem>
-                                  <SelectItem value="teacher">Professor</SelectItem>
+                                  {roles.map((role: Role) => (
+                                    <SelectItem key={role.id} value={role.id.toString()}>
+                                      {role.name}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -696,7 +715,7 @@ export default function UserManagement() {
                         </div>
 
                         {/* Academic Information Section */}
-                        {newUser.role === 'student' && (
+                        {isStudentRole && (
                           <div className="bg-gradient-to-br from-purple-100/70 to-violet-100/70 rounded-xl p-5 border border-purple-200/80">
                             <h3 className="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
                               <div className="w-6 h-6 bg-gradient-to-r from-purple-600 to-violet-600 rounded-full flex items-center justify-center">
@@ -707,20 +726,19 @@ export default function UserManagement() {
                             
                             <div className="space-y-2">
                               <Label className="text-slate-700 font-semibold text-sm">Ano Escolar</Label>
-                              <Select value={newUser.schoolYear} onValueChange={(value) => setNewUser({...newUser, schoolYear: value})}>
+                              <Select 
+                                value={newUser.academicYearId?.toString()} 
+                                onValueChange={(value) => setNewUser({...newUser, academicYearId: parseInt(value)})}
+                              >
                                 <SelectTrigger className="rounded-lg h-10 border border-slate-300 focus:border-purple-600 text-sm px-3 bg-white text-slate-800 font-medium">
                                   <SelectValue placeholder="Selecione o ano" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-lg bg-white border-slate-300">
-                                  <SelectItem value="1ano">1º Ano</SelectItem>
-                                  <SelectItem value="2ano">2º Ano</SelectItem>
-                                  <SelectItem value="3ano">3º Ano</SelectItem>
-                                  <SelectItem value="4ano">4º Ano</SelectItem>
-                                  <SelectItem value="5ano">5º Ano</SelectItem>
-                                  <SelectItem value="6ano">6º Ano</SelectItem>
-                                  <SelectItem value="7ano">7º Ano</SelectItem>
-                                  <SelectItem value="8ano">8º Ano</SelectItem>
-                                  <SelectItem value="9ano">9º Ano</SelectItem>
+                                  {academicYears.map((year: AcademicYear) => (
+                                    <SelectItem key={year.id} value={year.id.toString()}>
+                                      {year.name}
+                                    </SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             </div>
