@@ -36,7 +36,8 @@ import {
   MapPin,
   Calendar,
   School,
-  Shield
+  Shield,
+  BookOpen
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
@@ -356,11 +357,13 @@ export default function UserManagement() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/secretary/users'] });
       toast({ 
         title: "✅ Usuário criado com sucesso!", 
-        description: "O novo usuário foi adicionado à plataforma." 
+        description: data.temporaryPassword 
+          ? `Senha temporária: ${data.temporaryPassword} (deve ser alterada no primeiro login)`
+          : "O novo usuário foi adicionado à plataforma."
       });
       setIsCreateDialogOpen(false);
       resetNewUserForm();

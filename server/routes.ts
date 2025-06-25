@@ -31,7 +31,7 @@ import bcrypt from "bcryptjs";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import multer from "multer";
-import { importUsersFromCSV, hashPassword } from "./utils/csv-importer";
+import { importUsersFromCSV, hashPassword, generateSecurePassword } from "./utils/csv-importer";
 import aiRouter from "./routes/ai-routes";
 import translateRoutes from "./routes/translate-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
@@ -1249,10 +1249,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(userData.email)) {
         return res.status(400).json({ 
-          message: "Email deve ter formato válido com @ seguido de .com" 
+          message: "Email deve ter formato válido" 
         });
       }
       
@@ -1285,13 +1285,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         counter++;
       }
       
-      // Default password (should be changed on first login)
-      const defaultPassword = await hashPassword("123456");
+      // Generate secure password
+      const generatedPassword = generateSecurePassword(12);
+      const hashedPassword = await hashPassword(generatedPassword);
       
       // Create user
       const [newUser] = await db.insert(users).values({
         username: finalUsername,
-        password: defaultPassword,
+        password: hashedPassword,
         firstName: userData.firstName,
         lastName: userData.lastName,
         email: userData.email,
@@ -1309,7 +1310,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isMinor: userData.isMinor || false
       }).returning();
       
-      return res.status(201).json(newUser);
+      // Return user data without password, include generated password for display
+      const { password, ...userWithoutPassword } = newUser;
+      return res.status(201).json({
+        ...userWithoutPassword,
+        temporaryPassword: generatedPassword
+      });
     } catch (error) {
       console.error("Error creating user:", error);
       return res.status(500).json({ message: "Server error" });
@@ -1334,10 +1340,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Validate email if being updated
       if (userData.email && userData.email !== existingUser.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(userData.email)) {
           return res.status(400).json({ 
-            message: "Email deve ter formato válido com @ seguido de .com" 
+            message: "Email deve ter formato válido" 
           });
         }
         
