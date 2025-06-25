@@ -55,7 +55,7 @@ import AnaliseDocumentos from "@/pages/teacher/AnaliseDocumentos";
 import LogoShowcase from "@/pages/LogoShowcase";
 import EssaysDashboard from "@/pages/teacher/EssaysDashboard";
 import CalculatorDashboard from "@/pages/teacher/CalculatorDashboard";
-import NotificationsDashboard from "@/pages/teacher/NotificationsDashboard";
+
 import AnalyticsDashboard from "@/pages/teacher/AnalyticsDashboard";
 import TokenDashboard from "@/pages/TokenDashboard";
 
@@ -135,7 +135,7 @@ function Router() {
 
       <Route path="/professor/redacoes" component={EssaysDashboard} />
       <Route path="/professor/calculadora" component={CalculatorDashboard} />
-      <Route path="/professor/notificacoes" component={NotificationsDashboard} />
+      <Route path="/professor/notificacoes" component={TeacherNotificationCenter} />
       <Route path="/professor/analises" component={AnalyticsDashboard} />
       <Route path="/professor/noticias-podcasts" component={NoticiasPodcasts} />
       
