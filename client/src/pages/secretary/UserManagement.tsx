@@ -682,17 +682,17 @@ export default function UserManagement() {
                           <div className="space-y-4">
                             {/* Função */}
                             <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Função</Label>
+                              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Função</Label>
                               <Select 
                                 value={newUser.roleId?.toString()} 
                                 onValueChange={(value) => setNewUser({...newUser, roleId: parseInt(value)})}
                               >
-                                <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                                  <SelectValue placeholder="Selecione a função" />
+                                <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                                  <SelectValue placeholder="Selecione a função" className="text-slate-700 font-medium" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
                                   {roles.map((role: Role) => (
-                                    <SelectItem key={role.id} value={role.id.toString()}>
+                                    <SelectItem key={role.id} value={role.id.toString()} className="rounded-xl m-1 text-slate-900 font-medium hover:bg-blue-50 focus:bg-blue-50">
                                       {role.name}
                                     </SelectItem>
                                   ))}
@@ -703,67 +703,67 @@ export default function UserManagement() {
                             {/* Nome e Sobrenome */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label className="text-slate-700 font-semibold text-sm">Nome</Label>
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Nome</Label>
                                 <Input
                                   value={newUser.firstName}
                                   onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                  placeholder="Digite o nome"
+                                  className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                  placeholder="Digite o nome completo"
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label className="text-slate-700 font-semibold text-sm">Sobrenome</Label>
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Sobrenome</Label>
                                 <Input
                                   value={newUser.lastName}
                                   onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                  placeholder="Digite o sobrenome"
+                                  className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                  placeholder="Digite o sobrenome completo"
                                 />
                               </div>
                             </div>
 
                             {/* Data de Nascimento */}
                             <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Data de Nascimento</Label>
+                              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Data de Nascimento</Label>
                               <Input
                                 type="date"
                                 value={newUser.dateOfBirth}
                                 onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
-                                className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
                               />
                             </div>
 
                             {/* E-mail e Telefone */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label className="text-slate-700 font-semibold text-sm">E-mail</Label>
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">E-mail</Label>
                                 <Input
                                   type="email"
                                   value={newUser.email}
                                   onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                  placeholder="email@exemplo.com"
+                                  className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                  placeholder="Digite o email institucional"
                                 />
                               </div>
                               <div className="space-y-2">
-                                <Label className="text-slate-700 font-semibold text-sm">Telefone</Label>
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Telefone</Label>
                                 <Input
                                   value={newUser.phone}
                                   onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                                  className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                                  placeholder="(11) 99999-9999"
+                                  className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                  placeholder="Digite o telefone de contato"
                                 />
                               </div>
                             </div>
 
                             {/* Endereço */}
                             <div className="space-y-2">
-                              <Label className="text-slate-700 font-semibold text-sm">Endereço</Label>
+                              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Endereço</Label>
                               <Textarea
                                 value={newUser.address}
                                 onChange={(e) => setNewUser({...newUser, address: e.target.value})}
-                                className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none"
-                                placeholder="Rua, número, bairro, cidade, CEP..."
+                                className="rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 py-3 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium resize-none"
+                                placeholder="Digite o endereço completo com rua, número, bairro, cidade e CEP"
                                 rows={3}
                               />
                             </div>
@@ -771,17 +771,17 @@ export default function UserManagement() {
                             {/* Ano Escolar - Apenas para Alunos */}
                             {isStudentRole && (
                               <div className="space-y-2">
-                                <Label className="text-slate-700 font-semibold text-sm">Ano Escolar</Label>
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Ano Escolar</Label>
                                 <Select 
                                   value={newUser.academicYearId?.toString()} 
                                   onValueChange={(value) => setNewUser({...newUser, academicYearId: parseInt(value)})}
                                 >
-                                  <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
-                                    <SelectValue placeholder="Selecione o ano escolar" />
+                                  <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                                    <SelectValue placeholder="Selecione o ano letivo" className="text-slate-700 font-medium" />
                                   </SelectTrigger>
-                                  <SelectContent>
+                                  <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
                                     {academicYears.map((year: AcademicYear) => (
-                                      <SelectItem key={year.id} value={year.id.toString()}>
+                                      <SelectItem key={year.id} value={year.id.toString()} className="rounded-xl m-1 text-slate-900 font-medium hover:bg-blue-50 focus:bg-blue-50">
                                         {year.name}
                                       </SelectItem>
                                     ))}
@@ -834,30 +834,30 @@ export default function UserManagement() {
                                   
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Nome do Responsável</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Nome do Responsável</Label>
                                       <Input
                                         value={newUser.parentName}
                                         onChange={(e) => setNewUser({...newUser, parentName: e.target.value})}
-                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                        placeholder="Nome completo do responsável"
+                                        className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                        placeholder="Digite o nome completo do responsável"
                                       />
                                     </div>
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Grau de Parentesco</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Grau de Parentesco</Label>
                                       <Select 
                                         value={newUser.parent1Relationship} 
                                         onValueChange={(value) => setNewUser({...newUser, parent1Relationship: value})}
                                       >
-                                        <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
-                                          <SelectValue placeholder="Selecione o parentesco" />
+                                        <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                                          <SelectValue placeholder="Selecione o grau de parentesco" className="text-slate-700 font-medium" />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="pai">Pai</SelectItem>
-                                          <SelectItem value="mae">Mãe</SelectItem>
-                                          <SelectItem value="avo">Avô/Avó</SelectItem>
-                                          <SelectItem value="tio">Tio/Tia</SelectItem>
-                                          <SelectItem value="responsavel">Responsável Legal</SelectItem>
-                                          <SelectItem value="tutor">Tutor</SelectItem>
+                                        <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
+                                          <SelectItem value="pai" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Pai</SelectItem>
+                                          <SelectItem value="mae" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Mãe</SelectItem>
+                                          <SelectItem value="avo" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Avô/Avó</SelectItem>
+                                          <SelectItem value="tio" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tio/Tia</SelectItem>
+                                          <SelectItem value="responsavel" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Responsável Legal</SelectItem>
+                                          <SelectItem value="tutor" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tutor</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
@@ -865,22 +865,22 @@ export default function UserManagement() {
 
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Email do Responsável</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Email do Responsável</Label>
                                       <Input
                                         type="email"
                                         value={newUser.parentEmail}
                                         onChange={(e) => setNewUser({...newUser, parentEmail: e.target.value})}
-                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                        placeholder="email@responsavel.com"
+                                        className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                        placeholder="Digite o email do responsável"
                                       />
                                     </div>
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Telefone do Responsável</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Telefone do Responsável</Label>
                                       <Input
                                         value={newUser.parentPhone}
                                         onChange={(e) => setNewUser({...newUser, parentPhone: e.target.value})}
-                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                        placeholder="(11) 99999-9999"
+                                        className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                        placeholder="Digite o telefone do responsável"
                                       />
                                     </div>
                                   </div>
@@ -894,30 +894,30 @@ export default function UserManagement() {
                                   
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Nome do Responsável</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Nome do Responsável</Label>
                                       <Input
                                         value={newUser.parent2Name}
                                         onChange={(e) => setNewUser({...newUser, parent2Name: e.target.value})}
-                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                        placeholder="Nome completo do segundo responsável"
+                                        className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                        placeholder="Digite o nome completo do segundo responsável"
                                       />
                                     </div>
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Grau de Parentesco</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Grau de Parentesco</Label>
                                       <Select 
                                         value={newUser.parent2Relationship} 
                                         onValueChange={(value) => setNewUser({...newUser, parent2Relationship: value})}
                                       >
-                                        <SelectTrigger className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200">
-                                          <SelectValue placeholder="Selecione o parentesco" />
+                                        <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                                          <SelectValue placeholder="Selecione o grau de parentesco" className="text-slate-700 font-medium" />
                                         </SelectTrigger>
-                                        <SelectContent>
-                                          <SelectItem value="pai">Pai</SelectItem>
-                                          <SelectItem value="mae">Mãe</SelectItem>
-                                          <SelectItem value="avo">Avô/Avó</SelectItem>
-                                          <SelectItem value="tio">Tio/Tia</SelectItem>
-                                          <SelectItem value="responsavel">Responsável Legal</SelectItem>
-                                          <SelectItem value="tutor">Tutor</SelectItem>
+                                        <SelectContent className="rounded-2xl bg-white/95 backdrop-blur-xl border-2 border-slate-200 shadow-2xl">
+                                          <SelectItem value="pai" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Pai</SelectItem>
+                                          <SelectItem value="mae" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Mãe</SelectItem>
+                                          <SelectItem value="avo" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Avô/Avó</SelectItem>
+                                          <SelectItem value="tio" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tio/Tia</SelectItem>
+                                          <SelectItem value="responsavel" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Responsável Legal</SelectItem>
+                                          <SelectItem value="tutor" className="rounded-xl m-1 text-slate-900 font-medium hover:bg-amber-50 focus:bg-amber-50">Tutor</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
@@ -925,22 +925,22 @@ export default function UserManagement() {
 
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Email do Responsável</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Email do Responsável</Label>
                                       <Input
                                         type="email"
                                         value={newUser.parent2Email}
                                         onChange={(e) => setNewUser({...newUser, parent2Email: e.target.value})}
-                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                        placeholder="email@responsavel2.com"
+                                        className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                        placeholder="Digite o email do segundo responsável"
                                       />
                                     </div>
                                     <div className="space-y-2">
-                                      <Label className="text-slate-700 font-semibold text-sm">Telefone do Responsável</Label>
+                                      <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Telefone do Responsável</Label>
                                       <Input
                                         value={newUser.parent2Phone}
                                         onChange={(e) => setNewUser({...newUser, parent2Phone: e.target.value})}
-                                        className="h-12 bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-                                        placeholder="(11) 99999-9999"
+                                        className="rounded-2xl h-14 border-2 border-slate-200 focus:border-amber-500 focus:ring-amber-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-700 placeholder:font-medium text-slate-900 font-medium"
+                                        placeholder="Digite o telefone do segundo responsável"
                                       />
                                     </div>
                                   </div>
