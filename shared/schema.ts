@@ -359,6 +359,8 @@ export const notifications = pgTable("notifications", {
   requiresResponse: boolean("requires_response").default(false).notNull(),
   responseText: text("response_text"), // resposta do destinatário
   respondedAt: timestamp("responded_at"), // quando foi respondida
+  parentNotificationId: integer("parent_notification_id").references(() => notifications.id), // referência à notificação pai
+  isResponse: boolean("is_response").default(false).notNull(), // se esta notificação é uma resposta
   sentAt: timestamp("sent_at"), // quando foi enviada
   readAt: timestamp("read_at"), // quando foi lida
   metadata: jsonb("metadata"), // dados adicionais como anexos, etc.

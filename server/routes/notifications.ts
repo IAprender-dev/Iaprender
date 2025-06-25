@@ -356,4 +356,85 @@ router.get('/count', authenticate, async (req: Request, res: Response) => {
   }
 });
 
+// POST /api/notifications/:id/respond - Responder a uma notificação
+router.post('/:id/respond', authenticate, async (req: Request, res: Response) => {
+  try {
+    const notificationId = parseInt(req.params.id);
+    const { responseText } = req.body;
+    const userId = req.session?.user?.id;
+    const userName = `${req.session?.user?.firstName} ${req.session?.user?.lastName}`;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    if (!responseText?.trim()) {
+      return res.status(400).json({ message: 'Response text is required' });
+    }
+
+    // Buscar a notificação original
+    const [originalNotification] = await db
+      .select({
+        id: notifications.id,
+        title: notifications.title,
+        senderId: notifications.senderId,
+        recipientId: notifications.recipientId,
+        recipientType: notifications.recipientType,
+        requiresResponse: notifications.requiresResponse,
+        sequentialNumber: notifications.sequentialNumber
+      })
+      .from(notifications)
+      .where(eq(notifications.id, notificationId));
+
+    if (!originalNotification) {
+      return res.status(404).json({ message: 'Notification not found' });
+    }
+
+    // Verificar se o usuário pode responder a esta notificação
+    const canRespond = originalNotification.recipientId === userId || 
+                      (originalNotification.recipientType === req.session?.user?.role) ||
+                      originalNotification.recipientType === 'all';
+
+    if (!canRespond) {
+      return res.status(403).json({ message: 'Not authorized to respond to this notification' });
+    }
+
+    // Atualizar a notificação original com a resposta
+    await db
+      .update(notifications)
+      .set({
+        responseText: responseText.trim(),
+        respondedAt: new Date(),
+        status: 'read'
+      })
+      .where(eq(notifications.id, notificationId));
+
+    // Criar uma nova notificação como resposta para o remetente original
+    if (originalNotification.senderId !== userId) {
+      const responseSequentialNumber = await generateSequentialNumber();
+      
+      await db.insert(notifications).values({
+        sequentialNumber: responseSequentialNumber,
+        senderId: userId,
+        recipientId: originalNotification.senderId,
+        recipientType: 'specific',
+        title: `Re: ${originalNotification.title}`,
+        message: responseText.trim(),
+        type: 'communication',
+        priority: 'medium',
+        status: 'pending',
+        requiresResponse: false,
+        parentNotificationId: notificationId,
+        isResponse: true,
+        sentAt: new Date()
+      });
+    }
+
+    res.json({ message: 'Response sent successfully' });
+  } catch (error) {
+    console.error('Error responding to notification:', error);
+    res.status(500).json({ message: 'Error responding to notification' });
+  }
+});
+
 export default router;

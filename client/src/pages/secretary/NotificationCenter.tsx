@@ -55,6 +55,8 @@ interface NotificationData {
   requiresResponse: boolean;
   responseText?: string;
   respondedAt?: string;
+  parentNotificationId?: number;
+  isResponse: boolean;
   sentAt?: string;
   readAt?: string;
   createdAt: string;
@@ -70,6 +72,8 @@ export default function NotificationCenter() {
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [responseText, setResponseText] = useState('');
+  const [respondingTo, setRespondingTo] = useState<number | null>(null);
   
   const [newNotification, setNewNotification] = useState({
     recipientType: 'all_teachers',
@@ -141,10 +145,40 @@ export default function NotificationCenter() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/notifications/secretary'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/secretary/notifications'] });
       toast({
         title: "Sucesso",
         description: "Status da notificação atualizado!",
+      });
+    }
+  });
+
+  // Respond to notification mutation
+  const respondNotificationMutation = useMutation({
+    mutationFn: async ({ id, responseText }: { id: number; responseText: string }) => {
+      const response = await fetch(`/api/notifications/${id}/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ responseText })
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to respond');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/secretary/notifications'] });
+      toast({
+        title: "Sucesso",
+        description: "Resposta enviada com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao enviar resposta",
+        variant: "destructive"
       });
     }
   });
@@ -341,6 +375,16 @@ export default function NotificationCenter() {
                                       {notification.status === 'pending' ? 'Pendente' :
                                        notification.status === 'read' ? 'Lida' : 'Arquivada'}
                                     </Badge>
+                                    {notification.requiresResponse && (
+                                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-amber-400">
+                                        Requer Resposta
+                                      </Badge>
+                                    )}
+                                    {notification.isResponse && (
+                                      <Badge className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white border-purple-400">
+                                        Resposta
+                                      </Badge>
+                                    )}
                                   </div>
                                   <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-md">
                                     {new Date(notification.createdAt).toLocaleDateString('pt-BR', {
@@ -367,6 +411,98 @@ export default function NotificationCenter() {
                                     <CheckCircle className="h-4 w-4" />
                                     Marcar como Lida
                                   </Button>
+                                )}
+
+                                {notification.requiresResponse && !notification.responseText && notification.senderId !== user?.id && (
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button
+                                        size="sm"
+                                        className="gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                                        onClick={() => {
+                                          setRespondingTo(notification.id);
+                                          setResponseText('');
+                                        }}
+                                      >
+                                        <Reply className="h-4 w-4" />
+                                        Responder
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-md">
+                                      <DialogHeader>
+                                        <DialogTitle>Responder Notificação</DialogTitle>
+                                      </DialogHeader>
+                                      <div className="space-y-4">
+                                        <div>
+                                          <Label className="text-sm font-medium text-slate-700">Título Original:</Label>
+                                          <p className="text-sm text-slate-600 bg-slate-50 p-2 rounded border">{notification.title}</p>
+                                        </div>
+                                        <div>
+                                          <Label htmlFor="responseText" className="text-sm font-medium text-slate-700">Sua Resposta:</Label>
+                                          <Textarea
+                                            id="responseText"
+                                            value={respondingTo === notification.id ? responseText : ''}
+                                            onChange={(e) => setResponseText(e.target.value)}
+                                            placeholder="Digite sua resposta..."
+                                            className="mt-1"
+                                            rows={4}
+                                          />
+                                        </div>
+                                        <div className="flex gap-2 justify-end">
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => {
+                                              setRespondingTo(null);
+                                              setResponseText('');
+                                            }}
+                                          >
+                                            Cancelar
+                                          </Button>
+                                          <Button
+                                            type="button"
+                                            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+                                            disabled={!responseText.trim() || respondNotificationMutation.isPending}
+                                            onClick={() => {
+                                              if (responseText.trim()) {
+                                                respondNotificationMutation.mutate({
+                                                  id: notification.id,
+                                                  responseText: responseText.trim()
+                                                });
+                                                setRespondingTo(null);
+                                                setResponseText('');
+                                              }
+                                            }}
+                                          >
+                                            {respondNotificationMutation.isPending ? 'Enviando...' : 'Enviar Resposta'}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                )}
+
+                                {notification.responseText && (
+                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                                    <div className="flex items-start gap-2">
+                                      <Reply className="h-4 w-4 text-blue-600 mt-0.5" />
+                                      <div className="flex-1">
+                                        <p className="text-sm font-medium text-blue-800">Resposta enviada:</p>
+                                        <p className="text-sm text-blue-700">{notification.responseText}</p>
+                                        {notification.respondedAt && (
+                                          <p className="text-xs text-blue-600 mt-1">
+                                            Respondido em: {new Date(notification.respondedAt).toLocaleDateString('pt-BR', {
+                                              day: '2-digit',
+                                              month: '2-digit',
+                                              year: 'numeric',
+                                              hour: '2-digit',
+                                              minute: '2-digit'
+                                            })}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
                                 )}
                                 
                                 <Button
@@ -688,6 +824,33 @@ export default function NotificationCenter() {
                     rows={6}
                     className="resize-none bg-white/80 border-slate-400 hover:border-slate-500 focus:border-emerald-600 focus:ring-2 focus:ring-emerald-200 transition-all duration-200 placeholder:text-slate-600 text-slate-800 font-medium"
                   />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id="requiresResponse"
+                      checked={newNotification.requiresResponse}
+                      onChange={(e) => setNewNotification({ 
+                        ...newNotification, 
+                        requiresResponse: e.target.checked 
+                      })}
+                      className="w-4 h-4 text-amber-600 bg-white border-amber-300 rounded focus:ring-amber-500 focus:ring-2"
+                    />
+                    <Label 
+                      htmlFor="requiresResponse" 
+                      className="text-sm font-semibold text-amber-800 cursor-pointer flex items-center gap-2"
+                    >
+                      <Reply className="h-4 w-4 text-amber-600" />
+                      Esta notificação requer resposta do destinatário
+                    </Label>
+                  </div>
+                  {newNotification.requiresResponse && (
+                    <div className="text-xs text-amber-700 bg-amber-50 p-2 rounded border border-amber-200">
+                      💡 O destinatário verá um botão "Responder" e poderá enviar uma resposta que será direcionada para você.
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-4 pt-6 border-t border-slate-200/60">
