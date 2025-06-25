@@ -817,82 +817,16 @@ export default function UserManagement() {
                                       <div className="mb-3">
                                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Fundamental I</p>
                                       </div>
-                                      <SelectItem value="1" className="py-3 px-3 hover:bg-pink-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🎨
+                                      {academicYears.map((year: AcademicYear) => (
+                                        <SelectItem key={year.id} value={year.id.toString()} className="py-3 px-3 hover:bg-blue-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
+                                          <div className="flex items-center space-x-3">
+                                            <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                              📚
+                                            </div>
+                                            <span className="font-medium text-slate-800">{year.name}</span>
                                           </div>
-                                          <span className="font-medium text-slate-800">1º ano - Mundo das Cores</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="2" className="py-3 px-3 hover:bg-orange-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🌟
-                                          </div>
-                                          <span className="font-medium text-slate-800">2º ano - Descoberta das Palavras</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="3" className="py-3 px-3 hover:bg-yellow-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🏃‍♂️
-                                          </div>
-                                          <span className="font-medium text-slate-800">3º ano - Aventura dos Números</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="4" className="py-3 px-3 hover:bg-green-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🌍
-                                          </div>
-                                          <span className="font-medium text-slate-800">4º ano - Exploradores da Natureza</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="5" className="py-3 px-3 hover:bg-teal-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-4">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🚀
-                                          </div>
-                                          <span className="font-medium text-slate-800">5º ano - Cientistas do Futuro</span>
-                                        </div>
-                                      </SelectItem>
-                                      
-                                      <div className="mb-3 mt-4">
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider px-2 py-1">Ensino Fundamental II</p>
-                                      </div>
-                                      <SelectItem value="6" className="py-3 px-3 hover:bg-blue-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🎯
-                                          </div>
-                                          <span className="font-medium text-slate-800">6º ano - Desbravadores do Conhecimento</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="7" className="py-3 px-3 hover:bg-indigo-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🔬
-                                          </div>
-                                          <span className="font-medium text-slate-800">7º ano - Investigadores da Ciência</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="8" className="py-3 px-3 hover:bg-purple-50/40 rounded-lg cursor-pointer transition-colors duration-150 mb-1">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            📚
-                                          </div>
-                                          <span className="font-medium text-slate-800">8º ano - Mestres da Razão</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="9" className="py-3 px-3 hover:bg-rose-50/40 rounded-lg cursor-pointer transition-colors duration-150">
-                                        <div className="flex items-center space-x-3">
-                                          <div className="w-8 h-8 bg-gradient-to-br from-rose-400 to-rose-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                                            🏆
-                                          </div>
-                                          <span className="font-medium text-slate-800">9º ano - Campeões do Saber</span>
-                                        </div>
-                                      </SelectItem>
+                                        </SelectItem>
+                                      ))}
                                     </div>
                                   </SelectContent>
                                 </Select>
