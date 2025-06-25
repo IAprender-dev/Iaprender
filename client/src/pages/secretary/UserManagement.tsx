@@ -596,96 +596,139 @@ export default function UserManagement() {
                         Novo Usuário
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white">
-                      <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold text-slate-800">
-                          Criar Novo Usuário
+                    <DialogContent className="sm:max-w-3xl max-h-[95vh] overflow-y-auto bg-white/95 backdrop-blur-xl border-0 shadow-2xl rounded-3xl">
+                      <DialogHeader className="space-y-4 pb-6 pt-2">
+                        <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
+                          Novo Usuário
                         </DialogTitle>
-                        <DialogDescription className="text-slate-600">
-                          Preencha os dados para cadastrar um novo usuário na plataforma
+                        <DialogDescription className="text-slate-600 font-medium text-center text-lg">
+                          Preencha os dados para cadastrar um novo membro na plataforma educacional
                         </DialogDescription>
                       </DialogHeader>
                       
-                      <div className="space-y-6 py-4">
-                        {/* Personal Info */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-slate-700">
-                              Nome
-                            </Label>
-                            <Input
-                              value={newUser.firstName}
-                              onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                              className="mt-1 block w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              placeholder="Digite o nome"
-                            />
-                          </div>
+                      <div className="space-y-8 px-2">
+                        {/* Personal Information Section */}
+                        <div className="bg-gradient-to-br from-blue-50/50 to-purple-50/50 rounded-2xl p-6 border border-blue-100/50">
+                          <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                              <Users className="h-4 w-4 text-white" />
+                            </div>
+                            Informações Pessoais
+                          </h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Nome</Label>
+                              <Input
+                                value={newUser.firstName}
+                                onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
+                                placeholder="Digite o nome"
+                              />
+                            </div>
 
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-slate-700">
-                              Sobrenome
-                            </Label>
-                            <Input
-                              value={newUser.lastName}
-                              onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                              className="mt-1 block w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              placeholder="Digite o sobrenome"
-                            />
+                            <div className="space-y-3">
+                              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Sobrenome</Label>
+                              <Input
+                                value={newUser.lastName}
+                                onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
+                                placeholder="Digite o sobrenome"
+                              />
+                            </div>
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-slate-700">
-                            E-mail
-                          </Label>
-                          <Input
-                            type="email"
-                            value={newUser.email}
-                            onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                            className="mt-1 block w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="usuario@dominio.com"
-                          />
+                        {/* Contact Information Section */}
+                        <div className="bg-gradient-to-br from-emerald-50/50 to-teal-50/50 rounded-2xl p-6 border border-emerald-100/50">
+                          <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
+                              <Mail className="h-4 w-4 text-white" />
+                            </div>
+                            Informações de Contato
+                          </h3>
+                          
+                          <div className="space-y-6">
+                            <div className="space-y-3">
+                              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">E-mail</Label>
+                              <Input
+                                type="email"
+                                value={newUser.email}
+                                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                                className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
+                                placeholder="usuario@dominio.com"
+                              />
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-3">
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Telefone</Label>
+                                <Input
+                                  value={newUser.phone}
+                                  onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
+                                  className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium"
+                                  placeholder="(11) 99999-9999"
+                                />
+                              </div>
+                              
+                              <div className="space-y-3">
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Data de Nascimento</Label>
+                                <Input
+                                  type="date"
+                                  value={newUser.dateOfBirth}
+                                  onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
+                                  className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium"
+                                />
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-slate-700">
-                              Cargo
-                            </Label>
-                            <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
-                              <SelectTrigger className="mt-1 w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="student">Aluno</SelectItem>
-                                <SelectItem value="teacher">Professor</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {newUser.role === 'student' && (
-                            <div className="space-y-2">
-                              <Label className="text-sm font-semibold text-slate-700">
-                                Ano Escolar
-                              </Label>
-                              <Select value={newUser.schoolYear} onValueChange={(value) => setNewUser({...newUser, schoolYear: value})}>
-                                <SelectTrigger className="mt-1 w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                                  <SelectValue placeholder="Selecione o ano" />
+                        {/* Academic Information Section */}
+                        <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-2xl p-6 border border-purple-100/50">
+                          <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                              <GraduationCap className="h-4 w-4 text-white" />
+                            </div>
+                            Informações Acadêmicas
+                          </h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                              <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Cargo</Label>
+                              <Select value={newUser.role} onValueChange={(value) => setNewUser({...newUser, role: value})}>
+                                <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                                  <SelectValue placeholder="Selecione o cargo" />
                                 </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="1ano">1º Ano</SelectItem>
-                                  <SelectItem value="2ano">2º Ano</SelectItem>
-                                  <SelectItem value="3ano">3º Ano</SelectItem>
-                                  <SelectItem value="4ano">4º Ano</SelectItem>
-                                  <SelectItem value="5ano">5º Ano</SelectItem>
-                                  <SelectItem value="6ano">6º Ano</SelectItem>
-                                  <SelectItem value="7ano">7º Ano</SelectItem>
-                                  <SelectItem value="8ano">8º Ano</SelectItem>
-                                  <SelectItem value="9ano">9º Ano</SelectItem>
+                                <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-xl">
+                                  <SelectItem value="student" className="rounded-lg">Aluno</SelectItem>
+                                  <SelectItem value="teacher" className="rounded-lg">Professor</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
-                          )}
+
+                            {newUser.role === 'student' && (
+                              <div className="space-y-3">
+                                <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Ano Escolar</Label>
+                                <Select value={newUser.schoolYear} onValueChange={(value) => setNewUser({...newUser, schoolYear: value})}>
+                                  <SelectTrigger className="rounded-2xl h-14 border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 bg-white/50 backdrop-blur-sm text-slate-900 font-medium">
+                                    <SelectValue placeholder="Selecione o ano" />
+                                  </SelectTrigger>
+                                  <SelectContent className="rounded-xl border-2 border-slate-200 bg-white/95 backdrop-blur-xl">
+                                    <SelectItem value="1ano" className="rounded-lg">1º Ano</SelectItem>
+                                    <SelectItem value="2ano" className="rounded-lg">2º Ano</SelectItem>
+                                    <SelectItem value="3ano" className="rounded-lg">3º Ano</SelectItem>
+                                    <SelectItem value="4ano" className="rounded-lg">4º Ano</SelectItem>
+                                    <SelectItem value="5ano" className="rounded-lg">5º Ano</SelectItem>
+                                    <SelectItem value="6ano" className="rounded-lg">6º Ano</SelectItem>
+                                    <SelectItem value="7ano" className="rounded-lg">7º Ano</SelectItem>
+                                    <SelectItem value="8ano" className="rounded-lg">8º Ano</SelectItem>
+                                    <SelectItem value="9ano" className="rounded-lg">9º Ano</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {newUser.role === 'student' && (
@@ -742,43 +785,25 @@ export default function UserManagement() {
                           </>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-slate-700">
-                              Telefone
-                            </Label>
-                            <Input
-                              value={newUser.phone}
-                              onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
-                              className="mt-1 block w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              placeholder="(11) 99999-9999"
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label className="text-sm font-semibold text-slate-700">
-                              Data de Nascimento
-                            </Label>
-                            <Input
-                              type="date"
-                              value={newUser.dateOfBirth}
-                              onChange={(e) => setNewUser({...newUser, dateOfBirth: e.target.value})}
-                              className="mt-1 block w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label className="text-sm font-semibold text-slate-700">
+                        {/* Address Information Section */}
+                        <div className="bg-gradient-to-br from-indigo-50/50 to-slate-50/50 rounded-2xl p-6 border border-indigo-100/50">
+                          <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-slate-500 rounded-full flex items-center justify-center">
+                              <MapPin className="h-4 w-4 text-white" />
+                            </div>
                             Endereço
-                          </Label>
-                          <Textarea
-                            value={newUser.address}
-                            onChange={(e) => setNewUser({...newUser, address: e.target.value})}
-                            className="mt-1 block w-full rounded-lg border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Endereço completo"
-                            rows={3}
-                          />
+                          </h3>
+                          
+                          <div className="space-y-3">
+                            <Label className="text-slate-800 font-bold text-sm tracking-wide uppercase">Endereço Completo</Label>
+                            <Textarea
+                              value={newUser.address}
+                              onChange={(e) => setNewUser({...newUser, address: e.target.value})}
+                              className="rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 focus:ring-4 transition-all duration-300 text-base px-4 py-4 bg-white/50 backdrop-blur-sm placeholder:text-slate-600 placeholder:font-medium text-slate-900 font-medium resize-none"
+                              placeholder="Rua, número, bairro, cidade, CEP..."
+                              rows={4}
+                            />
+                          </div>
                         </div>
                       </div>
 
