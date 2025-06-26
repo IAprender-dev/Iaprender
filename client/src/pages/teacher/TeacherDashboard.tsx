@@ -11,7 +11,7 @@ import {
   GraduationCap, Zap, ArrowRight, Bell, Menu, User, LogOut,
   Sparkles, Pencil, Users, BookOpen, Target, Clock, TrendingUp
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,11 @@ import TeacherSidebar from "@/components/dashboard/teacher/TeacherSidebar";
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Scroll to top with animation when dashboard loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
   
   // Buscar dados de tokens
   const { data: tokenData } = useQuery({
@@ -131,19 +136,24 @@ export default function TeacherDashboard() {
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                  IAprender
-                </h1>
+                <div className="flex items-center space-x-3">
+                  <img 
+                    src="/assets/iaprender-logo.png" 
+                    alt="IAprender Logo" 
+                    className="h-8 w-8 object-contain"
+                  />
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                    IAprender
+                  </h1>
+                </div>
               </div>
 
               <div className="flex items-center space-x-3">
-                {quickActions.map((action, index) => (
-                  <Link key={index} href={action.href}>
-                    <Button variant="ghost" size="sm" className="hidden md:flex">
-                      <action.icon className={`h-4 w-4 ${action.color}`} />
-                    </Button>
-                  </Link>
-                ))}
+                <Link href="/professor/notificacoes">
+                  <Button variant="ghost" size="sm" className="hidden md:flex">
+                    <Bell className="h-4 w-4 text-blue-600" />
+                  </Button>
+                </Link>
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -172,21 +182,21 @@ export default function TeacherDashboard() {
         <TeacherSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <main className="p-6 space-y-6 max-w-7xl mx-auto">
-          {/* Welcome Section - Redesigned */}
-          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+          {/* Welcome Section - Highlighted */}
+          <div className="bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-2xl border border-violet-300 shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-violet-100 p-3 rounded-xl">
-                  <GraduationCap className="h-8 w-8 text-violet-600" />
+                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                  <GraduationCap className="h-8 w-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-800">Olá, {user?.firstName}!</h1>
-                  <p className="text-slate-600">Transforme o ensino com inteligência artificial</p>
+                  <h1 className="text-2xl font-bold text-white">Olá, {user?.firstName}!</h1>
+                  <p className="text-violet-100">Transforme o ensino com inteligência artificial</p>
                 </div>
               </div>
-              <div className="hidden md:flex items-center space-x-2 bg-violet-50 px-4 py-2 rounded-full">
-                <Sparkles className="h-4 w-4 text-violet-600" />
-                <span className="text-sm font-medium text-violet-700">Professor</span>
+              <div className="hidden md:flex items-center space-x-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                <Sparkles className="h-4 w-4 text-white" />
+                <span className="text-sm font-medium text-white">Professor</span>
               </div>
             </div>
           </div>

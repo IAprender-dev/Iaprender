@@ -146,6 +146,9 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Enhanced token usage card with green theme and improved visual hierarchy
   - Redesigned tools grid with unique subtle solid colors for each card (blue, rose, amber, emerald, purple, cyan, orange, pink)
   - Added section headers and improved typography throughout dashboard
+  - Enhanced welcome card with prominent gradient background (violet to purple)
+  - Updated header with IAprender logo, removed resume button, kept notifications and profile only
+  - Added smooth scroll-to-top animation when dashboard loads
 - June 25, 2025: Complete integrated notification system for all user roles
   - Implemented comprehensive notification system between Secretary, Teachers, Students
   - Secretary can send/receive notifications to/from all users (teachers, students, parents)
