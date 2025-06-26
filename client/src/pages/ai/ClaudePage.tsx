@@ -227,10 +227,14 @@ export default function ClaudePage() {
         <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <Link href="/central-ia" className="flex items-center gap-3 mb-4">
-              <ArrowLeft className="h-5 w-5 text-purple-600" />
-              <span className="text-sm text-purple-600 font-medium">Voltar</span>
-            </Link>
+            <div className="mb-4">
+              <Link href="/central-ia">
+                <Button size="sm" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white border border-purple-600">
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
+              </Link>
+            </div>
             
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-violet-500 rounded-xl flex items-center justify-center">
