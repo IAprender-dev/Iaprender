@@ -129,11 +129,14 @@ export default function PerplexityPage() {
     setIsLoading(true);
     
     try {
+      console.log("Enviando requisição para Perplexity:", promptCopy);
+      
       const response = await fetch('/api/ai/perplexity/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Importante para incluir cookies de sessão
         body: JSON.stringify({
           query: promptCopy,
           model: "llama-3.1-sonar-small-128k-online",
@@ -143,19 +146,24 @@ export default function PerplexityPage() {
         }),
       });
 
+      console.log("Status da resposta:", response.status);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falha na requisição');
+        const errorText = await response.text();
+        console.error("Erro da API:", errorText);
+        throw new Error(`Erro ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log("Dados recebidos:", data);
+      
       addAIResponse(data.content, data.citations || []);
       setIsLoading(false);
     } catch (error: any) {
-      console.error("Erro ao processar solicitação:", error);
+      console.error("Erro completo:", error);
       toast({
         title: "Erro de Conexão",
-        description: error.message || "Não foi possível conectar com o Perplexity. Verifique sua conexão.",
+        description: error.message || "Não foi possível conectar com o Perplexity.",
         variant: "destructive",
       });
       setIsLoading(false);
