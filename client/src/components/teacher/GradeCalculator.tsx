@@ -84,11 +84,11 @@ export default function GradeCalculator() {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Gestão de Notas por Aluno</h3>
         <div className="space-x-2">
-          <Button onClick={addStudent} variant="outline">
+          <Button onClick={addStudent} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
             <User className="h-4 w-4 mr-2" />
             Adicionar Aluno
           </Button>
-          <Button onClick={exportResults} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={exportResults} className="bg-purple-600 hover:bg-purple-700">
             <FileText className="h-4 w-4 mr-2" />
             Exportar CSV
           </Button>
@@ -97,30 +97,32 @@ export default function GradeCalculator() {
 
       <div className="space-y-4">
         {students.map((student) => (
-          <Card key={student.id} className="p-4">
+          <Card key={student.id} className="p-4 border-2 border-purple-200/60 bg-white hover:border-purple-300/80 transition-all duration-300">
             <div className="grid grid-cols-1 md:grid-cols-9 gap-4 items-center">
               <div className="md:col-span-2">
-                <Label htmlFor={`name-${student.id}`}>Nome do Aluno</Label>
+                <Label htmlFor={`name-${student.id}`} className="text-sm font-semibold text-purple-700">Nome do Aluno</Label>
                 <Input
                   id={`name-${student.id}`}
                   value={student.name}
                   onChange={(e) => updateStudent(student.id, 'name', e.target.value)}
                   placeholder="Nome completo"
+                  className="border-2 border-purple-200 focus:border-purple-600 focus:ring-purple-600/20 focus:ring-4 transition-all duration-300 bg-white text-purple-900 placeholder:text-purple-600"
                 />
               </div>
               
               <div>
-                <Label htmlFor={`registration-${student.id}`}>Matrícula</Label>
+                <Label htmlFor={`registration-${student.id}`} className="text-sm font-semibold text-purple-700">Matrícula</Label>
                 <Input
                   id={`registration-${student.id}`}
                   value={student.registration}
                   onChange={(e) => updateStudent(student.id, 'registration', e.target.value)}
                   placeholder="Matrícula"
+                  className="border-2 border-purple-200 focus:border-purple-600 focus:ring-purple-600/20 focus:ring-4 transition-all duration-300 bg-white text-purple-900 placeholder:text-purple-600"
                 />
               </div>
               
               <div>
-                <Label htmlFor={`grade1-${student.id}`}>1ª Nota</Label>
+                <Label htmlFor={`grade1-${student.id}`} className="text-sm font-semibold text-purple-700">1ª Nota</Label>
                 <Input
                   id={`grade1-${student.id}`}
                   type="number"
@@ -130,11 +132,12 @@ export default function GradeCalculator() {
                   value={student.grade1}
                   onChange={(e) => updateStudent(student.id, 'grade1', e.target.value)}
                   placeholder="0.0"
+                  className="border-2 border-purple-200 focus:border-purple-600 focus:ring-purple-600/20 focus:ring-4 transition-all duration-300 bg-white text-purple-900 placeholder:text-purple-600"
                 />
               </div>
               
               <div>
-                <Label htmlFor={`grade2-${student.id}`}>2ª Nota</Label>
+                <Label htmlFor={`grade2-${student.id}`} className="text-sm font-semibold text-purple-700">2ª Nota</Label>
                 <Input
                   id={`grade2-${student.id}`}
                   type="number"
@@ -144,11 +147,12 @@ export default function GradeCalculator() {
                   value={student.grade2}
                   onChange={(e) => updateStudent(student.id, 'grade2', e.target.value)}
                   placeholder="0.0"
+                  className="border-2 border-purple-200 focus:border-purple-600 focus:ring-purple-600/20 focus:ring-4 transition-all duration-300 bg-white text-purple-900 placeholder:text-purple-600"
                 />
               </div>
               
               <div>
-                <Label htmlFor={`grade3-${student.id}`}>3ª Nota</Label>
+                <Label htmlFor={`grade3-${student.id}`} className="text-sm font-semibold text-purple-700">3ª Nota</Label>
                 <Input
                   id={`grade3-${student.id}`}
                   type="number"
@@ -158,6 +162,7 @@ export default function GradeCalculator() {
                   value={student.grade3}
                   onChange={(e) => updateStudent(student.id, 'grade3', e.target.value)}
                   placeholder="0.0"
+                  className="border-2 border-purple-200 focus:border-purple-600 focus:ring-purple-600/20 focus:ring-4 transition-all duration-300 bg-white text-purple-900 placeholder:text-purple-600"
                 />
               </div>
               
