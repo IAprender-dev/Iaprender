@@ -203,26 +203,25 @@ export default function StudentQuiz() {
           <title>Quiz Educativo - IAprender</title>
         </Helmet>
 
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-          {/* Header with Logo */}
-          <div className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+          {/* Header with Back Button */}
+          <div className="bg-white/90 backdrop-blur-xl border-b border-emerald-200/50 sticky top-0 z-50">
             <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <img src={iaprenderLogo} alt="IAprender" className="h-10 w-10" />
-                  <div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                      Quiz Educativo
-                    </h1>
-                    <p className="text-slate-600 text-sm">Teste seus conhecimentos com IA</p>
-                  </div>
-                </div>
-                <Link href="/student">
-                  <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-md">
+              <div className="flex items-center gap-4">
+                <Link href="/student/dashboard">
+                  <Button size="sm" className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
                     <ArrowLeft className="h-4 w-4" />
                     Voltar
                   </Button>
                 </Link>
+                
+                <div className="flex items-center gap-3">
+                  <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
+                  <div>
+                    <span className="text-xl font-bold text-gray-900">IAprender</span>
+                    <div className="text-xs text-slate-500">Quiz Educativo</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -231,9 +230,9 @@ export default function StudentQuiz() {
 
             {/* Welcome Section */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-100 to-indigo-100 px-6 py-3 rounded-full mb-4">
-                <Brain className="h-6 w-6 text-blue-600" />
-                <span className="text-blue-800 font-semibold">Desafie seu conhecimento</span>
+              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-100 to-teal-100 px-6 py-3 rounded-full mb-4">
+                <Brain className="h-6 w-6 text-emerald-600" />
+                <span className="text-emerald-800 font-semibold">Desafie seu conhecimento</span>
               </div>
               <h2 className="text-3xl font-bold text-slate-900 mb-2">Configure seu Quiz Personalizado</h2>
               <p className="text-slate-600 text-lg">Nossa IA criará perguntas exclusivas baseadas no seu tema de interesse</p>
@@ -241,7 +240,7 @@ export default function StudentQuiz() {
 
             {/* Quiz Configuration */}
             <Card className="border-0 bg-white/90 backdrop-blur-sm shadow-2xl hover:shadow-3xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-xl">
+              <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-t-xl">
                 <CardTitle className="text-2xl font-bold flex items-center gap-3">
                   <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                     <Sparkles className="h-6 w-6 text-white" />
@@ -253,30 +252,30 @@ export default function StudentQuiz() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   <div className="lg:col-span-2 space-y-3">
                     <Label className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Book className="h-5 w-5 text-blue-600" />
+                      <Book className="h-5 w-5 text-emerald-600" />
                       Tema do Quiz
                     </Label>
                     <Input
                       placeholder="Digite o tema que deseja estudar..."
                       value={quizConfig.topic}
                       onChange={(e) => setQuizConfig({...quizConfig, topic: e.target.value})}
-                      className="h-14 bg-white border-2 border-slate-200 focus:border-blue-500 focus:ring-blue-200 text-slate-900 text-lg placeholder:text-slate-400 rounded-xl"
+                      className="h-14 bg-white border-2 border-slate-200 focus:border-emerald-500 focus:ring-emerald-200 text-slate-900 text-lg placeholder:text-slate-400 rounded-xl"
                     />
                     <p className="text-sm text-slate-500">
                       Digite um tema do conteúdo programático do <strong>{user?.schoolYear}</strong> segundo a BNCC
                     </p>
-                    <p className="text-xs text-blue-600 font-medium mt-1">
+                    <p className="text-xs text-emerald-600 font-medium mt-1">
                       ⚠️ O quiz só será gerado se o tema for adequado para sua série escolar
                     </p>
                   </div>
 
                   <div className="space-y-3">
                     <Label className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <Target className="h-5 w-5 text-blue-600" />
+                      <Target className="h-5 w-5 text-emerald-600" />
                       Perguntas
                     </Label>
                     <Select value={quizConfig.questionCount.toString()} onValueChange={(value) => setQuizConfig({...quizConfig, questionCount: parseInt(value)})}>
-                      <SelectTrigger className="h-14 bg-white border-2 border-slate-200 focus:border-blue-500 text-slate-900 text-lg rounded-xl">
+                      <SelectTrigger className="h-14 bg-white border-2 border-slate-200 focus:border-emerald-500 text-slate-900 text-lg rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -292,11 +291,11 @@ export default function StudentQuiz() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="space-y-3">
                     <Label className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5 text-blue-600" />
+                      <TrendingUp className="h-5 w-5 text-emerald-600" />
                       Nível de Dificuldade
                     </Label>
                     <Select value={quizConfig.difficulty} onValueChange={(value) => setQuizConfig({...quizConfig, difficulty: value})}>
-                      <SelectTrigger className="h-14 bg-white border-2 border-slate-200 focus:border-blue-500 text-slate-900 text-lg rounded-xl">
+                      <SelectTrigger className="h-14 bg-white border-2 border-slate-200 focus:border-emerald-500 text-slate-900 text-lg rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -311,7 +310,7 @@ export default function StudentQuiz() {
                     <Button
                       onClick={generateQuiz}
                       disabled={isGenerating || !quizConfig.topic.trim()}
-                      className="w-full h-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                      className="w-full h-14 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                     >
                       {isGenerating ? (
                         <>
@@ -347,26 +346,25 @@ export default function StudentQuiz() {
           <title>Resultado do Quiz - IAprender</title>
         </Helmet>
 
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-          {/* Header with Logo */}
-          <div className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+          {/* Header with Back Button */}
+          <div className="bg-white/90 backdrop-blur-xl border-b border-emerald-200/50 sticky top-0 z-50">
             <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <img src={iaprenderLogo} alt="IAprender" className="h-10 w-10" />
-                  <div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                      Resultado do Quiz
-                    </h1>
-                    <p className="text-slate-600 text-sm">Parabéns por completar o desafio!</p>
-                  </div>
-                </div>
-                <Link href="/student">
-                  <Button className="gap-2 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-md">
-                    <Home className="h-4 w-4" />
+              <div className="flex items-center gap-4">
+                <Link href="/student/dashboard">
+                  <Button size="sm" className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <ArrowLeft className="h-4 w-4" />
                     Voltar
                   </Button>
                 </Link>
+                
+                <div className="flex items-center gap-3">
+                  <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
+                  <div>
+                    <span className="text-xl font-bold text-gray-900">IAprender</span>
+                    <div className="text-xs text-slate-500">Resultado do Quiz</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -438,13 +436,13 @@ export default function StudentQuiz() {
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
                   <Button
                     onClick={resetQuiz}
-                    className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white px-10 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white px-10 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     <RotateCcw className="h-6 w-6 mr-3" />
                     Fazer Novo Quiz
                   </Button>
-                  <Link href="/student">
-                    <Button className="px-10 py-4 text-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Link href="/student/dashboard">
+                    <Button className="px-10 py-4 text-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300">
                       <Home className="h-6 w-6 mr-3" />
                       Voltar
                     </Button>
@@ -467,17 +465,52 @@ export default function StudentQuiz() {
         <title>Quiz em Andamento - IAprender</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 p-4 lg:p-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+        {/* Header with Back Button */}
+        <div className="bg-white/90 backdrop-blur-xl border-b border-emerald-200/50 sticky top-0 z-50">
+          <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link href="/student/dashboard">
+                  <Button size="sm" className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <ArrowLeft className="h-4 w-4" />
+                    Voltar
+                  </Button>
+                </Link>
+                
+                <div className="flex items-center gap-3">
+                  <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
+                  <div>
+                    <span className="text-xl font-bold text-gray-900">IAprender</span>
+                    <div className="text-xs text-slate-500">Quiz em Andamento</div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <p className="text-sm text-slate-500">Pergunta {quizSession.currentQuestion + 1} de {quizSession.questions.length}</p>
+                  <div className="w-32 bg-slate-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-300"
+                      style={{width: `${progress}%`}}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto p-4 lg:p-8">
           {/* Progress Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-4">
-                <Badge className="bg-purple-100 text-purple-700 border-purple-200 px-4 py-2">
+                <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 px-4 py-2">
                   <Book className="h-4 w-4 mr-1" />
                   {quizConfig.topic}
                 </Badge>
-                <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                <Badge className="bg-teal-100 text-teal-700 border-teal-200">
                   Pergunta {quizSession.currentQuestion + 1} de {quizSession.questions.length}
                 </Badge>
               </div>
@@ -493,7 +526,7 @@ export default function StudentQuiz() {
               <CardContent className="p-8 lg:p-12">
                 <div className="mb-10">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl">
+                    <div className="p-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl">
                       <Brain className="h-6 w-6 text-white" />
                     </div>
                     <span className="text-lg font-bold text-slate-700">
@@ -550,9 +583,9 @@ export default function StudentQuiz() {
                 </div>
 
                 {showExplanation && (
-                  <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-xl p-8 mb-8 shadow-lg">
+                  <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 border-2 border-emerald-200 rounded-xl p-8 mb-8 shadow-lg">
                     <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-3 text-xl">
-                      <div className="p-2 bg-blue-500 rounded-lg">
+                      <div className="p-2 bg-emerald-500 rounded-lg">
                         <Brain className="h-6 w-6 text-white" />
                       </div>
                       Explicação Detalhada
@@ -574,7 +607,7 @@ export default function StudentQuiz() {
                   {showExplanation ? (
                     <Button
                       onClick={nextQuestion}
-                      className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       {quizSession.currentQuestion + 1 >= quizSession.questions.length ? (
                         <>

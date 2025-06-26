@@ -121,10 +121,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 26, 2025: Enhanced Student Quiz form with emerald green theme and standard navigation
+  - Updated Quiz form to use emerald/teal green color theme matching the interactive quiz card design
+  - Implemented standard back button pattern with "Voltar" button positioned on the left side
+  - Applied emerald theme consistently across all quiz states: configuration, running, and results
+  - Updated background gradients, form elements, buttons, and progress indicators
+  - Fixed navigation routing from /aluno to /student/dashboard for proper redirection
 - June 26, 2025: Implemented role-based navigation for Central-IA and all AI-specific pages
   - Created dynamic getDashboardRoute() function that determines appropriate dashboard based on user role
   - Teacher role → /professor dashboard
-  - Student role → /aluno dashboard  
+  - Student role → /student/dashboard
   - Admin role → /secretary dashboard
   - Updated "Voltar" buttons in CentralIA, ClaudePage, ChatGPTPage, PerplexityPage, and ImageGenPage
   - All AI pages now redirect users back to their role-specific dashboard instead of generic route
