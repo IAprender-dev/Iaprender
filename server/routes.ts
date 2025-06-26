@@ -23,9 +23,11 @@ import {
   tokenUsage,
   aiTools,
   newsletter,
-  notifications
+  notifications,
+  lessonPlans,
+  tokenUsageLogs
 } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, gte, desc } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import session from "express-session";
@@ -3566,6 +3568,108 @@ Fale sempre em português brasileiro claro e natural.`,
         message: error.message || 'Erro interno do servidor',
         timestamp: new Date().toISOString()
       });
+    }
+  });
+
+  // Analytics Routes
+  app.get('/api/analytics/dashboard', authenticate, async (req: Request, res: Response) => {
+    try {
+      // Total users count
+      const totalUsers = await db.select({ count: sql<number>`count(*)` }).from(users);
+      
+      // Total lesson plans
+      const totalLessonPlans = await db.select({ count: sql<number>`count(*)` }).from(lessonPlans);
+      
+      // Total token usage
+      const totalTokensResult = await db.select({ 
+        total: sql<number>`COALESCE(sum(total_tokens), 0)` 
+      }).from(tokenUsageLogs);
+      
+      // Total notifications
+      const totalNotifications = await db.select({ count: sql<number>`count(*)` }).from(notifications);
+
+      res.json({
+        totalUsers: totalUsers[0]?.count || 0,
+        totalLessonPlans: totalLessonPlans[0]?.count || 0,
+        totalTokens: totalTokensResult[0]?.total || 0,
+        totalNotifications: totalNotifications[0]?.count || 0
+      });
+    } catch (error) {
+      console.error('Analytics dashboard error:', error);
+      res.status(500).json({ message: 'Erro ao carregar dados analíticos' });
+    }
+  });
+
+  app.get('/api/analytics/token-usage', authenticate, async (req: Request, res: Response) => {
+    try {
+      const tokenUsageByProvider = await db.select({
+        name: tokenUsageLogs.provider,
+        value: sql<number>`sum(total_tokens)`
+      })
+      .from(tokenUsageLogs)
+      .groupBy(tokenUsageLogs.provider)
+      .orderBy(desc(sql`sum(total_tokens)`));
+
+      const formattedData = tokenUsageByProvider.map(item => ({
+        name: item.name === 'openai' ? 'OpenAI' : 
+              item.name === 'anthropic' ? 'Claude' : 
+              item.name === 'perplexity' ? 'Perplexity' : 
+              item.name.charAt(0).toUpperCase() + item.name.slice(1),
+        value: Number(item.value) || 0
+      }));
+
+      res.json(formattedData);
+    } catch (error) {
+      console.error('Token usage analytics error:', error);
+      res.status(500).json({ message: 'Erro ao carregar dados de token' });
+    }
+  });
+
+  app.get('/api/analytics/user-activity', authenticate, async (req: Request, res: Response) => {
+    try {
+      const userActivity = await db.select({
+        date: sql<string>`DATE(created_at)`,
+        users: sql<number>`count(*)`
+      })
+      .from(users)
+      .where(gte(users.createdAt, sql`NOW() - INTERVAL '30 days'`))
+      .groupBy(sql`DATE(created_at)`)
+      .orderBy(sql`DATE(created_at)`);
+
+      const formattedData = userActivity.map(item => ({
+        date: new Date(item.date).toLocaleDateString('pt-BR', { 
+          month: 'short', 
+          day: 'numeric' 
+        }),
+        users: Number(item.users) || 0
+      }));
+
+      res.json(formattedData);
+    } catch (error) {
+      console.error('User activity analytics error:', error);
+      res.status(500).json({ message: 'Erro ao carregar atividade dos usuários' });
+    }
+  });
+
+  app.get('/api/analytics/content-stats', authenticate, async (req: Request, res: Response) => {
+    try {
+      const contentStats = await db.select({
+        category: lessonPlans.subject,
+        count: sql<number>`count(*)`
+      })
+      .from(lessonPlans)
+      .groupBy(lessonPlans.subject)
+      .orderBy(desc(sql`count(*)`));
+
+      const formattedData = contentStats.map(item => ({
+        category: item.category || 'Outros',
+        count: Number(item.count) || 0
+      }));
+
+      res.json(formattedData);
+    } catch (error) {
+      console.error('Content stats analytics error:', error);
+      res.status(500).json({ message: 'Erro ao carregar estatísticas de conteúdo' });
     }
   });
 

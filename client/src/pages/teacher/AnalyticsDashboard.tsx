@@ -3,12 +3,53 @@ import { useAuth } from "@/lib/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Brain, ArrowLeft } from "lucide-react";
+import { Brain, ArrowLeft, Users, BookOpen, Activity, TrendingUp, Clock, Award, MessageSquare, FileText } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function AnalyticsDashboard() {
   const { user } = useAuth();
-  
+
+  // Fetch analytics data from the database
+  const { data: analyticsData, isLoading } = useQuery({
+    queryKey: ['/api/analytics/dashboard'],
+    enabled: !!user
+  });
+
+  const { data: tokenUsageData } = useQuery({
+    queryKey: ['/api/analytics/token-usage'],
+    enabled: !!user
+  });
+
+  const { data: userActivityData } = useQuery({
+    queryKey: ['/api/analytics/user-activity'],
+    enabled: !!user
+  });
+
+  const { data: contentData } = useQuery({
+    queryKey: ['/api/analytics/content-stats'],
+    enabled: !!user
+  });
+
+  // Ensure data is array format for charts
+  const safeTokenData = Array.isArray(tokenUsageData) ? tokenUsageData : [];
+  const safeActivityData = Array.isArray(userActivityData) ? userActivityData : [];
+  const safeContentData = Array.isArray(contentData) ? contentData : [];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <Brain className="h-12 w-12 text-pink-500 mx-auto mb-4 animate-spin" />
+          <p className="text-slate-600">Carregando dados analíticos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const COLORS = ['#ec4899', '#f472b6', '#f9a8d4', '#fbbf24', '#60a5fa'];
+
   return (
     <>
       <Helmet>
@@ -71,47 +112,139 @@ export default function AnalyticsDashboard() {
                   </div>
                 </div>
                 <div className="hidden lg:flex items-center space-x-4">
-                  <div className="flex items-center space-x-3 bg-pink-50 rounded-xl px-4 py-3 border border-pink-200">
-                    <div className="w-3 h-3 bg-pink-500 rounded-full animate-pulse"></div>
-                    <span className="text-pink-700 font-medium text-sm">Em Desenvolvimento</span>
+                  <div className="flex items-center space-x-3 bg-green-50 rounded-xl px-4 py-3 border border-green-200">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-green-700 font-medium text-sm">Sistema Integrado</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Analytics Content */}
-          <Card className="bg-white border-2 border-pink-200 shadow-xl">
-            <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-t-xl">
-              <CardTitle className="text-xl flex items-center gap-3">
-                <Brain className="h-6 w-6" />
-                Análises Inteligentes
+          {/* Analytics Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="bg-white border-2 border-pink-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">Total de Usuários</p>
+                    <p className="text-2xl font-bold text-pink-800">{(analyticsData as any)?.totalUsers || 0}</p>
+                  </div>
+                  <Users className="h-8 w-8 text-pink-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-2 border-pink-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">Planos de Aula</p>
+                    <p className="text-2xl font-bold text-pink-800">{(analyticsData as any)?.totalLessonPlans || 0}</p>
+                  </div>
+                  <BookOpen className="h-8 w-8 text-pink-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-2 border-pink-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">Tokens Usados</p>
+                    <p className="text-2xl font-bold text-pink-800">{(analyticsData as any)?.totalTokens || 0}</p>
+                  </div>
+                  <Activity className="h-8 w-8 text-pink-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white border-2 border-pink-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-slate-600">Notificações</p>
+                    <p className="text-2xl font-bold text-pink-800">{(analyticsData as any)?.totalNotifications || 0}</p>
+                  </div>
+                  <MessageSquare className="h-8 w-8 text-pink-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Token Usage Chart */}
+            <Card className="bg-white border-2 border-pink-200">
+              <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Uso de Tokens por Provedor
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={safeTokenData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({name, value}: any) => `${name}: ${value}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {safeTokenData.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* User Activity Chart */}
+            <Card className="bg-white border-2 border-pink-200">
+              <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Atividade Diária
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={safeActivityData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="users" stroke="#ec4899" fill="#f9a8d4" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Content Statistics */}
+          <Card className="bg-white border-2 border-pink-200">
+            <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Estatísticas de Conteúdo
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8">
-              <div className="text-center py-16">
-                <Brain className="h-24 w-24 text-pink-400 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-slate-800 mb-4">
-                  Dashboard de Análises em Desenvolvimento
-                </h3>
-                <p className="text-slate-700 text-lg mb-6 max-w-2xl mx-auto">
-                  Estamos desenvolvendo análises avançadas com inteligência artificial para fornecer insights detalhados sobre o desempenho dos seus alunos, tendências de aprendizagem e recomendações personalizadas.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                  <div className="bg-pink-50 p-6 rounded-xl border border-pink-200">
-                    <h4 className="font-semibold text-pink-800 mb-2">Análise de Desempenho</h4>
-                    <p className="text-sm text-pink-700">Relatórios detalhados sobre o progresso individual e da turma</p>
-                  </div>
-                  <div className="bg-pink-50 p-6 rounded-xl border border-pink-200">
-                    <h4 className="font-semibold text-pink-800 mb-2">Tendências de Aprendizagem</h4>
-                    <p className="text-sm text-pink-700">Identificação de padrões e oportunidades de melhoria</p>
-                  </div>
-                  <div className="bg-pink-50 p-6 rounded-xl border border-pink-200">
-                    <h4 className="font-semibold text-pink-800 mb-2">Recomendações IA</h4>
-                    <p className="text-sm text-pink-700">Sugestões personalizadas baseadas em dados</p>
-                  </div>
-                </div>
-              </div>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart data={safeContentData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="category" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#ec4899" />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </main>
