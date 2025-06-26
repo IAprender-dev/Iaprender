@@ -81,9 +81,9 @@ function EssayAnalyzer() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="analysisType">Tipo de Análise</Label>
+            <Label htmlFor="analysisType" className="text-sm font-semibold text-slate-700">Tipo de Análise</Label>
             <Select value={analysisType} onValueChange={setAnalysisType}>
-              <SelectTrigger>
+              <SelectTrigger className="border-2 border-slate-200 focus:border-slate-600 transition-all duration-300 bg-white">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -96,13 +96,13 @@ function EssayAnalyzer() {
           </div>
           
           <div>
-            <Label htmlFor="essayText">Texto da Redação</Label>
+            <Label htmlFor="essayText" className="text-sm font-semibold text-slate-700">Texto da Redação</Label>
             <Textarea
               id="essayText"
               value={essayText}
               onChange={(e) => setEssayText(e.target.value)}
               placeholder="Cole ou digite o texto da redação aqui..."
-              className="min-h-[300px]"
+              className="min-h-[300px] border-2 border-slate-200 focus:border-slate-600 focus:ring-slate-600/20 focus:ring-4 transition-all duration-300 bg-white text-slate-900 placeholder:text-slate-600"
             />
           </div>
           
@@ -128,10 +128,10 @@ function EssayAnalyzer() {
         <div>
           {analysisResult ? (
             <div className="space-y-4">
-              <Card>
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Star className="h-5 w-5 text-yellow-500" />
+                  <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Star className="h-5 w-5 text-slate-600" />
                     Resultado da Análise
                   </CardTitle>
                 </CardHeader>
@@ -139,14 +139,14 @@ function EssayAnalyzer() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-medium">Nota:</span>
-                      <Badge variant="secondary" className="text-lg px-3 py-1">
+                      <Badge className="text-lg px-3 py-1 bg-slate-100 text-slate-800">
                         {analysisResult.score}/10
                       </Badge>
                     </div>
                     
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-medium">Conceito:</span>
-                      <Badge className="text-lg px-3 py-1 bg-green-100 text-green-800">
+                      <Badge className="text-lg px-3 py-1 bg-slate-200 text-slate-700">
                         {analysisResult.grade}
                       </Badge>
                     </div>
@@ -154,15 +154,15 @@ function EssayAnalyzer() {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Pontos Fortes</CardTitle>
+                  <CardTitle className="text-xl font-bold text-slate-900">Pontos Fortes</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
                     {analysisResult.strengths.map((strength: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <div className="w-2 h-2 bg-slate-600 rounded-full mt-2"></div>
                         <span className="text-sm">{strength}</span>
                       </li>
                     ))}
@@ -170,15 +170,15 @@ function EssayAnalyzer() {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Pontos de Melhoria</CardTitle>
+                  <CardTitle className="text-xl font-bold text-slate-900">Pontos de Melhoria</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
                     {analysisResult.improvements.map((improvement: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                        <div className="w-2 h-2 bg-slate-500 rounded-full mt-2"></div>
                         <span className="text-sm">{improvement}</span>
                       </li>
                     ))}
@@ -186,17 +186,17 @@ function EssayAnalyzer() {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
                 <CardHeader>
-                  <CardTitle>Correções Gramaticais</CardTitle>
+                  <CardTitle className="text-xl font-bold text-slate-900">Correções Gramaticais</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-600 mb-3">
+                  <p className="text-sm text-slate-600 mb-3">
                     {analysisResult.grammar.errors} erro(s) encontrado(s)
                   </p>
                   <ul className="space-y-2">
                     {analysisResult.grammar.suggestions.map((suggestion: string, index: number) => (
-                      <li key={index} className="text-sm bg-yellow-50 p-2 rounded border-l-4 border-yellow-400">
+                      <li key={index} className="text-sm bg-slate-50 p-2 rounded border-l-4 border-slate-400">
                         {suggestion}
                       </li>
                     ))}
@@ -205,10 +205,10 @@ function EssayAnalyzer() {
               </Card>
             </div>
           ) : (
-            <Card className="h-full flex items-center justify-center">
+            <Card className="h-full flex items-center justify-center border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
               <CardContent className="text-center p-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">
+                <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                <p className="text-slate-500">
                   Digite o texto da redação e clique em "Analisar" para ver os resultados aqui.
                 </p>
               </CardContent>
@@ -289,10 +289,10 @@ export default function EssaysDashboard() {
               </div>
 
               {/* Essay Analyzer */}
-              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
-                <CardHeader className="bg-slate-50 border-b border-slate-200 rounded-t-xl">
-                  <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
-                    <Brain className="h-6 w-6 text-slate-600" />
+              <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-slate-600" />
                     Analisador Inteligente de Redações
                   </CardTitle>
                   <CardDescription className="text-slate-600">
