@@ -186,7 +186,7 @@ export default function ChatGPTPage() {
             <div className="flex-shrink-0">
               {isUser ? (
                 <Avatar>
-                  <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                  <AvatarFallback className="bg-green-100 text-green-600 font-semibold">
                     {user?.firstName?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
@@ -258,7 +258,7 @@ export default function ChatGPTPage() {
           <div className="p-4">
             <Button 
               onClick={createNewConversation}
-              className="w-full justify-start gap-3 bg-blue-600 hover:bg-blue-700"
+              className="w-full justify-start gap-3 bg-green-600 hover:bg-green-700"
             >
               <Plus className="h-4 w-4" />
               Nova conversa
@@ -277,7 +277,7 @@ export default function ChatGPTPage() {
                       key={conv.id}
                       className={`p-3 rounded-lg cursor-pointer transition-colors ${
                         currentConversation?.id === conv.id
-                          ? 'bg-blue-100 border border-blue-200'
+                          ? 'bg-green-100 border border-green-200'
                           : 'hover:bg-slate-100'
                       }`}
                       onClick={() => setCurrentConversation(conv)}
@@ -422,7 +422,7 @@ export default function ChatGPTPage() {
                   <Button 
                     type="submit" 
                     disabled={(!prompt.trim() && attachedFiles.length === 0) || isLoading}
-                    className="bg-blue-600 hover:bg-blue-700 px-6"
+                    className="bg-green-600 hover:bg-green-700 px-6"
                   >
                     {isLoading ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
