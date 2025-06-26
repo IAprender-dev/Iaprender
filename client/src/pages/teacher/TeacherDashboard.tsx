@@ -9,7 +9,7 @@ import {
   Bot, Calendar, PenTool, Newspaper, Search, 
   FileText, Calculator, Send, BarChart3, 
   GraduationCap, Zap, ArrowRight, Bell, Menu, User, LogOut,
-  Sparkles, Pencil
+  Sparkles, Pencil, Users, BookOpen, Target, Clock, TrendingUp
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -222,30 +222,120 @@ export default function TeacherDashboard() {
             ))}
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white border-0">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">24</div>
-                <div className="text-xs opacity-90">Aulas criadas</div>
+          {/* Educational Insights */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Student Engagement */}
+            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-slate-800">Engajamento</span>
+                  </div>
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                </div>
+                <div className="text-2xl font-bold text-slate-900 mb-1">87%</div>
+                <div className="text-xs text-slate-600 mb-3">Participação média da turma</div>
+                {/* Mini chart */}
+                <div className="flex items-end space-x-1 h-8">
+                  {[65, 78, 82, 87, 85, 89, 87].map((value, index) => (
+                    <div 
+                      key={index} 
+                      className="bg-blue-200 rounded-sm flex-1" 
+                      style={{ height: `${(value / 100) * 100}%` }}
+                    />
+                  ))}
+                </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">156</div>
-                <div className="text-xs opacity-90">Atividades</div>
+
+            {/* Learning Progress */}
+            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen className="h-4 w-4 text-green-600" />
+                    <span className="font-medium text-slate-800">Progresso</span>
+                  </div>
+                  <Target className="h-4 w-4 text-blue-500" />
+                </div>
+                <div className="text-2xl font-bold text-slate-900 mb-1">73%</div>
+                <div className="text-xs text-slate-600 mb-3">Objetivos alcançados</div>
+                {/* Progress ring */}
+                <div className="relative w-12 h-12 mx-auto">
+                  <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#e5e7eb"
+                      strokeWidth="3"
+                    />
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="3"
+                      strokeDasharray="73, 100"
+                    />
+                  </svg>
+                </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">89</div>
-                <div className="text-xs opacity-90">Documentos</div>
+
+            {/* Weekly Activity */}
+            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-purple-600" />
+                    <span className="font-medium text-slate-800">Esta Semana</span>
+                  </div>
+                  <Clock className="h-4 w-4 text-purple-500" />
+                </div>
+                <div className="text-2xl font-bold text-slate-900 mb-1">12h</div>
+                <div className="text-xs text-slate-600 mb-3">Tempo de ensino ativo</div>
+                {/* Weekly dots */}
+                <div className="flex justify-between items-center">
+                  {['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map((day, index) => (
+                    <div key={index} className="text-center">
+                      <div 
+                        className={`w-2 h-2 rounded-full mb-1 ${
+                          index < 5 ? 'bg-purple-400' : 'bg-slate-200'
+                        }`} 
+                      />
+                      <span className="text-xs text-slate-500">{day}</span>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-            <Card className="bg-gradient-to-r from-rose-500 to-pink-600 text-white border-0">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold">42</div>
-                <div className="text-xs opacity-90">Redações</div>
+
+            {/* AI Usage */}
+            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Bot className="h-4 w-4 text-indigo-600" />
+                    <span className="font-medium text-slate-800">IA Utilizada</span>
+                  </div>
+                  <Zap className="h-4 w-4 text-yellow-500" />
+                </div>
+                <div className="text-2xl font-bold text-slate-900 mb-1">34</div>
+                <div className="text-xs text-slate-600 mb-3">Ferramentas ativadas hoje</div>
+                {/* AI tools breakdown */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-600">ChatGPT</span>
+                    <span className="text-slate-800">67%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-1">
+                    <div className="bg-indigo-500 h-1 rounded-full" style={{ width: '67%' }}></div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

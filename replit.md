@@ -138,6 +138,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Added mobile-responsive minimalist sidebar that appears on demand
   - Simplified token usage display and added quick stats cards
   - Enhanced user experience with easy navigation and visual hierarchy
+  - Replaced generic statistics cards with relevant educational insights including student engagement, learning progress, weekly activity, and AI usage with mini charts and visual indicators
 - June 25, 2025: Complete integrated notification system for all user roles
   - Implemented comprehensive notification system between Secretary, Teachers, Students
   - Secretary can send/receive notifications to/from all users (teachers, students, parents)
