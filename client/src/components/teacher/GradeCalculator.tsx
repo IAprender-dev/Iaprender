@@ -84,7 +84,7 @@ export default function GradeCalculator() {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-bold text-slate-800">Gestão de Notas por Aluno</h3>
         <div className="space-x-2">
-          <Button onClick={addStudent} variant="outline" className="border-purple-300 text-purple-800 hover:bg-purple-50 bg-white">
+          <Button onClick={addStudent} variant="outline" className="border-purple-300 text-purple-800 hover:bg-purple-50 hover:text-purple-900 bg-white">
             <User className="h-4 w-4 mr-2" />
             Adicionar Aluno
           </Button>
