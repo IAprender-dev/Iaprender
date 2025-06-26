@@ -121,6 +121,11 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 26, 2025: Updated ProVersa voice tutor form with official IAprender branding
+  - Added official IAprender logo (IAprender_1750262377399.png) next to back button
+  - Positioned "IAprender" as main platform name with "ProVersa" as subtitle
+  - Cleaned header layout removing duplicate title references
+  - Enhanced brand consistency across all student voice interaction components
 - June 26, 2025: Updated Gerar Mapa Mental form with official IAprender logo and purple theme
   - Added official IAprender logo (IAprender_1750262377399.png) to mind map form header
   - Updated header to display "IAprender" name following /student form pattern
