@@ -3223,14 +3223,7 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     try {
       const user = req.session?.user;
       const studentName = user?.firstName || 'estudante';
-      const schoolYear = (user as any)?.schoolYear || '9º ano';
-      
-      if (!process.env.OPENAI_API_KEY) {
-        return res.status(500).json({ 
-          error: 'OpenAI API key not configured',
-          message: 'A chave da API OpenAI não está configurada no servidor' 
-        });
-      }
+      const schoolYear = user?.schoolYear || '9º ano';
       
       const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
         method: 'POST',

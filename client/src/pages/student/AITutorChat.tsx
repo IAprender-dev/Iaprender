@@ -42,10 +42,7 @@ export default function AITutorChat() {
   };
 
   useEffect(() => {
-    // Only scroll to bottom if messages exist, but not on initial load
-    if (messages.length > 0) {
-      scrollToBottom();
-    }
+    scrollToBottom();
   }, [messages]);
 
   // Scroll to top animation on component mount
