@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { getDashboardRoute } from "@/lib/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Message {
@@ -47,7 +46,19 @@ export default function ImageGenPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Define user role and appropriate dashboard route
-  const dashboardRoute = getDashboardRoute(user);
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/student/dashboard';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/student/dashboard';
+    }
+  };
 
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
@@ -267,7 +278,7 @@ export default function ImageGenPage() {
         <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <Link href={dashboardRoute}>
+            <Link href="/central-ia">
               <Button className="gap-3 h-12 px-6 bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl mb-4">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar

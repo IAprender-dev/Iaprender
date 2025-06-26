@@ -23,7 +23,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { BackButton } from "@/components/ui/back-button";
-import { getDashboardRoute } from "@/lib/navigation";
 
 interface Message {
   id: string;
@@ -51,7 +50,19 @@ export default function ChatGPTPage() {
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
   // Define user role and appropriate dashboard route
-  const dashboardRoute = getDashboardRoute(user);
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/student/dashboard';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/student/dashboard';
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -246,7 +257,7 @@ export default function ChatGPTPage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <BackButton href={dashboardRoute} label="Voltar" />
+              <BackButton href="/central-ia" label="Voltar" />
             </div>
             
             <div className="flex items-center gap-3">

@@ -4,28 +4,24 @@ type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 type QueryFnOptions = { on401?: 'throw' | 'returnNull' };
 
 export const apiRequest = async (
-  endpoint: string,
-  options: { method?: HttpMethod; body?: any } = {}
+  method: HttpMethod, 
+  endpoint: string, 
+  data?: any, 
+  options: RequestInit = {}
 ) => {
-  const { method = 'GET', body } = options;
-  
+  const url = endpoint.startsWith('http') ? endpoint : endpoint;
   const opts: RequestInit = {
     method,
     headers: {
       ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
+      ...options.headers,
     },
     credentials: 'include',
-    ...(body && method !== 'GET' ? { body: JSON.stringify(body) } : {}),
+    ...(data && method !== 'GET' ? { body: JSON.stringify(data) } : {}),
+    ...options,
   };
 
-  const response = await fetch(endpoint, opts);
-  
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => 'Unknown error');
-    throw new Error(`${response.status}: ${errorText}`);
-  }
-  
-  return response.json();
+  return fetch(url, opts);
 };
 
 export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async (context) => {
@@ -37,11 +33,12 @@ export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async
   }
   
   try {
-    const response = await fetch(endpoint, {
-      method: 'GET',
-      credentials: 'include',
-      signal
-    });
+    const response = await apiRequest(
+      'GET', 
+      endpoint, 
+      undefined, 
+      { signal }
+    );
     
     if (!response.ok) {
       if (response.status === 401 && options.on401 === 'returnNull') {

@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { 
   User, 
   Search, 
@@ -22,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "wouter";
-import { getDashboardRoute } from "@/lib/navigation";
 
 interface Message {
   id: string;
@@ -52,7 +50,19 @@ export default function PerplexityPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Define user role and appropriate dashboard route
-  const dashboardRoute = getDashboardRoute(user);
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/student/dashboard';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/student/dashboard';
+    }
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Garantir que a página sempre inicie no topo
@@ -130,28 +140,24 @@ export default function PerplexityPage() {
     setIsLoading(true);
     
     try {
-      console.log("Enviando requisição para Perplexity:", promptCopy);
-      
-      const data = await apiRequest('/api/ai/perplexity/search', {
-        method: 'POST',
-        body: {
-          query: promptCopy,
-          model: "llama-3.1-sonar-small-128k-online",
-          temperature: 0.2,
-          maxTokens: 1000,
-          includeReferences: true
-        }
-      });
-
-      console.log("Dados recebidos:", data);
-      
-      addAIResponse(data.content, data.citations || []);
-      setIsLoading(false);
-    } catch (error: any) {
-      console.error("Erro completo:", error);
+      // Simular resposta do Perplexity com fontes
+      setTimeout(() => {
+        const mockReferences = [
+          "https://www.example.com/educacao-ia",
+          "https://www.example.com/metodologias-ensino",
+          "https://www.example.com/tecnologia-educacional"
+        ];
+        addAIResponse(
+          `Esta é uma resposta simulada do Perplexity para: "${promptCopy}". O Perplexity oferece pesquisa em tempo real com fontes confiáveis para suas questões educacionais.`,
+          mockReferences
+        );
+        setIsLoading(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Erro ao processar solicitação:", error);
       toast({
-        title: "Erro de Conexão",
-        description: error.message || "Não foi possível conectar com o Perplexity.",
+        title: "Erro",
+        description: "Erro ao processar solicitação",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -265,7 +271,7 @@ export default function PerplexityPage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <Link href={dashboardRoute}>
+              <Link href="/central-ia">
                 <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border border-blue-600">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
