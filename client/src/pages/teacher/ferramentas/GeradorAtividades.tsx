@@ -719,7 +719,7 @@ Gere o conteúdo em HTML bem formatado.`;
                         max="50"
                         value={quantidadeQuestoes}
                         onChange={(e) => setQuantidadeQuestoes(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
-                        className="w-full px-3 py-2 border-2 border-teal-200 focus:border-teal-500 focus:ring-teal-500/20 focus:ring-4 transition-all duration-300 bg-white placeholder:text-teal-600 placeholder:font-medium text-teal-900 font-medium rounded-md"
+                        className="w-full px-3 py-2 border-2 border-red-200 focus:border-red-700 focus:ring-red-700/20 focus:ring-4 transition-all duration-300 bg-white placeholder:text-red-600 placeholder:font-medium text-red-900 font-medium rounded-md"
                         placeholder="Digite o número de questões (1-50)"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3">
