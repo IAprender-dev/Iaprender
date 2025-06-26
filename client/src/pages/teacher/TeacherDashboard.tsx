@@ -352,34 +352,34 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {mainTools.map((tool, index) => {
                 const bgColors = [
-                  'bg-blue-50 border-blue-200/60 hover:border-blue-300/80',
-                  'bg-rose-50 border-rose-200/60 hover:border-rose-300/80', 
-                  'bg-amber-50 border-amber-200/60 hover:border-amber-300/80',
-                  'bg-emerald-50 border-emerald-200/60 hover:border-emerald-300/80',
-                  'bg-purple-50 border-purple-200/60 hover:border-purple-300/80',
-                  'bg-cyan-50 border-cyan-200/60 hover:border-cyan-300/80',
+                  'bg-indigo-50 border-indigo-200/60 hover:border-indigo-300/80',
+                  'bg-teal-50 border-teal-200/60 hover:border-teal-300/80', 
                   'bg-orange-50 border-orange-200/60 hover:border-orange-300/80',
-                  'bg-pink-50 border-pink-200/60 hover:border-pink-300/80'
+                  'bg-emerald-50 border-emerald-200/60 hover:border-emerald-300/80',
+                  'bg-violet-50 border-violet-200/60 hover:border-violet-300/80',
+                  'bg-rose-50 border-rose-200/60 hover:border-rose-300/80',
+                  'bg-amber-50 border-amber-200/60 hover:border-amber-300/80',
+                  'bg-sky-50 border-sky-200/60 hover:border-sky-300/80'
                 ];
                 const iconBgColors = [
-                  'bg-blue-100',
-                  'bg-rose-100',
-                  'bg-amber-100', 
+                  'bg-indigo-100',
+                  'bg-teal-100',
+                  'bg-orange-100', 
                   'bg-emerald-100',
-                  'bg-purple-100',
-                  'bg-cyan-100',
-                  'bg-orange-100',
-                  'bg-pink-100'
+                  'bg-violet-100',
+                  'bg-rose-100',
+                  'bg-amber-100',
+                  'bg-sky-100'
                 ];
                 const iconColors = [
-                  'text-blue-600',
+                  'text-indigo-600',
+                  'text-teal-600',
+                  'text-orange-600',
+                  'text-emerald-600', 
+                  'text-violet-600',
                   'text-rose-600',
                   'text-amber-600',
-                  'text-emerald-600', 
-                  'text-purple-600',
-                  'text-cyan-600',
-                  'text-orange-600',
-                  'text-pink-600'
+                  'text-sky-600'
                 ];
                 
                 return (

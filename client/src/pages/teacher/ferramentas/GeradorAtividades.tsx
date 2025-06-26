@@ -597,7 +597,7 @@ Gere o conteúdo em HTML bem formatado.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-green-50">
+    <div className="min-h-screen bg-teal-50">
       <Helmet>
         <title>Gerador de Atividades - IAprender</title>
       </Helmet>
@@ -608,7 +608,7 @@ Gere o conteúdo em HTML bem formatado.`;
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Link href="/professor">
-                <Button size="sm" className="gap-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg border-0">
+                <Button size="sm" className="gap-2 bg-teal-600 hover:bg-teal-700 text-white shadow-lg border-0">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
@@ -649,7 +649,7 @@ Gere o conteúdo em HTML bem formatado.`;
                     placeholder="Ex: Frações no cotidiano, Revolução Industrial, Sistema Solar..."
                     value={tema}
                     onChange={(e) => setTema(e.target.value)}
-                    className="min-h-[80px] border-2 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500/20 focus:ring-4 transition-all duration-300 bg-white text-emerald-900 placeholder:text-emerald-600 placeholder:font-medium font-medium"
+                    className="min-h-[80px] border-2 border-teal-200 focus:border-teal-500 focus:ring-teal-500/20 focus:ring-4 transition-all duration-300 bg-white text-teal-900 placeholder:text-teal-600 placeholder:font-medium font-medium"
                   />
                   {/* Simple validation for Portuguese characters */}
                   {tema && !/^[\w\s\u00C0-\u017F\u0100-\u024F\u1E00-\u1EFF.,!?;:()\-"']*$/.test(tema) && (
@@ -664,7 +664,7 @@ Gere o conteúdo em HTML bem formatado.`;
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Matéria</label>
                     <Select value={materia} onValueChange={setMateria}>
-                      <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
+                      <SelectTrigger className="border-2 border-teal-200 focus:border-teal-500 transition-all duration-300 bg-white text-teal-900 font-medium">
                         <SelectValue placeholder="Selecione a matéria" />
                       </SelectTrigger>
                       <SelectContent>
@@ -687,7 +687,7 @@ Gere o conteúdo em HTML bem formatado.`;
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Série</label>
                     <Select value={serie} onValueChange={setSerie}>
-                      <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
+                      <SelectTrigger className="border-2 border-teal-200 focus:border-teal-500 transition-all duration-300 bg-white text-teal-900 font-medium">
                         <SelectValue placeholder="Selecione a série" />
                       </SelectTrigger>
                       <SelectContent>
@@ -719,7 +719,7 @@ Gere o conteúdo em HTML bem formatado.`;
                         max="50"
                         value={quantidadeQuestoes}
                         onChange={(e) => setQuantidadeQuestoes(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
-                        className="w-full px-3 py-2 border-2 border-emerald-200 focus:border-emerald-500 focus:ring-emerald-500/20 focus:ring-4 transition-all duration-300 bg-white placeholder:text-emerald-600 placeholder:font-medium text-emerald-900 font-medium rounded-md"
+                        className="w-full px-3 py-2 border-2 border-teal-200 focus:border-teal-500 focus:ring-teal-500/20 focus:ring-4 transition-all duration-300 bg-white placeholder:text-teal-600 placeholder:font-medium text-teal-900 font-medium rounded-md"
                         placeholder="Digite o número de questões (1-50)"
                       />
                       <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -732,7 +732,7 @@ Gere o conteúdo em HTML bem formatado.`;
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 tracking-wide uppercase">Tipo de Atividade</label>
                     <Select value={tipoAtividade} onValueChange={setTipoAtividade}>
-                      <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
+                      <SelectTrigger className="border-2 border-teal-200 focus:border-teal-500 transition-all duration-300 bg-white text-teal-900 font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -748,7 +748,7 @@ Gere o conteúdo em HTML bem formatado.`;
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-slate-700">Nível de Dificuldade</label>
                   <Select value={nivelDificuldade} onValueChange={setNivelDificuldade}>
-                    <SelectTrigger className="border-2 border-emerald-200 focus:border-emerald-500 transition-all duration-300 bg-white text-emerald-900 font-medium">
+                    <SelectTrigger className="border-2 border-teal-200 focus:border-teal-500 transition-all duration-300 bg-white text-teal-900 font-medium">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -766,9 +766,9 @@ Gere o conteúdo em HTML bem formatado.`;
                       id="gabarito"
                       checked={incluirGabarito}
                       onCheckedChange={(checked) => setIncluirGabarito(checked === true)}
-                      className="border-2 border-emerald-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      className="border-2 border-teal-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
                     />
-                    <label htmlFor="gabarito" className="text-sm text-emerald-700 cursor-pointer font-medium">
+                    <label htmlFor="gabarito" className="text-sm text-teal-700 cursor-pointer font-medium">
                       Incluir gabarito separado
                     </label>
                   </div>
@@ -778,7 +778,7 @@ Gere o conteúdo em HTML bem formatado.`;
                 <Button 
                   onClick={gerarAtividade} 
                   disabled={isLoading || !tema.trim()}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white py-3"
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3"
                 >
                   {isLoading ? (
                     <>
