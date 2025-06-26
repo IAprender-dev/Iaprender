@@ -127,10 +127,11 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Applied purple color theme matching the dashboard card (violet-600 to purple-600 gradient)
   - Updated background, buttons, focus states, and accent elements with purple theme
   - Enhanced form branding consistency across student-facing components
-- June 26, 2025: Updated AI Tutor with official IAprender logo and fixed navigation
+- June 26, 2025: Updated AI Tutor with official IAprender logo and platform branding
   - Changed logo from generic iaprender-logo.png to official IAprender_1750262377399.png
+  - Added official "IAprender" platform name prominently in header
   - Fixed navigation route from /aluno/dashboard to /student/dashboard for consistency
-  - Ensured AI Tutor uses the same branding as other platform components
+  - Enhanced branding consistency with "Tutor IA" as subtitle under IAprender name
 - June 26, 2025: Enhanced Student Quiz form with emerald green theme and standard navigation
   - Updated Quiz form to use emerald/teal green color theme matching the interactive quiz card design
   - Implemented standard back button pattern with "Voltar" button positioned on the left side
