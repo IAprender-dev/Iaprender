@@ -47,6 +47,21 @@ export default function ClaudePage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Define user role and appropriate dashboard route
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/aluno';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/aluno';
+    }
+  };
+
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
@@ -228,7 +243,7 @@ export default function ClaudePage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <Link href="/central-ia">
+              <Link href={getDashboardRoute()}>
                 <Button size="sm" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white border border-purple-600">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar

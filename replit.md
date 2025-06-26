@@ -121,6 +121,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 26, 2025: Implemented role-based navigation for Central-IA and all AI-specific pages
+  - Created dynamic getDashboardRoute() function that determines appropriate dashboard based on user role
+  - Teacher role → /professor dashboard
+  - Student role → /aluno dashboard  
+  - Admin role → /secretary dashboard
+  - Updated "Voltar" buttons in CentralIA, ClaudePage, ChatGPTPage, PerplexityPage, and ImageGenPage
+  - All AI pages now redirect users back to their role-specific dashboard instead of generic route
+  - Enhanced user experience with intelligent navigation that respects user permissions and context
 - June 25, 2025: Removed navigation buttons from main landing page
   - Eliminated "Plataforma", "Inteligências", "Para Educação", and "Impacto" buttons from desktop header
   - Cleaned mobile navigation menu by removing the same navigation options

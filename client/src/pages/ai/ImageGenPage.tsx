@@ -45,6 +45,21 @@ export default function ImageGenPage() {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Define user role and appropriate dashboard route
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/aluno';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/aluno';
+    }
+  };
+
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
@@ -263,7 +278,7 @@ export default function ImageGenPage() {
         <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <Link href="/central-ia">
+            <Link href={getDashboardRoute()}>
               <Button className="gap-3 h-12 px-6 bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl mb-4">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar

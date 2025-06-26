@@ -48,6 +48,21 @@ export default function PerplexityPage() {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Define user role and appropriate dashboard route
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/aluno';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/aluno';
+    }
+  };
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Garantir que a página sempre inicie no topo
@@ -256,7 +271,7 @@ export default function PerplexityPage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <Link href="/central-ia">
+              <Link href={getDashboardRoute()}>
                 <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border border-blue-600">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar

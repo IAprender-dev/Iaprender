@@ -48,6 +48,21 @@ export default function ChatGPTPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+
+  // Define user role and appropriate dashboard route
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/aluno';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/aluno';
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -242,7 +257,7 @@ export default function ChatGPTPage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <BackButton href="/central-ia" label="Voltar" />
+              <BackButton href={getDashboardRoute()} label="Voltar" />
             </div>
             
             <div className="flex items-center gap-3">

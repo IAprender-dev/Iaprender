@@ -87,6 +87,21 @@ export default function CentralIA() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [showSavedItems, setShowSavedItems] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Define user role and appropriate dashboard route
+  const userRole = user?.role;
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case 'teacher':
+        return '/professor';
+      case 'student':
+        return '/aluno';
+      case 'admin':
+        return '/secretary';
+      default:
+        return '/aluno'; // Default to student dashboard
+    }
+  };
 
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
@@ -322,7 +337,7 @@ export default function CentralIA() {
             <div className="flex items-center justify-between h-16">
               {/* Botão Voltar e Logo */}
               <div className="flex items-center gap-4">
-                <Link href="/professor">
+                <Link href={getDashboardRoute()}>
                   <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                     <ArrowLeft className="h-4 w-4" />
                     Voltar
