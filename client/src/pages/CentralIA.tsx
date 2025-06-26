@@ -22,6 +22,7 @@ import { User, Bot,
   Calendar,
   Copy
 } from "lucide-react";
+import { SiOpenai, SiAnthropic } from "react-icons/si";
 import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -93,8 +94,8 @@ export default function CentralIA() {
   const modelInfo = {
     "chatgpt": {
       name: "ChatGPT",
-      icon: <Sparkles className="h-6 w-6" />,
-      avatarColor: "bg-gradient-to-br from-green-400 to-emerald-500",
+      icon: <SiOpenai className="h-6 w-6" />,
+      avatarColor: "bg-white",
       cardColor: "from-green-50 to-emerald-50",
       borderColor: "border-green-200",
       hoverColor: "hover:border-green-400",
@@ -103,8 +104,8 @@ export default function CentralIA() {
     },
     "claude": {
       name: "Claude",
-      icon: <Bot className="h-6 w-6" />,
-      avatarColor: "bg-gradient-to-br from-purple-400 to-violet-500",
+      icon: <SiAnthropic className="h-6 w-6" />,
+      avatarColor: "bg-white",
       cardColor: "from-purple-50 to-violet-50",
       borderColor: "border-purple-200",
       hoverColor: "hover:border-purple-400",
@@ -113,8 +114,8 @@ export default function CentralIA() {
     },
     "perplexity": {
       name: "Perplexity",
-      icon: <Search className="h-6 w-6" />,
-      avatarColor: "bg-gradient-to-br from-blue-400 to-indigo-500",
+      icon: <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-xs">P</div>,
+      avatarColor: "bg-white",
       cardColor: "from-blue-50 to-indigo-50",
       borderColor: "border-blue-200",
       hoverColor: "hover:border-blue-400",
