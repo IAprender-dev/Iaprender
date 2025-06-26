@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link } from "wouter";
-import iaprenderLogoNew from "@/assets/aiverse-logo-new.png";
+import iaprenderLogoNew from "@/assets/IAprender_1750262377399.png";
 import { 
   Calendar, 
   BookOpen, 
