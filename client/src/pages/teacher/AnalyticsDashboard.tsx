@@ -37,6 +37,35 @@ export default function AnalyticsDashboard() {
   const safeActivityData = Array.isArray(userActivityData) ? userActivityData : [];
   const safeContentData = Array.isArray(contentData) ? contentData : [];
 
+  // Fictional educational impact data based on global AI education trends
+  const educationImpactData = [
+    { month: 'Jan', beforeIA: 65, afterIA: 65 },
+    { month: 'Fev', beforeIA: 66, afterIA: 68 },
+    { month: 'Mar', beforeIA: 67, afterIA: 72 },
+    { month: 'Abr', beforeIA: 68, afterIA: 76 },
+    { month: 'Mai', beforeIA: 68, afterIA: 81 },
+    { month: 'Jun', beforeIA: 69, afterIA: 85 },
+    { month: 'Jul', beforeIA: 69, afterIA: 88 },
+    { month: 'Ago', beforeIA: 70, afterIA: 91 },
+  ];
+
+  const studentEngagementData = [
+    { subject: 'Matemática', engagement: 89 },
+    { subject: 'Português', engagement: 92 },
+    { subject: 'Ciências', engagement: 87 },
+    { subject: 'História', engagement: 84 },
+    { subject: 'Geografia', engagement: 86 },
+    { subject: 'Inglês', engagement: 90 },
+  ];
+
+  const learningEfficiencyData = [
+    { metric: 'Tempo de Aprendizado', improvement: 35 },
+    { metric: 'Retenção de Conteúdo', improvement: 42 },
+    { metric: 'Participação em Aula', improvement: 28 },
+    { metric: 'Conclusão de Tarefas', improvement: 38 },
+    { metric: 'Satisfação dos Alunos', improvement: 45 },
+  ];
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -222,6 +251,89 @@ export default function AnalyticsDashboard() {
                     <Tooltip />
                     <Area type="monotone" dataKey="users" stroke="#ec4899" fill="#f9a8d4" />
                   </AreaChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Educational Impact Comparison */}
+          <Card className="bg-white border-2 border-pink-200 mb-8">
+            <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Impacto do IAprender no Desempenho Educacional
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="mb-4 text-center">
+                <p className="text-slate-600 text-sm">Comparação de índices educacionais antes e depois da implementação da plataforma IAprender</p>
+              </div>
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={educationImpactData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis domain={[60, 95]} label={{ value: 'Índice (%)', angle: -90, position: 'insideLeft' }} />
+                  <Tooltip />
+                  <Line 
+                    type="monotone" 
+                    dataKey="beforeIA" 
+                    stroke="#94a3b8" 
+                    strokeWidth={3}
+                    name="Antes do IAprender"
+                    strokeDasharray="5 5"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="afterIA" 
+                    stroke="#ec4899" 
+                    strokeWidth={3}
+                    name="Após IAprender"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Educational Metrics Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Student Engagement by Subject */}
+            <Card className="bg-white border-2 border-pink-200">
+              <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  Engajamento por Matéria
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={studentEngagementData} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" domain={[0, 100]} />
+                    <YAxis dataKey="subject" type="category" width={80} />
+                    <Tooltip />
+                    <Bar dataKey="engagement" fill="#ec4899" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            {/* Learning Efficiency Improvements */}
+            <Card className="bg-white border-2 border-pink-200">
+              <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Melhoria na Eficiência de Aprendizado
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={learningEfficiencyData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="metric" angle={-45} textAnchor="end" height={80} />
+                    <YAxis label={{ value: 'Melhoria (%)', angle: -90, position: 'insideLeft' }} />
+                    <Tooltip />
+                    <Bar dataKey="improvement" fill="#f472b6" />
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
