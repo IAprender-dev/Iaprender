@@ -121,6 +121,11 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 26, 2025: Updated Gerar Mapa Mental form with official IAprender logo and branding
+  - Added official IAprender logo (IAprender_1750262377399.png) to mind map form header
+  - Updated header to display "IAPRENDER" name following /student form pattern
+  - Implemented consistent back button navigation with emerald theme
+  - Enhanced form branding to match other student-facing components
 - June 26, 2025: Updated AI Tutor with official IAprender logo and fixed navigation
   - Changed logo from generic iaprender-logo.png to official IAprender_1750262377399.png
   - Fixed navigation route from /aluno/dashboard to /student/dashboard for consistency

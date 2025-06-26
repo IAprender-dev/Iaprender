@@ -10,6 +10,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/AuthContext';
 import { useLocation } from 'wouter';
+import { Link } from 'wouter';
+import { Helmet } from 'react-helmet';
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 import { 
   Brain, 
   Sparkles, 
@@ -157,39 +160,35 @@ export default function StudentMindMap() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <Button
-                onClick={() => setLocation('/student/dashboard')}
-                className="bg-blue-600 hover:bg-blue-700 text-white mr-4"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
+    <>
+      <Helmet>
+        <title>Mapas Mentais IA - IAprender</title>
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        {/* Header with Back Button */}
+        <div className="bg-white/90 backdrop-blur-xl border-b border-blue-200/50 sticky top-0 z-50">
+          <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
+            <div className="flex items-center gap-4">
+              <Link href="/student/dashboard">
+                <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
+              </Link>
+              
+              <div className="flex items-center gap-3">
+                <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
+                <div>
+                  <span className="text-xl font-bold text-gray-900">IAPRENDER</span>
+                  <div className="text-xs text-slate-500">Mapas Mentais IA</div>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">Mapas Mentais</h1>
-                <p className="text-sm text-slate-500">IAprender - {user?.schoolYear}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                <Target className="w-3 h-3 mr-1" />
-                BNCC Alinhado
-              </Badge>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Configuration Panel */}
           <div className="lg:col-span-1">
@@ -478,7 +477,8 @@ export default function StudentMindMap() {
             )}
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
