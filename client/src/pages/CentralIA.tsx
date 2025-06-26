@@ -107,8 +107,8 @@ export default function CentralIA() {
     },
     "claude": {
       name: "Claude",
-      icon: <img src={claudeLogo} alt="Claude" className="h-10 w-10 object-contain rounded-lg" />,
-      avatarColor: "bg-white",
+      icon: <Bot className="h-10 w-10" />,
+      avatarColor: "bg-gradient-to-br from-purple-500 to-violet-600",
       cardColor: "from-purple-50 to-violet-50",
       borderColor: "border-purple-200",
       hoverColor: "hover:border-purple-400",
