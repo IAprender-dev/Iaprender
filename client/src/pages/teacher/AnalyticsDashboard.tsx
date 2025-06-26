@@ -15,7 +15,7 @@ export default function AnalyticsDashboard() {
         <title>Dashboard de Análises | Professor | IAprender</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/30">
+      <div className="min-h-screen bg-white">
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,9 +23,9 @@ export default function AnalyticsDashboard() {
               {/* Logo e navegação */}
               <div className="flex items-center space-x-4">
                 <Link href="/professor">
-                  <Button size="sm" className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white">
+                  <Button size="sm" className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white">
                     <ArrowLeft className="h-4 w-4" />
-                    Voltar ao Dashboard
+                    Voltar
                   </Button>
                 </Link>
                 <div className="flex items-center space-x-3">
@@ -53,29 +53,27 @@ export default function AnalyticsDashboard() {
         <main className="max-w-7xl mx-auto p-6">
           {/* Page Header */}
           <div className="relative mb-12">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-amber-500/5 to-red-500/5 rounded-3xl"></div>
-            <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/50 shadow-lg shadow-orange-500/10">
+            <div className="relative bg-white rounded-3xl p-8 border-2 border-pink-200 shadow-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl blur-lg opacity-20"></div>
-                    <div className="relative bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl p-4">
+                    <div className="relative bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl p-4">
                       <Brain className="h-8 w-8 text-white" />
                     </div>
                   </div>
                   <div>
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 bg-clip-text text-transparent">
+                    <h1 className="text-4xl font-bold text-pink-800">
                       Dashboard de Análises
                     </h1>
-                    <p className="text-slate-600 text-lg mt-2 max-w-2xl">
+                    <p className="text-slate-700 text-lg mt-2 max-w-2xl">
                       Análises avançadas de desempenho e estatísticas educacionais
                     </p>
                   </div>
                 </div>
                 <div className="hidden lg:flex items-center space-x-4">
-                  <div className="flex items-center space-x-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl px-4 py-3 border border-orange-200">
-                    <div className="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></div>
-                    <span className="text-orange-700 font-medium text-sm">Em Desenvolvimento</span>
+                  <div className="flex items-center space-x-3 bg-pink-50 rounded-xl px-4 py-3 border border-pink-200">
+                    <div className="w-3 h-3 bg-pink-500 rounded-full animate-pulse"></div>
+                    <span className="text-pink-700 font-medium text-sm">Em Desenvolvimento</span>
                   </div>
                 </div>
               </div>
@@ -83,8 +81,8 @@ export default function AnalyticsDashboard() {
           </div>
 
           {/* Analytics Content */}
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-orange-50/30">
-            <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-t-xl">
+          <Card className="bg-white border-2 border-pink-200 shadow-xl">
+            <CardHeader className="bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-t-xl">
               <CardTitle className="text-xl flex items-center gap-3">
                 <Brain className="h-6 w-6" />
                 Análises Inteligentes
@@ -92,25 +90,25 @@ export default function AnalyticsDashboard() {
             </CardHeader>
             <CardContent className="p-8">
               <div className="text-center py-16">
-                <Brain className="h-24 w-24 text-orange-400 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                <Brain className="h-24 w-24 text-pink-400 mx-auto mb-6" />
+                <h3 className="text-2xl font-bold text-slate-800 mb-4">
                   Dashboard de Análises em Desenvolvimento
                 </h3>
-                <p className="text-slate-600 text-lg mb-6 max-w-2xl mx-auto">
+                <p className="text-slate-700 text-lg mb-6 max-w-2xl mx-auto">
                   Estamos desenvolvendo análises avançadas com inteligência artificial para fornecer insights detalhados sobre o desempenho dos seus alunos, tendências de aprendizagem e recomendações personalizadas.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                  <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-xl border border-orange-200">
-                    <h4 className="font-semibold text-orange-800 mb-2">Análise de Desempenho</h4>
-                    <p className="text-sm text-orange-700">Relatórios detalhados sobre o progresso individual e da turma</p>
+                  <div className="bg-pink-50 p-6 rounded-xl border border-pink-200">
+                    <h4 className="font-semibold text-pink-800 mb-2">Análise de Desempenho</h4>
+                    <p className="text-sm text-pink-700">Relatórios detalhados sobre o progresso individual e da turma</p>
                   </div>
-                  <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-xl border border-orange-200">
-                    <h4 className="font-semibold text-orange-800 mb-2">Tendências de Aprendizagem</h4>
-                    <p className="text-sm text-orange-700">Identificação de padrões e oportunidades de melhoria</p>
+                  <div className="bg-pink-50 p-6 rounded-xl border border-pink-200">
+                    <h4 className="font-semibold text-pink-800 mb-2">Tendências de Aprendizagem</h4>
+                    <p className="text-sm text-pink-700">Identificação de padrões e oportunidades de melhoria</p>
                   </div>
-                  <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-xl border border-orange-200">
-                    <h4 className="font-semibold text-orange-800 mb-2">Recomendações IA</h4>
-                    <p className="text-sm text-orange-700">Sugestões personalizadas baseadas em dados</p>
+                  <div className="bg-pink-50 p-6 rounded-xl border border-pink-200">
+                    <h4 className="font-semibold text-pink-800 mb-2">Recomendações IA</h4>
+                    <p className="text-sm text-pink-700">Sugestões personalizadas baseadas em dados</p>
                   </div>
                 </div>
               </div>
