@@ -224,25 +224,25 @@ ${analysisResult.assessment}
                     <SelectContent>
                       <SelectItem value="plano-aula">
                         <div className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4 text-blue-600" />
+                          <BookOpen className="h-4 w-4 text-yellow-600" />
                           <span>Plano de Aula</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="prova">
                         <div className="flex items-center gap-2">
-                          <ClipboardList className="h-4 w-4 text-green-600" />
+                          <ClipboardList className="h-4 w-4 text-yellow-700" />
                           <span>Prova/Avaliação</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="exercicios">
                         <div className="flex items-center gap-2">
-                          <PenTool className="h-4 w-4 text-purple-600" />
+                          <PenTool className="h-4 w-4 text-yellow-800" />
                           <span>Lista de Exercícios</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="resumo">
                         <div className="flex items-center gap-2">
-                          <FileDown className="h-4 w-4 text-orange-600" />
+                          <FileDown className="h-4 w-4 text-yellow-500" />
                           <span>Resumo</span>
                         </div>
                       </SelectItem>
