@@ -299,7 +299,7 @@ export default function AnalyticsDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 bg-gradient-to-br from-cyan-50 to-blue-50">
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={400}>
                   <AreaChart data={weeklyEngagementData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                     <XAxis dataKey="day" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
@@ -342,7 +342,7 @@ export default function AnalyticsDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50">
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={municipalitiesRanking} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                     <XAxis type="number" domain={[75, 100]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
