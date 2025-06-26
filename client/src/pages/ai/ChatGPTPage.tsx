@@ -186,16 +186,12 @@ export default function ChatGPTPage() {
             <div className="flex-shrink-0">
               {isUser ? (
                 <Avatar>
-                  <AvatarFallback className="bg-blue-100">
-                    <User className="h-5 w-5 text-blue-600" />
+                  <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                    {user?.firstName?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                <Avatar>
-                  <AvatarFallback className="bg-gradient-to-br from-green-400 to-emerald-500">
-                    <Sparkles className="h-5 w-5 text-white" />
-                  </AvatarFallback>
-                </Avatar>
+                <img src={chatgptLogo} alt="ChatGPT" className="w-10 h-10 object-contain rounded-full" />
               )}
             </div>
             
@@ -321,9 +317,7 @@ export default function ChatGPTPage() {
           <div className="flex-1 overflow-y-auto">
             {!currentConversation ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mb-6">
-                  <Sparkles className="h-8 w-8 text-white" />
-                </div>
+                <img src={chatgptLogo} alt="ChatGPT" className="w-20 h-20 object-contain rounded-2xl mb-6" />
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">
                   Bem-vindo ao ChatGPT
                 </h2>
@@ -337,9 +331,7 @@ export default function ChatGPTPage() {
               </div>
             ) : currentConversation.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mb-4">
-                  <Sparkles className="h-6 w-6 text-white" />
-                </div>
+                <img src={chatgptLogo} alt="ChatGPT" className="w-16 h-16 object-contain rounded-2xl mb-4" />
                 <h2 className="text-xl font-bold text-slate-900 mb-2">
                   O que posso ajudar você hoje?
                 </h2>
