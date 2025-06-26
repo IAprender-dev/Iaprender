@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   User, 
   Search, 
@@ -131,30 +132,17 @@ export default function PerplexityPage() {
     try {
       console.log("Enviando requisição para Perplexity:", promptCopy);
       
-      const response = await fetch('/api/ai/perplexity/search', {
+      const data = await apiRequest('/api/ai/perplexity/search', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Importante para incluir cookies de sessão
-        body: JSON.stringify({
+        body: {
           query: promptCopy,
           model: "llama-3.1-sonar-small-128k-online",
           temperature: 0.2,
           maxTokens: 1000,
           includeReferences: true
-        }),
+        }
       });
 
-      console.log("Status da resposta:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Erro da API:", errorText);
-        throw new Error(`Erro ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
       console.log("Dados recebidos:", data);
       
       addAIResponse(data.content, data.citations || []);
