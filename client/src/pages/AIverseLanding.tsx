@@ -260,55 +260,55 @@ export default function IAprenderLanding() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Interface Unificada Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-3xl hover:from-slate-800 hover:to-slate-700 transition-all duration-500 group shadow-2xl hover:shadow-3xl hover:scale-105">
-              <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/50 transition-all duration-300">
-                  <Layers className="h-8 w-8 text-white" />
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-indigo-100">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                  <Layers className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">Interface Unificada</h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Acesse mais de 30 modelos de IA através de uma interface intuitiva e consistente, 
-                  sem precisar aprender múltiplas plataformas.
-                </p>
-                <div className="text-sm text-indigo-400 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                  Simplicidade no poder
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Interface Unificada</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Acesse mais de 30 modelos de IA através de uma interface intuitiva e consistente, 
+                sem precisar aprender múltiplas plataformas.
+              </p>
+              <div className="text-sm text-indigo-600 font-medium">
+                Simplicidade no poder
               </div>
             </div>
 
             {/* Integração Total Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-3xl hover:from-slate-800 hover:to-slate-700 transition-all duration-500 group shadow-2xl hover:shadow-3xl hover:scale-105">
-              <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-purple-500/50 transition-all duration-300">
-                  <Network className="h-8 w-8 text-white" />
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-purple-100">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+                  <Network className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">Integração Total</h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Todas as IAs conversam entre si, permitindo fluxos de trabalho complexos 
-                  que combinam o melhor de cada tecnologia.
-                </p>
-                <div className="text-sm text-purple-400 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                  Sinergia perfeita
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Integração Total</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Todas as IAs conversam entre si, permitindo fluxos de trabalho complexos 
+                que combinam o melhor de cada tecnologia.
+              </p>
+              <div className="text-sm text-purple-600 font-medium">
+                Sinergia perfeita
               </div>
             </div>
 
             {/* 100% em Português Card */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-3xl hover:from-slate-800 hover:to-slate-700 transition-all duration-500 group shadow-2xl hover:shadow-3xl hover:scale-105">
-              <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-green-500 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-emerald-500/50 transition-all duration-300">
-                  <Languages className="h-8 w-8 text-white" />
+            <div className="bg-white rounded-3xl p-8 shadow-lg border border-green-100">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
+                  <Languages className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-white">100% em Português</h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Interface, suporte e documentação completamente em português, 
-                  eliminando barreiras linguísticas.
-                </p>
-                <div className="text-sm text-emerald-400 font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                  Inclusão real
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900">100% em Português</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Interface, suporte e documentação completamente em português, 
+                eliminando barreiras linguísticas.
+              </p>
+              <div className="text-sm text-green-600 font-medium">
+                Inclusão real
               </div>
             </div>
           </div>
