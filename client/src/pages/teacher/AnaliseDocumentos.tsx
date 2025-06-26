@@ -27,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import iaprenderLogoNew from "@/assets/IAprender_1750262377399.png";
 
 export default function AnaliseDocumentos() {
   const [file, setFile] = useState<File | null>(null);
@@ -153,21 +154,23 @@ ${analysisResult.assessment}
         <title>Análise de Documentos - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-white">
+      <div className="min-h-screen bg-yellow-50">
         {/* Header */}
         <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-6 py-3">
             <div className="flex items-center gap-3">
               <Link href="/professor">
-                <Button size="sm" className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                <Button size="sm" className="gap-2 bg-yellow-600 hover:bg-yellow-700 text-white shadow-lg border-0">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl">
-                  <FileText className="h-5 w-5 text-rose-600" />
-                </div>
+                <img 
+                  src={iaprenderLogoNew} 
+                  alt="IAprender Logo" 
+                  className="w-10 h-10 object-contain"
+                />
                 <div>
                   <h1 className="text-lg md:text-xl font-bold text-slate-900">Análise de Documentos</h1>
                   <p className="text-sm text-slate-600">Transforme PDFs em planos de aula, provas, listas de exercícios ou resumos</p>
@@ -184,13 +187,13 @@ ${analysisResult.assessment}
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <Upload className="h-5 w-5 text-rose-600" />
+                  <Upload className="h-5 w-5 text-yellow-600" />
                   Upload do Documento
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div 
-                  className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-rose-400 transition-colors cursor-pointer"
+                  className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:border-yellow-600 transition-colors cursor-pointer"
                   onClick={() => document.getElementById('file-upload')?.click()}
                 >
                   <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
@@ -206,7 +209,7 @@ ${analysisResult.assessment}
                     className="hidden"
                     id="file-upload"
                   />
-                  <Button className="mt-4 bg-rose-600 hover:bg-rose-700 pointer-events-none">
+                  <Button className="mt-4 bg-yellow-600 hover:bg-yellow-700 pointer-events-none">
                     Selecionar Arquivo
                   </Button>
                 </div>
@@ -276,7 +279,7 @@ ${analysisResult.assessment}
                 {isAnalyzing && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin text-rose-600" />
+                      <Loader2 className="h-4 w-4 animate-spin text-yellow-600" />
                       <span className="text-sm text-slate-600">Analisando documento...</span>
                     </div>
                     <Progress value={progress} className="h-2" />
@@ -286,7 +289,7 @@ ${analysisResult.assessment}
                 <Button 
                   onClick={analyzeDocument}
                   disabled={!file || isAnalyzing}
-                  className="w-full bg-rose-600 hover:bg-rose-700 disabled:opacity-50"
+                  className="w-full bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50"
                 >
                   {isAnalyzing ? (
                     <>
@@ -313,7 +316,7 @@ ${analysisResult.assessment}
             <Card className="border-0 bg-white/80 backdrop-blur-sm shadow-lg rounded-2xl">
               <CardHeader>
                 <CardTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-rose-600" />
+                  <BookOpen className="h-5 w-5 text-yellow-600" />
                   Material Didático Gerado
                 </CardTitle>
               </CardHeader>
