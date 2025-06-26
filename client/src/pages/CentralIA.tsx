@@ -22,7 +22,7 @@ import { User, Bot,
   Calendar,
   Copy
 } from "lucide-react";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
