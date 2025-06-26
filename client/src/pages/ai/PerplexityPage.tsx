@@ -15,7 +15,8 @@ import {
   Image as ImageIcon,
   ExternalLink
 } from "lucide-react";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
+import perplexityLogo from "@assets/perplexity-logo.webp";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -184,16 +185,12 @@ export default function PerplexityPage() {
             <div className="flex-shrink-0">
               {isUser ? (
                 <Avatar>
-                  <AvatarFallback className="bg-blue-100">
-                    <User className="h-5 w-5 text-blue-600" />
+                  <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                    {user?.firstName?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                <Avatar>
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500">
-                    <Search className="h-5 w-5 text-white" />
-                  </AvatarFallback>
-                </Avatar>
+                <img src={perplexityLogo} alt="Perplexity" className="w-10 h-10 object-contain rounded-full" />
               )}
             </div>
             
@@ -258,15 +255,17 @@ export default function PerplexityPage() {
         <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <Link href="/central-ia" className="flex items-center gap-3 mb-4">
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
-              <span className="text-sm text-slate-600">Voltar à Central</span>
-            </Link>
+            <div className="mb-4">
+              <Link href="/central-ia">
+                <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border border-blue-600">
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
+              </Link>
+            </div>
             
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center">
-                <Search className="h-5 w-5 text-white" />
-              </div>
+              <img src={perplexityLogo} alt="Perplexity" className="w-10 h-10 object-contain rounded-lg" />
               <div>
                 <h1 className="font-semibold text-slate-900">Perplexity</h1>
                 <p className="text-sm text-slate-600">Pesquisa com fontes</p>
@@ -337,9 +336,7 @@ export default function PerplexityPage() {
           <div className="flex-1 overflow-y-auto">
             {!currentConversation ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center mb-6">
-                  <Search className="h-8 w-8 text-white" />
-                </div>
+                <img src={perplexityLogo} alt="Perplexity" className="w-20 h-20 object-contain rounded-2xl mb-6" />
                 <h2 className="text-2xl font-bold text-slate-900 mb-2">
                   Bem-vindo ao Perplexity
                 </h2>
@@ -353,9 +350,7 @@ export default function PerplexityPage() {
               </div>
             ) : currentConversation.messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center mb-4">
-                  <Search className="h-6 w-6 text-white" />
-                </div>
+                <img src={perplexityLogo} alt="Perplexity" className="w-16 h-16 object-contain rounded-2xl mb-4" />
                 <h2 className="text-xl font-bold text-slate-900 mb-2">
                   O que você gostaria de pesquisar?
                 </h2>
@@ -370,11 +365,7 @@ export default function PerplexityPage() {
                   <div className="py-6 bg-white">
                     <div className="max-w-4xl mx-auto px-6">
                       <div className="flex items-start gap-4">
-                        <Avatar>
-                          <AvatarFallback className="bg-gradient-to-br from-blue-400 to-indigo-500">
-                            <Search className="h-5 w-5 text-white" />
-                          </AvatarFallback>
-                        </Avatar>
+                        <img src={perplexityLogo} alt="Perplexity" className="w-10 h-10 object-contain rounded-full" />
                         <div className="flex-1">
                           <div className="text-sm font-medium text-slate-700 mb-2">Perplexity</div>
                           <div className="flex items-center gap-2">
