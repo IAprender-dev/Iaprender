@@ -117,7 +117,7 @@ export default function TeacherDashboard() {
         <title>Dashboard do Professor | IAprender</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      <div className="min-h-screen bg-slate-50">
         {/* Minimalist Header */}
         <header className="bg-white/90 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-50">
           <div className="px-6 py-4">
@@ -203,7 +203,7 @@ export default function TeacherDashboard() {
           {/* Educational Insights */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Student Engagement */}
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-2 border-blue-200/60 shadow-sm hover:shadow-lg hover:border-blue-300/80 transition-all duration-300">
+            <Card className="bg-blue-50 border-2 border-blue-200/60 shadow-sm hover:shadow-lg hover:border-blue-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -228,7 +228,7 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* Learning Progress */}
-            <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-2 border-green-200/60 shadow-sm hover:shadow-lg hover:border-green-300/80 transition-all duration-300">
+            <Card className="bg-green-50 border-2 border-green-200/60 shadow-sm hover:shadow-lg hover:border-green-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -265,7 +265,7 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* Weekly Activity */}
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-2 border-purple-200/60 shadow-sm hover:shadow-lg hover:border-purple-300/80 transition-all duration-300">
+            <Card className="bg-purple-50 border-2 border-purple-200/60 shadow-sm hover:shadow-lg hover:border-purple-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -293,7 +293,7 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* AI Usage */}
-            <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 border-2 border-indigo-200/60 shadow-sm hover:shadow-lg hover:border-indigo-300/80 transition-all duration-300">
+            <Card className="bg-indigo-50 border-2 border-indigo-200/60 shadow-sm hover:shadow-lg hover:border-indigo-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
