@@ -3209,6 +3209,50 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     }
   });
 
+  // OpenAI Realtime API session endpoint
+  app.post('/api/realtime/session', authenticate, async (req: Request, res: Response) => {
+    try {
+      const openaiApiKey = process.env.OPENAI_API_KEY;
+      
+      if (!openaiApiKey) {
+        return res.status(500).json({ 
+          error: 'OpenAI API key not configured' 
+        });
+      }
+
+      // Create ephemeral token for Realtime API
+      const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-realtime-preview-2024-12-17',
+          voice: 'alloy'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenAI Realtime API error:', errorText);
+        return res.status(response.status).json({ 
+          error: 'Failed to create realtime session',
+          details: errorText
+        });
+      }
+
+      const sessionData = await response.json();
+      res.json(sessionData);
+
+    } catch (error) {
+      console.error('Error creating realtime session:', error);
+      res.status(500).json({ 
+        error: 'Internal server error' 
+      });
+    }
+  });
+
   // Apply token monitoring middleware to AI routes
   app.use('/api/ai', tokenAlertMiddleware);
   app.use('/api/ai', tokenInterceptor);
