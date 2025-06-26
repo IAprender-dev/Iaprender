@@ -175,7 +175,7 @@ export default function NoticiasPodcasts() {
     <div className="space-y-8">
       {/* Featured News */}
       {news.filter(item => item.isHighlighted).map((item) => (
-        <Card key={item.id} className="border-0 bg-white shadow-lg hover:shadow-xl rounded-3xl overflow-hidden transition-all duration-300">
+        <Card key={item.id} className="border-2 border-amber-200/60 bg-white shadow-lg hover:shadow-xl hover:border-amber-300/80 rounded-3xl overflow-hidden transition-all duration-300">
           <CardContent className="p-8">
             <div className="flex items-start gap-6">
               <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center flex-shrink-0">
@@ -217,7 +217,7 @@ export default function NoticiasPodcasts() {
       {/* Regular News */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {news.filter(item => !item.isHighlighted).map((item) => (
-          <Card key={item.id} className="border-0 bg-white hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
+          <Card key={item.id} className="border-2 border-amber-200/40 bg-white hover:shadow-lg hover:border-amber-300/60 transition-all duration-300 rounded-2xl overflow-hidden group">
             <CardContent className="p-6">
               <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center mb-4 group-hover:from-amber-100 group-hover:to-orange-100 transition-all duration-300">
                 <Newspaper className="h-6 w-6 text-slate-600 group-hover:text-amber-600 transition-colors" />
@@ -252,7 +252,7 @@ export default function NoticiasPodcasts() {
   const PodcastSection = () => (
     <div className="space-y-6">
       {podcasts.map((podcast) => (
-        <Card key={podcast.id} className="border-0 bg-white hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
+        <Card key={podcast.id} className="border-2 border-amber-200/40 bg-white hover:shadow-lg hover:border-amber-300/60 transition-all duration-300 rounded-2xl overflow-hidden group">
           <CardContent className="p-6">
             <div className="flex items-start gap-6">
               <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-2xl flex items-center justify-center flex-shrink-0 group-hover:from-purple-200 group-hover:to-indigo-200 transition-all duration-300">
