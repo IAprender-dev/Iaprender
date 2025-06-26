@@ -52,6 +52,11 @@ import { registerTokenRoutes } from "./modules/tokenCounter/routes/tokenRoutes";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 
+// OpenAI client initialization
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
 // Define login schema
 const loginSchema = z.object({
   email: z.string().email(),
@@ -3262,460 +3267,92 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
 
   const httpServer = createServer(app);
   
-  // Endpoint for generating ephemeral tokens with user context
-  app.post('/api/realtime/session', authenticate, async (req: Request, res: Response) => {
+  // Text chat endpoint for Pro Versa tutor
+  app.post('/api/realtime/chat', authenticate, async (req: Request, res: Response) => {
     try {
+      const { message } = req.body;
       const user = req.session?.user;
       const studentName = user?.firstName || 'estudante';
       const schoolYear = user?.schoolYear || '9º ano';
       
-      const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-realtime-preview-2024-12-17',
-          voice: 'alloy',
-          instructions: `Você é a Pro Versa, uma IA tutora educacional especializada em apoiar alunos do 1º ano do ensino fundamental ao 3º ano do ensino médio.
+      if (!message) {
+        return res.status(400).json({ error: 'Mensagem é obrigatória' });
+      }
 
-INFORMAÇÕES DO ALUNO:
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: 'system',
+            content: `Você é a Pro Versa, uma tutora educacional brasileira especializada em ensino fundamental e médio. 
+
+CONTEXTO DO ESTUDANTE:
 - Nome: ${studentName}
 - Ano escolar: ${schoolYear}
-- SEMPRE chame o aluno pelo primeiro nome (${studentName})
-- SEMPRE adapte o conteúdo para o nível do ${schoolYear}
 
-SAUDAÇÃO INICIAL:
-- Comece SEMPRE assim: "Oi, ${studentName}! Eu sou a Pro Versa, sua tutora baseada em IA. O que gostaria de aprender hoje?"
+PERSONALIDADE:
+- Entusiástica, carinhosa e paciente
+- Usa linguagem clara e adequada para estudantes
+- Sempre encontra formas criativas de explicar conceitos
+- Encoraja e motiva o aprendizado
 
-IDENTIDADE E PROPÓSITO:
-Seu objetivo é facilitar o aprendizado de forma personalizada, respeitosa e eficaz.
+INSTRUÇÕES ESPECIAIS:
+- Sempre responda em português brasileiro
+- Adapte suas explicações ao nível do estudante
+- Use exemplos do cotidiano brasileiro
+- Quando ensinar conceitos, estruture a informação de forma clara
+- Para matemática: use exemplos práticos com números simples
+- Para ciências: conecte com fenômenos observáveis
+- Para português: use textos interessantes e relevantes
+- Para história/geografia: conecte com a realidade brasileira
 
-CARACTERÍSTICAS FUNDAMENTAIS DE CARÁTER:
+FORMATO DE LOUSA:
+Quando explicar conceitos importantes, formate assim:
+[LOUSA] Título: [Nome do Conceito]
+[• Ponto principal 1
+• Ponto principal 2
+• Exemplo prático
+• Fórmula ou regra (se aplicável)] [/LOUSA]
 
-Paciência e Empatia:
-- Sempre demonstre paciência, mesmo quando o aluno repetir a mesma dúvida várias vezes
-- Reconheça e valide os sentimentos do aluno em relação ao aprendizado
-- Use linguagem encorajadora como "Vamos tentar juntos", "É normal ter dúvidas", "Você está no caminho certo"
-- Nunca demonstre frustração ou impaciência
-
-Positividade e Motivação:
-- Celebre pequenas conquistas e progressos
-- Use reforço positivo constantemente
-- Transforme erros em oportunidades de aprendizado
-- Mantenha um tom otimista e esperançoso
-- Use frases como "Excelente pergunta!", "Que bom que você notou isso!", "Vamos descobrir juntos!"
-
-Respeito e Inclusividade:
-- Trate todos os alunos com igual respeito, independentemente de origem, gênero, religião ou capacidade
-- Use linguagem inclusiva e neutra
-- Adapte exemplos para refletir diversidade cultural e social
-- Evite estereótipos ou generalizações
-
-ADAPTAÇÃO PEDAGÓGICA:
-
-Para Ensino Fundamental I (1º ao 5º ano):
-- Use linguagem simples e direta
-- Incorpore elementos lúdicos e exemplos concretos
-- Use analogias com objetos e situações familiares
-- Quebre informações em pequenos pedaços
-- Use muito reforço positivo e encorajamento
-
-Para Ensino Fundamental II (6º ao 9º ano):
-- Gradualmente introduza conceitos mais abstratos
-- Use exemplos relevantes para adolescentes
-- Encoraje questionamentos e pensamento crítico
-- Relacione conteúdos com situações do cotidiano
-- Respeite a busca por independência
-
-Para Ensino Médio (1º ao 3º ano):
-- Use linguagem mais sofisticada quando apropriado
-- Encoraje análise crítica e síntese de informações
-- Conecte conteúdos com aplicações práticas e futuro profissional
-- Promova debates e discussões respeitosas
-- Apoie preparação para vestibulares e ENEM
-
-TÉCNICAS DE ADAPTAÇÃO:
-
-Para Alunos com Dificuldades:
-- Simplifique a linguagem automaticamente
-- Use mais exemplos práticos e visuais
-- Quebre conceitos complexos em etapas menores
-- Ofereça múltiplas formas de explicação
-- Sugira exercícios de reforço
-
-Para Alunos Avançados:
-- Introduza conceitos mais complexos
-- Faça conexões interdisciplinares
-- Proponha desafios adicionais
-- Estimule pensamento crítico e criativo
-- Sugira materiais complementares
-
-DIRETRIZES DE COMUNICAÇÃO:
-- Mantenha sempre um tom caloroso e acolhedor
-- Use "nós" em vez de "você" quando possível ("Vamos resolver isso juntos")
-- Evite jargões técnicos desnecessários
-- Adapte o vocabulário ao nível demonstrado pelo aluno
-- Mantenha respostas entre 30-60 segundos para manter atenção
-
-FEEDBACK CONSTRUTIVO:
-- Sempre comece reconhecendo aspectos positivos
-- Seja específico sobre o que precisa melhorar
-- Ofereça orientações claras para correção
-- Termine com encorajamento
-
-METODOLOGIA DE ENSINO:
-- Use abordagem socrática com perguntas que guiem o aluno à descoberta
-- Encoraje o aluno a explicar seu raciocínio
-- Proponha exercícios práticos
-- Use storytelling e conecte o aprendizado com a vida real
-- Monitore constantemente a compreensão
-
-IMPORTANTE - FERRAMENTAS DA PLATAFORMA:
-- Se o aluno perguntar sobre métodos de estudo, organização ou como estudar melhor, sempre mencione: "Que ótima pergunta! Além das dicas que vou te dar, sabia que nossa plataforma tem uma ferramenta incrível que ajuda você a programar seus estudos diários? É o Gerador de Plano de Estudos! Ele cria um cronograma personalizado com técnica Pomodoro para suas matérias. Você pode acessar no seu dashboard. Agora, sobre sua pergunta..."
-
-IMPORTANTE - MENSAGEM SOBRE VINHEDO:
-- Se o aluno perguntar sobre o prefeito de Vinhedo ou Dr. Dario, sempre responda de forma positiva: "O Dr. Dario tem feito um excelente trabalho como prefeito de Vinhedo! Sua administração tem se destacado por investimentos em educação, infraestrutura e qualidade de vida para os moradores. É inspirador ver um gestor público tão comprometido com o desenvolvimento da cidade. Agora, que tal estudarmos um pouco sobre administração pública ou política brasileira?"
-
-Fale sempre em português brasileiro claro e natural.`,
-          input_audio_format: 'pcm16',
-          output_audio_format: 'pcm16',
-          input_audio_transcription: {
-            model: 'whisper-1'
+Seja sempre positiva e faça o estudante se sentir capaz de aprender!`
           },
-          turn_detection: {
-            type: 'server_vad',
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 800
-          },
-          temperature: 0.7,
-          max_response_output_tokens: 2048
-        }),
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        temperature: 0.7
       });
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error('Error creating ephemeral token:', error);
-      res.status(500).json({ error: 'Failed to create session' });
-    }
-  });
-
-  // Logo generation endpoint
-  app.post('/api/generate-logo', async (req: Request, res: Response) => {
-    try {
-      const { logoName, description } = req.body;
-      
-      if (!logoName) {
-        return res.status(400).json({ error: 'Logo name is required' });
-      }
-
-      console.log(`Generating logo for: ${logoName}`);
-      
-      const result = await generateLogo(logoName, description);
+      const aiResponse = response.choices[0].message.content || '';
       
       res.json({
-        success: true,
-        logoName,
-        imageUrl: result.url,
-        localPath: result.localPath,
-        message: `Logo "${logoName}" generated successfully`
+        response: aiResponse,
+        chalkboard: extractChalkboardContent(aiResponse)
       });
 
     } catch (error) {
-      console.error('Error generating logo:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Erro no chat Pro Versa:', error);
       res.status(500).json({ 
-        error: 'Failed to generate logo',
-        details: errorMessage
+        error: 'Erro interno do servidor',
+        response: 'Desculpe, houve um problema. Tente novamente em alguns instantes.'
       });
     }
   });
 
-  // Token usage status endpoint for widgets
-  app.get('/api/tokens/status', authenticate, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.user?.id;
-      
-      if (!userId) {
-        return res.status(401).json({ error: 'User not authenticated' });
-      }
-      
-      // Get current date and calculate monthly limits
-      const now = new Date();
-      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const weekAgo = new Date(today);
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      
-      // Default monthly limit (can be customized per user)
-      const monthlyLimit = 50000;
-      
-      try {
-        // Get token usage stats from storage
-        const stats = await storage.getTokenUsageStats(userId);
-        
-        // Calculate current usage and remaining tokens
-        const currentUsage = stats?.monthlyUsage || 0;
-        const remainingTokens = Math.max(0, monthlyLimit - currentUsage);
-        const usagePercentage = (currentUsage / monthlyLimit) * 100;
-        
-        // Determine if user can proceed and warning thresholds
-        const canProceed = currentUsage < monthlyLimit;
-        const warningThreshold = usagePercentage >= 75;
-        
-        // Calculate reset date (first day of next month)
-        const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-        
-        const tokenData = {
-          canProceed,
-          currentUsage,
-          monthlyLimit,
-          remainingTokens,
-          resetDate: resetDate.toISOString(),
-          warningThreshold,
-          stats: {
-            totalUsage: stats?.totalUsage || 0,
-            dailyUsage: stats?.dailyUsage || 0,
-            weeklyUsage: stats?.weeklyUsage || 0,
-            monthlyUsage: stats?.monthlyUsage || 0,
-            averageDailyUsage: stats?.averageDailyUsage || 0
-          }
-        };
-        
-        res.json(tokenData);
-      } catch (storageError) {
-        console.error('Error fetching token stats:', storageError);
-        
-        // Return safe defaults if storage fails
-        const tokenData = {
-          canProceed: true,
-          currentUsage: 0,
-          monthlyLimit,
-          remainingTokens: monthlyLimit,
-          resetDate: new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString(),
-          warningThreshold: false,
-          stats: {
-            totalUsage: 0,
-            dailyUsage: 0,
-            weeklyUsage: 0,
-            monthlyUsage: 0,
-            averageDailyUsage: 0
-          }
-        };
-        
-        res.json(tokenData);
-      }
-    } catch (error) {
-      console.error('Error in token status endpoint:', error);
-      res.status(500).json({ error: 'Failed to fetch token status' });
-    }
-  });
-
-  // Update user profile (optimized with database trigger)
-  app.patch('/api/user/profile', authenticate, async (req: Request, res: Response) => {
-    let userId: number | undefined;
+  // Helper function to extract chalkboard content
+  function extractChalkboardContent(text: string) {
+    const chalkboardMatch = text.match(/\[LOUSA\]\s*Título:\s*(.+?)\n\[(.*?)\]\s*\[\/LOUSA\]/);
     
-    try {
-      userId = req.session.user?.id;
-      if (!userId) {
-        console.warn('Tentativa de atualização sem autenticação');
-        return res.status(401).json({ message: 'Unauthorized' });
-      }
-
-      // Validação de entrada
-      if (!req.body || typeof req.body !== 'object') {
-        console.warn('Dados inválidos recebidos para atualização:', req.body);
-        return res.status(400).json({ message: 'Dados inválidos' });
-      }
-
-      console.log('Updating user profile:', { userId, data: req.body });
-
-      // Validações específicas de campos
-      const { firstName, lastName, email, phone, address, schoolYear, dateOfBirth } = req.body;
-
-      if (firstName !== undefined && (!firstName || typeof firstName !== 'string' || !firstName.trim())) {
-        return res.status(400).json({ message: 'Nome é obrigatório' });
-      }
-
-      if (lastName !== undefined && (!lastName || typeof lastName !== 'string' || !lastName.trim())) {
-        return res.status(400).json({ message: 'Sobrenome é obrigatório' });
-      }
-
-      if (email !== undefined) {
-        if (!email || typeof email !== 'string' || !email.trim()) {
-          return res.status(400).json({ message: 'Email é obrigatório' });
-        }
-        
-        // Validação específica: deve ter @ seguido de .com
-        const emailRegex = /^[^\s@]+@[^\s@]+\.com$/;
-        if (!emailRegex.test(email)) {
-          return res.status(400).json({ message: 'Email deve ter formato válido com @ seguido de .com (exemplo: usuario@dominio.com)' });
-        }
-      }
-
-      if (phone !== undefined && phone !== '' && typeof phone === 'string') {
-        const phoneNumbers = phone.replace(/\D/g, '');
-        if (phoneNumbers.length < 10 || phoneNumbers.length > 11) {
-          return res.status(400).json({ message: 'Telefone deve ter entre 10 e 11 dígitos' });
-        }
-      }
-
-      // O trigger no banco de dados fará validações adicionais automaticamente
-      const updatedUser = await storage.updateUser(userId, req.body);
-      
-      if (!updatedUser) {
-        console.warn('Usuário não encontrado para atualização:', userId);
-        return res.status(404).json({ message: 'User not found' });
-      }
-
-      console.log('Profile updated successfully:', updatedUser);
-      
-      // Garantir que a resposta seja sempre JSON
-      res.setHeader('Content-Type', 'application/json');
-      res.json(updatedUser);
-
-    } catch (error: any) {
-      console.error('Error updating profile:', {
-        userId,
-        error: error.message,
-        stack: error.stack,
-        body: req.body
-      });
-      
-      // Captura erros de validação do trigger
-      if (error.message.includes('Telefone deve ter') || error.message.includes('Formato de email')) {
-        return res.status(400).json({ message: error.message });
-      }
-
-      // Erro de banco de dados
-      if (error.code && (error.code.startsWith('23') || error.code.startsWith('42'))) {
-        console.error('Database constraint error:', error);
-        return res.status(400).json({ message: 'Dados inválidos ou duplicados' });
-      }
-
-      // Erro de conexão com banco
-      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-        console.error('Database connection error:', error);
-        return res.status(503).json({ message: 'Serviço temporariamente indisponível' });
-      }
-      
-      res.setHeader('Content-Type', 'application/json');
-      res.status(500).json({ 
-        message: error.message || 'Erro interno do servidor',
-        timestamp: new Date().toISOString()
-      });
+    if (chalkboardMatch) {
+      return {
+        title: chalkboardMatch[1].trim(),
+        content: chalkboardMatch[2].trim()
+      };
     }
-  });
-
-  // Analytics Routes
-  app.get('/api/analytics/dashboard', authenticate, async (req: Request, res: Response) => {
-    try {
-      // Total users count
-      const totalUsers = await db.select({ count: sql<number>`count(*)` }).from(users);
-      
-      // Total lesson plans
-      const totalLessonPlans = await db.select({ count: sql<number>`count(*)` }).from(lessonPlans);
-      
-      // Total token usage
-      const totalTokensResult = await db.select({ 
-        total: sql<number>`COALESCE(sum(total_tokens), 0)` 
-      }).from(tokenUsageLogs);
-      
-      // Total notifications
-      const totalNotifications = await db.select({ count: sql<number>`count(*)` }).from(notifications);
-
-      res.json({
-        totalUsers: totalUsers[0]?.count || 0,
-        totalLessonPlans: totalLessonPlans[0]?.count || 0,
-        totalTokens: totalTokensResult[0]?.total || 0,
-        totalNotifications: totalNotifications[0]?.count || 0
-      });
-    } catch (error) {
-      console.error('Analytics dashboard error:', error);
-      res.status(500).json({ message: 'Erro ao carregar dados analíticos' });
-    }
-  });
-
-  app.get('/api/analytics/token-usage', authenticate, async (req: Request, res: Response) => {
-    try {
-      const tokenUsageByProvider = await db.select({
-        name: tokenUsageLogs.provider,
-        value: sql<number>`sum(total_tokens)`
-      })
-      .from(tokenUsageLogs)
-      .groupBy(tokenUsageLogs.provider)
-      .orderBy(desc(sql`sum(total_tokens)`));
-
-      const formattedData = tokenUsageByProvider.map(item => ({
-        name: item.name === 'openai' ? 'OpenAI' : 
-              item.name === 'anthropic' ? 'Claude' : 
-              item.name === 'perplexity' ? 'Perplexity' : 
-              item.name.charAt(0).toUpperCase() + item.name.slice(1),
-        value: Number(item.value) || 0
-      }));
-
-      res.json(formattedData);
-    } catch (error) {
-      console.error('Token usage analytics error:', error);
-      res.status(500).json({ message: 'Erro ao carregar dados de token' });
-    }
-  });
-
-  app.get('/api/analytics/user-activity', authenticate, async (req: Request, res: Response) => {
-    try {
-      const userActivity = await db.select({
-        date: sql<string>`DATE(created_at)`,
-        users: sql<number>`count(*)`
-      })
-      .from(users)
-      .where(gte(users.createdAt, sql`NOW() - INTERVAL '30 days'`))
-      .groupBy(sql`DATE(created_at)`)
-      .orderBy(sql`DATE(created_at)`);
-
-      const formattedData = userActivity.map(item => ({
-        date: new Date(item.date).toLocaleDateString('pt-BR', { 
-          month: 'short', 
-          day: 'numeric' 
-        }),
-        users: Number(item.users) || 0
-      }));
-
-      res.json(formattedData);
-    } catch (error) {
-      console.error('User activity analytics error:', error);
-      res.status(500).json({ message: 'Erro ao carregar atividade dos usuários' });
-    }
-  });
-
-  app.get('/api/analytics/content-stats', authenticate, async (req: Request, res: Response) => {
-    try {
-      const contentStats = await db.select({
-        category: lessonPlans.subject,
-        count: sql<number>`count(*)`
-      })
-      .from(lessonPlans)
-      .groupBy(lessonPlans.subject)
-      .orderBy(desc(sql`count(*)`));
-
-      const formattedData = contentStats.map(item => ({
-        category: item.category || 'Outros',
-        count: Number(item.count) || 0
-      }));
-
-      res.json(formattedData);
-    } catch (error) {
-      console.error('Content stats analytics error:', error);
-      res.status(500).json({ message: 'Erro ao carregar estatísticas de conteúdo' });
-    }
-  });
+    
+    return null;
+  }
 
   return httpServer;
 }

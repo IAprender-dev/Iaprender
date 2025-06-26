@@ -512,51 +512,34 @@ Sempre adapto as explicações ao seu nível e uso exemplos do dia a dia. Que ta
     // Adicionar mensagem do usuário
     addMessage('user', transcript, 'audio');
     
-    // Usar a mesma lógica do chat para processar a resposta
+    // Usar a API OpenAI Realtime através do endpoint de chat
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const message = transcript.toLowerCase();
-      let response = '';
-      let chalkboardData = null;
-      
-      if (message.includes('matemática') || message.includes('soma') || message.includes('subtração') || message.includes('multiplicação')) {
-        response = "Perfeito! Vamos estudar matemática juntos! A matemática está em tudo ao nosso redor. Qual operação ou conceito você gostaria de aprender hoje?";
-        chalkboardData = {
-          type: 'concept' as const,
-          title: 'Matemática - Operações Básicas',
-          content: '• Adição (+): Juntar quantidades\n• Subtração (-): Tirar quantidades\n• Multiplicação (×): Somas repetidas\n• Divisão (÷): Repartir igualmente\n\nExemplo: 5 + 3 = 8\nVamos praticar!'
-        };
-      } else if (message.includes('português') || message.includes('gramática') || message.includes('substantivo') || message.includes('verbo')) {
-        response = "Que ótimo! Português é fundamental para nossa comunicação. Vamos explorar a riqueza da nossa língua! Posso te ajudar com gramática, interpretação de texto, redação ou literatura.";
-        chalkboardData = {
-          type: 'concept' as const,
-          title: 'Português - Classes Gramaticais',
-          content: '• Substantivo: nomeia seres, coisas, lugares\n• Verbo: indica ação, estado, fenômeno\n• Adjetivo: caracteriza o substantivo\n• Advérbio: modifica verbo, adjetivo\n\nExemplo: "A menina (substantivo) corre (verbo) rapidamente (advérbio)"'
-        };
-      } else if (message.includes('ciências') || message.includes('fotossíntese') || message.includes('planta') || message.includes('biologia')) {
-        response = "Ciências é fascinante! Vamos explorar os mistérios da natureza juntos. A fotossíntese é um processo incrível que mantém a vida na Terra. Quer descobrir como funciona?";
-        chalkboardData = {
-          type: 'concept' as const,
-          title: 'Fotossíntese - Fábrica de Oxigênio',
-          content: '• Ingredientes: CO₂ + H₂O + luz solar\n• Processo: Ocorre nas folhas (clorofila)\n• Produtos: Glicose + Oxigênio\n• Fórmula: 6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂\n\n🌱 As plantas nos dão o ar que respiramos!'
-        };
-      } else {
-        response = `Ouvi sua pergunta! Como sua tutora, estou aqui para tornar o aprendizado divertido. Posso te ajudar com qualquer matéria. Que tal continuarmos explorando juntos?`;
-        chalkboardData = {
-          type: 'concept' as const,
-          title: 'Pro Versa - Escutando Você',
-          content: '• Reconhecimento de voz funcionando\n• Processamento de suas palavras\n• Respostas educacionais personalizadas\n• Lousa atualizada automaticamente\n\nContinue falando comigo! 🎤✨'
-        };
+      const response = await fetch('/api/realtime/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: transcript
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro na resposta da Pro Versa');
       }
+
+      const data = await response.json();
+      const aiResponse = data.response;
+      const chalkboardData = data.chalkboard;
       
-      addMessage('assistant', response, 'text');
+      // Adicionar resposta da Pro Versa
+      addMessage('assistant', aiResponse, 'text');
       
-      // Atualizar a lousa com o conteúdo educacional
+      // Atualizar a lousa com o conteúdo educacional se houver
       if (chalkboardData) {
         addChalkboardContent(
-          chalkboardData.type, 
-          chalkboardData.title, 
+          'concept',
+          chalkboardData.title,
           chalkboardData.content
         );
       }
