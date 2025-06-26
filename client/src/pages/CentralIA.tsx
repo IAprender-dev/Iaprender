@@ -94,7 +94,7 @@ export default function CentralIA() {
   const modelInfo = {
     "chatgpt": {
       name: "ChatGPT",
-      icon: <SiOpenai className="h-6 w-6" />,
+      icon: <img src="https://ih1.redbubble.net/image.4645188095.0042/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.jpg" alt="ChatGPT" className="h-6 w-6 object-contain" />,
       avatarColor: "bg-white",
       cardColor: "from-green-50 to-emerald-50",
       borderColor: "border-green-200",
@@ -104,7 +104,7 @@ export default function CentralIA() {
     },
     "claude": {
       name: "Claude",
-      icon: <SiAnthropic className="h-6 w-6" />,
+      icon: <img src="https://images.seeklogo.com/logo-png/55/1/claude-logo-png_seeklogo-554534.png" alt="Claude" className="h-6 w-6 object-contain" />,
       avatarColor: "bg-white",
       cardColor: "from-purple-50 to-violet-50",
       borderColor: "border-purple-200",
@@ -114,7 +114,7 @@ export default function CentralIA() {
     },
     "perplexity": {
       name: "Perplexity",
-      icon: <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center text-white font-bold text-xs">P</div>,
+      icon: <img src="https://play.ht/blog/wp-content/uploads/2024/05/perplexityai-logo.webp" alt="Perplexity" className="h-6 w-6 object-contain" />,
       avatarColor: "bg-white",
       cardColor: "from-blue-50 to-indigo-50",
       borderColor: "border-blue-200",
