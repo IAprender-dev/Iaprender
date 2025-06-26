@@ -352,24 +352,24 @@ export default function TeacherDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {mainTools.map((tool, index) => {
                 const bgColors = [
-                  'bg-indigo-50 border-indigo-200/60 hover:border-indigo-300/80',
-                  'bg-teal-50 border-teal-200/60 hover:border-teal-300/80', 
-                  'bg-orange-50 border-orange-200/60 hover:border-orange-300/80',
-                  'bg-emerald-50 border-emerald-200/60 hover:border-emerald-300/80',
-                  'bg-violet-50 border-violet-200/60 hover:border-violet-300/80',
-                  'bg-rose-50 border-rose-200/60 hover:border-rose-300/80',
-                  'bg-amber-50 border-amber-200/60 hover:border-amber-300/80',
-                  'bg-sky-50 border-sky-200/60 hover:border-sky-300/80'
+                  'bg-indigo-100/70 border-indigo-300/70 hover:border-indigo-400/80',
+                  'bg-teal-100/70 border-teal-300/70 hover:border-teal-400/80', 
+                  'bg-orange-100/70 border-orange-300/70 hover:border-orange-400/80',
+                  'bg-emerald-100/70 border-emerald-300/70 hover:border-emerald-400/80',
+                  'bg-violet-100/70 border-violet-300/70 hover:border-violet-400/80',
+                  'bg-rose-100/70 border-rose-300/70 hover:border-rose-400/80',
+                  'bg-amber-100/70 border-amber-300/70 hover:border-amber-400/80',
+                  'bg-sky-100/70 border-sky-300/70 hover:border-sky-400/80'
                 ];
                 const iconBgColors = [
-                  'bg-indigo-100',
-                  'bg-teal-100',
-                  'bg-orange-100', 
-                  'bg-emerald-100',
-                  'bg-violet-100',
-                  'bg-rose-100',
-                  'bg-amber-100',
-                  'bg-sky-100'
+                  'bg-indigo-200/80',
+                  'bg-teal-200/80',
+                  'bg-orange-200/80', 
+                  'bg-emerald-200/80',
+                  'bg-violet-200/80',
+                  'bg-rose-200/80',
+                  'bg-amber-200/80',
+                  'bg-sky-200/80'
                 ];
                 const iconColors = [
                   'text-indigo-600',
