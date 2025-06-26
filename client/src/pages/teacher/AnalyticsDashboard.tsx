@@ -288,7 +288,7 @@ export default function AnalyticsDashboard() {
           </Card>
 
           {/* Weekly Engagement */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 gap-8 mb-8">
             <Card className="bg-white border-2 border-cyan-300 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
               <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -331,48 +331,78 @@ export default function AnalyticsDashboard() {
               </CardContent>
             </Card>
 
-            {/* Municipalities Ranking */}
-            <Card className="bg-white border-2 border-amber-300 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Ranking de Prefeituras
+            {/* AI Innovation Ranking */}
+            <Card className="bg-white border-2 border-purple-300 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                <CardTitle className="text-xl flex items-center gap-3">
+                  <Brain className="h-6 w-6" />
+                  Índice de Inovação IA - Cidades Líderes
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50">
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={municipalitiesRanking} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-                    <XAxis type="number" domain={[75, 100]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
-                    <YAxis dataKey="municipality" type="category" width={140} tick={{fill: '#1e293b', fontSize: 10, fontWeight: 600}} />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: '#ffffff',
-                        border: '2px solid #f59e0b',
-                        borderRadius: '12px',
-                        color: '#1e293b',
-                        fontWeight: 600
-                      }}
-                      labelStyle={{color: '#1e293b', fontWeight: 700}}
-                      formatter={(value, name) => [
-                        name === 'performance' ? `${value}% de desempenho` : `${value} conteúdos gerados`,
-                        name === 'performance' ? 'Índice de Desempenho' : 'Conteúdos Criados'
-                      ]}
-                    />
-                    <Bar 
-                      dataKey="performance" 
-                      fill="url(#gradientAmber)"
-                      name="Desempenho Educacional (%)"
-                      radius={[0, 6, 6, 0]}
-                    />
-                    <defs>
-                      <linearGradient id="gradientAmber" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="5%" stopColor="#d97706" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={1}/>
-                      </linearGradient>
-                    </defs>
-                  </BarChart>
-                </ResponsiveContainer>
+              <CardContent className="p-8 bg-gradient-to-br from-purple-50 to-pink-50">
+                <div className="mb-6 text-center">
+                  <p className="text-slate-700 text-sm font-semibold">Municípios pioneiros em educação com inteligência artificial</p>
+                  <p className="text-purple-700 font-bold text-lg mt-2 bg-purple-100 px-4 py-2 rounded-full inline-block">Top 6 Cidades Inovadoras</p>
+                </div>
+                
+                <div className="space-y-4">
+                  {aiInnovationRanking.map((city, index) => (
+                    <div key={city.municipality} className="relative p-4 bg-white rounded-xl border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 transform hover:scale-105">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="text-3xl">{city.badge}</div>
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-lg font-bold text-slate-800">{city.municipality}</h3>
+                              <span className="text-sm font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">{city.region}</span>
+                            </div>
+                            <p className="text-sm text-slate-600">{city.aiTools} ferramentas IA implementadas</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            <div className="text-2xl font-bold" style={{color: city.color}}>{city.innovation}%</div>
+                            <div className="text-xs text-slate-600 font-medium">Índice de Inovação</div>
+                          </div>
+                          
+                          <div className="relative w-16 h-16">
+                            <svg className="w-16 h-16 transform -rotate-90">
+                              <circle
+                                cx="32"
+                                cy="32"
+                                r="28"
+                                stroke="#e2e8f0"
+                                strokeWidth="4"
+                                fill="none"
+                              />
+                              <circle
+                                cx="32"
+                                cy="32"
+                                r="28"
+                                stroke={city.color}
+                                strokeWidth="4"
+                                fill="none"
+                                strokeDasharray={`${2 * Math.PI * 28 * (city.innovation / 100)} ${2 * Math.PI * 28}`}
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full transition-all duration-1000 ease-out"
+                          style={{
+                            width: `${city.innovation}%`,
+                            background: `linear-gradient(90deg, ${city.color}88, ${city.color})`
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
