@@ -238,7 +238,7 @@ export default function EssaysDashboard() {
                 <Link href="/professor">
                   <Button className="gap-2 bg-slate-600 hover:bg-slate-700 text-white shadow-lg border-0">
                     <ArrowLeft className="h-4 w-4" />
-                    Voltar ao Dashboard
+                    Voltar
                   </Button>
                 </Link>
                 <div className="flex items-center gap-2">
@@ -261,14 +261,12 @@ export default function EssaysDashboard() {
           <div className="max-w-7xl mx-auto">
             {/* Page Header */}
             <div className="relative mb-12">
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-500/5 via-slate-600/5 to-slate-700/5 rounded-3xl"></div>
-              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/50 shadow-lg shadow-slate-500/10">
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-slate-200/50 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl blur-lg opacity-20"></div>
-                      <div className="relative bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl p-4">
-                        <Pencil className="h-8 w-8 text-white" />
+                      <div className="bg-slate-100 rounded-2xl p-4">
+                        <Pencil className="h-8 w-8 text-slate-600" />
                       </div>
                       </div>
                       <div>
@@ -291,13 +289,13 @@ export default function EssaysDashboard() {
               </div>
 
               {/* Essay Analyzer */}
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/30">
-                <CardHeader className="bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-t-xl">
-                  <CardTitle className="text-xl flex items-center gap-3">
-                    <Brain className="h-6 w-6" />
+              <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-slate-50 border-b border-slate-200 rounded-t-xl">
+                  <CardTitle className="text-xl flex items-center gap-3 text-slate-800">
+                    <Brain className="h-6 w-6 text-slate-600" />
                     Analisador Inteligente de Redações
                   </CardTitle>
-                  <CardDescription className="text-slate-100">
+                  <CardDescription className="text-slate-600">
                     Utilize IA para analisar estrutura, gramática e argumentação das redações dos seus alunos.
                   </CardDescription>
                 </CardHeader>
