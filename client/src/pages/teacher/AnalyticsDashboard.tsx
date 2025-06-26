@@ -112,16 +112,14 @@ export default function AnalyticsDashboard() {
     { day: 'Dom', engagement: 82 },
   ];
 
-  // Top municipalities ranking by performance results
-  const municipalitiesRanking = [
-    { municipality: 'São Paulo - SP', performance: 94, contentGenerated: 1540 },
-    { municipality: 'Rio de Janeiro - RJ', performance: 92, contentGenerated: 1320 },
-    { municipality: 'Belo Horizonte - MG', performance: 90, contentGenerated: 1180 },
-    { municipality: 'Brasília - DF', performance: 89, contentGenerated: 1050 },
-    { municipality: 'Salvador - BA', performance: 87, contentGenerated: 980 },
-    { municipality: 'Fortaleza - CE', performance: 85, contentGenerated: 890 },
-    { municipality: 'Recife - PE', performance: 83, contentGenerated: 760 },
-    { municipality: 'Porto Alegre - RS', performance: 81, contentGenerated: 640 },
+  // AI Innovation Index - municipalities leading in educational AI adoption
+  const aiInnovationRanking = [
+    { municipality: 'São Paulo', region: 'SP', innovation: 98, aiTools: 15, badge: '🥇', color: '#ffd700' },
+    { municipality: 'Campinas', region: 'SP', innovation: 95, aiTools: 14, badge: '🥈', color: '#c0c0c0' },
+    { municipality: 'Florianópolis', region: 'SC', innovation: 93, aiTools: 13, badge: '🥉', color: '#cd7f32' },
+    { municipality: 'Brasília', region: 'DF', innovation: 91, aiTools: 12, badge: '🏆', color: '#4f46e5' },
+    { municipality: 'Curitiba', region: 'PR', innovation: 89, aiTools: 11, badge: '⭐', color: '#059669' },
+    { municipality: 'Belo Horizonte', region: 'MG', innovation: 87, aiTools: 10, badge: '🌟', color: '#dc2626' },
   ];
 
   if (isLoading) {
