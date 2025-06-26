@@ -180,7 +180,7 @@ export default function StudentMindMap() {
               <div className="flex items-center gap-3">
                 <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
                 <div>
-                  <span className="text-xl font-bold text-gray-900">IAPRENDER</span>
+                  <span className="text-xl font-bold text-gray-900">IAprender</span>
                   <div className="text-xs text-slate-500">Mapas Mentais IA</div>
                 </div>
               </div>
