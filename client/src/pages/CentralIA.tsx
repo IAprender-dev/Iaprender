@@ -24,6 +24,9 @@ import { User, Bot,
 } from "lucide-react";
 import { SiOpenai, SiAnthropic } from "react-icons/si";
 import iaprenderLogo from "@assets/IAprender_1750262377399.png";
+import chatgptLogo from "@assets/chatgpt-logo.jpg";
+import claudeLogo from "@assets/claude-logo.png";
+import perplexityLogo from "@assets/perplexity-logo.webp";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -94,7 +97,7 @@ export default function CentralIA() {
   const modelInfo = {
     "chatgpt": {
       name: "ChatGPT",
-      icon: <img src="/attached_assets/chatgpt-logo.jpg" alt="ChatGPT" className="h-10 w-10 object-contain rounded-lg" />,
+      icon: <img src={chatgptLogo} alt="ChatGPT" className="h-10 w-10 object-contain rounded-lg" />,
       avatarColor: "bg-white",
       cardColor: "from-green-50 to-emerald-50",
       borderColor: "border-green-200",
@@ -104,7 +107,7 @@ export default function CentralIA() {
     },
     "claude": {
       name: "Claude",
-      icon: <img src="/attached_assets/claude-logo.png" alt="Claude" className="h-10 w-10 object-contain rounded-lg" />,
+      icon: <img src={claudeLogo} alt="Claude" className="h-10 w-10 object-contain rounded-lg" />,
       avatarColor: "bg-white",
       cardColor: "from-purple-50 to-violet-50",
       borderColor: "border-purple-200",
@@ -114,7 +117,7 @@ export default function CentralIA() {
     },
     "perplexity": {
       name: "Perplexity",
-      icon: <img src="/attached_assets/perplexity-logo.webp" alt="Perplexity" className="h-10 w-10 object-contain rounded-lg" />,
+      icon: <img src={perplexityLogo} alt="Perplexity" className="h-10 w-10 object-contain rounded-lg" />,
       avatarColor: "bg-white",
       cardColor: "from-blue-50 to-indigo-50",
       borderColor: "border-blue-200",
