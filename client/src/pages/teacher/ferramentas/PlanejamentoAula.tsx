@@ -688,13 +688,13 @@ export default function PlanejamentoAula() {
         <title>Planejamento de Aula - IAprender</title>
       </Helmet>
 
-      <div className="min-h-screen bg-indigo-50">
+      <div className="min-h-screen bg-green-50">
         {/* Header */}
-        <header className="bg-white/80 backdrop-blur-xl border-b border-indigo-200/50 sticky top-0 z-40">
+        <header className="bg-white/80 backdrop-blur-xl border-b border-green-200/50 sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-6 py-3">
             <div className="flex items-center gap-3">
               <Link href="/professor">
-                <Button size="sm" className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Button size="sm" className="gap-2 bg-green-700 hover:bg-green-800 text-white">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
@@ -721,7 +721,7 @@ export default function PlanejamentoAula() {
               <CardHeader className="pb-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-indigo-100 rounded-lg">
-                    <FileText className="h-5 w-5 text-indigo-600" />
+                    <FileText className="h-5 w-5 text-green-700" />
                   </div>
                   <CardTitle className="text-xl font-bold text-slate-900">Dados da Aula</CardTitle>
                 </div>
@@ -738,7 +738,7 @@ export default function PlanejamentoAula() {
                       placeholder="Ex: Escola Municipal João Silva"
                       value={formData.escola}
                       onChange={(e) => handleFormChange('escola', e.target.value)}
-                      className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900"
+                      className="border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900"
                     />
                   </div>
 
@@ -760,7 +760,7 @@ export default function PlanejamentoAula() {
                           handleFormChange('numeroAlunos', value);
                         }
                       }}
-                      className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900"
+                      className="border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900"
                     />
                   </div>
                 </div>
@@ -776,7 +776,7 @@ export default function PlanejamentoAula() {
                     value={formData.tema}
                     onChange={(e) => handleFormChange('tema', e.target.value)}
                     rows={3}
-                    className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900 resize-none"
+                    className="border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900 resize-none"
                   />
                   {isAnalyzing && (
                     <div className="flex items-center gap-2 text-blue-600 text-sm">
@@ -809,7 +809,7 @@ export default function PlanejamentoAula() {
                       Duração da Aula *
                     </Label>
                     <Select value={formData.duracao} onValueChange={(value) => handleFormChange('duracao', value)}>
-                      <SelectTrigger className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900 font-medium">
+                      <SelectTrigger className="border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900 font-medium">
                         <SelectValue placeholder="Selecione a duração" />
                       </SelectTrigger>
                       <SelectContent>
@@ -832,7 +832,7 @@ export default function PlanejamentoAula() {
                       placeholder="Ex: Projetor, computador, laboratório"
                       value={formData.recursos}
                       onChange={(e) => handleFormChange('recursos', e.target.value)}
-                      className="border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900"
+                      className="border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900"
                     />
                   </div>
                 </div>
@@ -849,7 +849,7 @@ export default function PlanejamentoAula() {
                     placeholder="Descreva características especiais, nível socioeconômico, necessidades específicas..."
                     value={formData.perfilTurma}
                     onChange={(e) => handleFormChange('perfilTurma', e.target.value)}
-                    className="min-h-[60px] resize-none border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900"
+                    className="min-h-[60px] resize-none border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900"
                   />
                 </div>
 
@@ -863,7 +863,7 @@ export default function PlanejamentoAula() {
                     placeholder="Descreva os objetivos específicos que pretende alcançar com esta aula..."
                     value={formData.objetivosEspecificos}
                     onChange={(e) => handleFormChange('objetivosEspecificos', e.target.value)}
-                    className="min-h-[80px] resize-none border-2 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-500/20 focus:ring-4 transition-all duration-300 bg-white text-indigo-900"
+                    className="min-h-[80px] resize-none border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900"
                   />
                 </div>
 
@@ -871,7 +871,7 @@ export default function PlanejamentoAula() {
                 <Button 
                   onClick={gerarPlano}
                   disabled={isGenerating || !formData.tema.trim() || !formData.duracao || !formData.escola || !formData.numeroAlunos || !temaAnalysis}
-                  className="w-full h-12 text-base font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+                  className="w-full h-12 text-base font-semibold bg-green-700 hover:bg-green-800 text-white shadow-lg"
                 >
                   {isGenerating ? (
                     <>
@@ -1063,7 +1063,7 @@ export default function PlanejamentoAula() {
                     {planoGerado.metodologia && (
                       <div>
                         <h3 className="flex items-center gap-2 font-semibold text-slate-900 mb-2">
-                          <Settings className="h-4 w-4 text-indigo-600" />
+                          <Settings className="h-4 w-4 text-green-700" />
                           6. Metodologia e Estratégias Didáticas
                         </h3>
                         <div className="bg-indigo-50 p-3 rounded-lg text-sm">
@@ -1071,13 +1071,13 @@ export default function PlanejamentoAula() {
                             Object.entries(planoGerado.metodologia).map(([key, value]) => (
                               <div key={key} className="mb-2">
                                 <span className="font-medium text-indigo-700 capitalize">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                                <div className="text-indigo-600 ml-2">
+                                <div className="text-green-700 ml-2">
                                   {renderValue(value)}
                                 </div>
                               </div>
                             ))
                           ) : (
-                            <p className="text-indigo-600">{String(planoGerado.metodologia)}</p>
+                            <p className="text-green-700">{String(planoGerado.metodologia)}</p>
                           )}
                         </div>
                       </div>
