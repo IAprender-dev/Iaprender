@@ -3,17 +3,27 @@ import { useAuth } from "@/lib/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { 
-  Bot, Calendar, PenTool, Pencil, Newspaper, Search, 
+  Bot, Calendar, PenTool, Newspaper, Search, 
   FileText, Calculator, Send, BarChart3, 
-  GraduationCap, Zap, ArrowRight, User, Sparkles
+  GraduationCap, Zap, ArrowRight, Bell, Menu, User, LogOut,
+  Sparkles, Pencil
 } from "lucide-react";
-import TeacherHeader from "@/components/dashboard/teacher/TeacherHeader";
+import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import TeacherSidebar from "@/components/dashboard/teacher/TeacherSidebar";
 
 export default function TeacherDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Buscar dados de tokens
   const { data: tokenData } = useQuery({
@@ -31,102 +41,74 @@ export default function TeacherDashboard() {
 
   const mainTools = [
     {
-      title: "Central de Inteligências",
-      description: "Acesse ChatGPT, Claude e outras IAs",
+      title: "Central de IA",
+      description: "ChatGPT, Claude e outras IAs",
       icon: Bot,
       href: "/central-ia",
-      gradient: "from-purple-500 to-indigo-600",
-      bgGradient: "from-purple-50 to-indigo-50",
-      borderColor: "border-purple-200",
-      iconColor: "text-purple-600",
-      textColor: "text-purple-700"
+      gradient: "from-violet-500 to-purple-600",
+      color: "text-violet-600"
     },
     {
-      title: "Planejamento de Aulas",
-      description: "Crie planos de aula detalhados",
+      title: "Planejamento",
+      description: "Planos de aula inteligentes",
       icon: Calendar,
       href: "/professor/ferramentas/planejamento-aula",
       gradient: "from-emerald-500 to-green-600",
-      bgGradient: "from-emerald-50 to-green-50",
-      borderColor: "border-emerald-200",
-      iconColor: "text-emerald-600",
-      textColor: "text-emerald-700"
-    }
-  ];
-
-  const tools = [
+      color: "text-emerald-600"
+    },
     {
-      title: "Gerador de Atividades",
-      description: "Crie exercícios personalizados",
+      title: "Atividades",
+      description: "Exercícios personalizados",
       icon: PenTool,
       href: "/professor/ferramentas/gerador-atividades",
       gradient: "from-blue-500 to-cyan-600",
-      bgGradient: "from-blue-50 to-cyan-50",
-      borderColor: "border-blue-200"
+      color: "text-blue-600"
     },
     {
-      title: "Redações",
-      description: "Analise e corrija redações",
-      icon: Pencil,
-      href: "/professor/redacoes",
-      gradient: "from-rose-500 to-pink-600",
-      bgGradient: "from-rose-50 to-pink-50",
-      borderColor: "border-rose-200"
-    },
-    {
-      title: "Notícias & Podcasts",
-      description: "Conteúdo educacional atualizado",
-      icon: Newspaper,
-      href: "/professor/noticias-podcasts",
-      gradient: "from-amber-500 to-orange-600",
-      bgGradient: "from-amber-50 to-orange-50",
-      borderColor: "border-amber-200"
-    },
-    {
-      title: "Análise de Documentos",
-      description: "Transforme PDFs em conteúdo",
+      title: "Documentos",
+      description: "Análise de PDFs e textos",
       icon: Search,
       href: "/professor/ferramentas/analisar-documentos",
       gradient: "from-indigo-500 to-purple-600",
-      bgGradient: "from-indigo-50 to-purple-50",
-      borderColor: "border-indigo-200"
+      color: "text-indigo-600"
     },
     {
-      title: "Resumos Didáticos",
-      description: "Resumos e conteúdos educacionais",
-      icon: FileText,
-      href: "/professor/ferramentas/materiais-didaticos",
-      gradient: "from-teal-500 to-cyan-600",
-      bgGradient: "from-teal-50 to-cyan-50",
-      borderColor: "border-teal-200"
+      title: "Redações",
+      description: "Correção automática",
+      icon: Pencil,
+      href: "/professor/redacoes",
+      gradient: "from-rose-500 to-pink-600",
+      color: "text-rose-600"
     },
     {
-      title: "Calculadora de Notas",
-      description: "Gerencie e calcule notas",
+      title: "Notícias",
+      description: "Conteúdo atualizado",
+      icon: Newspaper,
+      href: "/professor/noticias-podcasts",
+      gradient: "from-amber-500 to-orange-600",
+      color: "text-amber-600"
+    },
+    {
+      title: "Calculadora",
+      description: "Gestão de notas",
       icon: Calculator,
       href: "/professor/calculadora",
       gradient: "from-violet-500 to-purple-600",
-      bgGradient: "from-violet-50 to-purple-50",
-      borderColor: "border-violet-200"
+      color: "text-violet-600"
     },
     {
-      title: "Notificações",
-      description: "Envie alertas para secretaria",
-      icon: Send,
-      href: "/professor/notificacoes",
-      gradient: "from-green-500 to-emerald-600",
-      bgGradient: "from-green-50 to-emerald-50",
-      borderColor: "border-green-200"
-    },
-    {
-      title: "Análise de Desempenho",
-      description: "Estatísticas e relatórios",
+      title: "Relatórios",
+      description: "Análise de desempenho",
       icon: BarChart3,
       href: "/professor/analises",
       gradient: "from-orange-500 to-red-600",
-      bgGradient: "from-orange-50 to-red-50",
-      borderColor: "border-orange-200"
+      color: "text-orange-600"
     }
+  ];
+
+  const quickActions = [
+    { title: "Notificações", icon: Bell, href: "/professor/notificacoes", color: "text-blue-600" },
+    { title: "Materiais", icon: FileText, href: "/professor/ferramentas/materiais-didaticos", color: "text-green-600" }
   ];
 
   return (
@@ -135,154 +117,139 @@ export default function TeacherDashboard() {
         <title>Dashboard do Professor | IAprender</title>
       </Helmet>
 
-      <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
-        <TeacherSidebar />
-        
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <TeacherHeader />
-          
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-7xl mx-auto space-y-8">
-              
-              {/* Barra de Boas-vindas */}
-              <Card className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white border-0 shadow-xl">
-                <CardContent className="p-8">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-6">
-                      <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-sm">
-                        <GraduationCap className="h-10 w-10 text-white" />
-                      </div>
-                      <div>
-                        <h1 className="text-3xl font-bold mb-2">
-                          Olá, {user?.firstName}! 👋
-                        </h1>
-                        <p className="text-white/90 text-lg">
-                          Pronto para transformar o ensino com inteligência artificial?
-                        </p>
-                      </div>
-                    </div>
-                    <div className="hidden lg:flex items-center space-x-4">
-                      <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm">
-                        <Sparkles className="h-8 w-8 text-yellow-300" />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-white/80 text-sm">Sistema</div>
-                        <div className="font-semibold">Atualizado</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Barra de Consumo de Tokens */}
-              <Card className="bg-white/80 backdrop-blur-sm border border-slate-200/60 shadow-lg">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg">
-                        <Zap className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-slate-900">Uso de Tokens</h3>
-                        <p className="text-sm text-slate-600">
-                          {tokenData ? `${tokenData.currentUsage.toLocaleString()} de ${tokenData.monthlyLimit.toLocaleString()} tokens utilizados` : 'Carregando...'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-slate-900">{tokenUsagePercentage}%</div>
-                      <div className="text-sm text-slate-500">
-                        {tokenData ? `${tokenData.remainingTokens.toLocaleString()} restantes` : '---'}
-                      </div>
-                    </div>
-                  </div>
-                  <Progress 
-                    value={tokenUsagePercentage} 
-                    className="h-3 bg-slate-100"
-                  />
-                  <div className="flex justify-between mt-2 text-xs text-slate-500">
-                    <span>0</span>
-                    <span>{tokenData ? tokenData.monthlyLimit.toLocaleString() : '---'}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Botões Principais - 2 Colunas */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {mainTools.map((tool, index) => (
-                  <Link key={index} href={tool.href}>
-                    <Card className={`group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-2 ${tool.borderColor} bg-gradient-to-br ${tool.bgGradient} overflow-hidden`}>
-                      <CardContent className="p-8">
-                        <div className="flex items-center justify-between mb-6">
-                          <div className={`p-4 bg-gradient-to-r ${tool.gradient} rounded-2xl shadow-lg group-hover:scale-105 transition-transform`}>
-                            <tool.icon className="h-10 w-10 text-white" />
-                          </div>
-                          <ArrowRight className={`h-6 w-6 ${tool.iconColor} group-hover:translate-x-1 transition-transform`} />
-                        </div>
-                        <div>
-                          <h3 className={`font-bold text-2xl ${tool.textColor} mb-3`}>
-                            {tool.title}
-                          </h3>
-                          <p className="text-slate-600 text-base leading-relaxed">
-                            {tool.description}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+        {/* Minimalist Header */}
+        <header className="bg-white/90 backdrop-blur-sm border-b border-slate-200/60 sticky top-0 z-50">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="md:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                  IAprender
+                </h1>
               </div>
 
-              {/* Ferramentas - 2 Linhas com 4 Botões cada */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {tools.map((tool, index) => (
-                  <Link key={index} href={tool.href}>
-                    <Card className={`group hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer border ${tool.borderColor} bg-gradient-to-br ${tool.bgGradient} h-full`}>
-                      <CardContent className="p-6 h-full flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className={`p-3 bg-gradient-to-r ${tool.gradient} rounded-xl shadow-md group-hover:scale-110 transition-transform`}>
-                            <tool.icon className="h-6 w-6 text-white" />
-                          </div>
-                          <ArrowRight className="h-5 w-5 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-1 transition-all" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-bold text-slate-900 mb-2 text-lg">
-                            {tool.title}
-                          </h4>
-                          <p className="text-slate-600 text-sm leading-relaxed">
-                            {tool.description}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
+              <div className="flex items-center space-x-3">
+                {quickActions.map((action, index) => (
+                  <Link key={index} href={action.href}>
+                    <Button variant="ghost" size="sm" className="hidden md:flex">
+                      <action.icon className={`h-4 w-4 ${action.color}`} />
+                    </Button>
                   </Link>
                 ))}
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="rounded-full">
+                      <User className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="p-2">
+                      <p className="font-medium">{user?.firstName}</p>
+                      <p className="text-xs text-slate-500">{user?.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="text-red-600">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sair
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-
-              {/* Rodapé com informações úteis */}
-              <Card className="bg-slate-50 border border-slate-200">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <User className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-slate-900">Conta: {user?.role === 'teacher' ? 'Professor' : 'Usuário'}</p>
-                        <p className="text-sm text-slate-600">Logado como {user?.email}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-slate-500">Última atualização</p>
-                      <p className="font-medium text-slate-900">Agora mesmo</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
             </div>
-          </main>
-        </div>
+          </div>
+        </header>
+
+        {/* Import and use the new sidebar */}
+        <TeacherSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+        <main className="p-6 space-y-8 max-w-7xl mx-auto">
+          {/* Welcome Section */}
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-full">
+              <GraduationCap className="h-6 w-6" />
+              <span className="font-semibold">Olá, {user?.firstName}!</span>
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800">Transforme o ensino com IA</h2>
+          </div>
+
+          {/* Token Usage - Minimalist */}
+          <Card className="bg-white/60 backdrop-blur-sm border border-slate-200/60">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <Zap className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-slate-800">Tokens</span>
+                </div>
+                <span className="text-sm font-semibold text-slate-700">{tokenUsagePercentage}%</span>
+              </div>
+              <Progress value={tokenUsagePercentage} className="h-2" />
+              <div className="flex justify-between mt-2 text-xs text-slate-500">
+                <span>{tokenData ? tokenData.currentUsage.toLocaleString() : '0'}</span>
+                <span>{tokenData ? tokenData.monthlyLimit.toLocaleString() : '---'}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tools Grid - Clean and Interactive */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {mainTools.map((tool, index) => (
+              <Link key={index} href={tool.href}>
+                <Card className="group hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer bg-white/80 backdrop-blur-sm border border-slate-200/60">
+                  <CardContent className="p-4">
+                    <div className="text-center space-y-3">
+                      <div className={`mx-auto w-12 h-12 bg-gradient-to-r ${tool.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                        <tool.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-800 mb-1">{tool.title}</h3>
+                        <p className="text-xs text-slate-600 leading-relaxed">{tool.description}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-slate-400 mx-auto group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="bg-gradient-to-r from-blue-500 to-cyan-600 text-white border-0">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">24</div>
+                <div className="text-xs opacity-90">Aulas criadas</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">156</div>
+                <div className="text-xs opacity-90">Atividades</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">89</div>
+                <div className="text-xs opacity-90">Documentos</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-r from-rose-500 to-pink-600 text-white border-0">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">42</div>
+                <div className="text-xs opacity-90">Redações</div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
       </div>
     </>
   );

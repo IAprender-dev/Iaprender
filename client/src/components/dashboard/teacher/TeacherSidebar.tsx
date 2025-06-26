@@ -3,255 +3,165 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 import {
   LayoutDashboard,
-  BookOpen,
-  CalendarDays,
-  Users,
-  FileText,
-  Settings,
   Bot,
-  Wand2,
-  Search,
-  ImageIcon,
-  LogOut,
-  BellRing,
-  Mail,
-  GraduationCap,
-  CheckSquare,
-  ClipboardList,
-  Lightbulb,
-  FileEdit,
+  Calendar,
   PenTool,
-  ListChecks,
-  BookOpenCheck
+  Search,
+  FileText,
+  Calculator,
+  BarChart3,
+  Bell,
+  Settings,
+  LogOut,
+  X
 } from "lucide-react";
-import iAprenderLogo from "@assets/IAprender_1750262377399.png";
+import { Button } from "@/components/ui/button";
 
-export default function TeacherSidebar() {
+interface TeacherSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function TeacherSidebar({ isOpen, onClose }: TeacherSidebarProps) {
   const [location] = useLocation();
   const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    await logout();
-  };
 
   const menuItems = [
     {
       name: "Dashboard",
-      icon: <LayoutDashboard className="h-5 w-5" />,
+      icon: LayoutDashboard,
       href: "/professor",
-      active: location === "/professor"
+      active: location === "/professor",
+      color: "text-slate-600"
     },
     {
-      name: "Cursos",
-      icon: <BookOpen className="h-5 w-5" />,
-      href: "/professor/cursos",
-      active: location === "/professor/cursos"
+      name: "Central de IA",
+      icon: Bot,
+      href: "/central-ia",
+      active: location === "/central-ia",
+      color: "text-violet-600"
     },
     {
       name: "Planejamento",
-      icon: <CalendarDays className="h-5 w-5" />,
-      href: "/professor/planejamento",
-      active: location === "/professor/planejamento"
+      icon: Calendar,
+      href: "/professor/ferramentas/planejamento-aula",
+      active: location.includes("/planejamento"),
+      color: "text-emerald-600"
     },
     {
-      name: "Alunos",
-      icon: <Users className="h-5 w-5" />,
-      href: "/professor/alunos",
-      active: location === "/professor/alunos"
+      name: "Atividades",
+      icon: PenTool,
+      href: "/professor/ferramentas/gerador-atividades",
+      active: location.includes("/atividades"),
+      color: "text-blue-600"
     },
     {
-      name: "IA Assistente",
-      icon: <Bot className="h-5 w-5" />,
-      href: "/central-ia",
-      active: location === "/central-ia",
-      badge: "Novo"
+      name: "Documentos",
+      icon: Search,
+      href: "/professor/ferramentas/analisar-documentos",
+      active: location.includes("/documentos"),
+      color: "text-indigo-600"
     },
     {
       name: "Materiais",
-      icon: <FileText className="h-5 w-5" />,
-      href: "/professor/materiais",
-      active: location === "/professor/materiais"
-    }
-  ];
-
-  const teacherTools = [
-    {
-      name: "Criar Imagem Educacional",
-      icon: <ImageIcon className="h-5 w-5" />,
-      href: "/professor/ferramentas/imagem-educacional",
-      active: location === "/professor/ferramentas/imagem-educacional"
-    },
-    {
-      name: "Gerador de Atividades",
-      icon: <FileEdit className="h-5 w-5" />,
-      href: "/professor/ferramentas/gerador-atividades",
-      active: location === "/professor/ferramentas/gerador-atividades"
-    },
-    {
-      name: "Resumos Didáticos IA",
-      icon: <BookOpenCheck className="h-5 w-5" />,
+      icon: FileText,
       href: "/professor/ferramentas/materiais-didaticos",
-      active: location === "/professor/ferramentas/materiais-didaticos"
+      active: location.includes("/materiais"),
+      color: "text-green-600"
     },
     {
-      name: "Resumos BNCC",
-      icon: <GraduationCap className="h-5 w-5" />,
-      href: "/professor/ferramentas/resumos-bncc",
-      active: location === "/professor/ferramentas/resumos-bncc"
-    },
-
-    {
-      name: "Planejamento de Aula",
-      icon: <ClipboardList className="h-5 w-5" />,
-      href: "/professor/ferramentas/planejamento-aula",
-      active: location === "/professor/ferramentas/planejamento-aula"
+      name: "Calculadora",
+      icon: Calculator,
+      href: "/professor/calculadora",
+      active: location.includes("/calculadora"),
+      color: "text-violet-600"
     },
     {
-      name: "Modelos de Planejamento",
-      icon: <ListChecks className="h-5 w-5" />,
-      href: "/professor/ferramentas/modelos-planejamento",
-      active: location === "/professor/ferramentas/modelos-planejamento"
+      name: "Relatórios",
+      icon: BarChart3,
+      href: "/professor/analises",
+      active: location.includes("/analises"),
+      color: "text-orange-600"
+    },
+    {
+      name: "Notificações",
+      icon: Bell,
+      href: "/professor/notificacoes",
+      active: location.includes("/notificacoes"),
+      color: "text-blue-600"
     }
   ];
 
-  const aiTools = [
-    {
-      name: "ChatGPT",
-      icon: <Wand2 className="h-5 w-5" />,
-      href: "/professor/ferramentas/chatgpt",
-      active: location === "/professor/ferramentas/chatgpt"
-    },
-    {
-      name: "Claude",
-      icon: <Bot className="h-5 w-5" />,
-      href: "/professor/ferramentas/claude",
-      active: location === "/professor/ferramentas/claude"
-    },
-    {
-      name: "Perplexity",
-      icon: <Search className="h-5 w-5" />,
-      href: "/professor/ferramentas/perplexity",
-      active: location === "/professor/ferramentas/perplexity"
-    },
-    {
-      name: "Todas as Ferramentas",
-      icon: <Lightbulb className="h-5 w-5" />,
-      href: "/professor/ferramentas",
-      active: location === "/professor/ferramentas" && 
-              !location.includes("/professor/ferramentas/")
-    }
-  ];
+  if (!isOpen) return null;
 
   return (
-    <aside className="hidden md:flex flex-col h-screen bg-blue-900 w-64">
-      {/* Logo e cabeçalho */}
-      <div className="px-6 py-6 bg-blue-950">
-        <Link href="/" className="flex items-center space-x-3">
-          <img src={iAprenderLogo} alt="IAprender" className="w-8 h-8" />
-          <span className="text-white text-2xl font-bold">IAprender</span>
-        </Link>
-      </div>
+    <div className="fixed inset-0 z-50 lg:hidden">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose} />
       
-      {/* Container dos menus com scroll */}
-      <nav className="flex-1 overflow-y-auto py-6 px-4">
-        {/* Menu principal */}
-        <div className="mb-6">
-          <h3 className="text-xs font-semibold text-blue-300 uppercase tracking-wider mb-4 px-3">
-            Principal
-          </h3>
-          <ul className="space-y-1.5">
-            {menuItems.map((item) => (
-              <li key={item.name}>
-                <Link 
-                  href={item.href}
-                  className={cn(
-                    "flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                    item.active 
-                      ? "bg-blue-800 text-white" 
-                      : "text-blue-100 hover:bg-blue-800/60 hover:text-white"
-                  )}
-                >
-                  <span className={cn(
-                    "flex items-center justify-center h-9 w-9 rounded-lg mr-3",
-                    item.active ? "bg-blue-700" : "bg-blue-800/40"
-                  )}>
-                    {item.icon}
-                  </span>
-                  {item.name}
-                  {item.badge && (
-                    <span className="ml-auto bg-blue-500 text-white text-xs font-medium px-2 py-0.5 rounded-full">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 h-full w-72 bg-white/95 backdrop-blur-md border-r border-slate-200/60 shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-slate-200/60">
+          <h2 className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+            Menu Principal
+          </h2>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-5 w-5" />
+          </Button>
         </div>
-        
-        {/* Menu de IA tools visível apenas na página de ferramentas */}
-        {location.startsWith("/professor/ferramentas") && (
-          <div className="mb-6">
-            <h3 className="text-xs font-semibold text-blue-300 uppercase tracking-wider mb-4 px-3">
-              Ferramentas de IA
-            </h3>
-            <ul className="space-y-1.5">
-              {aiTools.map((tool) => (
-                <li key={tool.name}>
-                  <Link 
-                    href={tool.href}
-                    className={cn(
-                      "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      tool.active 
-                        ? "bg-blue-800 text-white" 
-                        : "text-blue-100 hover:bg-blue-800/60 hover:text-white"
-                    )}
-                  >
-                    <span className={cn(
-                      "flex items-center justify-center h-8 w-8 rounded-lg mr-3",
-                      tool.active ? "bg-blue-700" : "bg-blue-800/40"
-                    )}>
-                      {tool.icon}
-                    </span>
-                    {tool.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+
+        {/* Navigation */}
+        <nav className="p-4 space-y-2">
+          {menuItems.map((item) => (
+            <Link key={item.name} href={item.href} onClick={onClose}>
+              <div className={cn(
+                "flex items-center space-x-3 p-3 rounded-xl transition-all duration-200 cursor-pointer",
+                item.active
+                  ? "bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-200"
+                  : "hover:bg-slate-50 hover:scale-105"
+              )}>
+                <div className={cn(
+                  "w-10 h-10 rounded-lg flex items-center justify-center",
+                  item.active ? "bg-white shadow-sm" : "bg-slate-100"
+                )}>
+                  <item.icon className={cn("h-5 w-5", item.active ? item.color : "text-slate-500")} />
+                </div>
+                <span className={cn(
+                  "font-medium",
+                  item.active ? "text-slate-900" : "text-slate-600"
+                )}>
+                  {item.name}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200/60 bg-white/50">
+          <div className="space-y-2">
+            <Link href="/professor/configuracoes" onClick={onClose}>
+              <div className="flex items-center space-x-3 p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                  <Settings className="h-4 w-4 text-slate-500" />
+                </div>
+                <span className="font-medium text-slate-600">Configurações</span>
+              </div>
+            </Link>
+            
+            <button 
+              onClick={() => { logout(); onClose(); }}
+              className="flex items-center space-x-3 p-3 rounded-xl hover:bg-red-50 transition-colors w-full text-left"
+            >
+              <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                <LogOut className="h-4 w-4 text-red-500" />
+              </div>
+              <span className="font-medium text-red-600">Sair</span>
+            </button>
           </div>
-        )}
-      </nav>
-      
-      {/* Footer do sidebar */}
-      <div className="border-t border-blue-800 p-4">
-        <Link 
-          href="/professor/configuracoes"
-          className={cn(
-            "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-            location === "/professor/configuracoes" 
-              ? "bg-blue-800 text-white" 
-              : "text-blue-100 hover:bg-blue-800/60 hover:text-white"
-          )}
-        >
-          <span className={cn(
-            "flex items-center justify-center h-8 w-8 rounded-lg mr-3",
-            location === "/professor/configuracoes" ? "bg-blue-700" : "bg-blue-800/40"
-          )}>
-            <Settings className="h-5 w-5" />
-          </span>
-          Configurações
-        </Link>
-        
-        <button 
-          onClick={handleLogout}
-          className="flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors text-blue-100 hover:bg-blue-800/60 hover:text-white mt-2 w-full text-left"
-        >
-          <span className="flex items-center justify-center h-8 w-8 rounded-lg mr-3 bg-blue-800/40">
-            <LogOut className="h-5 w-5" />
-          </span>
-          Sair
-        </button>
+        </div>
       </div>
-    </aside>
+    </div>
   );
 }
