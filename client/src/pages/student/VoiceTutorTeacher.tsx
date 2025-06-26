@@ -47,6 +47,8 @@ export default function VoiceTutorTeacher() {
   const [showChalkboard, setShowChalkboard] = useState(true);
   const [chatInput, setChatInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [recognition, setRecognition] = useState<any | null>(null);
   
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
@@ -245,7 +247,47 @@ export default function VoiceTutorTeacher() {
       console.log('Microfone autorizado');
       streamRef.current = stream;
       
-      // Conectar com timeout para demonstração
+      // Inicializar reconhecimento de voz
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const recognitionInstance = new SpeechRecognition();
+        
+        recognitionInstance.continuous = true;
+        recognitionInstance.interimResults = true;
+        recognitionInstance.lang = 'pt-BR';
+        
+        recognitionInstance.onresult = (event: any) => {
+          let finalTranscript = '';
+          
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              setCurrentTranscript(transcript);
+            }
+          }
+          
+          if (finalTranscript) {
+            setCurrentTranscript('');
+            // Processar mensagem de voz usando a mesma lógica do chat
+            handleVoiceInput(finalTranscript.trim());
+          }
+        };
+        
+        recognitionInstance.onerror = (event: any) => {
+          console.error('Erro no reconhecimento de voz:', event.error);
+          setIsListening(false);
+        };
+        
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
+        
+        setRecognition(recognitionInstance);
+      }
+      
+      // Conectar Pro Versa
       setTimeout(() => {
         setConnectionState('connected');
         setIsConnected(true);
@@ -253,14 +295,14 @@ export default function VoiceTutorTeacher() {
         
         toast({
           title: "Pro Versa conectada!",
-          description: "Pronta para conversar! Use o microfone ou digite no chat.",
+          description: "Pronta para conversar! Clique no microfone para falar ou digite no chat.",
           variant: "default",
         });
         
         // Adicionar mensagem de boas-vindas
         addMessage('assistant', 'Olá! Eu sou a Pro Versa, sua tutora virtual. Estou aqui para te ajudar com seus estudos. O que gostaria de aprender hoje?', 'text');
         
-        // Simular análise para a lousa
+        // Mostrar conteúdo inicial na lousa
         setTimeout(() => {
           addChalkboardContent('concept', 'Bem-vindo à Pro Versa!', '• Sistema de tutoria virtual inteligente\n• Responde dúvidas sobre qualquer matéria\n• Adapta explicações ao seu nível\n• Usa metodologias de ensino modernas\n\nO que gostaria de estudar?');
         }, 1000);
@@ -298,20 +340,68 @@ export default function VoiceTutorTeacher() {
     addMessage('user', userMessage, 'text');
     
     try {
-      // Simular resposta inteligente da Pro Versa
-      const proVersaResponse = generateProVersaResponse(userMessage);
-      
       // Simular processamento
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      addMessage('assistant', proVersaResponse.message, 'text');
+      // Gerar resposta inteligente da Pro Versa
+      const message = userMessage.toLowerCase();
+      let response = '';
+      let chalkboardData = null;
       
-      // Adicionar conteúdo à lousa se disponível
-      if (proVersaResponse.chalkboard) {
+      if (message.includes('matemática') || message.includes('soma') || message.includes('subtração') || message.includes('multiplicação')) {
+        response = "Olá! Vamos estudar matemática juntos! A matemática está em tudo ao nosso redor. Qual operação ou conceito você gostaria de aprender hoje? Posso explicar desde operações básicas até conceitos mais avançados, sempre adaptando ao seu nível!";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Matemática - Operações Básicas',
+          content: '• Adição (+): Juntar quantidades\n• Subtração (-): Tirar quantidades\n• Multiplicação (×): Somas repetidas\n• Divisão (÷): Repartir igualmente\n\nExemplo: 5 + 3 = 8\nVamos praticar!'
+        };
+      } else if (message.includes('português') || message.includes('gramática') || message.includes('substantivo') || message.includes('verbo')) {
+        response = "Que ótimo! Português é fundamental para nossa comunicação. Vamos explorar a riqueza da nossa língua! Posso te ajudar com gramática, interpretação de texto, redação ou literatura. O que desperta mais sua curiosidade?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Português - Classes Gramaticais',
+          content: '• Substantivo: nomeia seres, coisas, lugares\n• Verbo: indica ação, estado, fenômeno\n• Adjetivo: caracteriza o substantivo\n• Advérbio: modifica verbo, adjetivo\n\nExemplo: "A menina (substantivo) corre (verbo) rapidamente (advérbio)"'
+        };
+      } else if (message.includes('ciências') || message.includes('fotossíntese') || message.includes('planta') || message.includes('biologia')) {
+        response = "Ciências é fascinante! Vamos explorar os mistérios da natureza juntos. Você sabia que as plantas são verdadeiras fábricas de oxigênio? A fotossíntese é um processo incrível que mantém a vida na Terra. Quer descobrir como funciona?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Fotossíntese - Fábrica de Oxigênio',
+          content: '• Ingredientes: CO₂ + H₂O + luz solar\n• Processo: Ocorre nas folhas (clorofila)\n• Produtos: Glicose + Oxigênio\n• Fórmula: 6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂\n\n🌱 As plantas nos dão o ar que respiramos!'
+        };
+      } else if (message.includes('história') || message.includes('brasil') || message.includes('descobrimento') || message.includes('independência')) {
+        response = "História é como uma máquina do tempo! Vamos viajar pelos acontecimentos que moldaram nosso país e o mundo. Cada época tem suas descobertas, desafios e conquistas. Qual período histórico mais desperta sua curiosidade?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'História do Brasil - Marcos Importantes',
+          content: '• 1500: Chegada dos portugueses\n• 1822: Independência do Brasil\n• 1888: Abolição da escravidão\n• 1889: Proclamação da República\n• 1988: Nova Constituição\n\nCada data marca uma transformação!'
+        };
+      } else if (message.includes('geografia') || message.includes('estados') || message.includes('capitais') || message.includes('relevo')) {
+        response = "Geografia nos ajuda a entender nosso planeta! O Brasil é um país continental com paisagens incríveis: florestas, montanhas, rios gigantescos e muito mais. Que tal explorarmos as maravilhas do nosso território?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Geografia do Brasil',
+          content: '• 26 Estados + Distrito Federal\n• 5 Regiões: Norte, Nordeste, Centro-Oeste, Sudeste, Sul\n• Maior país da América do Sul\n• Relevo: planícies, planaltos, montanhas\n• Rios: Amazonas, São Francisco, Paraná\n\n🗺️ Nossa casa é gigante!'
+        };
+      } else {
+        response = `Que pergunta interessante! Como sua tutora, estou aqui para tornar o aprendizado divertido e significativo. Posso te ajudar com qualquer matéria: matemática, português, ciências, história, geografia e muito mais! 
+
+Sempre adapto as explicações ao seu nível e uso exemplos do dia a dia. Que tal começarmos com algo que desperta sua curiosidade? Estou pronta para ensinar!`;
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Pro Versa - Sua Tutora Virtual',
+          content: '• Ensino personalizado e adaptado\n• Explicações claras e didáticas\n• Exemplos práticos do cotidiano\n• Acompanhamento do seu progresso\n• Todas as matérias escolares\n\nJuntos vamos aprender de forma divertida! 📚✨'
+        };
+      }
+      
+      addMessage('assistant', response, 'text');
+      
+      // Adicionar conteúdo à lousa
+      if (chalkboardData) {
         addChalkboardContent(
-          proVersaResponse.chalkboard.type, 
-          proVersaResponse.chalkboard.title, 
-          proVersaResponse.chalkboard.content
+          chalkboardData.type, 
+          chalkboardData.title, 
+          chalkboardData.content
         );
       }
     } catch (error) {
@@ -327,6 +417,156 @@ export default function VoiceTutorTeacher() {
       setIsProcessing(false);
     }
   }, [chatInput, isConnected, isProcessing, toast]);
+
+  const handleVoiceMessage = useCallback(async (transcript: string) => {
+    if (!transcript.trim() || isProcessing) return;
+    
+    console.log('Mensagem de voz recebida:', transcript);
+    setIsProcessing(true);
+    
+    // Adicionar mensagem do usuário
+    addMessage('user', transcript, 'audio');
+    
+    try {
+      // Simular processamento
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Gerar resposta inteligente da Pro Versa
+      const message = transcript.toLowerCase();
+      let response = '';
+      let chalkboardData = null;
+      
+      if (message.includes('matemática') || message.includes('soma') || message.includes('subtração') || message.includes('multiplicação')) {
+        response = "Olá! Vamos estudar matemática juntos! A matemática está em tudo ao nosso redor. Qual operação ou conceito você gostaria de aprender hoje?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Matemática - Operações Básicas',
+          content: '• Adição (+): Juntar quantidades\n• Subtração (-): Tirar quantidades\n• Multiplicação (×): Somas repetidas\n• Divisão (÷): Repartir igualmente\n\nExemplo: 5 + 3 = 8\nVamos praticar!'
+        };
+      } else if (message.includes('português') || message.includes('gramática') || message.includes('substantivo') || message.includes('verbo')) {
+        response = "Que ótimo! Português é fundamental para nossa comunicação. Vamos explorar a riqueza da nossa língua! Posso te ajudar com gramática, interpretação de texto, redação ou literatura.";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Português - Classes Gramaticais',
+          content: '• Substantivo: nomeia seres, coisas, lugares\n• Verbo: indica ação, estado, fenômeno\n• Adjetivo: caracteriza o substantivo\n• Advérbio: modifica verbo, adjetivo\n\nExemplo: "A menina (substantivo) corre (verbo) rapidamente (advérbio)"'
+        };
+      } else if (message.includes('ciências') || message.includes('fotossíntese') || message.includes('planta') || message.includes('biologia')) {
+        response = "Ciências é fascinante! Vamos explorar os mistérios da natureza juntos. A fotossíntese é um processo incrível que mantém a vida na Terra. Quer descobrir como funciona?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Fotossíntese - Fábrica de Oxigênio',
+          content: '• Ingredientes: CO₂ + H₂O + luz solar\n• Processo: Ocorre nas folhas (clorofila)\n• Produtos: Glicose + Oxigênio\n• Fórmula: 6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂\n\n🌱 As plantas nos dão o ar que respiramos!'
+        };
+      } else {
+        response = `Entendi sua pergunta! Como sua tutora, estou aqui para tornar o aprendizado divertido. Posso te ajudar com qualquer matéria. Que tal começarmos explorando algo que desperta sua curiosidade?`;
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Pro Versa - Resposta por Voz',
+          content: '• Reconhecimento de voz ativo\n• Processamento de linguagem natural\n• Respostas educacionais personalizadas\n• Conteúdo adaptado ao contexto\n\nContinue falando comigo! 🎤'
+        };
+      }
+      
+      addMessage('assistant', response, 'text');
+      
+      // Adicionar conteúdo à lousa
+      if (chalkboardData) {
+        addChalkboardContent(
+          chalkboardData.type, 
+          chalkboardData.title, 
+          chalkboardData.content
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao processar voz:', error);
+      addMessage('assistant', 'Desculpe, houve um erro ao processar sua mensagem de voz. Tente novamente.', 'text');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [isProcessing, toast]);
+
+  const toggleVoiceRecognition = useCallback(() => {
+    if (!recognition) {
+      toast({
+        title: "Reconhecimento não disponível",
+        description: "Seu navegador não suporta reconhecimento de voz.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+    } else {
+      recognition.start();
+      setIsListening(true);
+    }
+  }, [recognition, isListening, toast]);
+
+  const handleVoiceInput = useCallback(async (transcript: string) => {
+    if (!transcript.trim() || isProcessing) return;
+    
+    console.log('Processando entrada de voz:', transcript);
+    setIsProcessing(true);
+    
+    // Adicionar mensagem do usuário
+    addMessage('user', transcript, 'audio');
+    
+    // Usar a mesma lógica do chat para processar a resposta
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const message = transcript.toLowerCase();
+      let response = '';
+      let chalkboardData = null;
+      
+      if (message.includes('matemática') || message.includes('soma') || message.includes('subtração') || message.includes('multiplicação')) {
+        response = "Perfeito! Vamos estudar matemática juntos! A matemática está em tudo ao nosso redor. Qual operação ou conceito você gostaria de aprender hoje?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Matemática - Operações Básicas',
+          content: '• Adição (+): Juntar quantidades\n• Subtração (-): Tirar quantidades\n• Multiplicação (×): Somas repetidas\n• Divisão (÷): Repartir igualmente\n\nExemplo: 5 + 3 = 8\nVamos praticar!'
+        };
+      } else if (message.includes('português') || message.includes('gramática') || message.includes('substantivo') || message.includes('verbo')) {
+        response = "Que ótimo! Português é fundamental para nossa comunicação. Vamos explorar a riqueza da nossa língua! Posso te ajudar com gramática, interpretação de texto, redação ou literatura.";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Português - Classes Gramaticais',
+          content: '• Substantivo: nomeia seres, coisas, lugares\n• Verbo: indica ação, estado, fenômeno\n• Adjetivo: caracteriza o substantivo\n• Advérbio: modifica verbo, adjetivo\n\nExemplo: "A menina (substantivo) corre (verbo) rapidamente (advérbio)"'
+        };
+      } else if (message.includes('ciências') || message.includes('fotossíntese') || message.includes('planta') || message.includes('biologia')) {
+        response = "Ciências é fascinante! Vamos explorar os mistérios da natureza juntos. A fotossíntese é um processo incrível que mantém a vida na Terra. Quer descobrir como funciona?";
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Fotossíntese - Fábrica de Oxigênio',
+          content: '• Ingredientes: CO₂ + H₂O + luz solar\n• Processo: Ocorre nas folhas (clorofila)\n• Produtos: Glicose + Oxigênio\n• Fórmula: 6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂\n\n🌱 As plantas nos dão o ar que respiramos!'
+        };
+      } else {
+        response = `Ouvi sua pergunta! Como sua tutora, estou aqui para tornar o aprendizado divertido. Posso te ajudar com qualquer matéria. Que tal continuarmos explorando juntos?`;
+        chalkboardData = {
+          type: 'concept' as const,
+          title: 'Pro Versa - Escutando Você',
+          content: '• Reconhecimento de voz funcionando\n• Processamento de suas palavras\n• Respostas educacionais personalizadas\n• Lousa atualizada automaticamente\n\nContinue falando comigo! 🎤✨'
+        };
+      }
+      
+      addMessage('assistant', response, 'text');
+      
+      // Atualizar a lousa com o conteúdo educacional
+      if (chalkboardData) {
+        addChalkboardContent(
+          chalkboardData.type, 
+          chalkboardData.title, 
+          chalkboardData.content
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao processar voz:', error);
+      addMessage('assistant', 'Desculpe, houve um erro ao processar sua mensagem de voz. Tente novamente.', 'text');
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [isProcessing]);
 
   const generateProVersaResponse = (userMessage: string) => {
     const message = userMessage.toLowerCase();
@@ -677,11 +917,12 @@ Sempre adapto as explicações ao seu nível e uso exemplos do dia a dia. Que ta
               ) : (
                 <div className="flex gap-1">
                   <Button
-                    onClick={toggleMute}
-                    variant={isMuted ? "destructive" : "secondary"}
+                    onClick={toggleVoiceRecognition}
+                    variant={isListening ? "default" : "secondary"}
                     size="sm"
+                    className={isListening ? "bg-red-500 hover:bg-red-600 text-white animate-pulse" : ""}
                   >
-                    {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                   </Button>
                   
                   <Button
