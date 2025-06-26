@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Link } from "wouter";
 import { Loader2, Upload, FileText, Eye, Download, Star, Pencil, BookOpen, Brain, ArrowLeft } from "lucide-react";
+import iaprenderLogoNew from "@/assets/IAprender_1750262377399.png";
 
 // Essay Analyzer component
 function EssayAnalyzer() {
@@ -108,7 +109,7 @@ function EssayAnalyzer() {
           <Button 
             onClick={handleAnalyze} 
             disabled={isAnalyzing}
-            className="w-full bg-gradient-to-r from-purple-600 to-violet-700 hover:from-purple-700 hover:to-violet-800"
+            className="w-full bg-slate-600 hover:bg-slate-700"
           >
             {isAnalyzing ? (
               <>
@@ -228,21 +229,28 @@ export default function EssaysDashboard() {
         <title>Dashboard de Redações | Professor | IAprender</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+      <div className="min-h-screen bg-slate-50">
         {/* Header com botão Voltar */}
         <div className="bg-white/90 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Link href="/professor">
-                  <Button className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg border-0">
+                  <Button className="gap-2 bg-slate-600 hover:bg-slate-700 text-white shadow-lg border-0">
                     <ArrowLeft className="h-4 w-4" />
                     Voltar ao Dashboard
                   </Button>
                 </Link>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900">Dashboard de Redações</h1>
-                  <p className="text-slate-600">Analise e corrija redações com inteligência artificial</p>
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={iaprenderLogoNew} 
+                    alt="IAprender Logo" 
+                    className="w-10 h-10 object-contain"
+                  />
+                  <div>
+                    <h1 className="text-2xl font-bold text-slate-900">Dashboard de Redações</h1>
+                    <p className="text-slate-600">Analise e corrija redações com inteligência artificial</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -253,18 +261,18 @@ export default function EssaysDashboard() {
           <div className="max-w-7xl mx-auto">
             {/* Page Header */}
             <div className="relative mb-12">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-violet-500/5 to-pink-500/5 rounded-3xl"></div>
-              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/50 shadow-lg shadow-purple-500/10">
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-500/5 via-slate-600/5 to-slate-700/5 rounded-3xl"></div>
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/50 shadow-lg shadow-slate-500/10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl blur-lg opacity-20"></div>
-                      <div className="relative bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl p-4">
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl blur-lg opacity-20"></div>
+                      <div className="relative bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl p-4">
                         <Pencil className="h-8 w-8 text-white" />
                       </div>
                       </div>
                       <div>
-                        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 bg-clip-text text-transparent">
                           Dashboard de Redações
                         </h1>
                         <p className="text-slate-600 text-lg mt-2 max-w-2xl">
@@ -273,9 +281,9 @@ export default function EssaysDashboard() {
                       </div>
                     </div>
                     <div className="hidden lg:flex items-center space-x-4">
-                      <div className="flex items-center space-x-3 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl px-4 py-3 border border-purple-200">
-                        <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                        <span className="text-purple-700 font-medium text-sm">IA Ativa</span>
+                      <div className="flex items-center space-x-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl px-4 py-3 border border-slate-200">
+                        <div className="w-3 h-3 bg-slate-600 rounded-full animate-pulse"></div>
+                        <span className="text-slate-700 font-medium text-sm">IA Ativa</span>
                       </div>
                     </div>
                   </div>
@@ -283,13 +291,13 @@ export default function EssaysDashboard() {
               </div>
 
               {/* Essay Analyzer */}
-              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50/30">
-                <CardHeader className="bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-t-xl">
+              <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50/30">
+                <CardHeader className="bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-t-xl">
                   <CardTitle className="text-xl flex items-center gap-3">
                     <Brain className="h-6 w-6" />
                     Analisador Inteligente de Redações
                   </CardTitle>
-                  <CardDescription className="text-purple-100">
+                  <CardDescription className="text-slate-100">
                     Utilize IA para analisar estrutura, gramática e argumentação das redações dos seus alunos.
                   </CardDescription>
                 </CardHeader>
