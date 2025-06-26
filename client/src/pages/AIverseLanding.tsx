@@ -279,7 +279,7 @@ export default function IAprenderLanding() {
               </CardContent>
             </Card>
 
-            <Card className="landing-card relative overflow-hidden border-2 hover:border-pink-200 transition-all duration-300 hover:shadow-xl group">
+            <Card className="landing-card relative overflow-hidden transition-all duration-300 hover:shadow-xl group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
               <CardContent className="p-8 relative">
                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
@@ -297,7 +297,7 @@ export default function IAprenderLanding() {
               </CardContent>
             </Card>
 
-            <Card className="landing-card relative overflow-hidden border-2 hover:border-green-200 transition-all duration-300 hover:shadow-xl group">
+            <Card className="landing-card relative overflow-hidden transition-all duration-300 hover:shadow-xl group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
               <CardContent className="p-8 relative">
                 <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-6">

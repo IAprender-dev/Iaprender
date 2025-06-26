@@ -126,6 +126,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Cleaned mobile navigation menu by removing the same navigation options
   - Simplified landing page navigation to focus on core access functionality
   - Maintained clean, minimalist design with only essential "Acessar IAprender" button
+  - Removed borders from "Integração Total" and "100% em Português" cards for cleaner design
 - June 25, 2025: Complete teacher dashboard redesign
   - Implemented minimalist and interactive design with fantastic visuals
   - Removed complex sidebar and header components for cleaner experience
