@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import TeacherSidebar from "@/components/dashboard/teacher/TeacherSidebar";
+import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function TeacherDashboard() {
   const { user, logout } = useAuth();
@@ -138,7 +139,7 @@ export default function TeacherDashboard() {
                 </Button>
                 <div className="flex items-center space-x-3">
                   <img 
-                    src="/assets/iaprender-logo.png" 
+                    src={iAprenderLogo} 
                     alt="IAprender Logo" 
                     className="h-8 w-8 object-contain"
                   />
