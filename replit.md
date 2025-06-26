@@ -121,6 +121,18 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 25, 2025: Removed navigation buttons from main landing page
+  - Eliminated "Plataforma", "Inteligências", "Para Educação", and "Impacto" buttons from desktop header
+  - Cleaned mobile navigation menu by removing the same navigation options
+  - Simplified landing page navigation to focus on core access functionality
+  - Maintained clean, minimalist design with only essential "Acessar IAprender" button
+- June 25, 2025: Complete teacher dashboard redesign
+  - Implemented minimalist and interactive design with fantastic visuals
+  - Removed complex sidebar and header components for cleaner experience
+  - Created centered layout with gradient cards and smooth hover transitions
+  - Added mobile-responsive minimalist sidebar that appears on demand
+  - Simplified token usage display and added quick stats cards
+  - Enhanced user experience with easy navigation and visual hierarchy
 - June 25, 2025: Complete integrated notification system for all user roles
   - Implemented comprehensive notification system between Secretary, Teachers, Students
   - Secretary can send/receive notifications to/from all users (teachers, students, parents)

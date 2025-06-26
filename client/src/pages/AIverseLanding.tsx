@@ -138,71 +138,7 @@ export default function IAprenderLanding() {
               </span>
             </div>
 
-            <div className="hidden lg:flex items-center space-x-1 relative overflow-hidden rounded-2xl group">
-              {/* Dynamic side-by-side gradient background with ambient glow */}
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-900/3 via-indigo-900/3 via-emerald-900/3 via-rose-900/3 to-amber-900/3 animate-[ambient-glow_6s_ease-in-out_infinite] rounded-2xl"></div>
-              
-              {/* Flowing horizontal gradient that moves across the navigation */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 via-purple-500/10 via-emerald-500/10 via-rose-500/10 to-transparent animate-[flow_8s_ease-in-out_infinite] rounded-2xl"></div>
-              
-              {/* Reverse flowing gradient for dynamic layered effect */}
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-teal-500/8 via-pink-500/8 via-amber-500/8 to-transparent animate-[flow-reverse_12s_ease-in-out_infinite] rounded-2xl"></div>
-              
-              {/* Side-by-side color transitions */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-all duration-1000 rounded-2xl"></div>
-              
-              <button 
-                onClick={() => scrollToSection('plataforma')}
-                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-slate-900/25 hover:scale-105 overflow-hidden ${
-                  activeSection === 'plataforma' 
-                    ? 'bg-gradient-to-r from-slate-900 to-slate-700 text-white shadow-lg shadow-slate-900/30' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700'
-                }`}
-              >
-                <span className="relative z-10">Plataforma</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/10 to-slate-700/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-slate-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_2s_ease-in-out_infinite]"></div>
-              </button>
-              
-              <button 
-                onClick={() => scrollToSection('inteligencias')}
-                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-indigo-900/25 hover:scale-105 overflow-hidden ${
-                  activeSection === 'inteligencias' 
-                    ? 'bg-gradient-to-r from-indigo-900 to-purple-800 text-white shadow-lg shadow-indigo-900/30' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800'
-                }`}
-              >
-                <span className="relative z-10">Inteligências</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/10 to-purple-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-indigo-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_2.5s_ease-in-out_infinite]"></div>
-              </button>
-              
-              <button 
-                onClick={() => scrollToSection('educacao')}
-                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-emerald-900/25 hover:scale-105 overflow-hidden ${
-                  activeSection === 'educacao' 
-                    ? 'bg-gradient-to-r from-emerald-900 to-teal-800 text-white shadow-lg shadow-emerald-900/30' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800'
-                }`}
-              >
-                <span className="relative z-10">Para Educação</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/10 to-teal-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-emerald-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_3s_ease-in-out_infinite]"></div>
-              </button>
-              
-              <button 
-                onClick={() => scrollToSection('impacto')}
-                className={`group relative px-4 py-2.5 font-semibold text-sm tracking-wide transition-all duration-500 rounded-lg hover:shadow-lg hover:shadow-rose-900/25 hover:scale-105 overflow-hidden ${
-                  activeSection === 'impacto' 
-                    ? 'bg-gradient-to-r from-rose-900 to-pink-800 text-white shadow-lg shadow-rose-900/30' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800'
-                }`}
-              >
-                <span className="relative z-10">Impacto</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-900/10 to-pink-800/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                <div className="absolute inset-0 bg-gradient-to-l from-transparent via-rose-400/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 animate-[shimmer_3.5s_ease-in-out_infinite]"></div>
-              </button>
-            </div>
+
 
             <div className="hidden lg:flex items-center space-x-4">
               <Button 
@@ -237,51 +173,7 @@ export default function IAprenderLanding() {
             <div className="absolute inset-0 bg-gradient-to-t from-transparent via-slate-400/10 to-transparent animate-[flow_10s_ease-in-out_infinite]"></div>
             
             <div className="px-4 py-6 space-y-2 relative">
-              <button 
-                onClick={() => scrollToSection('plataforma')}
-                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-slate-900/20 hover:scale-105 overflow-hidden ${
-                  activeSection === 'plataforma' 
-                    ? 'bg-gradient-to-r from-slate-900 to-slate-700 text-white shadow-lg shadow-slate-900/30 scale-105' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-slate-900 hover:to-slate-700'
-                }`}
-              >
-                <span className="relative z-10">Plataforma</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </button>
-              <button 
-                onClick={() => scrollToSection('inteligencias')}
-                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-indigo-900/20 hover:scale-105 overflow-hidden ${
-                  activeSection === 'inteligencias' 
-                    ? 'bg-gradient-to-r from-indigo-900 to-purple-800 text-white shadow-lg shadow-indigo-900/30 scale-105' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-indigo-900 hover:to-purple-800'
-                }`}
-              >
-                <span className="relative z-10">Inteligências</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </button>
-              <button 
-                onClick={() => scrollToSection('educacao')}
-                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-emerald-900/20 hover:scale-105 overflow-hidden ${
-                  activeSection === 'educacao' 
-                    ? 'bg-gradient-to-r from-emerald-900 to-teal-800 text-white shadow-lg shadow-emerald-900/30 scale-105' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-emerald-900 hover:to-teal-800'
-                }`}
-              >
-                <span className="relative z-10">Para Educação</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </button>
-              <button 
-                onClick={() => scrollToSection('impacto')}
-                className={`group relative flex items-center w-full px-4 py-3 font-semibold text-sm tracking-wide transition-all duration-500 rounded-xl hover:shadow-lg hover:shadow-rose-900/20 hover:scale-105 overflow-hidden ${
-                  activeSection === 'impacto' 
-                    ? 'bg-gradient-to-r from-rose-900 to-pink-800 text-white shadow-lg shadow-rose-900/30 scale-105' 
-                    : 'text-slate-800 hover:text-white hover:bg-gradient-to-r hover:from-rose-900 hover:to-pink-800'
-                }`}
-              >
-                <span className="relative z-10">Impacto</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-rose-400/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-              </button>
-              <div className="pt-4 border-t border-slate-300/50 relative">
+              <div className="pt-4 relative">
                 <Button 
                   className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/25 transition-all duration-500 hover:scale-105 rounded-xl py-3 font-semibold tracking-wide relative overflow-hidden group"
                   onClick={() => window.location.href = 'https://39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev/start-login'}
