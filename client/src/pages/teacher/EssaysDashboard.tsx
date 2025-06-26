@@ -83,8 +83,8 @@ function EssayAnalyzer() {
           <div>
             <Label htmlFor="analysisType" className="text-sm font-semibold text-slate-700">Tipo de Análise</Label>
             <Select value={analysisType} onValueChange={setAnalysisType}>
-              <SelectTrigger className="border-2 border-slate-200 focus:border-slate-600 transition-all duration-300 bg-white">
-                <SelectValue />
+              <SelectTrigger className="border-2 border-slate-200 focus:border-slate-600 transition-all duration-300 bg-white text-slate-900 placeholder:text-slate-600">
+                <SelectValue placeholder="Selecione o tipo de análise" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="comprehensive">Análise Completa</SelectItem>
