@@ -82,9 +82,9 @@ export default function GradeCalculator() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Gestão de Notas por Aluno</h3>
+        <h3 className="text-lg font-bold text-slate-800">Gestão de Notas por Aluno</h3>
         <div className="space-x-2">
-          <Button onClick={addStudent} variant="outline" className="border-purple-300 text-purple-700 hover:bg-purple-50">
+          <Button onClick={addStudent} variant="outline" className="border-purple-300 text-purple-800 hover:bg-purple-50 bg-white">
             <User className="h-4 w-4 mr-2" />
             Adicionar Aluno
           </Button>
@@ -167,23 +167,27 @@ export default function GradeCalculator() {
               </div>
               
               <div>
-                <Label>Média</Label>
+                <Label className="text-sm font-semibold text-slate-800">Média</Label>
                 <div className={`text-lg font-bold p-2 rounded ${
-                  student.average >= 7 ? 'text-green-600 bg-green-50' :
-                  student.average >= 5 ? 'text-yellow-600 bg-yellow-50' :
-                  'text-red-600 bg-red-50'
+                  student.average >= 7 ? 'text-green-800 bg-green-50' :
+                  student.average >= 5 ? 'text-yellow-800 bg-yellow-50' :
+                  'text-red-800 bg-red-50'
                 }`}>
                   {student.average.toFixed(1)}
                 </div>
               </div>
               
               <div>
-                <Label>Status</Label>
+                <Label className="text-sm font-semibold text-slate-800">Status</Label>
                 <div className="flex items-center gap-2">
-                  {student.status === "Aprovado" && <CheckCircle className="h-4 w-4 text-green-600" />}
-                  {student.status === "Recuperação" && <Clock className="h-4 w-4 text-yellow-600" />}
-                  {student.status === "Reprovado" && <AlertTriangle className="h-4 w-4 text-red-600" />}
-                  <span className="text-sm font-medium">{student.status}</span>
+                  {student.status === "Aprovado" && <CheckCircle className="h-4 w-4 text-green-700" />}
+                  {student.status === "Recuperação" && <Clock className="h-4 w-4 text-yellow-700" />}
+                  {student.status === "Reprovado" && <AlertTriangle className="h-4 w-4 text-red-700" />}
+                  <span className={`text-sm font-semibold ${
+                    student.status === "Aprovado" ? 'text-green-800' :
+                    student.status === "Recuperação" ? 'text-yellow-800' :
+                    'text-red-800'
+                  }`}>{student.status}</span>
                 </div>
               </div>
               
