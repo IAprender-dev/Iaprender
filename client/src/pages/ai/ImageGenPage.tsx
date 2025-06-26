@@ -13,7 +13,7 @@ import {
   Bookmark,
   Copy
 } from "lucide-react";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -263,9 +263,11 @@ export default function ImageGenPage() {
         <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <Link href="/central-ia" className="flex items-center gap-3 mb-4">
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
-              <span className="text-sm text-slate-600">Voltar à Central</span>
+            <Link href="/central-ia">
+              <Button className="gap-3 h-12 px-6 bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl mb-4">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
             </Link>
             
             <div className="flex items-center gap-3">
