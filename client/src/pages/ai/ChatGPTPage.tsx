@@ -15,7 +15,8 @@ import {
   FileText,
   Image as ImageIcon
 } from "lucide-react";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
+import chatgptLogo from "@assets/chatgpt-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -204,7 +205,12 @@ export default function ChatGPTPage() {
               </div>
               
               <div className="prose prose-slate max-w-none">
-                <p className="whitespace-pre-wrap">{message.content}</p>
+                <div 
+                  className="whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{
+                    __html: message.content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  }}
+                />
               </div>
 
               {message.attachments && message.attachments.length > 0 && (
@@ -240,13 +246,11 @@ export default function ChatGPTPage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <BackButton href="/central-ia" label="Voltar à Central" />
+              <BackButton href="/central-ia" label="Voltar" />
             </div>
             
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-white" />
-              </div>
+              <img src={chatgptLogo} alt="ChatGPT" className="w-10 h-10 object-contain rounded-lg" />
               <div>
                 <h1 className="font-semibold text-slate-900">ChatGPT</h1>
                 <p className="text-sm text-slate-600">Conversação avançada</p>
