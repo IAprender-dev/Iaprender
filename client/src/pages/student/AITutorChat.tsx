@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from 'wouter';
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 
 interface ChatMessage {
   id: string;
@@ -178,7 +178,7 @@ export default function AITutorChat() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link href="/aluno/dashboard">
+              <Link href="/student/dashboard">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors duration-200">
                   Voltar
                 </Button>
