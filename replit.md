@@ -121,6 +121,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 26, 2025: Implemented comprehensive role-based navigation system for all AI pages
+  - Created getDashboardRoute() utility function to determine appropriate dashboard based on user role
+  - Teacher role → /professor dashboard, Student role → /student/dashboard, Admin role → /secretary dashboard
+  - Updated all AI pages (CentralIA, ClaudePage, ChatGPTPage, PerplexityPage, ImageGenPage) with intelligent navigation
+  - Enhanced user experience by redirecting users back to their role-specific dashboard instead of generic routes
+  - Replaced hardcoded /central-ia navigation with dynamic role-based routing for seamless user flow
+  - Fixed Perplexity API integration to use real API calls instead of mock responses for authentic search results
 - June 26, 2025: Updated AI Tutor with official IAprender logo and fixed navigation
   - Changed logo from generic iaprender-logo.png to official IAprender_1750262377399.png
   - Fixed navigation route from /aluno/dashboard to /student/dashboard for consistency

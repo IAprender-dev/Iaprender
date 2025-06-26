@@ -65,6 +65,11 @@ export async function performSearch({
 
     const data = await response.json();
     
+    // Verificar se a resposta tem a estrutura esperada
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response structure from Perplexity API');
+    }
+    
     // Extrair o conteúdo da resposta
     const responseContent = data.choices[0].message.content;
     
@@ -72,7 +77,7 @@ export async function performSearch({
     const citations = data.citations || [];
     
     // Registrar uso de tokens (desativado temporariamente)
-    const tokensUsed = data.usage.total_tokens;
+    const tokensUsed = data.usage?.total_tokens || 0;
     
     // Temporariamente comentado até que a tabela 'ai_tools' esteja configurada
     /*
@@ -93,6 +98,12 @@ export async function performSearch({
     };
   } catch (error: any) {
     console.error("Error performing Perplexity search:", error);
-    throw new Error(`Failed to perform search: ${error.message}`);
+    console.error("Request payload:", { model, query: query.substring(0, 100) + '...', temperature, maxTokens });
+    
+    if (error.message.includes('API request failed')) {
+      throw error; // Re-throw API errors with original message
+    }
+    
+    throw new Error(`Failed to perform search: ${error.message || 'Unknown error'}`);
   }
 }

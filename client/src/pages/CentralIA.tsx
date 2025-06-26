@@ -33,6 +33,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link, useLocation } from "wouter";
+import { getDashboardRoute } from "@/lib/navigation";
 import {
   Sheet,
   SheetContent,
@@ -90,18 +91,7 @@ export default function CentralIA() {
   
   // Define user role and appropriate dashboard route
   const userRole = user?.role;
-  const getDashboardRoute = () => {
-    switch (userRole) {
-      case 'teacher':
-        return '/professor';
-      case 'student':
-        return '/student/dashboard';
-      case 'admin':
-        return '/secretary';
-      default:
-        return '/student/dashboard'; // Default to student dashboard
-    }
-  };
+  const dashboardRoute = getDashboardRoute(user);
 
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
@@ -337,7 +327,7 @@ export default function CentralIA() {
             <div className="flex items-center justify-between h-16">
               {/* Botão Voltar e Logo */}
               <div className="flex items-center gap-4">
-                <Link href={getDashboardRoute()}>
+                <Link href={dashboardRoute}>
                   <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                     <ArrowLeft className="h-4 w-4" />
                     Voltar

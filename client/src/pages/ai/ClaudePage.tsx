@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Link } from "wouter";
+import { getDashboardRoute } from "@/lib/navigation";
 
 interface Message {
   id: string;
@@ -48,19 +49,7 @@ export default function ClaudePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Define user role and appropriate dashboard route
-  const userRole = user?.role;
-  const getDashboardRoute = () => {
-    switch (userRole) {
-      case 'teacher':
-        return '/professor';
-      case 'student':
-        return '/student/dashboard';
-      case 'admin':
-        return '/secretary';
-      default:
-        return '/student/dashboard';
-    }
-  };
+  const dashboardRoute = getDashboardRoute(user);
 
   // Garantir que a página sempre inicie no topo
   useEffect(() => {
@@ -243,7 +232,7 @@ export default function ClaudePage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <Link href="/central-ia">
+              <Link href={dashboardRoute}>
                 <Button size="sm" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white border border-purple-600">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
