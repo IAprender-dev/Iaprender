@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 import { useAuth } from "@/lib/AuthContext";
 import { 
   ArrowLeft,
@@ -178,13 +178,13 @@ export default function NoticiasPodcasts() {
         <Card key={item.id} className="border-0 bg-white shadow-lg hover:shadow-xl rounded-3xl overflow-hidden transition-all duration-300">
           <CardContent className="p-8">
             <div className="flex items-start gap-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Newspaper className="h-10 w-10 text-blue-600" />
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <Newspaper className="h-10 w-10 text-amber-600" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-4">
-                  <Badge className="bg-blue-600 text-white px-3 py-1 rounded-full">✨ Destaque</Badge>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1 rounded-full">{item.category}</Badge>
+                  <Badge className="bg-amber-600 text-white px-3 py-1 rounded-full">✨ Destaque</Badge>
+                  <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 px-3 py-1 rounded-full">{item.category}</Badge>
                 </div>
                 <h2 className="text-3xl font-bold text-slate-900 mb-4 leading-tight">{item.title}</h2>
                 <p className="text-slate-700 mb-6 leading-relaxed text-lg">{item.summary}</p>
@@ -193,7 +193,7 @@ export default function NoticiasPodcasts() {
                     <span className="font-medium">Por {item.author}</span>
                     <Separator orientation="vertical" className="h-4" />
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-blue-500" />
+                      <Calendar className="h-4 w-4 text-amber-500" />
                       {formatDate(item.publishedAt)}
                     </div>
                   </div>
@@ -202,7 +202,7 @@ export default function NoticiasPodcasts() {
                       <Share2 className="h-4 w-4" />
                       Compartilhar
                     </Button>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-6">
+                    <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white gap-2 px-6">
                       <BookOpen className="h-4 w-4" />
                       Ler Artigo
                     </Button>
@@ -219,25 +219,25 @@ export default function NoticiasPodcasts() {
         {news.filter(item => !item.isHighlighted).map((item) => (
           <Card key={item.id} className="border-0 bg-white hover:shadow-lg transition-all duration-300 rounded-2xl overflow-hidden group">
             <CardContent className="p-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center mb-4 group-hover:from-blue-100 group-hover:to-indigo-100 transition-all duration-300">
-                <Newspaper className="h-6 w-6 text-slate-600 group-hover:text-blue-600 transition-colors" />
+              <div className="w-12 h-12 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center mb-4 group-hover:from-amber-100 group-hover:to-orange-100 transition-all duration-300">
+                <Newspaper className="h-6 w-6 text-slate-600 group-hover:text-amber-600 transition-colors" />
               </div>
               <div className="flex items-center gap-2 mb-3">
                 <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-200 rounded-full px-3 py-1">{item.category}</Badge>
               </div>
-              <h3 className="font-bold text-xl text-slate-900 mb-3 group-hover:text-blue-600 transition-colors leading-tight line-clamp-2">
+              <h3 className="font-bold text-xl text-slate-900 mb-3 group-hover:text-amber-600 transition-colors leading-tight line-clamp-2">
                 {item.title}
               </h3>
               <p className="text-slate-600 mb-4 line-clamp-3 leading-relaxed">{item.summary}</p>
               <div className="flex items-center justify-between">
                 <div className="text-sm text-slate-500">
                   <div className="flex items-center gap-2 mb-1">
-                    <Calendar className="h-3 w-3 text-blue-500" />
+                    <Calendar className="h-3 w-3 text-amber-500" />
                     {formatDate(item.publishedAt)}
                   </div>
                   <span className="font-medium">Por {item.author}</span>
                 </div>
-                <Button size="sm" variant="ghost" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 gap-2 rounded-full">
+                <Button size="sm" variant="ghost" className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 gap-2 rounded-full">
                   <ExternalLink className="h-4 w-4" />
                   Ler
                 </Button>
@@ -311,13 +311,13 @@ export default function NoticiasPodcasts() {
         <title>Notícias e Podcasts - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50/30">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50/30">
         <div className="container mx-auto px-6 pt-4 pb-8 max-w-7xl">
           {/* Header with Logo and Back Button */}
           <div className="flex items-center gap-6 mb-6">
             {/* Back Button - moved to left */}
             <Link href="/professor">
-              <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg">
+              <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
@@ -339,8 +339,8 @@ export default function NoticiasPodcasts() {
               onClick={() => setActiveTab('news')}
               className={`gap-2 h-10 px-5 rounded-lg font-medium ${
                 activeTab === 'news' 
-                  ? 'bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg' 
-                  : 'border-orange-300 text-orange-700 hover:bg-orange-50'
+                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg' 
+                  : 'border-amber-300 text-amber-700 hover:bg-amber-50'
               }`}
             >
               <Newspaper className="h-4 w-4" />
@@ -350,11 +350,11 @@ export default function NoticiasPodcasts() {
               onClick={() => setActiveTab('podcasts')}
               className={`gap-2 h-10 px-5 rounded-lg font-medium ${
                 activeTab === 'podcasts' 
-                  ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white shadow-lg border-0' 
-                  : 'border border-red-300 text-red-700 hover:bg-red-50 bg-white'
+                  ? 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg border-0' 
+                  : 'border border-amber-300 text-amber-700 hover:bg-amber-50 bg-white'
               }`}
             >
-              <Headphones className={`h-4 w-4 ${activeTab === 'podcasts' ? 'text-white' : 'text-red-700'}`} />
+              <Headphones className={`h-4 w-4 ${activeTab === 'podcasts' ? 'text-white' : 'text-amber-700'}`} />
               Podcasts
             </Button>
           </div>
