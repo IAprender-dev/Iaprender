@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { Brain, ArrowLeft, Users, BookOpen, Activity, TrendingUp, Clock, Award, MessageSquare, FileText } from "lucide-react";
+import { Brain, ArrowLeft, Users, BookOpen, Activity, TrendingUp, Clock, Award, MessageSquare, FileText, MapPin } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import iAprenderLogo from "@assets/IAprender_1750262377399.png";
@@ -97,7 +97,7 @@ export default function AnalyticsDashboard() {
 
   const schoolMetrics = [
     { metric: 'Escolas Ativas', value: 2847, icon: '🏫' },
-    { metric: 'Países Atendidos', value: 23, icon: '🌍' },
+    { metric: 'Prefeituras Atendidas', value: 342, icon: '🏛️' },
     { metric: 'Professores Certificados', value: 18329, icon: '👨‍🏫' },
     { metric: 'Alunos Beneficiados', value: 156742, icon: '👨‍🎓' },
   ];
@@ -110,6 +110,18 @@ export default function AnalyticsDashboard() {
     { day: 'Sex', engagement: 91 },
     { day: 'Sáb', engagement: 78 },
     { day: 'Dom', engagement: 82 },
+  ];
+
+  // Top municipalities ranking
+  const municipalitiesRanking = [
+    { municipality: 'São Paulo - SP', schools: 85, students: 12400 },
+    { municipality: 'Rio de Janeiro - RJ', schools: 73, students: 9850 },
+    { municipality: 'Belo Horizonte - MG', schools: 68, students: 8920 },
+    { municipality: 'Brasília - DF', schools: 62, students: 8150 },
+    { municipality: 'Salvador - BA', schools: 58, students: 7680 },
+    { municipality: 'Fortaleza - CE', schools: 54, students: 7100 },
+    { municipality: 'Recife - PE', schools: 49, students: 6420 },
+    { municipality: 'Porto Alegre - RS', schools: 45, students: 5890 },
   ];
 
   if (isLoading) {
@@ -321,40 +333,44 @@ export default function AnalyticsDashboard() {
               </CardContent>
             </Card>
 
-            {/* Teacher Productivity */}
-            <Card className="bg-white border-2 border-emerald-300 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-emerald-500 to-green-600 text-white">
+            {/* Municipalities Ranking */}
+            <Card className="bg-white border-2 border-amber-300 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
+              <CardHeader className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Economia de Tempo para Professores
+                  <TrendingUp className="h-5 w-5" />
+                  Ranking de Prefeituras por Alcance
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 bg-gradient-to-br from-emerald-50 to-green-50">
+              <CardContent className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50">
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={teacherProductivityData} layout="horizontal">
+                  <BarChart data={municipalitiesRanking} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-                    <XAxis type="number" domain={[0, 80]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
-                    <YAxis dataKey="task" type="category" width={120} tick={{fill: '#1e293b', fontSize: 11, fontWeight: 600}} />
+                    <XAxis type="number" domain={[0, 90]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                    <YAxis dataKey="municipality" type="category" width={140} tick={{fill: '#1e293b', fontSize: 10, fontWeight: 600}} />
                     <Tooltip 
                       contentStyle={{
                         backgroundColor: '#ffffff',
-                        border: '2px solid #10b981',
+                        border: '2px solid #f59e0b',
                         borderRadius: '12px',
                         color: '#1e293b',
                         fontWeight: 600
                       }}
                       labelStyle={{color: '#1e293b', fontWeight: 700}}
+                      formatter={(value, name) => [
+                        name === 'schools' ? `${value} escolas` : `${value} estudantes`,
+                        name === 'schools' ? 'Escolas Atendidas' : 'Estudantes Beneficiados'
+                      ]}
                     />
                     <Bar 
-                      dataKey="timeSaved" 
-                      fill="url(#gradientEmerald)"
-                      name="Tempo Economizado (%)"
+                      dataKey="schools" 
+                      fill="url(#gradientAmber)"
+                      name="Escolas Atendidas"
                       radius={[0, 6, 6, 0]}
                     />
                     <defs>
-                      <linearGradient id="gradientEmerald" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="5%" stopColor="#059669" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={1}/>
+                      <linearGradient id="gradientAmber" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="5%" stopColor="#d97706" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={1}/>
                       </linearGradient>
                     </defs>
                   </BarChart>
