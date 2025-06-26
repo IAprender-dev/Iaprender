@@ -14,7 +14,7 @@ import {
   FileText,
   Image as ImageIcon
 } from "lucide-react";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -228,8 +228,8 @@ export default function ClaudePage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <Link href="/central-ia" className="flex items-center gap-3 mb-4">
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
-              <span className="text-sm text-slate-600">Voltar à Central</span>
+              <ArrowLeft className="h-5 w-5 text-purple-600" />
+              <span className="text-sm text-purple-600 font-medium">Voltar</span>
             </Link>
             
             <div className="flex items-center gap-3">
