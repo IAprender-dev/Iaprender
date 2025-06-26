@@ -1,9 +1,15 @@
+import { useEffect } from "react";
 import { Helmet } from "react-helmet";
 import LibreTranslateWidget from "@/components/LibreTranslateWidget";
 import { BackButton } from "@/components/ui/back-button";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function Translator() {
+  // Scroll to top animation on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <>
       <Helmet>
@@ -14,7 +20,7 @@ export default function Translator() {
         <div className="container mx-auto px-4 py-6">
           {/* Navigation */}
           <div className="flex items-center justify-between mb-8">
-            <BackButton href="/aluno/dashboard" />
+            <BackButton href="/student/dashboard" />
             
             <div className="flex items-center gap-3">
               <img 
