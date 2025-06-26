@@ -107,7 +107,7 @@ export default function CentralIA() {
     },
     "claude": {
       name: "Claude",
-      icon: <div className="h-10 w-10 bg-orange-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">C</div>,
+      icon: <img src={claudeLogo} alt="Claude" className="h-10 w-10 object-contain rounded-lg" />,
       avatarColor: "bg-white",
       cardColor: "from-purple-50 to-violet-50",
       borderColor: "border-purple-200",
