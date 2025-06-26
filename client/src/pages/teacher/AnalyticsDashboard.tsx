@@ -112,16 +112,16 @@ export default function AnalyticsDashboard() {
     { day: 'Dom', engagement: 82 },
   ];
 
-  // Top municipalities ranking
+  // Top municipalities ranking by performance results
   const municipalitiesRanking = [
-    { municipality: 'São Paulo - SP', schools: 85, students: 12400 },
-    { municipality: 'Rio de Janeiro - RJ', schools: 73, students: 9850 },
-    { municipality: 'Belo Horizonte - MG', schools: 68, students: 8920 },
-    { municipality: 'Brasília - DF', schools: 62, students: 8150 },
-    { municipality: 'Salvador - BA', schools: 58, students: 7680 },
-    { municipality: 'Fortaleza - CE', schools: 54, students: 7100 },
-    { municipality: 'Recife - PE', schools: 49, students: 6420 },
-    { municipality: 'Porto Alegre - RS', schools: 45, students: 5890 },
+    { municipality: 'São Paulo - SP', performance: 94, contentGenerated: 1540 },
+    { municipality: 'Rio de Janeiro - RJ', performance: 92, contentGenerated: 1320 },
+    { municipality: 'Belo Horizonte - MG', performance: 90, contentGenerated: 1180 },
+    { municipality: 'Brasília - DF', performance: 89, contentGenerated: 1050 },
+    { municipality: 'Salvador - BA', performance: 87, contentGenerated: 980 },
+    { municipality: 'Fortaleza - CE', performance: 85, contentGenerated: 890 },
+    { municipality: 'Recife - PE', performance: 83, contentGenerated: 760 },
+    { municipality: 'Porto Alegre - RS', performance: 81, contentGenerated: 640 },
   ];
 
   if (isLoading) {
@@ -338,14 +338,14 @@ export default function AnalyticsDashboard() {
               <CardHeader className="bg-gradient-to-r from-amber-500 to-yellow-600 text-white">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Ranking de Prefeituras por Alcance
+                  Ranking de Prefeituras
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 bg-gradient-to-br from-amber-50 to-yellow-50">
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={municipalitiesRanking} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-                    <XAxis type="number" domain={[0, 90]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                    <XAxis type="number" domain={[75, 100]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
                     <YAxis dataKey="municipality" type="category" width={140} tick={{fill: '#1e293b', fontSize: 10, fontWeight: 600}} />
                     <Tooltip 
                       contentStyle={{
@@ -357,14 +357,14 @@ export default function AnalyticsDashboard() {
                       }}
                       labelStyle={{color: '#1e293b', fontWeight: 700}}
                       formatter={(value, name) => [
-                        name === 'schools' ? `${value} escolas` : `${value} estudantes`,
-                        name === 'schools' ? 'Escolas Atendidas' : 'Estudantes Beneficiados'
+                        name === 'performance' ? `${value}% de desempenho` : `${value} conteúdos gerados`,
+                        name === 'performance' ? 'Índice de Desempenho' : 'Conteúdos Criados'
                       ]}
                     />
                     <Bar 
-                      dataKey="schools" 
+                      dataKey="performance" 
                       fill="url(#gradientAmber)"
-                      name="Escolas Atendidas"
+                      name="Desempenho Educacional (%)"
                       radius={[0, 6, 6, 0]}
                     />
                     <defs>
