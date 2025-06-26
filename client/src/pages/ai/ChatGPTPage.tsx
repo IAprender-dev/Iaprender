@@ -324,7 +324,7 @@ export default function ChatGPTPage() {
                 <p className="text-slate-600 max-w-md mb-6">
                   Comece uma nova conversa para fazer perguntas, solicitar análises ou criar conteúdo educacional.
                 </p>
-                <Button onClick={createNewConversation} size="lg">
+                <Button onClick={createNewConversation} size="lg" className="bg-green-600 hover:bg-green-700">
                   <Plus className="h-5 w-5 mr-2" />
                   Iniciar conversa
                 </Button>
