@@ -196,11 +196,6 @@ export default function StudyPlanning() {
     }
   });
 
-  // Scroll to top animation on component mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
   // Obter ano escolar do usuário
   const schoolYear = (user as any)?.schoolYear || "1º ano";
   const curriculum = BNCC_CURRICULUM[schoolYear as keyof typeof BNCC_CURRICULUM];

@@ -10,9 +10,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/lib/AuthContext';
 import { useLocation } from 'wouter';
-import { Link } from 'wouter';
-import { Helmet } from 'react-helmet';
-import iaprenderLogo from "@assets/IAprender_1750262377399.png";
 import { 
   Brain, 
   Sparkles, 
@@ -88,11 +85,6 @@ export default function StudentMindMap() {
     includeExamples: true
   });
 
-  // Scroll to top animation on component mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
   const generateMindMap = async () => {
     if (!config.topic.trim()) {
       toast({
@@ -165,42 +157,46 @@ export default function StudentMindMap() {
   };
 
   return (
-    <>
-      <Helmet>
-        <title>Mapas Mentais IA - IAprender</title>
-      </Helmet>
-      
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
-        {/* Header with Back Button */}
-        <div className="bg-white/90 backdrop-blur-xl border-b border-purple-200/50 sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
-            <div className="flex items-center gap-4">
-              <Link href="/student/dashboard">
-                <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white">
-                  <ArrowLeft className="h-4 w-4" />
-                  Voltar
-                </Button>
-              </Link>
-              
-              <div className="flex items-center gap-3">
-                <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
-                <div>
-                  <span className="text-xl font-bold text-gray-900">IAprender</span>
-                  <div className="text-xs text-slate-500">Mapas Mentais IA</div>
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-3">
+              <Button
+                onClick={() => setLocation('/student/dashboard')}
+                className="bg-blue-600 hover:bg-blue-700 text-white mr-4"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar
+              </Button>
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                <Brain className="w-6 h-6 text-white" />
               </div>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900">Mapas Mentais</h1>
+                <p className="text-sm text-slate-500">IAprender - {user?.schoolYear}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                <Target className="w-3 h-3 mr-1" />
+                BNCC Alinhado
+              </Badge>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Configuration Panel */}
           <div className="lg:col-span-1">
             <Card className="bg-white shadow-lg border-0 rounded-2xl">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-slate-900">
-                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
                   Gerar Mapa Mental
                 </CardTitle>
                 <CardDescription>
@@ -215,12 +211,12 @@ export default function StudentMindMap() {
                     placeholder="Ex: Produtos Notáveis, Sistema Digestório..."
                     value={config.topic}
                     onChange={(e) => setConfig({...config, topic: e.target.value})}
-                    className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-slate-500"
+                    className="h-12 bg-white border-slate-300 focus:border-indigo-500 focus:ring-indigo-200 text-black placeholder:text-slate-500"
                   />
                   <p className="text-xs text-slate-500">
                     Digite qualquer tema que deseja estudar através de mapas mentais
                   </p>
-                  <div className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 p-2 rounded-lg">
+                  <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 p-2 rounded-lg">
                     <AlertCircle className="w-3 h-3" />
                     Tema livre - explore qualquer assunto de seu interesse
                   </div>
@@ -256,7 +252,7 @@ export default function StudentMindMap() {
                 <Button 
                   onClick={generateMindMap}
                   disabled={isGenerating || !config.topic.trim()}
-                  className="w-full h-12 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200"
+                  className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200"
                 >
                   {isGenerating ? (
                     <>
@@ -482,8 +478,7 @@ export default function StudentMindMap() {
             )}
           </div>
         </div>
-        </div>
       </div>
-    </>
+    </div>
   );
 }

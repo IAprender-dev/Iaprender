@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from 'wouter';
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import iaprenderLogo from "@assets/IAprender_1750262377399.png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 
 interface ChatMessage {
   id: string;
@@ -44,11 +44,6 @@ export default function AITutorChat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // Scroll to top animation on component mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   // Conversation timer
   useEffect(() => {
@@ -183,17 +178,15 @@ export default function AITutorChat() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
-              <Link href="/student/dashboard">
+              <Link href="/aluno/dashboard">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors duration-200">
                   Voltar
                 </Button>
               </Link>
-              <div className="flex items-center gap-3">
-                <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
-                <div>
-                  <span className="text-xl font-bold text-gray-900">IAprender</span>
-                  <div className="text-xs text-slate-500">Tutor IA</div>
-                </div>
+              <img src={iaprenderLogo} alt="IAprender" className="h-8 w-auto" />
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Tutor IA</h1>
+                <p className="text-sm text-gray-700 font-medium">Assistente educacional inteligente</p>
               </div>
             </div>
             

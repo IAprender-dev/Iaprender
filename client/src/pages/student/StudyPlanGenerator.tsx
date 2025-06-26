@@ -155,11 +155,6 @@ export default function StudyPlanGenerator() {
   const [showPomodoroTimer, setShowPomodoroTimer] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
 
-  // Scroll to top animation on component mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
   useEffect(() => {
     // Load subjects based on user's school year or default to 6º ano
     const schoolYear = (user as any)?.schoolYear || "6º ano";
