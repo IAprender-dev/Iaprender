@@ -260,60 +260,57 @@ export default function IAprenderLanding() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <Card className="landing-card relative overflow-hidden border-2 hover:border-indigo-200 transition-all duration-300 hover:shadow-xl group">
-              
-              <CardContent className="p-8 relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Layers className="h-7 w-7 text-white" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Interface Unificada Card */}
+            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl hover:bg-white/90 transition-all duration-300 group border border-gray-100/50">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center group-hover:bg-indigo-100 transition-colors">
+                  <Layers className="h-6 w-6 text-indigo-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Interface Unificada</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">Interface Unificada</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Acesse mais de 30 modelos de IA através de uma interface intuitiva e consistente, 
                   sem precisar aprender múltiplas plataformas.
                 </p>
-                <div className="flex items-center text-indigo-600 font-medium">
-                  <span>Simplicidade no poder</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <div className="text-xs text-indigo-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  Simplicidade no poder
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card className="landing-card relative overflow-hidden transition-all duration-300 hover:shadow-xl group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-              <CardContent className="p-8 relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Network className="h-7 w-7 text-white" />
+            {/* Integração Total Card */}
+            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl hover:bg-white/90 transition-all duration-300 group border border-gray-100/50">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                  <Network className="h-6 w-6 text-purple-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Integração Total</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">Integração Total</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Todas as IAs conversam entre si, permitindo fluxos de trabalho complexos 
                   que combinam o melhor de cada tecnologia.
                 </p>
-                <div className="flex items-center text-purple-600 font-medium">
-                  <span>Sinergia perfeita</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <div className="text-xs text-purple-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  Sinergia perfeita
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
-            <Card className="landing-card relative overflow-hidden transition-all duration-300 hover:shadow-xl group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform"></div>
-              <CardContent className="p-8 relative">
-                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Languages className="h-7 w-7 text-white" />
+            {/* 100% em Português Card */}
+            <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl hover:bg-white/90 transition-all duration-300 group border border-gray-100/50">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
+                  <Languages className="h-6 w-6 text-emerald-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">100% em Português</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">100% em Português</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
                   Interface, suporte e documentação completamente em português, 
                   eliminando barreiras linguísticas.
                 </p>
-                <div className="flex items-center text-green-600 font-medium">
-                  <span>Inclusão real</span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <div className="text-xs text-emerald-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  Inclusão real
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </section>
