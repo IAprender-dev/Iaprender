@@ -54,11 +54,11 @@ export default function ClaudePage() {
       case 'teacher':
         return '/professor';
       case 'student':
-        return '/aluno';
+        return '/student/dashboard';
       case 'admin':
         return '/secretary';
       default:
-        return '/aluno';
+        return '/student/dashboard';
     }
   };
 
@@ -243,7 +243,7 @@ export default function ClaudePage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <Link href={getDashboardRoute()}>
+              <Link href="/central-ia">
                 <Button size="sm" className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white border border-purple-600">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar

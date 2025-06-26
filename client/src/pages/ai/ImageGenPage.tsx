@@ -52,11 +52,11 @@ export default function ImageGenPage() {
       case 'teacher':
         return '/professor';
       case 'student':
-        return '/aluno';
+        return '/student/dashboard';
       case 'admin':
         return '/secretary';
       default:
-        return '/aluno';
+        return '/student/dashboard';
     }
   };
 
@@ -278,7 +278,7 @@ export default function ImageGenPage() {
         <div className="w-80 bg-slate-50 border-r border-slate-200 flex flex-col">
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
-            <Link href={getDashboardRoute()}>
+            <Link href="/central-ia">
               <Button className="gap-3 h-12 px-6 bg-orange-600 hover:bg-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl mb-4">
                 <ArrowLeft className="h-4 w-4" />
                 Voltar

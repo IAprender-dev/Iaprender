@@ -95,11 +95,11 @@ export default function CentralIA() {
       case 'teacher':
         return '/professor';
       case 'student':
-        return '/aluno';
+        return '/student/dashboard';
       case 'admin':
         return '/secretary';
       default:
-        return '/aluno'; // Default to student dashboard
+        return '/student/dashboard'; // Default to student dashboard
     }
   };
 

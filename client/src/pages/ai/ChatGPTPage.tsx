@@ -56,11 +56,11 @@ export default function ChatGPTPage() {
       case 'teacher':
         return '/professor';
       case 'student':
-        return '/aluno';
+        return '/student/dashboard';
       case 'admin':
         return '/secretary';
       default:
-        return '/aluno';
+        return '/student/dashboard';
     }
   };
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -257,7 +257,7 @@ export default function ChatGPTPage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <BackButton href={getDashboardRoute()} label="Voltar" />
+              <BackButton href="/central-ia" label="Voltar" />
             </div>
             
             <div className="flex items-center gap-3">

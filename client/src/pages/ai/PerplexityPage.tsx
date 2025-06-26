@@ -56,11 +56,11 @@ export default function PerplexityPage() {
       case 'teacher':
         return '/professor';
       case 'student':
-        return '/aluno';
+        return '/student/dashboard';
       case 'admin':
         return '/secretary';
       default:
-        return '/aluno';
+        return '/student/dashboard';
     }
   };
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -271,7 +271,7 @@ export default function PerplexityPage() {
           {/* Header */}
           <div className="p-6 border-b border-slate-200">
             <div className="mb-4">
-              <Link href={getDashboardRoute()}>
+              <Link href="/central-ia">
                 <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white border border-blue-600">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
