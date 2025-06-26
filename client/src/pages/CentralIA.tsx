@@ -311,27 +311,30 @@ export default function CentralIA() {
         <title>Central de IA | IAprender</title>
       </Helmet>
       
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30">
+      <div className="min-h-screen bg-slate-50">
         {/* Header Principal */}
         <header className="bg-white/90 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              {/* Botão Voltar */}
-              <Link href="/professor">
-                <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
-                  <ArrowLeft className="h-4 w-4" />
-                  Voltar
-                </Button>
-              </Link>
-              
-              {/* Logo e Nome */}
-              <Link href="/" className="flex items-center space-x-3">
-                <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
-                <div>
-                  <span className="text-xl font-bold text-gray-900">IAprender</span>
-                  <div className="text-xs text-slate-500">Central de IA</div>
+              {/* Botão Voltar e Logo */}
+              <div className="flex items-center gap-4">
+                <Link href="/professor">
+                  <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                    <ArrowLeft className="h-4 w-4" />
+                    Voltar
+                  </Button>
+                </Link>
+                
+                <div className="flex items-center gap-3">
+                  <img src={iaprenderLogo} alt="IAprender" className="w-10 h-10 object-contain" />
+                  <div>
+                    <span className="text-xl font-bold text-gray-900">IAprender</span>
+                    <div className="text-xs text-slate-500">Central de IA</div>
+                  </div>
                 </div>
-              </Link>
+              </div>
+              
+              <div></div>
             </div>
           </div>
         </header>
