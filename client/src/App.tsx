@@ -28,6 +28,7 @@ import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentNotificationCenter from "@/pages/student/NotificationCenter";
+import StudentNotifications from "@/pages/student/StudentNotifications";
 import SecretaryDashboard from "@/pages/secretary/SecretaryDashboard";
 import UserManagement from "@/pages/secretary/UserManagement";
 import NotificationCenter from "@/pages/secretary/NotificationCenter";
@@ -159,6 +160,7 @@ function Router() {
       <Route path="/student" component={StudentDashboard} />
       <Route path="/student/dashboard" component={StudentDashboard} />
       <Route path="/student/notificacoes" component={StudentNotificationCenter} />
+      <Route path="/student/notifications" component={StudentNotifications} />
       <Route path="/student/courses" component={StudentCourses} />
 
       <Route path="/student/profile" component={StudentProfile} />
