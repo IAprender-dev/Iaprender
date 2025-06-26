@@ -165,13 +165,13 @@ export default function StudentMindMap() {
         <title>Mapas Mentais IA - IAprender</title>
       </Helmet>
       
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-indigo-50">
         {/* Header with Back Button */}
-        <div className="bg-white/90 backdrop-blur-xl border-b border-blue-200/50 sticky top-0 z-50">
+        <div className="bg-white/90 backdrop-blur-xl border-b border-purple-200/50 sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4 lg:px-8 py-4">
             <div className="flex items-center gap-4">
               <Link href="/student/dashboard">
-                <Button size="sm" className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white">
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
@@ -195,7 +195,7 @@ export default function StudentMindMap() {
             <Card className="bg-white shadow-lg border-0 rounded-2xl">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-slate-900">
-                  <Sparkles className="w-5 h-5 text-indigo-600" />
+                  <Sparkles className="w-5 h-5 text-purple-600" />
                   Gerar Mapa Mental
                 </CardTitle>
                 <CardDescription>
@@ -210,12 +210,12 @@ export default function StudentMindMap() {
                     placeholder="Ex: Produtos Notáveis, Sistema Digestório..."
                     value={config.topic}
                     onChange={(e) => setConfig({...config, topic: e.target.value})}
-                    className="h-12 bg-white border-slate-300 focus:border-indigo-500 focus:ring-indigo-200 text-black placeholder:text-slate-500"
+                    className="h-12 bg-white border-slate-300 focus:border-purple-500 focus:ring-purple-200 text-black placeholder:text-slate-500"
                   />
                   <p className="text-xs text-slate-500">
                     Digite qualquer tema que deseja estudar através de mapas mentais
                   </p>
-                  <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 p-2 rounded-lg">
+                  <div className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 p-2 rounded-lg">
                     <AlertCircle className="w-3 h-3" />
                     Tema livre - explore qualquer assunto de seu interesse
                   </div>
@@ -251,7 +251,7 @@ export default function StudentMindMap() {
                 <Button 
                   onClick={generateMindMap}
                   disabled={isGenerating || !config.topic.trim()}
-                  className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200"
+                  className="w-full h-12 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg transition-all duration-200"
                 >
                   {isGenerating ? (
                     <>
