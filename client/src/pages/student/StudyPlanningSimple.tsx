@@ -187,6 +187,11 @@ export default function StudyPlanning() {
   const schoolYear = (user as any)?.schoolYear || "1º ano";
   const curriculum = BNCC_CURRICULUM[schoolYear as keyof typeof BNCC_CURRICULUM];
 
+  // Scroll to top animation on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Carregar plano salvo
   useEffect(() => {
     const savedPlan = localStorage.getItem('iaulaStudyPlan');

@@ -45,6 +45,11 @@ export default function AITutorChat() {
     scrollToBottom();
   }, [messages]);
 
+  // Scroll to top animation on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Conversation timer
   useEffect(() => {
     conversationTimerRef.current = setInterval(() => {

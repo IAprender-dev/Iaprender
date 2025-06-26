@@ -63,6 +63,11 @@ export default function StudentQuiz() {
     difficulty: "medium"
   });
 
+  // Scroll to top animation on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const generateQuiz = async () => {
     if (!quizConfig.topic.trim()) {
       toast({

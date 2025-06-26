@@ -121,6 +121,11 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 26, 2025: Implemented smooth scroll-to-top animation for all student forms
+  - Added useEffect with window.scrollTo({ top: 0, behavior: 'smooth' }) to all student components
+  - Applied to StudentQuiz, StudentMindMap, AITutorChat, VoiceTutorTeacher, StudyPlanning, StudyPlanGenerator
+  - Ensures consistent user experience with forms always starting from the top
+  - Enhanced navigation flow and visual consistency across student interface
 - June 26, 2025: Updated ProVersa voice tutor form with official IAprender branding
   - Added official IAprender logo (IAprender_1750262377399.png) next to back button
   - Positioned "IAprender" as main platform name with "ProVersa" as subtitle

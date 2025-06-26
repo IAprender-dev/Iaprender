@@ -88,6 +88,11 @@ export default function StudentMindMap() {
     includeExamples: true
   });
 
+  // Scroll to top animation on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const generateMindMap = async () => {
     if (!config.topic.trim()) {
       toast({

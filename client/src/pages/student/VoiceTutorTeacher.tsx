@@ -51,6 +51,11 @@ export default function VoiceTutorTeacher() {
   const streamRef = useRef<MediaStream | null>(null);
   const conversationEndRef = useRef<HTMLDivElement | null>(null);
 
+  // Scroll to top animation on component mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const addMessage = (type: MessageType, content: string, format: 'text' | 'audio') => {
     const message: Message = {
       id: Date.now().toString(),
