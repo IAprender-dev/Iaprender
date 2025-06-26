@@ -200,32 +200,10 @@ export default function TeacherDashboard() {
             </CardContent>
           </Card>
 
-          {/* Tools Grid - Clean and Interactive */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {mainTools.map((tool, index) => (
-              <Link key={index} href={tool.href}>
-                <Card className="group hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer bg-white/80 backdrop-blur-sm border border-slate-200/60">
-                  <CardContent className="p-4">
-                    <div className="text-center space-y-3">
-                      <div className={`mx-auto w-12 h-12 bg-gradient-to-r ${tool.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <tool.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-800 mb-1">{tool.title}</h3>
-                        <p className="text-xs text-slate-600 leading-relaxed">{tool.description}</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 mx-auto group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-
           {/* Educational Insights */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Student Engagement */}
-            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100/50 border-2 border-blue-200/60 shadow-sm hover:shadow-lg hover:border-blue-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -241,7 +219,7 @@ export default function TeacherDashboard() {
                   {[65, 78, 82, 87, 85, 89, 87].map((value, index) => (
                     <div 
                       key={index} 
-                      className="bg-blue-200 rounded-sm flex-1" 
+                      className="bg-blue-300 rounded-sm flex-1" 
                       style={{ height: `${(value / 100) * 100}%` }}
                     />
                   ))}
@@ -250,7 +228,7 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* Learning Progress */}
-            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-gradient-to-br from-green-50 to-green-100/50 border-2 border-green-200/60 shadow-sm hover:shadow-lg hover:border-green-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -287,7 +265,7 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* Weekly Activity */}
-            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100/50 border-2 border-purple-200/60 shadow-sm hover:shadow-lg hover:border-purple-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -315,7 +293,7 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* AI Usage */}
-            <Card className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 border-2 border-indigo-200/60 shadow-sm hover:shadow-lg hover:border-indigo-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
@@ -339,6 +317,30 @@ export default function TeacherDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Tools Grid - Clean and Interactive */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {mainTools.map((tool, index) => (
+              <Link key={index} href={tool.href}>
+                <Card className="group hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer bg-white/80 backdrop-blur-sm border border-slate-200/60">
+                  <CardContent className="p-4">
+                    <div className="text-center space-y-3">
+                      <div className={`mx-auto w-12 h-12 bg-gradient-to-r ${tool.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                        <tool.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-800 mb-1">{tool.title}</h3>
+                        <p className="text-xs text-slate-600 leading-relaxed">{tool.description}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-slate-400 mx-auto group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+
         </main>
       </div>
     </>

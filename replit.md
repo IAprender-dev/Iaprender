@@ -139,6 +139,8 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Simplified token usage display and added quick stats cards
   - Enhanced user experience with easy navigation and visual hierarchy
   - Replaced generic statistics cards with relevant educational insights including student engagement, learning progress, weekly activity, and AI usage with mini charts and visual indicators
+  - Added subtle color gradients and enhanced borders to insight cards (blue, green, purple, indigo themes)
+  - Repositioned educational insight cards below token usage card for better visual hierarchy
 - June 25, 2025: Complete integrated notification system for all user roles
   - Implemented comprehensive notification system between Secretary, Teachers, Students
   - Secretary can send/receive notifications to/from all users (teachers, students, parents)
