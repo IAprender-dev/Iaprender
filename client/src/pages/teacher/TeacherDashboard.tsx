@@ -171,31 +171,48 @@ export default function TeacherDashboard() {
         {/* Import and use the new sidebar */}
         <TeacherSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main className="p-6 space-y-8 max-w-7xl mx-auto">
-          {/* Welcome Section */}
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-6 py-3 rounded-full">
-              <GraduationCap className="h-6 w-6" />
-              <span className="font-semibold">Olá, {user?.firstName}!</span>
-              <Sparkles className="h-5 w-5" />
+        <main className="p-6 space-y-6 max-w-7xl mx-auto">
+          {/* Welcome Section - Redesigned */}
+          <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="bg-violet-100 p-3 rounded-xl">
+                  <GraduationCap className="h-8 w-8 text-violet-600" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-slate-800">Olá, {user?.firstName}!</h1>
+                  <p className="text-slate-600">Transforme o ensino com inteligência artificial</p>
+                </div>
+              </div>
+              <div className="hidden md:flex items-center space-x-2 bg-violet-50 px-4 py-2 rounded-full">
+                <Sparkles className="h-4 w-4 text-violet-600" />
+                <span className="text-sm font-medium text-violet-700">Professor</span>
+              </div>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">Transforme o ensino com IA</h2>
           </div>
 
-          {/* Token Usage - Minimalist */}
-          <Card className="bg-white/60 backdrop-blur-sm border border-slate-200/60">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <Zap className="h-4 w-4 text-green-600" />
-                  <span className="font-medium text-slate-800">Tokens</span>
+          {/* Token Usage - Redesigned */}
+          <Card className="bg-green-50 border border-green-200/60 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-green-100 p-2 rounded-lg">
+                    <Zap className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-800">Tokens Disponíveis</h3>
+                    <p className="text-sm text-slate-600">Uso mensal de IA</p>
+                  </div>
                 </div>
-                <span className="text-sm font-semibold text-slate-700">{tokenUsagePercentage}%</span>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-slate-800">{tokenUsagePercentage}%</div>
+                  <div className="text-xs text-slate-500">usado</div>
+                </div>
               </div>
-              <Progress value={tokenUsagePercentage} className="h-2" />
-              <div className="flex justify-between mt-2 text-xs text-slate-500">
-                <span>{tokenData ? tokenData.currentUsage.toLocaleString() : '0'}</span>
-                <span>{tokenData ? tokenData.monthlyLimit.toLocaleString() : '---'}</span>
+              <Progress value={tokenUsagePercentage} className="h-3 mb-2" />
+              <div className="flex justify-between text-sm text-slate-600">
+                <span>{tokenData ? tokenData.currentUsage.toLocaleString() : '0'} tokens</span>
+                <span>{tokenData ? tokenData.monthlyLimit.toLocaleString() : '---'} limite</span>
               </div>
             </CardContent>
           </Card>
@@ -318,26 +335,65 @@ export default function TeacherDashboard() {
             </Card>
           </div>
 
-          {/* Tools Grid - Clean and Interactive */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {mainTools.map((tool, index) => (
-              <Link key={index} href={tool.href}>
-                <Card className="group hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer bg-white/80 backdrop-blur-sm border border-slate-200/60">
-                  <CardContent className="p-4">
-                    <div className="text-center space-y-3">
-                      <div className={`mx-auto w-12 h-12 bg-gradient-to-r ${tool.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <tool.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-800 mb-1">{tool.title}</h3>
-                        <p className="text-xs text-slate-600 leading-relaxed">{tool.description}</p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 mx-auto group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+          {/* Tools Grid - Redesigned with solid colors */}
+          <div>
+            <h2 className="text-xl font-bold text-slate-800 mb-4">Ferramentas Disponíveis</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {mainTools.map((tool, index) => {
+                const bgColors = [
+                  'bg-blue-50 border-blue-200/60 hover:border-blue-300/80',
+                  'bg-rose-50 border-rose-200/60 hover:border-rose-300/80', 
+                  'bg-amber-50 border-amber-200/60 hover:border-amber-300/80',
+                  'bg-emerald-50 border-emerald-200/60 hover:border-emerald-300/80',
+                  'bg-purple-50 border-purple-200/60 hover:border-purple-300/80',
+                  'bg-cyan-50 border-cyan-200/60 hover:border-cyan-300/80',
+                  'bg-orange-50 border-orange-200/60 hover:border-orange-300/80',
+                  'bg-pink-50 border-pink-200/60 hover:border-pink-300/80'
+                ];
+                const iconBgColors = [
+                  'bg-blue-100',
+                  'bg-rose-100',
+                  'bg-amber-100', 
+                  'bg-emerald-100',
+                  'bg-purple-100',
+                  'bg-cyan-100',
+                  'bg-orange-100',
+                  'bg-pink-100'
+                ];
+                const iconColors = [
+                  'text-blue-600',
+                  'text-rose-600',
+                  'text-amber-600',
+                  'text-emerald-600', 
+                  'text-purple-600',
+                  'text-cyan-600',
+                  'text-orange-600',
+                  'text-pink-600'
+                ];
+                
+                return (
+                  <Link key={index} href={tool.href}>
+                    <Card className={`group hover:shadow-lg transition-all duration-300 cursor-pointer border-2 ${bgColors[index % bgColors.length]}`}>
+                      <CardContent className="p-5">
+                        <div className="space-y-4">
+                          <div className={`w-12 h-12 ${iconBgColors[index % iconBgColors.length]} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                            <tool.icon className={`h-6 w-6 ${iconColors[index % iconColors.length]}`} />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-slate-800 mb-2">{tool.title}</h3>
+                            <p className="text-sm text-slate-600 leading-relaxed mb-3">{tool.description}</p>
+                            <div className="flex items-center text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
+                              <span>Acessar</span>
+                              <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
 
