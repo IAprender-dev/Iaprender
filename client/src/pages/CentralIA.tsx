@@ -123,7 +123,7 @@ export default function CentralIA() {
       borderColor: "border-blue-200",
       hoverColor: "hover:border-blue-400",
       description: "Pesquisa em tempo real com fontes",
-      route: "/ai/perplexity"
+      route: "/central-ia/perplexity"
     },
     "image-gen": {
       name: "Gerador de Imagens",
