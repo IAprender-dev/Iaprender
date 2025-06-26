@@ -311,7 +311,7 @@ export default function NoticiasPodcasts() {
         <title>Notícias e Podcasts - IAverse</title>
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50/30">
+      <div className="min-h-screen bg-gray-50/30">
         <div className="container mx-auto px-6 pt-4 pb-8 max-w-7xl">
           {/* Header with Logo and Back Button */}
           <div className="flex items-center gap-6 mb-6">
