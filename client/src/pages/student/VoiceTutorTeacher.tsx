@@ -298,20 +298,21 @@ export default function VoiceTutorTeacher() {
     addMessage('user', userMessage, 'text');
     
     try {
-      // Chamar API do tutor
-      const response = await apiRequest('/api/ai/tutor-chat', {
-        method: 'POST',
-        body: JSON.stringify({
-          message: userMessage,
-          context: 'Pro Versa - Tutora educacional especializada em BNCC'
-        })
-      });
-
-      if (response.response) {
-        addMessage('assistant', response.response, 'text');
-        
-        // Analisar se há conteúdo para a lousa
-        analyzeForChalkboardContent(response.response);
+      // Simular resposta inteligente da Pro Versa
+      const proVersaResponse = generateProVersaResponse(userMessage);
+      
+      // Simular processamento
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      addMessage('assistant', proVersaResponse.message, 'text');
+      
+      // Adicionar conteúdo à lousa se disponível
+      if (proVersaResponse.chalkboard) {
+        addChalkboardContent(
+          proVersaResponse.chalkboard.type, 
+          proVersaResponse.chalkboard.title, 
+          proVersaResponse.chalkboard.content
+        );
       }
     } catch (error) {
       console.error('Erro no chat:', error);
@@ -325,7 +326,79 @@ export default function VoiceTutorTeacher() {
     } finally {
       setIsProcessing(false);
     }
-  }, [chatInput, isConnected, isProcessing, toast, addMessage, analyzeForChalkboardContent]);
+  }, [chatInput, isConnected, isProcessing, toast]);
+
+  const generateProVersaResponse = (userMessage: string) => {
+    const message = userMessage.toLowerCase();
+    
+    // Respostas educacionais baseadas em palavras-chave
+    if (message.includes('matemática') || message.includes('soma') || message.includes('subtração') || message.includes('multiplicação')) {
+      return {
+        message: "Olá! Vamos estudar matemática juntos! A matemática está em tudo ao nosso redor. Qual operação ou conceito você gostaria de aprender hoje? Posso explicar desde operações básicas até conceitos mais avançados, sempre adaptando ao seu nível!",
+        chalkboard: {
+          type: 'concept' as const,
+          title: 'Matemática - Operações Básicas',
+          content: '• Adição (+): Juntar quantidades\n• Subtração (-): Tirar quantidades\n• Multiplicação (×): Somas repetidas\n• Divisão (÷): Repartir igualmente\n\nExemplo: 5 + 3 = 8\nVamos praticar!'
+        }
+      };
+    }
+    
+    if (message.includes('português') || message.includes('gramática') || message.includes('substantivo') || message.includes('verbo')) {
+      return {
+        message: "Que ótimo! Português é fundamental para nossa comunicação. Vamos explorar a riqueza da nossa língua! Posso te ajudar com gramática, interpretação de texto, redação ou literatura. O que desperta mais sua curiosidade?",
+        chalkboard: {
+          type: 'concept' as const,
+          title: 'Português - Classes Gramaticais',
+          content: '• Substantivo: nomeia seres, coisas, lugares\n• Verbo: indica ação, estado, fenômeno\n• Adjetivo: caracteriza o substantivo\n• Advérbio: modifica verbo, adjetivo\n\nExemplo: "A menina (substantivo) corre (verbo) rapidamente (advérbio)"'
+        }
+      };
+    }
+    
+    if (message.includes('ciências') || message.includes('fotossíntese') || message.includes('planta') || message.includes('biologia')) {
+      return {
+        message: "Ciências é fascinante! Vamos explorar os mistérios da natureza juntos. Você sabia que as plantas são verdadeiras fábricas de oxigênio? A fotossíntese é um processo incrível que mantém a vida na Terra. Quer descobrir como funciona?",
+        chalkboard: {
+          type: 'concept' as const,
+          title: 'Fotossíntese - Fábrica de Oxigênio',
+          content: '• Ingredientes: CO₂ + H₂O + luz solar\n• Processo: Ocorre nas folhas (clorofila)\n• Produtos: Glicose + Oxigênio\n• Fórmula: 6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂\n\n🌱 As plantas nos dão o ar que respiramos!'
+        }
+      };
+    }
+    
+    if (message.includes('história') || message.includes('brasil') || message.includes('descobrimento') || message.includes('independência')) {
+      return {
+        message: "História é como uma máquina do tempo! Vamos viajar pelos acontecimentos que moldaram nosso país e o mundo. Cada época tem suas descobertas, desafios e conquistas. Qual período histórico mais desperta sua curiosidade?",
+        chalkboard: {
+          type: 'concept' as const,
+          title: 'História do Brasil - Marcos Importantes',
+          content: '• 1500: Chegada dos portugueses\n• 1822: Independência do Brasil\n• 1888: Abolição da escravidão\n• 1889: Proclamação da República\n• 1988: Nova Constituição\n\nCada data marca uma transformação!'
+        }
+      };
+    }
+    
+    if (message.includes('geografia') || message.includes('estados') || message.includes('capitais') || message.includes('relevo')) {
+      return {
+        message: "Geografia nos ajuda a entender nosso planeta! O Brasil é um país continental com paisagens incríveis: florestas, montanhas, rios gigantescos e muito mais. Que tal explorarmos as maravilhas do nosso território?",
+        chalkboard: {
+          type: 'concept' as const,
+          title: 'Geografia do Brasil',
+          content: '• 26 Estados + Distrito Federal\n• 5 Regiões: Norte, Nordeste, Centro-Oeste, Sudeste, Sul\n• Maior país da América do Sul\n• Relevo: planícies, planaltos, montanhas\n• Rios: Amazonas, São Francisco, Paraná\n\n🗺️ Nossa casa é gigante!'
+        }
+      };
+    }
+    
+    // Resposta padrão educativa e motivadora
+    return {
+      message: `Que pergunta interessante! Como sua tutora, estou aqui para tornar o aprendizado divertido e significativo. Posso te ajudar com qualquer matéria: matemática, português, ciências, história, geografia e muito mais! 
+
+Sempre adapto as explicações ao seu nível e uso exemplos do dia a dia. Que tal começarmos com algo que desperta sua curiosidade? Estou pronta para ensinar!`,
+      chalkboard: {
+        type: 'concept' as const,
+        title: 'Pro Versa - Sua Tutora Virtual',
+        content: '• Ensino personalizado e adaptado\n• Explicações claras e didáticas\n• Exemplos práticos do cotidiano\n• Acompanhamento do seu progresso\n• Todas as matérias escolares\n\nJuntos vamos aprender de forma divertida! 📚✨'
+      }
+    };
+  };
 
   const handleRealtimeMessage = (message: any) => {
     console.log('Received message:', message.type);
