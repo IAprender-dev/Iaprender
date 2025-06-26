@@ -83,8 +83,8 @@ export default function TeacherDashboard() {
       description: "Correção automática",
       icon: Pencil,
       href: "/professor/redacoes",
-      gradient: "from-rose-500 to-pink-600",
-      color: "text-rose-600"
+      gradient: "from-slate-500 to-slate-600",
+      color: "text-slate-600"
     },
     {
       title: "Notícias",
@@ -231,14 +231,14 @@ export default function TeacherDashboard() {
           {/* Educational Insights */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Student Engagement */}
-            <Card className="bg-blue-50 border-2 border-blue-200/60 shadow-sm hover:shadow-lg hover:border-blue-300/80 transition-all duration-300">
+            <Card className="bg-slate-50 border-2 border-slate-200/60 shadow-sm hover:shadow-lg hover:border-slate-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <Users className="h-4 w-4 text-blue-600" />
+                    <Users className="h-4 w-4 text-slate-600" />
                     <span className="font-medium text-slate-800">Engajamento</span>
                   </div>
-                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <TrendingUp className="h-4 w-4 text-slate-500" />
                 </div>
                 <div className="text-2xl font-bold text-slate-900 mb-1">87%</div>
                 <div className="text-xs text-slate-600 mb-3">Participação média da turma</div>
@@ -247,7 +247,7 @@ export default function TeacherDashboard() {
                   {[65, 78, 82, 87, 85, 89, 87].map((value, index) => (
                     <div 
                       key={index} 
-                      className="bg-blue-300 rounded-sm flex-1" 
+                      className="bg-slate-300 rounded-sm flex-1" 
                       style={{ height: `${(value / 100) * 100}%` }}
                     />
                   ))}
@@ -256,14 +256,14 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* Learning Progress */}
-            <Card className="bg-green-50 border-2 border-green-200/60 shadow-sm hover:shadow-lg hover:border-green-300/80 transition-all duration-300">
+            <Card className="bg-slate-50 border-2 border-slate-200/60 shadow-sm hover:shadow-lg hover:border-slate-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <BookOpen className="h-4 w-4 text-green-600" />
+                    <BookOpen className="h-4 w-4 text-slate-600" />
                     <span className="font-medium text-slate-800">Progresso</span>
                   </div>
-                  <Target className="h-4 w-4 text-blue-500" />
+                  <Target className="h-4 w-4 text-slate-500" />
                 </div>
                 <div className="text-2xl font-bold text-slate-900 mb-1">73%</div>
                 <div className="text-xs text-slate-600 mb-3">Objetivos alcançados</div>
@@ -293,14 +293,14 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* Weekly Activity */}
-            <Card className="bg-purple-50 border-2 border-purple-200/60 shadow-sm hover:shadow-lg hover:border-purple-300/80 transition-all duration-300">
+            <Card className="bg-slate-50 border-2 border-slate-200/60 shadow-sm hover:shadow-lg hover:border-slate-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-purple-600" />
+                    <Calendar className="h-4 w-4 text-slate-600" />
                     <span className="font-medium text-slate-800">Esta Semana</span>
                   </div>
-                  <Clock className="h-4 w-4 text-purple-500" />
+                  <Clock className="h-4 w-4 text-slate-500" />
                 </div>
                 <div className="text-2xl font-bold text-slate-900 mb-1">12h</div>
                 <div className="text-xs text-slate-600 mb-3">Tempo de ensino ativo</div>
@@ -310,7 +310,7 @@ export default function TeacherDashboard() {
                     <div key={index} className="text-center">
                       <div 
                         className={`w-2 h-2 rounded-full mb-1 ${
-                          index < 5 ? 'bg-purple-400' : 'bg-slate-200'
+                          index < 5 ? 'bg-slate-400' : 'bg-slate-200'
                         }`} 
                       />
                       <span className="text-xs text-slate-500">{day}</span>
@@ -321,14 +321,14 @@ export default function TeacherDashboard() {
             </Card>
 
             {/* AI Usage */}
-            <Card className="bg-indigo-50 border-2 border-indigo-200/60 shadow-sm hover:shadow-lg hover:border-indigo-300/80 transition-all duration-300">
+            <Card className="bg-slate-50 border-2 border-slate-200/60 shadow-sm hover:shadow-lg hover:border-slate-300/80 transition-all duration-300">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <Bot className="h-4 w-4 text-indigo-600" />
+                    <Bot className="h-4 w-4 text-slate-600" />
                     <span className="font-medium text-slate-800">IA Utilizada</span>
                   </div>
-                  <Zap className="h-4 w-4 text-yellow-500" />
+                  <Zap className="h-4 w-4 text-slate-500" />
                 </div>
                 <div className="text-2xl font-bold text-slate-900 mb-1">34</div>
                 <div className="text-xs text-slate-600 mb-3">Ferramentas ativadas hoje</div>
@@ -339,7 +339,7 @@ export default function TeacherDashboard() {
                     <span className="text-slate-800">67%</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-1">
-                    <div className="bg-indigo-500 h-1 rounded-full" style={{ width: '67%' }}></div>
+                    <div className="bg-slate-500 h-1 rounded-full" style={{ width: '67%' }}></div>
                   </div>
                 </div>
               </CardContent>
