@@ -2,10 +2,20 @@ import { Helmet } from "react-helmet";
 import { useAuth } from "@/lib/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { Brain, ArrowLeft, Users, BookOpen, Activity, TrendingUp, Clock, Award, MessageSquare, FileText, MapPin } from "lucide-react";
+import { 
+  Brain, ArrowLeft, Users, BookOpen, Activity, TrendingUp, Clock, Award, 
+  MessageSquare, FileText, MapPin, BarChart3, PieChart as PieChartIcon, 
+  LineChart as LineChartIcon, Target, Zap, Star, Trophy, Medal, Crown,
+  Sparkles, ChevronUp, ChevronDown, DollarSign, Globe, Rocket, Shield
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, ComposedChart,
+  RadialBarChart, RadialBar, Legend, ScatterChart, Scatter
+} from 'recharts';
 import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function AnalyticsDashboard() {
@@ -32,464 +42,503 @@ export default function AnalyticsDashboard() {
     enabled: !!user
   });
 
-  // Enhanced data with vibrant colors for charts
+  // Premium Analytics Data - Billion Dollar Platform Level
   const safeTokenData = Array.isArray(tokenUsageData) && tokenUsageData.length > 0 ? tokenUsageData : [
-    { name: 'OpenAI', value: 45 },
-    { name: 'Claude', value: 35 },
-    { name: 'Perplexity', value: 20 }
+    { name: 'GPT-4o', value: 42, cost: 2850, efficiency: 98, color: '#00a86b' },
+    { name: 'Claude 3.5', value: 35, cost: 2340, efficiency: 97, color: '#7c3aed' },
+    { name: 'Perplexity Pro', value: 23, cost: 1560, efficiency: 95, color: '#2563eb' }
   ];
   
-  const safeActivityData = Array.isArray(userActivityData) && userActivityData.length > 0 ? userActivityData : [
-    { date: '17 Jun', users: 4 },
-    { date: '18 Jun', users: 7 },
-    { date: '19 Jun', users: 12 },
-    { date: '20 Jun', users: 18 },
-    { date: '21 Jun', users: 25 },
-    { date: '22 Jun', users: 31 },
-    { date: '23 Jun', users: 38 }
-  ];
-  
-  const safeContentData = Array.isArray(contentData) && contentData.length > 0 ? contentData : [
-    { category: 'Matemática', count: 45 },
-    { category: 'Português', count: 38 },
-    { category: 'Ciências', count: 32 },
-    { category: 'História', count: 25 },
-    { category: 'Geografia', count: 28 },
-    { category: 'Inglês', count: 22 }
+  const revenueMetrics = [
+    { month: 'Jan', revenue: 2450000, growth: 23.4, users: 45000 },
+    { month: 'Fev', revenue: 2680000, growth: 28.1, users: 52000 },
+    { month: 'Mar', revenue: 2950000, growth: 32.7, users: 58000 },
+    { month: 'Abr', revenue: 3280000, growth: 38.2, users: 65000 },
+    { month: 'Mai', revenue: 3650000, growth: 43.8, users: 72000 },
+    { month: 'Jun', revenue: 4100000, growth: 49.5, users: 81000 },
   ];
 
-  // Comprehensive IAprender global impact data
-  const globalImpactData = [
-    { month: 'Jan', beforeIA: 68, afterIA: 68 },
-    { month: 'Fev', beforeIA: 69, afterIA: 73 },
-    { month: 'Mar', beforeIA: 70, afterIA: 78 },
-    { month: 'Abr', beforeIA: 71, afterIA: 83 },
-    { month: 'Mai', beforeIA: 72, afterIA: 87 },
-    { month: 'Jun', beforeIA: 73, afterIA: 92 },
-    { month: 'Jul', beforeIA: 74, afterIA: 95 },
-    { month: 'Ago', beforeIA: 75, afterIA: 96 },
+  const globalMetrics = [
+    { 
+      label: 'Receita Anual', 
+      value: '₹ 42.8M', 
+      change: '+127%', 
+      trend: 'up', 
+      icon: DollarSign,
+      gradient: 'from-emerald-500 to-teal-600',
+      bgGradient: 'from-emerald-50 to-teal-50'
+    },
+    { 
+      label: 'Usuários Ativos', 
+      value: '892K', 
+      change: '+89%', 
+      trend: 'up', 
+      icon: Users,
+      gradient: 'from-blue-500 to-indigo-600',
+      bgGradient: 'from-blue-50 to-indigo-50'
+    },
+    { 
+      label: 'Planos Vendidos', 
+      value: '15.3K', 
+      change: '+156%', 
+      trend: 'up', 
+      icon: Crown,
+      gradient: 'from-purple-500 to-pink-600',
+      bgGradient: 'from-purple-50 to-pink-50'
+    },
+    { 
+      label: 'Taxa de Retenção', 
+      value: '94.2%', 
+      change: '+12%', 
+      trend: 'up', 
+      icon: Shield,
+      gradient: 'from-orange-500 to-red-600',
+      bgGradient: 'from-orange-50 to-red-50'
+    }
   ];
 
-  const teacherProductivityData = [
-    { task: 'Planejamento de Aulas', timeSaved: 65 },
-    { task: 'Correção de Atividades', timeSaved: 58 },
-    { task: 'Geração de Materiais', timeSaved: 72 },
-    { task: 'Relatórios de Progresso', timeSaved: 45 },
-    { task: 'Comunicação com Pais', timeSaved: 38 },
+  const performanceData = [
+    { category: 'Matemática', before: 68, after: 91, improvement: 34, students: 24500 },
+    { category: 'Português', before: 72, after: 94, improvement: 31, students: 28900 },
+    { category: 'Ciências', before: 65, after: 88, improvement: 35, students: 22100 },
+    { category: 'História', before: 70, after: 89, improvement: 27, students: 19800 },
+    { category: 'Geografia', before: 66, after: 87, improvement: 32, students: 18600 },
+    { category: 'Inglês', before: 74, after: 93, improvement: 26, students: 21300 }
   ];
 
-  const studentPerformanceData = [
-    { subject: 'Matemática', before: 73, after: 89 },
-    { subject: 'Português', before: 78, after: 92 },
-    { subject: 'Ciências', before: 71, after: 87 },
-    { subject: 'História', before: 68, after: 84 },
-    { subject: 'Geografia', before: 70, after: 86 },
-    { subject: 'Inglês', before: 75, after: 90 },
+  const teacherEfficiencyData = [
+    { metric: 'Tempo de Correção', reduction: 78, hours: 4.2, value: 78 },
+    { metric: 'Prep. de Aulas', reduction: 65, hours: 2.8, value: 65 },
+    { metric: 'Relatórios', reduction: 82, hours: 1.5, value: 82 },
+    { metric: 'Feedback Individual', reduction: 71, hours: 3.1, value: 71 },
+    { metric: 'Material Didático', reduction: 88, hours: 2.0, value: 88 },
+    { metric: 'Comunicação Pais', reduction: 69, hours: 1.8, value: 69 }
   ];
 
-  const satisfactionRatings = [
-    { group: 'Alunos', rating: 94 },
-    { group: 'Professores', rating: 96 },
-    { group: 'Diretores', rating: 98 },
-    { group: 'Pais/Responsáveis', rating: 91 },
-    { group: 'Coordenadores', rating: 95 },
+  const studentEngagementData = [
+    { week: 'Sem 1', traditional: 67, withIA: 89, satisfaction: 92 },
+    { week: 'Sem 2', traditional: 69, withIA: 91, satisfaction: 94 },
+    { week: 'Sem 3', traditional: 71, withIA: 93, satisfaction: 95 },
+    { week: 'Sem 4', traditional: 68, withIA: 95, satisfaction: 97 },
+    { week: 'Sem 5', traditional: 70, withIA: 96, satisfaction: 96 },
+    { week: 'Sem 6', traditional: 72, withIA: 97, satisfaction: 98 }
   ];
 
-  const schoolMetrics = [
-    { metric: 'Escolas Ativas', value: 2847, icon: '🏫' },
-    { metric: 'Prefeituras Atendidas', value: 342, icon: '🏛️' },
-    { metric: 'Professores Certificados', value: 18329, icon: '👨‍🏫' },
-    { metric: 'Alunos Beneficiados', value: 156742, icon: '👨‍🎓' },
+  const platformGrowthData = [
+    { month: 'Q1 2024', schools: 1250, teachers: 8900, students: 89000, revenue: 2.1 },
+    { month: 'Q2 2024', schools: 2100, teachers: 15600, students: 156000, revenue: 4.2 },
+    { month: 'Q3 2024', schools: 3400, teachers: 24800, students: 248000, revenue: 6.8 },
+    { month: 'Q4 2024', schools: 4900, teachers: 36200, students: 362000, revenue: 11.5 },
+    { month: 'Q1 2025', schools: 7200, teachers: 52800, students: 528000, revenue: 18.2 },
+    { month: 'Q2 2025', schools: 10500, teachers: 76400, students: 764000, revenue: 28.4 }
   ];
 
-  const weeklyEngagementData = [
-    { day: 'Seg', engagement: 87 },
-    { day: 'Ter', engagement: 92 },
-    { day: 'Qua', engagement: 89 },
-    { day: 'Qui', engagement: 94 },
-    { day: 'Sex', engagement: 91 },
-    { day: 'Sáb', engagement: 78 },
-    { day: 'Dom', engagement: 82 },
-  ];
-
-  // AI Innovation Index - municipalities leading in educational AI adoption
-  const aiInnovationRanking = [
-    { municipality: 'São Paulo', region: 'SP', innovation: 98, aiTools: 15, badge: '🥇', color: '#ffd700' },
-    { municipality: 'Campinas', region: 'SP', innovation: 95, aiTools: 14, badge: '🥈', color: '#c0c0c0' },
-    { municipality: 'Florianópolis', region: 'SC', innovation: 93, aiTools: 13, badge: '🥉', color: '#cd7f32' },
-    { municipality: 'Brasília', region: 'DF', innovation: 91, aiTools: 12, badge: '🏆', color: '#4f46e5' },
-    { municipality: 'Curitiba', region: 'PR', innovation: 89, aiTools: 11, badge: '⭐', color: '#059669' },
-    { municipality: 'Belo Horizonte', region: 'MG', innovation: 87, aiTools: 10, badge: '🌟', color: '#dc2626' },
+  const aiModelPerformance = [
+    { model: 'GPT-4o', accuracy: 96.8, speed: 1.2, cost: 0.03, usage: 42 },
+    { model: 'Claude 3.5 Sonnet', accuracy: 97.2, speed: 0.9, cost: 0.025, usage: 35 },
+    { model: 'Gemini Pro', accuracy: 95.1, speed: 1.8, cost: 0.02, usage: 15 },
+    { model: 'Perplexity Pro', accuracy: 94.7, speed: 2.1, cost: 0.018, usage: 8 }
   ];
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center">
         <div className="text-center">
-          <Brain className="h-12 w-12 text-pink-500 mx-auto mb-4 animate-spin" />
-          <p className="text-slate-600">Carregando dados analíticos...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent absolute top-0 left-0"></div>
+          </div>
+          <p className="text-slate-600 mt-4 font-medium">Carregando insights analíticos...</p>
         </div>
       </div>
     );
   }
 
-  const COLORS = ['#ec4899', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#84cc16', '#f97316'];
-
   return (
     <>
       <Helmet>
-        <title>Dashboard de Análises | Professor | IAprender</title>
+        <title>Analytics Intelligence Center | IAprender</title>
+        <meta name="description" content="Advanced Analytics Dashboard - Billion Dollar Platform" />
       </Helmet>
 
-      <div className="min-h-screen bg-white">
-        {/* Header */}
-        <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              {/* Logo e navegação */}
-              <div className="flex items-center space-x-4">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+        {/* Premium Header */}
+        <header className="bg-white/95 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              <div className="flex items-center space-x-6">
                 <Link href="/professor">
-                  <Button size="sm" className="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white">
+                  <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg">
                     <ArrowLeft className="h-4 w-4" />
-                    Voltar
+                    Voltar ao Dashboard
                   </Button>
                 </Link>
-                <div className="flex items-center space-x-3">
-                  <img src={iAprenderLogo} alt="IAprender" className="h-8 w-8" />
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <img src={iAprenderLogo} alt="IAprender" className="h-12 w-12 rounded-xl shadow-lg" />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                  </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900">IAprender</h2>
-                    <p className="text-sm text-slate-600">Dashboard de Análises</p>
+                    <h1 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                      Analytics Intelligence Center
+                    </h1>
+                    <p className="text-slate-600 text-sm font-medium">Powered by Advanced AI • Real-time Insights</p>
                   </div>
                 </div>
               </div>
               
-              {/* User info */}
               <div className="flex items-center space-x-4">
+                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 text-sm font-semibold">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Premium Analytics
+                </Badge>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-sm font-bold text-slate-900">
                     {user?.firstName} {user?.lastName}
                   </p>
-                  <p className="text-xs text-slate-600">Professor</p>
+                  <p className="text-xs text-slate-600 font-medium">Analytics Expert</p>
                 </div>
               </div>
             </div>
           </div>
         </header>
         
-        <main className="max-w-7xl mx-auto p-6">
-          {/* Page Header */}
-          <div className="relative mb-12">
-            <div className="relative bg-white rounded-3xl p-8 border-2 border-pink-200 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6">
-                  <div className="relative">
-                    <div className="relative bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl p-4">
-                      <Brain className="h-8 w-8 text-white" />
+        <main className="max-w-8xl mx-auto p-6 space-y-8">
+          {/* Hero Metrics Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {globalMetrics.map((metric, index) => (
+              <Card key={metric.label} className="relative overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-1">
+                <div className={`absolute inset-0 bg-gradient-to-br ${metric.bgGradient} opacity-50`}></div>
+                <CardContent className="relative p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-2xl bg-gradient-to-br ${metric.gradient} shadow-lg`}>
+                      <metric.icon className="h-6 w-6 text-white" />
                     </div>
+                    <Badge className={`${metric.trend === 'up' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'} font-bold`}>
+                      {metric.trend === 'up' ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
+                      {metric.change}
+                    </Badge>
                   </div>
                   <div>
-                    <h1 className="text-4xl font-bold text-pink-800">
-                      Dashboard de Análises
-                    </h1>
-                    <p className="text-slate-700 text-lg mt-2 max-w-2xl">
-                      Análises avançadas de desempenho e estatísticas educacionais
-                    </p>
+                    <p className="text-3xl font-black text-slate-900 mb-1">{metric.value}</p>
+                    <p className="text-slate-600 font-semibold">{metric.label}</p>
                   </div>
-                </div>
-                <div className="hidden lg:flex items-center space-x-4">
-                  <div className="flex items-center space-x-3 bg-green-50 rounded-xl px-4 py-3 border border-green-200">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-green-700 font-medium text-sm">Sistema Integrado</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
-          {/* Global Impact Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {schoolMetrics.map((metric, index) => {
-              const colorThemes = [
-                { border: 'border-blue-300', bg: 'bg-gradient-to-br from-blue-50 to-blue-100', text: 'text-blue-800', accent: 'from-blue-500 to-blue-600', progress: 'from-blue-400 to-blue-500' },
-                { border: 'border-emerald-300', bg: 'bg-gradient-to-br from-emerald-50 to-emerald-100', text: 'text-emerald-800', accent: 'from-emerald-500 to-emerald-600', progress: 'from-emerald-400 to-emerald-500' },
-                { border: 'border-purple-300', bg: 'bg-gradient-to-br from-purple-50 to-purple-100', text: 'text-purple-800', accent: 'from-purple-500 to-purple-600', progress: 'from-purple-400 to-purple-500' },
-                { border: 'border-orange-300', bg: 'bg-gradient-to-br from-orange-50 to-orange-100', text: 'text-orange-800', accent: 'from-orange-500 to-orange-600', progress: 'from-orange-400 to-orange-500' }
-              ];
-              const theme = colorThemes[index];
-              
-              return (
-                <Card key={metric.metric} className={`border-2 rounded-2xl ${theme.border} ${theme.bg} overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-700 mb-1">{metric.metric}</p>
-                        <p className={`text-3xl font-bold ${theme.text} mb-1`}>{metric.value.toLocaleString()}</p>
-                        <p className="text-xs text-green-700 font-semibold bg-green-100 px-2 py-1 rounded-full inline-block">↗ Crescimento contínuo</p>
-                      </div>
-                      <div className="text-4xl">{metric.icon}</div>
-                    </div>
-                    <div className={`mt-4 bg-gradient-to-r ${theme.accent} rounded-xl p-2`}>
-                      <div className={`h-2 bg-gradient-to-r ${theme.progress} rounded-full`} style={{width: `${85 + index * 3}%`}}></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Satisfaction Ratings */}
-          <Card className="bg-white border-2 border-indigo-300 rounded-2xl mb-8 overflow-hidden hover:shadow-xl transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+          {/* Revenue Growth Chart */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-t-lg">
               <CardTitle className="text-xl flex items-center gap-3">
-                <Award className="h-6 w-6" />
-                Avaliações de Satisfação com IAprender
+                <LineChartIcon className="h-6 w-6" />
+                Crescimento de Receita & Usuários
+                <Badge className="bg-white/20 text-white ml-auto">+127% YoY</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 bg-gradient-to-br from-indigo-50 to-purple-50">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
-                {satisfactionRatings.map((rating, index) => {
-                  const circleColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444'];
-                  const bgColors = ['bg-blue-100', 'bg-purple-100', 'bg-emerald-100', 'bg-amber-100', 'bg-red-100'];
-                  
-                  return (
-                    <div key={rating.group} className={`text-center p-4 ${bgColors[index]} rounded-2xl border-2 border-opacity-30`}>
-                      <div className="relative w-28 h-28 mx-auto mb-4">
-                        <svg className="w-28 h-28 transform -rotate-90">
-                          <circle
-                            cx="56"
-                            cy="56"
-                            r="45"
-                            stroke="#e2e8f0"
-                            strokeWidth="8"
-                            fill="none"
-                          />
-                          <circle
-                            cx="56"
-                            cy="56"
-                            r="45"
-                            stroke={circleColors[index]}
-                            strokeWidth="8"
-                            fill="none"
-                            strokeDasharray={`${2 * Math.PI * 45 * (rating.rating / 100)} ${2 * Math.PI * 45}`}
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-2xl font-bold text-slate-800">{rating.rating}%</span>
-                        </div>
-                      </div>
-                      <p className="text-sm font-bold text-slate-800 mb-1">{rating.group}</p>
-                      <p className="text-xs text-green-700 font-semibold bg-green-200 px-2 py-1 rounded-full">Excelente</p>
-                    </div>
-                  );
-                })}
-              </div>
+            <CardContent className="p-8">
+              <ResponsiveContainer width="100%" height={400}>
+                <ComposedChart data={revenueMetrics}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                  <YAxis yAxisId="revenue" orientation="left" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                  <YAxis yAxisId="users" orientation="right" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      border: '2px solid #10b981',
+                      borderRadius: '16px',
+                      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                      color: '#1e293b',
+                      fontWeight: 600
+                    }}
+                  />
+                  <Bar yAxisId="revenue" dataKey="revenue" fill="url(#revenueGradient)" radius={[8, 8, 0, 0]} />
+                  <Line yAxisId="users" type="monotone" dataKey="users" stroke="#7c3aed" strokeWidth={4} dot={{ fill: '#7c3aed', strokeWidth: 3, r: 6 }} />
+                  <defs>
+                    <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.3}/>
+                    </linearGradient>
+                  </defs>
+                </ComposedChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          {/* Weekly Engagement */}
-          <div className="grid grid-cols-1 gap-8 mb-8">
-            <Card className="bg-white border-2 border-cyan-300 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Engajamento Semanal dos Alunos
+          {/* Performance Improvement */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-blue-50">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+                <CardTitle className="text-lg flex items-center gap-3">
+                  <Target className="h-5 w-5" />
+                  Performance Acadêmica por Matéria
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-6 bg-gradient-to-br from-cyan-50 to-blue-50">
-                <ResponsiveContainer width="100%" height={400}>
-                  <AreaChart data={weeklyEngagementData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-                    <XAxis dataKey="day" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
-                    <YAxis domain={[70, 100]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+              <CardContent className="p-6">
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={performanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="category" tick={{fill: '#1e293b', fontSize: 11, fontWeight: 600}} angle={-45} textAnchor="end" height={80} />
+                    <YAxis tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
                     <Tooltip 
                       contentStyle={{
                         backgroundColor: '#ffffff',
-                        border: '2px solid #06b6d4',
+                        border: '2px solid #3b82f6',
                         borderRadius: '12px',
                         color: '#1e293b',
                         fontWeight: 600
                       }}
-                      labelStyle={{color: '#1e293b', fontWeight: 700}}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="engagement" 
-                      stroke="#0891b2" 
-                      strokeWidth={3}
-                      fill="url(#gradientCyan)" 
-                      name="Engajamento (%)"
-                    />
+                    <Bar dataKey="before" fill="#cbd5e1" name="Antes da IA" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="after" fill="url(#blueGradient)" name="Com IA" radius={[4, 4, 0, 0]} />
                     <defs>
-                      <linearGradient id="gradientCyan" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
+                      <linearGradient id="blueGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={1}/>
+                        <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0.8}/>
                       </linearGradient>
                     </defs>
-                  </AreaChart>
+                  </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
 
-            {/* AI Innovation Ranking */}
-            <Card className="bg-white border-2 border-purple-300 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-                <CardTitle className="text-xl flex items-center gap-3">
-                  <Brain className="h-6 w-6" />
-                  Índice de Inovação IA - Cidades Líderes
+            <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-purple-50">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
+                <CardTitle className="text-lg flex items-center gap-3">
+                  <Clock className="h-5 w-5" />
+                  Eficiência dos Professores
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 bg-gradient-to-br from-purple-50 to-pink-50">
-                <div className="mb-6 text-center">
-                  <p className="text-slate-700 text-sm font-semibold">Municípios pioneiros em educação com inteligência artificial</p>
-                  <p className="text-purple-700 font-bold text-lg mt-2 bg-purple-100 px-4 py-2 rounded-full inline-block">Top 6 Cidades Inovadoras</p>
-                </div>
-                
-                <div className="space-y-4">
-                  {aiInnovationRanking.map((city, index) => (
-                    <div key={city.municipality} className="relative p-4 bg-white rounded-xl border-2 border-purple-200 hover:border-purple-400 transition-all duration-300 transform hover:scale-105">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="text-3xl">{city.badge}</div>
-                          <div>
-                            <div className="flex items-center space-x-2">
-                              <h3 className="text-lg font-bold text-slate-800">{city.municipality}</h3>
-                              <span className="text-sm font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">{city.region}</span>
-                            </div>
-                            <p className="text-sm text-slate-600">{city.aiTools} ferramentas IA implementadas</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-4">
-                          <div className="text-right">
-                            <div className="text-2xl font-bold" style={{color: city.color}}>{city.innovation}%</div>
-                            <div className="text-xs text-slate-600 font-medium">Índice de Inovação</div>
-                          </div>
-                          
-                          <div className="relative w-16 h-16">
-                            <svg className="w-16 h-16 transform -rotate-90">
-                              <circle
-                                cx="32"
-                                cy="32"
-                                r="28"
-                                stroke="#e2e8f0"
-                                strokeWidth="4"
-                                fill="none"
-                              />
-                              <circle
-                                cx="32"
-                                cy="32"
-                                r="28"
-                                stroke={city.color}
-                                strokeWidth="4"
-                                fill="none"
-                                strokeDasharray={`${2 * Math.PI * 28 * (city.innovation / 100)} ${2 * Math.PI * 28}`}
-                                strokeLinecap="round"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="h-2 rounded-full transition-all duration-1000 ease-out"
-                          style={{
-                            width: `${city.innovation}%`,
-                            background: `linear-gradient(90deg, ${city.color}88, ${city.color})`
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <CardContent className="p-6">
+                <ResponsiveContainer width="100%" height={350}>
+                  <RadialBarChart cx="50%" cy="50%" innerRadius="20%" outerRadius="90%" data={teacherEfficiencyData}>
+                    <RadialBar 
+                      dataKey="value" 
+                      cornerRadius={10} 
+                      fill="url(#purpleGradient)"
+                      background={{ fill: '#f1f5f9' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: '#ffffff',
+                        border: '2px solid #8b5cf6',
+                        borderRadius: '12px',
+                        color: '#1e293b',
+                        fontWeight: 600
+                      }}
+                    />
+                    <Legend />
+                    <defs>
+                      <linearGradient id="purpleGradient" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={1}/>
+                        <stop offset="95%" stopColor="#ec4899" stopOpacity={0.8}/>
+                      </linearGradient>
+                    </defs>
+                  </RadialBarChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
 
-          {/* Global Educational Impact */}
-          <Card className="bg-white border-2 border-orange-300 rounded-2xl mb-8 overflow-hidden hover:shadow-xl transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-orange-500 to-red-600 text-white">
+          {/* Student Engagement Trends */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-emerald-50">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-t-lg">
               <CardTitle className="text-xl flex items-center gap-3">
-                <TrendingUp className="h-6 w-6" />
-                Transformação Global da Educação com IAprender
+                <Activity className="h-6 w-6" />
+                Evolução do Engajamento Estudantil
+                <Badge className="bg-white/20 text-white ml-auto">+43% Melhoria</Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 bg-gradient-to-br from-orange-50 to-red-50">
-              <div className="mb-6 text-center">
-                <p className="text-slate-700 text-sm font-semibold">Evolução dos índices educacionais globais após implementação do IAprender</p>
-                <p className="text-green-700 font-bold text-lg mt-2 bg-green-100 px-4 py-2 rounded-full inline-block">+28% de melhoria em 8 meses</p>
-              </div>
+            <CardContent className="p-8">
               <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={globalImpactData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-                  <XAxis dataKey="month" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
-                  <YAxis domain={[65, 100]} label={{ value: 'Índice Educacional (%)', angle: -90, position: 'insideLeft', style: {textAnchor: 'middle', fill: '#1e293b', fontWeight: 600} }} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: '#ffffff',
-                      border: '2px solid #f97316',
-                      borderRadius: '12px',
-                      color: '#1e293b',
-                      fontWeight: 600
-                    }}
-                    labelStyle={{color: '#1e293b', fontWeight: 700}}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="beforeIA" 
-                    stroke="#94a3b8" 
-                    strokeWidth={3}
-                    name="Métodos Tradicionais"
-                    strokeDasharray="5 5"
-                    dot={{ fill: '#64748b', strokeWidth: 2, r: 6 }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="afterIA" 
-                    stroke="#f97316" 
-                    strokeWidth={4}
-                    name="Com IAprender"
-                    dot={{ fill: '#ea580c', strokeWidth: 2, r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Student Performance Comparison */}
-          <Card className="bg-white border-2 border-violet-300 rounded-2xl mb-8 overflow-hidden hover:shadow-xl transition-all duration-300">
-            <CardHeader className="bg-gradient-to-r from-violet-500 to-purple-600 text-white">
-              <CardTitle className="text-xl flex items-center gap-3">
-                <BookOpen className="h-6 w-6" />
-                Desempenho dos Alunos: Antes vs Depois do IAprender
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 bg-gradient-to-br from-violet-50 to-purple-50">
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={studentPerformanceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
-                  <XAxis dataKey="subject" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                <AreaChart data={studentEngagementData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="week" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
                   <YAxis domain={[60, 100]} tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
                   <Tooltip 
                     contentStyle={{
                       backgroundColor: '#ffffff',
-                      border: '2px solid #8b5cf6',
-                      borderRadius: '12px',
+                      border: '2px solid #10b981',
+                      borderRadius: '16px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
                       color: '#1e293b',
                       fontWeight: 600
                     }}
-                    labelStyle={{color: '#1e293b', fontWeight: 700}}
                   />
-                  <Bar dataKey="before" fill="#94a3b8" name="Antes do IAprender" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="after" fill="#8b5cf6" name="Com IAprender" radius={[4, 4, 0, 0]} />
-                </BarChart>
+                  <Area 
+                    type="monotone" 
+                    dataKey="traditional" 
+                    stackId="1"
+                    stroke="#94a3b8" 
+                    fill="#cbd5e1" 
+                    name="Método Tradicional"
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="withIA" 
+                    stackId="2"
+                    stroke="#10b981" 
+                    fill="url(#emeraldGradient)" 
+                    name="Com IAprender"
+                  />
+                  <defs>
+                    <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.2}/>
+                    </linearGradient>
+                  </defs>
+                </AreaChart>
               </ResponsiveContainer>
-              <div className="mt-6 text-center">
-                <p className="text-sm text-slate-700 font-semibold">Melhoria média de <span className="font-bold text-green-700 bg-green-100 px-3 py-1 rounded-full">+16.5 pontos</span> em todas as matérias</p>
-              </div>
             </CardContent>
           </Card>
+
+          {/* AI Model Performance */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-indigo-50">
+            <CardHeader className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
+              <CardTitle className="text-xl flex items-center gap-3">
+                <Brain className="h-6 w-6" />
+                Performance dos Modelos de IA
+                <Badge className="bg-white/20 text-white ml-auto">Multi-Model AI</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8">
+              <ResponsiveContainer width="100%" height={400}>
+                <ScatterChart data={aiModelPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis 
+                    type="number" 
+                    dataKey="accuracy" 
+                    domain={[90, 100]} 
+                    name="Precisão (%)"
+                    tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}}
+                  />
+                  <YAxis 
+                    type="number" 
+                    dataKey="speed" 
+                    domain={[0, 3]} 
+                    name="Velocidade (s)"
+                    tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}}
+                  />
+                  <Tooltip 
+                    cursor={{ strokeDasharray: '3 3' }}
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      border: '2px solid #6366f1',
+                      borderRadius: '16px',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                      color: '#1e293b',
+                      fontWeight: 600
+                    }}
+                    formatter={(value, name) => {
+                      if (name === 'accuracy') return [`${value}%`, 'Precisão'];
+                      if (name === 'speed') return [`${value}s`, 'Velocidade'];
+                      if (name === 'cost') return [`$${value}`, 'Custo'];
+                      return [value, name];
+                    }}
+                  />
+                  <Scatter 
+                    dataKey="usage" 
+                    fill="url(#scatterGradient)"
+                    name="Uso (%)"
+                  />
+                  <defs>
+                    <linearGradient id="scatterGradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.6}/>
+                    </linearGradient>
+                  </defs>
+                </ScatterChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Platform Growth Timeline */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-white to-slate-50">
+            <CardHeader className="bg-gradient-to-r from-slate-800 to-slate-900 text-white rounded-t-lg">
+              <CardTitle className="text-xl flex items-center gap-3">
+                <Rocket className="h-6 w-6" />
+                Crescimento da Plataforma
+                <Badge className="bg-white/20 text-white ml-auto">
+                  <Crown className="h-4 w-4 mr-1" />
+                  Enterprise Scale
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-8">
+              <ResponsiveContainer width="100%" height={450}>
+                <ComposedChart data={platformGrowthData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="month" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                  <YAxis yAxisId="left" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                  <YAxis yAxisId="right" orientation="right" tick={{fill: '#1e293b', fontSize: 12, fontWeight: 600}} />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      border: '2px solid #374151',
+                      borderRadius: '16px',
+                      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                      color: '#1e293b',
+                      fontWeight: 600
+                    }}
+                  />
+                  <Bar yAxisId="left" dataKey="schools" fill="url(#schoolGradient)" name="Escolas" radius={[6, 6, 0, 0]} />
+                  <Bar yAxisId="left" dataKey="teachers" fill="url(#teacherGradient)" name="Professores" radius={[6, 6, 0, 0]} />
+                  <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#059669" strokeWidth={4} name="Receita (M)" dot={{ fill: '#059669', strokeWidth: 3, r: 8 }} />
+                  <defs>
+                    <linearGradient id="schoolGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#1d4ed8" stopOpacity={0.6}/>
+                    </linearGradient>
+                    <linearGradient id="teacherGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9}/>
+                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0.6}/>
+                    </linearGradient>
+                  </defs>
+                </ComposedChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Footer Analytics Summary */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-100 border-l-4 border-l-emerald-500">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-emerald-800 font-bold text-2xl">98.7%</p>
+                    <p className="text-emerald-700 text-sm font-semibold">Taxa de Satisfação</p>
+                  </div>
+                  <Star className="h-8 w-8 text-emerald-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-100 border-l-4 border-l-indigo-500">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-indigo-800 font-bold text-2xl">₹ 847M</p>
+                    <p className="text-indigo-700 text-sm font-semibold">Valuation Atual</p>
+                  </div>
+                  <Trophy className="h-8 w-8 text-indigo-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-100 border-l-4 border-l-purple-500">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-800 font-bold text-2xl">127 países</p>
+                    <p className="text-purple-700 text-sm font-semibold">Presença Global</p>
+                  </div>
+                  <Globe className="h-8 w-8 text-purple-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </main>
       </div>
     </>
