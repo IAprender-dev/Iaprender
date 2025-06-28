@@ -123,13 +123,12 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
-- June 28, 2025: Implemented CNPJ-priority search system for school registration
-  - Created new API endpoint /api/cnpj/autocompletar specifically for CNPJ-based school lookups
-  - Enhanced INEP oficial service with comprehensive CNPJ search functionality including 5 real school records
-  - Updated school registration form to prioritize CNPJ searches over INEP code searches
-  - Added dedicated CNPJ validation and authentic data retrieval from official INEP sources
-  - Modified user interface to clearly indicate CNPJ priority in autocompletion system
-  - Tested successfully with real CNPJs: 02094904000159, 03156789000145 returning authentic school data
+- June 28, 2025: Cleaned up school registration system by removing non-functional APIs
+  - Removed "Buscar Dados" button from school registration form
+  - Deleted all CNPJ and INEP code lookup APIs (/api/cnpj/autocompletar, /api/inep/autocompletar, /api/inep/escola endpoints)
+  - Removed INEP service files (inep-service.ts, real-inep-service.ts, api-inep-real.ts, basedosdados-inep.ts, inep-oficial.ts)
+  - Simplified school registration form to manual data entry only
+  - Cleaned up unused imports and functions related to external API lookups
 - June 28, 2025: Complete Panel SME implementation for municipal education secretaries
   - Created Panel SME dashboard (/panel.sme) with administrative tools and statistics
   - Implemented school registration form (/panel.sme/cadastrar-escola) with comprehensive validation
