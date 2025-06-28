@@ -12,7 +12,7 @@ import { Link } from "wouter";
 import { 
   ArrowLeft, School, MapPin, Building2, Phone, Mail, 
   Users, Calendar, FileText, CheckCircle, AlertCircle,
-  Save, RefreshCw
+  Save, RefreshCw, Search, Loader2
 } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -44,6 +44,7 @@ export default function CadastrarEscola() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isLoadingInep, setIsLoadingInep] = useState(false);
 
   const [formData, setFormData] = useState<EscolaForm>({
     nomeEscola: '',
@@ -125,6 +126,70 @@ export default function CadastrarEscola() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleAutoComplete = async () => {
+    if (!formData.inep.trim() && !formData.cnpj.trim()) {
+      toast({
+        title: "Dados insuficientes",
+        description: "Digite o código INEP ou CNPJ para buscar os dados da escola.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoadingInep(true);
+    
+    try {
+      const response = await apiRequest('/api/inep/autocompletar', 'POST', {
+        codigoInep: formData.inep.trim() || undefined,
+        cnpj: formData.cnpj.trim() || undefined
+      });
+
+      if (response.success && response.found) {
+        const dadosEscola = response.data;
+        
+        setFormData(prev => ({
+          ...prev,
+          nomeEscola: dadosEscola.nomeEscola || prev.nomeEscola,
+          tipoEscola: dadosEscola.tipoEscola || prev.tipoEscola,
+          inep: dadosEscola.inep || prev.inep,
+          cnpj: dadosEscola.cnpj || prev.cnpj,
+          nomeDiretor: dadosEscola.nomeDiretor || prev.nomeDiretor,
+          endereco: dadosEscola.endereco || prev.endereco,
+          bairro: dadosEscola.bairro || prev.bairro,
+          cidade: dadosEscola.cidade || prev.cidade,
+          estado: dadosEscola.estado || prev.estado,
+          cep: dadosEscola.cep || prev.cep,
+          telefone: dadosEscola.telefone || prev.telefone,
+          email: dadosEscola.email || prev.email,
+          zona: dadosEscola.zona || prev.zona,
+          dataFundacao: dadosEscola.dataFundacao || prev.dataFundacao,
+          numeroSalas: dadosEscola.numeroSalas || prev.numeroSalas,
+          numeroAlunos: dadosEscola.numeroAlunos || prev.numeroAlunos
+        }));
+
+        toast({
+          title: "Dados carregados com sucesso!",
+          description: `Encontrado: ${dadosEscola.nomeEscola} - Fonte: INEP`,
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: "Escola não encontrada",
+          description: "Nenhuma escola encontrada com os dados informados no banco do INEP.",
+          variant: "destructive"
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao buscar dados",
+        description: error.message || "Erro ao consultar dados do INEP. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingInep(false);
+    }
   };
 
   const estados = [
@@ -238,13 +303,31 @@ export default function CadastrarEscola() {
                       <Label htmlFor="inep" className="text-sm font-semibold text-slate-700">
                         Código INEP
                       </Label>
-                      <Input
-                        id="inep"
-                        value={formData.inep}
-                        onChange={(e) => handleInputChange('inep', e.target.value)}
-                        placeholder="Ex: 35052562"
-                        className="mt-2"
-                      />
+                      <div className="flex items-center gap-3 mt-2">
+                        <Input
+                          id="inep"
+                          value={formData.inep}
+                          onChange={(e) => handleInputChange('inep', e.target.value)}
+                          placeholder="Ex: 35052562"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleAutoComplete}
+                          disabled={isLoadingInep || (!formData.inep.trim() && !formData.cnpj.trim())}
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 text-sm shadow-lg flex items-center gap-2 min-w-fit"
+                        >
+                          {isLoadingInep ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Search className="h-4 w-4" />
+                          )}
+                          {isLoadingInep ? 'Buscando...' : 'Buscar INEP'}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Digite o código INEP ou CNPJ e clique em "Buscar INEP" para autocompletar os dados
+                      </p>
                     </div>
 
                     <div>

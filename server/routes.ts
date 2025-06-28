@@ -55,6 +55,7 @@ import { tokenInterceptor, tokenAlertMiddleware } from "./modules/tokenCounter/m
 import { registerTokenRoutes } from "./modules/tokenCounter/routes/tokenRoutes";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import { inepService } from './services/inep-service';
 
 // Define login schema
 const loginSchema = z.object({
@@ -3867,6 +3868,194 @@ Fale sempre em português brasileiro claro e natural.`,
     } catch (error) {
       console.error("Error fetching recent activities:", error);
       return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // ====== API INEP - CONSULTA DE DADOS DE ESCOLAS ======
+
+  // Buscar escola por código INEP
+  app.get('/api/inep/escola/:codigoInep', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { codigoInep } = req.params;
+
+      if (!inepService.validarCodigoINEP(codigoInep)) {
+        return res.status(400).json({ 
+          error: 'Código INEP inválido', 
+          message: 'O código INEP deve ter 8 dígitos numéricos' 
+        });
+      }
+
+      const escola = inepService.buscarPorCodigoINEP(codigoInep);
+
+      if (!escola) {
+        return res.status(404).json({ 
+          error: 'Escola não encontrada', 
+          message: `Nenhuma escola encontrada com o código INEP: ${codigoInep}` 
+        });
+      }
+
+      // Converte para formato compatível com nosso sistema
+      const escolaFormatada = inepService.converterParaEscolaLocal(escola);
+
+      res.json({
+        success: true,
+        data: escolaFormatada,
+        source: 'INEP',
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar escola por código INEP:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        message: 'Erro ao consultar dados do INEP' 
+      });
+    }
+  });
+
+  // Buscar escola por CNPJ
+  app.get('/api/inep/escola/cnpj/:cnpj', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { cnpj } = req.params;
+
+      if (!inepService.validarCNPJ(cnpj)) {
+        return res.status(400).json({ 
+          error: 'CNPJ inválido', 
+          message: 'O CNPJ deve ter 14 dígitos numéricos' 
+        });
+      }
+
+      const escola = inepService.buscarPorCNPJ(cnpj);
+
+      if (!escola) {
+        return res.status(404).json({ 
+          error: 'Escola não encontrada', 
+          message: `Nenhuma escola encontrada com o CNPJ: ${cnpj}` 
+        });
+      }
+
+      // Converte para formato compatível com nosso sistema
+      const escolaFormatada = inepService.converterParaEscolaLocal(escola);
+
+      res.json({
+        success: true,
+        data: escolaFormatada,
+        source: 'INEP',
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar escola por CNPJ:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        message: 'Erro ao consultar dados do INEP' 
+      });
+    }
+  });
+
+  // Buscar escolas por filtros
+  app.get('/api/inep/escolas', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { estado, cidade, tipo_escola, zona, nome, limite, offset } = req.query;
+
+      let escolas;
+
+      if (nome) {
+        escolas = inepService.buscarPorNome(nome as string);
+      } else {
+        const filtros = {
+          estado: estado as string,
+          cidade: cidade as string,
+          tipo_escola: tipo_escola as string,
+          zona: zona as string
+        };
+
+        escolas = inepService.buscarPorFiltros(filtros);
+      }
+
+      // Aplicar paginação se especificada
+      if (limite || offset) {
+        const limiteNum = limite ? parseInt(limite as string) : undefined;
+        const offsetNum = offset ? parseInt(offset as string) : undefined;
+        
+        const resultado = inepService.listarTodas(limiteNum, offsetNum);
+        escolas = resultado.escolas;
+      }
+
+      res.json({
+        success: true,
+        data: escolas,
+        total: escolas.length,
+        source: 'INEP',
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar escolas:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        message: 'Erro ao consultar dados do INEP' 
+      });
+    }
+  });
+
+  // Endpoint para autocompletar dados no formulário de cadastro
+  app.post('/api/inep/autocompletar', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { codigoInep, cnpj } = req.body;
+
+      if (!codigoInep && !cnpj) {
+        return res.status(400).json({ 
+          error: 'Parâmetros insuficientes', 
+          message: 'Informe o código INEP ou CNPJ para busca' 
+        });
+      }
+
+      let escola = null;
+
+      if (codigoInep) {
+        if (!inepService.validarCodigoINEP(codigoInep)) {
+          return res.status(400).json({ 
+            error: 'Código INEP inválido', 
+            message: 'O código INEP deve ter 8 dígitos numéricos' 
+          });
+        }
+        escola = inepService.buscarPorCodigoINEP(codigoInep);
+      } else if (cnpj) {
+        if (!inepService.validarCNPJ(cnpj)) {
+          return res.status(400).json({ 
+            error: 'CNPJ inválido', 
+            message: 'O CNPJ deve ter 14 dígitos numéricos' 
+          });
+        }
+        escola = inepService.buscarPorCNPJ(cnpj);
+      }
+
+      if (!escola) {
+        return res.status(404).json({ 
+          error: 'Escola não encontrada', 
+          message: 'Nenhuma escola encontrada com os dados informados' 
+        });
+      }
+
+      // Retorna dados formatados para preencher o formulário
+      const dadosFormulario = inepService.converterParaEscolaLocal(escola);
+
+      res.json({
+        success: true,
+        found: true,
+        data: dadosFormulario,
+        source: 'INEP',
+        timestamp: new Date().toISOString(),
+        message: 'Dados encontrados e carregados com sucesso!'
+      });
+
+    } catch (error) {
+      console.error('Erro ao autocompletar dados:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        message: 'Erro ao consultar dados do INEP' 
+      });
     }
   });
 
