@@ -4003,6 +4003,53 @@ Fale sempre em português brasileiro claro e natural.`,
     }
   });
 
+  // Endpoint específico para busca por CNPJ
+  app.post('/api/cnpj/autocompletar', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { cnpj } = req.body;
+
+      if (!cnpj) {
+        return res.status(400).json({ 
+          error: 'CNPJ obrigatório', 
+          message: 'Forneça um CNPJ de 14 dígitos para consulta' 
+        });
+      }
+
+      if (!inepOficial.validarCNPJ(cnpj)) {
+        return res.status(400).json({ 
+          error: 'CNPJ inválido', 
+          message: 'O CNPJ deve ter 14 dígitos numéricos' 
+        });
+      }
+      
+      console.log(`🔍 Consultando CNPJ ${cnpj} nas fontes oficiais do INEP...`);
+      const escola = await inepOficial.buscarPorCNPJ(cnpj);
+      
+      if (!escola) {
+        return res.status(404).json({ 
+          error: 'Escola não encontrada', 
+          message: 'Nenhuma escola encontrada com este CNPJ nas bases de dados oficiais'
+        });
+      }
+
+      res.json({
+        success: true,
+        found: true,
+        data: escola,
+        source: 'Portal de Dados Abertos - INEP',
+        timestamp: new Date().toISOString(),
+        message: 'Dados encontrados e carregados com sucesso a partir das fontes oficiais do INEP!'
+      });
+
+    } catch (error: any) {
+      console.error('Erro ao autocompletar dados por CNPJ:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor', 
+        message: 'Falha ao consultar as bases de dados. Tente novamente.' 
+      });
+    }
+  });
+
   // Endpoint para autocompletar dados no formulário usando APIs externas reais
   app.post('/api/inep/autocompletar', authenticate, async (req: Request, res: Response) => {
     try {

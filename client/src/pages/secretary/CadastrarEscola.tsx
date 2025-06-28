@@ -141,10 +141,21 @@ export default function CadastrarEscola() {
     setIsLoadingInep(true);
     
     try {
-      const response = await apiRequest('POST', '/api/inep/autocompletar', {
-        codigoInep: formData.inep.trim() || undefined,
-        cnpj: formData.cnpj.trim() || undefined
-      });
+      let response;
+      let endpoint = '';
+
+      // Priorizar busca por CNPJ se fornecido
+      if (formData.cnpj.trim()) {
+        endpoint = '/api/cnpj/autocompletar';
+        response = await apiRequest('POST', endpoint, {
+          cnpj: formData.cnpj.trim()
+        });
+      } else if (formData.inep.trim()) {
+        endpoint = '/api/inep/autocompletar';
+        response = await apiRequest('POST', endpoint, {
+          codigoInep: formData.inep.trim()
+        });
+      }
 
       const responseData = await response.json();
 
@@ -171,22 +182,24 @@ export default function CadastrarEscola() {
           numeroAlunos: dadosEscola.numeroAlunos || prev.numeroAlunos
         }));
 
+        const searchType = formData.cnpj.trim() ? 'CNPJ' : 'INEP';
         toast({
           title: "Dados carregados com sucesso!",
-          description: `Encontrado: ${dadosEscola.nomeEscola} - Fonte: INEP`,
+          description: `Encontrado: ${dadosEscola.nomeEscola} - Busca por ${searchType}`,
           variant: "default"
         });
       } else {
+        const searchType = formData.cnpj.trim() ? 'CNPJ' : 'código INEP';
         toast({
           title: "Escola não encontrada",
-          description: "Nenhuma escola encontrada com os dados informados no banco do INEP.",
+          description: `Nenhuma escola encontrada com o ${searchType} informado.`,
           variant: "destructive"
         });
       }
     } catch (error: any) {
       toast({
         title: "Erro ao buscar dados",
-        description: error.message || "Erro ao consultar dados do INEP. Tente novamente.",
+        description: error.message || "Erro ao consultar dados oficiais. Tente novamente.",
         variant: "destructive"
       });
     } finally {
@@ -324,11 +337,11 @@ export default function CadastrarEscola() {
                           ) : (
                             <Search className="h-4 w-4" />
                           )}
-                          {isLoadingInep ? 'Buscando...' : 'Buscar INEP'}
+                          {isLoadingInep ? 'Buscando...' : 'Buscar Dados'}
                         </Button>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">
-                        Digite o código INEP ou CNPJ e clique em "Buscar INEP" para autocompletar os dados
+                        Digite o CNPJ ou código INEP e clique em "Buscar Dados" para autocompletar (prioriza CNPJ)
                       </p>
                     </div>
 
