@@ -141,13 +141,15 @@ export default function CadastrarEscola() {
     setIsLoadingInep(true);
     
     try {
-      const response = await apiRequest('/api/inep/autocompletar', 'POST', {
+      const response = await apiRequest('POST', '/api/inep/autocompletar', {
         codigoInep: formData.inep.trim() || undefined,
         cnpj: formData.cnpj.trim() || undefined
       });
 
-      if (response.success && response.found) {
-        const dadosEscola = response.data;
+      const responseData = await response.json();
+
+      if (responseData.success && responseData.found) {
+        const dadosEscola = responseData.data;
         
         setFormData(prev => ({
           ...prev,
