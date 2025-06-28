@@ -303,7 +303,7 @@ export default function CadastrarEscola() {
                         Tipo de Escola *
                       </Label>
                       <Select value={formData.tipoEscola} onValueChange={(value) => handleInputChange('tipoEscola', value)}>
-                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium">
+                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium text-slate-900 font-medium">
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -359,7 +359,7 @@ export default function CadastrarEscola() {
                         Zona *
                       </Label>
                       <Select value={formData.zona} onValueChange={(value) => handleInputChange('zona', value)}>
-                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium">
+                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium text-slate-900 font-medium">
                           <SelectValue placeholder="Selecione a zona" />
                         </SelectTrigger>
                         <SelectContent>
@@ -440,7 +440,7 @@ export default function CadastrarEscola() {
                         Estado *
                       </Label>
                       <Select value={formData.estado} onValueChange={(value) => handleInputChange('estado', value)}>
-                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium">
+                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium text-slate-900 font-medium">
                           <SelectValue placeholder="UF" />
                         </SelectTrigger>
                         <SelectContent>
