@@ -196,9 +196,9 @@ export default function GerenciarEscolas() {
             <div className="flex items-center justify-between h-20">
               <div className="flex items-center space-x-6">
                 <Link href="/panel.sme">
-                  <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
+                  <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg">
                     <ArrowLeft className="h-4 w-4" />
-                    Voltar ao Panel SME
+                    Voltar
                   </Button>
                 </Link>
                 <div className="flex items-center space-x-4">
@@ -208,7 +208,7 @@ export default function GerenciarEscolas() {
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-900 to-emerald-700 bg-clip-text text-transparent">
-                      Gerenciar Escolas
+                      IAprender - Gerenciar Escolas
                     </h1>
                     <p className="text-slate-600 text-sm font-medium">Visualização e edição de dados escolares</p>
                   </div>
