@@ -152,7 +152,7 @@ export default function CadastrarEscola() {
                 <Link href="/panel.sme">
                   <Button size="sm" className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg">
                     <ArrowLeft className="h-4 w-4" />
-                    Voltar ao Panel SME
+                    Voltar
                   </Button>
                 </Link>
                 <div className="flex items-center space-x-4">
@@ -162,7 +162,7 @@ export default function CadastrarEscola() {
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
-                      Cadastrar Nova Escola
+                      IAprender - Cadastrar Nova Escola
                     </h1>
                     <p className="text-slate-600 text-sm font-medium">Adicionar unidade escolar ao sistema</p>
                   </div>
@@ -170,7 +170,7 @@ export default function CadastrarEscola() {
               </div>
               
               <div className="flex items-center space-x-4">
-                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 text-sm font-semibold">
+                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 text-sm font-semibold">
                   <School className="h-4 w-4 mr-2" />
                   Cadastro Escolar
                 </Badge>
@@ -216,7 +216,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('nomeEscola', e.target.value)}
                         placeholder="Ex: EMEF Professor João Silva"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -225,7 +225,7 @@ export default function CadastrarEscola() {
                         Tipo de Escola *
                       </Label>
                       <Select value={formData.tipoEscola} onValueChange={(value) => handleInputChange('tipoEscola', value)}>
-                        <SelectTrigger className="mt-2">
+                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium">
                           <SelectValue placeholder="Selecione o tipo" />
                         </SelectTrigger>
                         <SelectContent>
@@ -246,7 +246,7 @@ export default function CadastrarEscola() {
                         value={formData.inep}
                         onChange={(e) => handleInputChange('inep', e.target.value)}
                         placeholder="Ex: 35052562"
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
