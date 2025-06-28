@@ -28,6 +28,8 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Activity tracking and progress monitoring
   - AI tool usage and token tracking
   - Contract and subscription management
+  - Educational administration (secretarias and escolas tables)
+  - Institutional hierarchy with secretary-school relationships
 
 ## Key Components
 
