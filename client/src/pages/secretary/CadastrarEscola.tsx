@@ -12,9 +12,9 @@ import { Link } from "wouter";
 import { 
   ArrowLeft, School, MapPin, Building2, Phone, Mail, 
   Users, Calendar, FileText, CheckCircle, AlertCircle,
-  Save, RefreshCw
+  Save, RefreshCw, ChevronLeft, ChevronRight
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import iAprenderLogo from "@assets/IAprender_1750262377399.png";
@@ -116,6 +116,28 @@ export default function CadastrarEscola() {
     },
   });
 
+  // Estado para o date picker
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState({ day: 28, month: 6, year: 2025 });
+  const datePickerRef = useRef<HTMLDivElement>(null);
+
+  // Fechar popup ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
+        setShowDatePicker(false);
+      }
+    };
+
+    if (showDatePicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDatePicker]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createEscolaMutation.mutate(formData);
@@ -161,6 +183,28 @@ export default function CadastrarEscola() {
       .replace(/^(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
       .slice(0, 10);
   };
+
+  // Funções para o date picker
+  const handleDateSelect = (day: number, month: number, year: number) => {
+    const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+    handleInputChange('dataFundacao', formattedDate);
+    setSelectedDate({ day, month, year });
+    setShowDatePicker(false);
+  };
+
+  const handleCalendarClick = () => {
+    setShowDatePicker(!showDatePicker);
+  };
+
+  // Gerar dias do mês
+  const getDaysInMonth = (month: number, year: number) => {
+    return new Date(year, month, 0).getDate();
+  };
+
+  const months = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
 
 
 
@@ -468,7 +512,84 @@ export default function CadastrarEscola() {
                           placeholder="28/06/2025"
                           className="bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium pr-10"
                         />
-                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-600 pointer-events-none" />
+                        <Calendar 
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-600 cursor-pointer hover:text-blue-600 transition-colors" 
+                          onClick={handleCalendarClick}
+                        />
+                        
+                        {/* Date Picker Popup */}
+                        {showDatePicker && (
+                          <div ref={datePickerRef} className="absolute top-full left-0 mt-2 bg-white border border-slate-300 rounded-lg shadow-lg z-50 p-4 w-80">
+                            <div className="flex items-center justify-between mb-4">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDate(prev => ({ ...prev, year: prev.year - 1 }))}
+                                className="p-1 hover:bg-slate-100 rounded"
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </button>
+                              <span className="font-medium text-slate-900">{selectedDate.year}</span>
+                              <button
+                                type="button"
+                                onClick={() => setSelectedDate(prev => ({ ...prev, year: prev.year + 1 }))}
+                                className="p-1 hover:bg-slate-100 rounded"
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </button>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-2 mb-4">
+                              {months.map((month, index) => (
+                                <button
+                                  key={month}
+                                  type="button"
+                                  onClick={() => setSelectedDate(prev => ({ ...prev, month: index + 1 }))}
+                                  className={`p-2 text-sm rounded hover:bg-blue-100 ${
+                                    selectedDate.month === index + 1 
+                                      ? 'bg-blue-500 text-white' 
+                                      : 'text-slate-700'
+                                  }`}
+                                >
+                                  {month.slice(0, 3)}
+                                </button>
+                              ))}
+                            </div>
+                            
+                            <div className="grid grid-cols-7 gap-1 mb-4">
+                              {Array.from({ length: getDaysInMonth(selectedDate.month, selectedDate.year) }, (_, i) => i + 1).map(day => (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  onClick={() => handleDateSelect(day, selectedDate.month, selectedDate.year)}
+                                  className={`p-2 text-sm rounded hover:bg-blue-100 ${
+                                    selectedDate.day === day 
+                                      ? 'bg-blue-500 text-white' 
+                                      : 'text-slate-700'
+                                  }`}
+                                >
+                                  {day}
+                                </button>
+                              ))}
+                            </div>
+                            
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setShowDatePicker(false)}
+                                className="px-3 py-1 text-sm text-slate-600 hover:text-slate-800"
+                              >
+                                Cancelar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDateSelect(selectedDate.day, selectedDate.month, selectedDate.year)}
+                                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                              >
+                                Confirmar
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
