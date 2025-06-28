@@ -238,7 +238,7 @@ export default function GerenciarEscolas() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
                   <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-slate-600" />
                     <Input
                       placeholder="Buscar por nome, diretor ou cidade..."
                       value={searchTerm}
@@ -248,7 +248,7 @@ export default function GerenciarEscolas() {
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Filter className="h-4 w-4 text-slate-500" />
+                    <Filter className="h-4 w-4 text-slate-700" />
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
@@ -444,9 +444,9 @@ export default function GerenciarEscolas() {
               
               {filteredEscolas.length === 0 && (
                 <div className="text-center py-12">
-                  <School className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-600 mb-2">Nenhuma escola encontrada</h3>
-                  <p className="text-slate-500 mb-4">
+                  <School className="h-16 w-16 text-slate-500 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-800 mb-2">Nenhuma escola encontrada</h3>
+                  <p className="text-slate-700 font-medium mb-4">
                     {searchTerm ? 'Tente ajustar os filtros de busca' : 'Comece cadastrando sua primeira escola'}
                   </p>
                   <Link href="/panel.sme/cadastrar-escola">
