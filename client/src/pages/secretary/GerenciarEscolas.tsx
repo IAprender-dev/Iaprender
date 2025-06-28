@@ -373,7 +373,7 @@ export default function GerenciarEscolas() {
                         <TableCell>
                           <div className="font-semibold text-slate-900">{escola.nomeEscola}</div>
                           {escola.inep && (
-                            <div className="text-xs text-slate-500">INEP: {escola.inep}</div>
+                            <div className="text-xs text-slate-700 font-medium">INEP: {escola.inep}</div>
                           )}
                         </TableCell>
                         <TableCell>
@@ -387,7 +387,7 @@ export default function GerenciarEscolas() {
                         <TableCell>
                           <div className="text-sm">
                             <div className="font-medium">{escola.cidade}, {escola.estado}</div>
-                            <div className="text-slate-500">{escola.bairro}</div>
+                            <div className="text-slate-700 font-medium">{escola.bairro}</div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -398,18 +398,18 @@ export default function GerenciarEscolas() {
                         <TableCell>
                           <div className="text-center">
                             <div className="font-semibold">{escola.numeroAlunos || 0}</div>
-                            <div className="text-xs text-slate-500">{escola.numeroSalas || 0} salas</div>
+                            <div className="text-xs text-slate-700 font-medium">{escola.numeroSalas || 0} salas</div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
                             <div className="flex items-center gap-1">
-                              <Phone className="h-3 w-3 text-slate-400" />
-                              <span className="text-xs">{escola.telefone}</span>
+                              <Phone className="h-3 w-3 text-slate-600" />
+                              <span className="text-xs text-slate-800 font-medium">{escola.telefone}</span>
                             </div>
                             <div className="flex items-center gap-1 mt-1">
-                              <Mail className="h-3 w-3 text-slate-400" />
-                              <span className="text-xs truncate max-w-[120px]">{escola.email}</span>
+                              <Mail className="h-3 w-3 text-slate-600" />
+                              <span className="text-xs text-slate-800 font-medium truncate max-w-[120px]">{escola.email}</span>
                             </div>
                           </div>
                         </TableCell>
