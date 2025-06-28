@@ -233,7 +233,7 @@ export default function GerenciarEscolas() {
 
         <main className="max-w-7xl mx-auto p-6 space-y-8">
           {/* Controls */}
-          <Card className="border-0 shadow-lg bg-white">
+          <Card className="border-2 border-green-300 shadow-lg bg-white">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
@@ -243,7 +243,7 @@ export default function GerenciarEscolas() {
                       placeholder="Buscar por nome, diretor ou cidade..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-green-500 text-slate-900 font-medium"
                     />
                   </div>
                   
@@ -252,7 +252,7 @@ export default function GerenciarEscolas() {
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="px-3 py-2 border rounded-md text-sm bg-white"
+                      className="px-3 py-2 border-2 border-green-300 rounded-md text-sm bg-slate-50 focus:bg-white focus:border-green-500 text-slate-900 font-medium"
                     >
                       <option value="all">Todas</option>
                       <option value="ativa">Ativas</option>
@@ -285,7 +285,7 @@ export default function GerenciarEscolas() {
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card className="border-2 bg-blue-50 border-blue-200 shadow-lg">
+            <Card className="border-2 bg-green-50 border-green-300 shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -297,7 +297,7 @@ export default function GerenciarEscolas() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 bg-emerald-50 border-emerald-200 shadow-lg">
+            <Card className="border-2 bg-green-50 border-green-300 shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -311,7 +311,7 @@ export default function GerenciarEscolas() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 bg-purple-50 border-purple-200 shadow-lg">
+            <Card className="border-2 bg-green-50 border-green-300 shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -325,7 +325,7 @@ export default function GerenciarEscolas() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 bg-amber-50 border-amber-200 shadow-lg">
+            <Card className="border-2 bg-green-50 border-green-300 shadow-lg">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -341,7 +341,7 @@ export default function GerenciarEscolas() {
           </div>
 
           {/* Schools Table */}
-          <Card className="border-0 shadow-xl bg-white">
+          <Card className="border-2 border-green-300 shadow-xl bg-white">
             <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-t-lg">
               <CardTitle className="text-xl flex items-center gap-3">
                 <Database className="h-6 w-6" />
