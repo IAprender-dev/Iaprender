@@ -203,5 +203,40 @@
       "latitude": -12.5269,
       "longitude": -40.3081
     }
+  },
+  {
+    "codigo_inep": "29015227",
+    "cnpj": "02.094.904/0001-59",
+    "nome_escola": "EMEF Presidente Vargas",
+    "tipo_escola": "municipal",
+    "dependencia_administrativa": "Municipal",
+    "endereco": "Rua das Palmeiras, 789",
+    "bairro": "Centro",
+    "cidade": "Brasília",
+    "estado": "DF",
+    "cep": "70040-010",
+    "telefone": "(61) 3344-5566",
+    "email": "presidente.vargas@se.df.gov.br",
+    "zona": "urbana",
+    "nome_diretor": "Ana Maria da Silva",
+    "data_fundacao": "1980-04-15",
+    "numero_salas": 15,
+    "numero_alunos": 420,
+    "modalidades": ["Ensino Fundamental - Anos Iniciais", "Ensino Fundamental - Anos Finais"],
+    "infraestrutura": {
+      "biblioteca": true,
+      "laboratorio_informatica": true,
+      "laboratorio_ciencias": false,
+      "quadra_esportes": true,
+      "internet": true,
+      "agua_filtrada": true,
+      "energia_eletrica": true,
+      "esgoto_rede_publica": true,
+      "auditorio": false
+    },
+    "coordenadas": {
+      "latitude": -15.7801,
+      "longitude": -47.9292
+    }
   }
 ]
