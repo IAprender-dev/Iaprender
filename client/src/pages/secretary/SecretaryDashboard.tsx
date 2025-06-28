@@ -1,570 +1,338 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/lib/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Link } from 'wouter';
+import { Helmet } from "react-helmet";
+import { useAuth } from "@/lib/AuthContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 import { 
-  User, 
-  LogOut, 
-  Users, 
-  BarChart3, 
-  Star,
-  GraduationCap,
-  MessageSquare,
-  CheckCircle,
-  AlertTriangle,
-  FileText,
-  Building,
-  Shield
-} from 'lucide-react';
-import alverseLogo from '@/assets/aiverse-logo-new.png';
+  Building2, School, Users, FileText, BarChart3, Settings, 
+  Plus, Database, MapPin, Calendar, Phone, Mail, 
+  BookOpen, UserCheck, ClipboardList, Bell, GraduationCap,
+  TrendingUp, Target, Award, Activity, Clock, Sparkles
+} from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function SecretaryDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   // Fetch dashboard statistics
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/secretary/dashboard-stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/secretary/dashboard-stats');
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      return response.json();
-    },
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['/api/secretary/stats'],
+    enabled: !!user
   });
 
-  // Fetch recent notifications
-  const { data: notifications, isLoading: notificationsLoading } = useQuery({
-    queryKey: ['/api/secretary/notifications'],
-    queryFn: async () => {
-      const response = await fetch('/api/secretary/notifications');
-      if (!response.ok) throw new Error('Failed to fetch notifications');
-      return response.json();
-    },
+  const { data: recentActivities } = useQuery({
+    queryKey: ['/api/secretary/recent-activities'],
+    enabled: !!user
   });
 
-  // Fetch users data for cards
-  const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/secretary/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/secretary/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
-  });
-
-  // Calculate real stats from users data
-  const realStats = usersData ? {
-    totalStudents: usersData.filter((u: any) => u.role === 'student').length,
-    totalTeachers: usersData.filter((u: any) => u.role === 'teacher').length,
-    activeUsers: usersData.filter((u: any) => u.status === 'active').length,
-    pendingUsers: usersData.filter((u: any) => u.status === 'pending').length,
-    recentUsers: usersData.filter((u: any) => {
-      const createdAt = new Date(u.createdAt);
-      const lastWeek = new Date();
-      lastWeek.setDate(lastWeek.getDate() - 7);
-      return createdAt > lastWeek;
-    }).length
-  } : null;
-
-  // Get current date
-  const currentDate = new Date();
-  const formattedDate = currentDate.toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
-  // Get greeting based on time
-  const getGreeting = () => {
-    const hour = currentDate.getHours();
-    if (hour < 12) return "Bom dia";
-    if (hour < 18) return "Boa tarde";
-    return "Boa noite";
+  // Mock data for demonstration
+  const mockStats = {
+    totalEscolas: 45,
+    totalProfessores: 1250,
+    totalAlunos: 28500,
+    escolasAtivas: 43,
+    tokenUsage: 85,
+    monthlyTokens: 150000,
+    usedTokens: 127500
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'normal': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'low': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+  const insights = [
+    {
+      title: "Escolas Cadastradas",
+      value: mockStats.totalEscolas.toLocaleString(),
+      change: "+3 este mês",
+      trend: "up",
+      icon: School,
+      color: "bg-blue-500",
+      bgColor: "bg-blue-50 border-blue-200"
+    },
+    {
+      title: "Professores Ativos",
+      value: mockStats.totalProfessores.toLocaleString(),
+      change: "+127 este mês",
+      trend: "up",
+      icon: GraduationCap,
+      color: "bg-green-500",
+      bgColor: "bg-green-50 border-green-200"
+    },
+    {
+      title: "Estudantes Matriculados",
+      value: mockStats.totalAlunos.toLocaleString(),
+      change: "+850 este mês",
+      trend: "up",
+      icon: Users,
+      color: "bg-purple-500",
+      bgColor: "bg-purple-50 border-purple-200"
+    },
+    {
+      title: "Taxa de Aprovação",
+      value: "94.2%",
+      change: "+2.1% vs ano anterior",
+      trend: "up",
+      icon: Award,
+      color: "bg-amber-500",
+      bgColor: "bg-amber-50 border-amber-200"
     }
-  };
+  ];
+
+  const menuItems = [
+    {
+      title: "Cadastrar Escola",
+      description: "Adicionar nova unidade escolar",
+      icon: Plus,
+      href: "/panel.sme/cadastrar-escola",
+      color: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700",
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600"
+    },
+    {
+      title: "Gerenciar Escolas",
+      description: "Visualizar e editar escolas",
+      icon: Database,
+      href: "/panel.sme/escolas",
+      color: "bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700",
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-600"
+    },
+    {
+      title: "Relatórios",
+      description: "Análises e estatísticas",
+      icon: BarChart3,
+      href: "/panel.sme/relatorios",
+      color: "bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700",
+      iconBg: "bg-purple-100",
+      iconColor: "text-purple-600"
+    },
+    {
+      title: "Professores",
+      description: "Gestão de profissionais",
+      icon: UserCheck,
+      href: "/panel.sme/professores",
+      color: "bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700",
+      iconBg: "bg-amber-100",
+      iconColor: "text-amber-600"
+    },
+    {
+      title: "Documentos",
+      description: "Arquivos e certificados",
+      icon: FileText,
+      href: "/panel.sme/documentos",
+      color: "bg-gradient-to-br from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700",
+      iconBg: "bg-rose-100",
+      iconColor: "text-rose-600"
+    },
+    {
+      title: "Notificações",
+      description: "Comunicados e avisos",
+      icon: Bell,
+      href: "/panel.sme/notificacoes",
+      color: "bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700",
+      iconBg: "bg-cyan-100",
+      iconColor: "text-cyan-600"
+    },
+    {
+      title: "Configurações",
+      description: "Ajustes do sistema",
+      icon: Settings,
+      href: "/panel.sme/configuracoes",
+      color: "bg-gradient-to-br from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700",
+      iconBg: "bg-slate-100",
+      iconColor: "text-slate-600"
+    },
+    {
+      title: "Atividades",
+      description: "Log de ações recentes",
+      icon: Activity,
+      href: "/panel.sme/atividades",
+      color: "bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700",
+      iconBg: "bg-indigo-100",
+      iconColor: "text-indigo-600"
+    }
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200"></div>
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent absolute top-0 left-0"></div>
+          </div>
+          <p className="text-slate-600 mt-4 font-medium">Carregando painel administrativo...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="min-h-screen bg-slate-50">
-        {/* Main Dashboard Container */}
-        <div className="flex h-screen bg-slate-50">
-          {/* Left Sidebar - Profile Summary */}
-          <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-lg">
-            {/* Profile Header */}
-            <div className="p-6 border-b border-slate-200">
-              <Card className="mb-6 border border-slate-200 bg-white shadow-sm">
-                <CardHeader className="text-center pb-4">
-                  <div className="flex justify-center mb-4">
-                    <Avatar className="h-20 w-20 border-2 border-slate-200">
-                      <AvatarImage src="" />
-                      <AvatarFallback className="bg-slate-100 text-slate-700 text-xl font-semibold">
-                        {user?.firstName?.[0]}{user?.lastName?.[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-900 mb-1">
-                      {user?.firstName} {user?.lastName}
-                    </h2>
-                    <p className="text-sm text-slate-600 mb-2">{user?.email}</p>
-                    <Badge className="bg-purple-50 text-purple-700 border border-purple-200 font-medium">
-                      <Shield className="h-3 w-3 mr-1" />
-                      Secretaria
-                    </Badge>
-                  </div>
-                </CardHeader>
-              </Card>
-            </div>
+      <Helmet>
+        <title>Panel SME | Secretaria Municipal de Educação</title>
+        <meta name="description" content="Dashboard administrativo para Secretarias Municipais de Educação" />
+      </Helmet>
 
-            {/* Navigation and Actions */}
-            <div className="flex-1 p-6 overflow-y-auto">
-              <div className="space-y-4">
-                <Link href="/secretary/users">
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium h-12">
-                    <Users className="h-5 w-5 mr-2" />
-                    Gestão de Usuários
-                  </Button>
-                </Link>
-                
-                <div className="grid gap-3">
-                  <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
-                    <BarChart3 className="h-4 w-4 mr-3" />
-                    Relatórios e Análises
-                  </Button>
-                  
-                  <Link href="/secretary/notifications">
-                    <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
-                      <MessageSquare className="h-4 w-4 mr-3" />
-                      Central de Notificações
-                    </Button>
-                  </Link>
-                  
-                  <Button variant="outline" className="w-full justify-start h-11 border-slate-300 hover:bg-slate-50">
-                    <Building className="h-4 w-4 mr-3" />
-                    Configurações da Escola
-                  </Button>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+        {/* Header */}
+        <header className="bg-white/95 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <img src={iAprenderLogo} alt="IAprender" className="h-12 w-12 rounded-xl shadow-lg" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
+                    Panel SME
+                  </h1>
+                  <p className="text-slate-600 text-sm font-medium">Secretaria Municipal de Educação</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 text-sm font-semibold">
+                  <Building2 className="h-4 w-4 mr-2" />
+                  Administrador SME
+                </Badge>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-slate-900">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="text-xs text-slate-600 font-medium">Secretário(a) de Educação</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto p-6 space-y-8">
+          {/* Welcome Section */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-3xl font-bold mb-2">
+                  Bem-vindo, {user?.firstName}!
+                </h2>
+                <p className="text-blue-100 text-lg font-medium">
+                  Gerencie sua rede municipal de ensino com eficiência e transparência
+                </p>
+              </div>
+              <div className="hidden md:block">
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6">
+                  <Building2 className="h-16 w-16 text-white" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Content Area */}
-          <div className="flex-1 flex flex-col">
-            {/* Header */}
-            <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-              <div className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 bg-slate-100 rounded-lg border border-slate-200">
-                      <img src={alverseLogo} alt="Alverse" className="h-8 w-8 object-contain" />
-                    </div>
-                    <div>
-                      <h1 className="text-xl font-semibold text-slate-900">Dashboard da Secretaria</h1>
-                      <p className="text-sm text-slate-600 capitalize">{formattedDate}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Button 
-                      onClick={logout}
-                      size="sm"
-                      className="gap-2 bg-purple-600 hover:bg-purple-700 text-white font-medium"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sair
-                    </Button>
-                  </div>
+          {/* Token Usage */}
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50">
+            <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
+              <CardTitle className="text-lg flex items-center gap-3">
+                <Sparkles className="h-5 w-5" />
+                Uso de Tokens IA - Secretaria
+                <Badge className="bg-white/20 text-white ml-auto">
+                  {mockStats.tokenUsage}% usado
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-2xl font-bold text-green-800">
+                    {mockStats.usedTokens.toLocaleString()} / {mockStats.monthlyTokens.toLocaleString()}
+                  </p>
+                  <p className="text-green-600 font-medium">Tokens utilizados este mês</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-green-700 font-semibold">
+                    {(mockStats.monthlyTokens - mockStats.usedTokens).toLocaleString()} restantes
+                  </p>
+                  <p className="text-xs text-green-600">Renovação em 12 dias</p>
                 </div>
               </div>
-            </header>
+              <div className="w-full bg-green-200 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${mockStats.tokenUsage}%` }}
+                ></div>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Main Content */}
-            <main className="flex-1 p-6 overflow-auto">
-              {/* Welcome Section */}
-              <Card className="mb-8 bg-gradient-to-br from-purple-500 via-indigo-600 to-blue-700 text-white border-0 shadow-2xl transform hover:scale-[1.02] transition-all duration-500">
-                <CardContent className="p-8 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent"></div>
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-4xl font-bold mb-3 drop-shadow-lg">{getGreeting()}, {user?.firstName}!</h2>
-                        <p className="text-white/90 text-xl font-medium mb-6">Central administrativa da instituição</p>
-                        <div className="flex items-center gap-8 mt-4">
-                          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                            <Users className="h-5 w-5" />
-                            <span className="font-bold">{usersLoading ? '...' : realStats?.totalStudents || 0} Alunos</span>
-                          </div>
-                          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                            <GraduationCap className="h-5 w-5" />
-                            <span className="font-bold">{usersLoading ? '...' : realStats?.totalTeachers || 0} Professores</span>
-                          </div>
-                          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
-                            <MessageSquare className="h-5 w-5" />
-                            <span className="font-bold">{statsLoading ? '...' : stats?.pendingNotifications || 0} Notificações</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 mb-2 px-4 py-2 text-base font-bold shadow-lg">
-                          <Star className="h-4 w-4 mr-2" />
-                          Admin
-                        </Badge>
-                      </div>
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {insights.map((insight, index) => (
+              <Card key={insight.title} className={`border-2 ${insight.bgColor} shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-3 rounded-2xl ${insight.color} shadow-lg`}>
+                      <insight.icon className="h-6 w-6 text-white" />
                     </div>
+                    <Badge className="bg-emerald-100 text-emerald-700 font-bold">
+                      {insight.change}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-slate-900 mb-1">{insight.value}</p>
+                    <p className="text-slate-600 font-semibold">{insight.title}</p>
                   </div>
                 </CardContent>
               </Card>
+            ))}
+          </div>
 
-              {/* Enhanced Stats Cards with Real Data */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                {/* Total Students Card */}
-                <Card className="border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] group">
-                  <CardContent className="p-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
-                        <Users className="h-8 w-8 text-white" />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
-                          +{realStats?.recentUsers || 0} novos
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-bold text-slate-600 uppercase tracking-wide">Total de Alunos</p>
-                      <p className="text-4xl font-black text-slate-900">
-                        {usersLoading ? (
-                          <div className="h-10 bg-blue-200 rounded animate-pulse"></div>
-                        ) : (
-                          realStats?.totalStudents || 0
-                        )}
-                      </p>
-                      <p className="text-xs text-slate-500 font-medium">
-                        {realStats?.activeUsers || 0} ativos de {(realStats?.totalStudents || 0) + (realStats?.totalTeachers || 0)} total
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Total Teachers Card */}
-                <Card className="border-0 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] group">
-                  <CardContent className="p-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
-                        <GraduationCap className="h-8 w-8 text-white" />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-green-600 bg-green-100 px-3 py-1 rounded-full">
-                          {Math.round(((realStats?.totalTeachers || 0) / ((realStats?.totalStudents || 0) + (realStats?.totalTeachers || 0)) * 100) || 0)}% equipe
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-bold text-slate-600 uppercase tracking-wide">Total de Professores</p>
-                      <p className="text-4xl font-black text-slate-900">
-                        {usersLoading ? (
-                          <div className="h-10 bg-green-200 rounded animate-pulse"></div>
-                        ) : (
-                          realStats?.totalTeachers || 0
-                        )}
-                      </p>
-                      <p className="text-xs text-slate-500 font-medium">
-                        Proporção: {realStats?.totalStudents && realStats?.totalTeachers ? Math.round(realStats.totalStudents / realStats.totalTeachers) : 0} alunos/professor
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Pending Approvals Card */}
-                <Card className="border-0 bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] group">
-                  <CardContent className="p-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
-                        <AlertTriangle className="h-8 w-8 text-white" />
-                      </div>
-                      <div className="text-right">
-                        <div className={`text-sm font-medium px-3 py-1 rounded-full ${
-                          realStats?.pendingUsers === 0 ? 'text-green-600 bg-green-100' : 'text-amber-600 bg-amber-100'
-                        }`}>
-                          {realStats?.pendingUsers === 0 ? 'Em dia' : 'Atenção'}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-bold text-slate-600 uppercase tracking-wide">Aprovações Pendentes</p>
-                      <p className="text-4xl font-black text-slate-900">
-                        {usersLoading ? (
-                          <div className="h-10 bg-amber-200 rounded animate-pulse"></div>
-                        ) : (
-                          realStats?.pendingUsers || 0
-                        )}
-                      </p>
-                      <p className="text-xs text-slate-500 font-medium">
-                        Aguardando aprovação da secretaria
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Notifications Card */}
-                <Card className="border-0 bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] group">
-                  <CardContent className="p-8">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
-                        <MessageSquare className="h-8 w-8 text-white" />
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-purple-600 bg-purple-100 px-3 py-1 rounded-full">
-                          {statsLoading ? '...' : Math.round((stats?.pendingNotifications || 0) / (stats?.totalNotifications || 1) * 100)}% pendente
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm font-bold text-slate-600 uppercase tracking-wide">Notificações</p>
-                      <p className="text-4xl font-black text-slate-900">
-                        {statsLoading ? (
-                          <div className="h-10 bg-purple-200 rounded animate-pulse"></div>
-                        ) : (
-                          stats?.pendingNotifications || 0
-                        )}
-                      </p>
-                      <p className="text-xs text-slate-500 font-medium">
-                        Comunicações dos professores
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Recent Users and Notifications */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                {/* Recent Users */}
-                <Card className="border-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 shadow-xl hover:shadow-2xl transition-all duration-500">
-                  <CardHeader className="border-b border-slate-100/50 bg-white/50 backdrop-blur-sm">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-                        <Users className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent">
-                          Usuários Recentes
-                        </CardTitle>
-                        <p className="text-sm text-slate-600">Últimos cadastros na plataforma</p>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    {usersLoading ? (
-                      <div className="space-y-4">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="flex items-center gap-4 p-4 bg-white/70 rounded-xl animate-pulse">
-                            <div className="w-12 h-12 bg-slate-200 rounded-full"></div>
-                            <div className="flex-1 space-y-2">
-                              <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                              <div className="h-3 bg-slate-200 rounded w-1/2"></div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : usersData && usersData.length > 0 ? (
-                      <div className="space-y-3">
-                        {usersData.slice(0, 5).map((user: any) => (
-                          <div key={user.id} className="flex items-center gap-4 p-4 bg-white/70 backdrop-blur-sm rounded-xl hover:bg-white/90 transition-all duration-200 border border-slate-200/50">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${
-                              user.role === 'teacher' ? 'bg-gradient-to-br from-green-500 to-emerald-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600'
-                            }`}>
-                              {user.firstName?.[0]}{user.lastName?.[0]}
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-bold text-slate-900">{user.firstName} {user.lastName}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge className={`text-xs ${
-                                  user.role === 'teacher' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-blue-100 text-blue-700 border-blue-200'
-                                }`}>
-                                  {user.role === 'teacher' ? 'Professor' : 'Aluno'}
-                                </Badge>
-                                <Badge className={`text-xs ${
-                                  user.status === 'active' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' :
-                                  user.status === 'pending' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                                  'bg-gray-100 text-gray-700 border-gray-200'
-                                }`}>
-                                  {user.status === 'active' ? 'Ativo' : user.status === 'pending' ? 'Pendente' : 'Inativo'}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-xs text-slate-500">
-                                {new Date(user.createdAt).toLocaleDateString('pt-BR')}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-slate-500">
-                        <Users className="h-16 w-16 mx-auto mb-4 text-slate-300" />
-                        <h3 className="text-lg font-medium text-slate-600 mb-2">Nenhum usuário</h3>
-                        <p>Não há usuários cadastrados</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Recent Notifications */}
-                <Card className="border-0 bg-gradient-to-br from-slate-50 via-amber-50 to-orange-50 shadow-xl hover:shadow-2xl transition-all duration-500">
-                  <CardHeader className="border-b border-slate-100/50 bg-white/50 backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
-                          <MessageSquare className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-xl font-bold bg-gradient-to-r from-amber-700 to-orange-700 bg-clip-text text-transparent">
-                            Notificações Recentes
-                          </CardTitle>
-                          <p className="text-sm text-slate-600">Comunicações dos professores</p>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm" className="border-slate-300 hover:bg-white/70">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Ver Todas
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-6">
-                    {notificationsLoading ? (
-                      <div className="space-y-3">
-                        {[1, 2, 3].map((i) => (
-                          <div key={i} className="p-4 bg-white/70 rounded-xl animate-pulse">
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-slate-200 rounded-lg"></div>
-                              <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                                <div className="h-3 bg-slate-200 rounded w-1/2"></div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : notifications && notifications.length > 0 ? (
-                      <div className="space-y-3">
-                        {notifications.slice(0, 4).map((notification: any) => (
-                          <div key={notification.id} className="p-4 bg-white/70 backdrop-blur-sm rounded-xl hover:bg-white/90 transition-all duration-200 border border-slate-200/50">
-                            <div className="flex items-start gap-3 mb-3">
-                              <div className={`p-2 rounded-lg flex-shrink-0 ${
-                                notification.priority === 'urgent' ? 'bg-red-100' :
-                                notification.priority === 'high' ? 'bg-orange-100' :
-                                'bg-blue-100'
-                              }`}>
-                                <AlertTriangle className={`h-4 w-4 ${
-                                  notification.priority === 'urgent' ? 'text-red-600' :
-                                  notification.priority === 'high' ? 'text-orange-600' :
-                                  'text-blue-600'
-                                }`} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="font-mono text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">
-                                    {notification.sequentialNumber}
-                                  </span>
-                                  <Badge className={`text-xs ${getPriorityColor(notification.priority)}`}>
-                                    {notification.priority.toUpperCase()}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm font-medium text-slate-900 mb-1">
-                                  {notification.teacherName} → {notification.studentName}
-                                </p>
-                                <p className="text-sm text-slate-600 line-clamp-2">{notification.message}</p>
-                                <div className="flex items-center justify-between mt-3">
-                                  <span className="text-xs text-slate-500">
-                                    {new Date(notification.createdAt).toLocaleDateString('pt-BR')}
-                                  </span>
-                                  <div className="flex gap-1">
-                                    <Button size="sm" variant="ghost" className="h-8 px-2 text-xs">
-                                      <CheckCircle className="h-3 w-3" />
-                                    </Button>
-                                    <Button size="sm" variant="ghost" className="h-8 px-2 text-xs">
-                                      Responder
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-slate-500">
-                        <MessageSquare className="h-16 w-16 mx-auto mb-4 text-slate-300" />
-                        <h3 className="text-lg font-medium text-slate-600 mb-2">Nenhuma notificação</h3>
-                        <p>Não há notificações recentes</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Link href="/secretary/users">
-                  <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group hover:scale-[1.02]">
+          {/* Tools Section */}
+          <div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+              <Target className="h-7 w-7 text-blue-600" />
+              Ferramentas Administrativas
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {menuItems.map((item, index) => (
+                <Link key={item.title} href={item.href}>
+                  <Card className="group cursor-pointer border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 bg-white">
                     <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="p-4 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-purple-200 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                          <Users className="h-8 w-8 text-white" />
+                      <div className="flex flex-col items-center text-center space-y-4">
+                        <div className={`p-4 rounded-2xl ${item.iconBg} group-hover:scale-110 transition-transform duration-300`}>
+                          <item.icon className={`h-8 w-8 ${item.iconColor}`} />
                         </div>
                         <div>
-                          <h3 className="text-lg font-bold text-slate-900 mb-1">Gestão de Usuários</h3>
-                          <p className="text-sm text-slate-600">Cadastrar e gerenciar alunos e professores</p>
+                          <h4 className="text-lg font-bold text-slate-900 mb-2">{item.title}</h4>
+                          <p className="text-slate-600 text-sm font-medium">{item.description}</p>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 </Link>
-
-                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group hover:scale-[1.02]">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-green-200 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                        <BarChart3 className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900 mb-1">Relatórios</h3>
-                        <p className="text-sm text-slate-600">Análises e métricas da instituição</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border border-slate-200/60 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group hover:scale-[1.02]">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-blue-200 shadow-lg group-hover:shadow-xl transition-all duration-300">
-                        <Building className="h-8 w-8 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900 mb-1">Configurações</h3>
-                        <p className="text-sm text-slate-600">Configurar a escola e sistema</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </main>
+              ))}
+            </div>
           </div>
-        </div>
+
+          {/* Footer */}
+          <div className="bg-white rounded-xl p-6 shadow-lg border border-slate-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-slate-900 font-bold">Sistema de Gestão Educacional</p>
+                <p className="text-slate-600 text-sm font-medium">
+                  Powered by IAprender • Versão 2.0 • Última atualização: hoje
+                </p>
+              </div>
+              <div className="flex items-center space-x-4 text-sm text-slate-600">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Online desde 08:00</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <span className="text-green-600 font-semibold">Sistema estável</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     </>
   );

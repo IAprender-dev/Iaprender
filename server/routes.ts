@@ -17,6 +17,8 @@ import {
   insertContractSchema,
   insertContractUserSchema,
   insertNotificationSchema,
+  insertSecretariaSchema,
+  insertEscolaSchema,
   users,
   companies,
   contracts,
@@ -25,7 +27,9 @@ import {
   newsletter,
   notifications,
   lessonPlans,
-  tokenUsageLogs
+  tokenUsageLogs,
+  secretarias,
+  escolas
 } from "@shared/schema";
 import { eq, sql, gte, desc } from "drizzle-orm";
 import { z } from "zod";
@@ -3670,6 +3674,199 @@ Fale sempre em português brasileiro claro e natural.`,
     } catch (error) {
       console.error('Content stats analytics error:', error);
       res.status(500).json({ message: 'Erro ao carregar estatísticas de conteúdo' });
+    }
+  });
+
+  // ESCOLAS ROUTES - SCHOOLS MANAGEMENT
+  // Get all schools (admin only)
+  app.get("/api/escolas", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const allEscolas = await db.select().from(escolas);
+      return res.status(200).json(allEscolas);
+    } catch (error) {
+      console.error("Error fetching schools:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Create new school (admin only)
+  app.post("/api/escolas", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const validatedData = insertEscolaSchema.parse(req.body);
+      
+      // Check if INEP code already exists (if provided)
+      if (validatedData.inep) {
+        const [existingInep] = await db.select()
+          .from(escolas)
+          .where(eq(escolas.inep, validatedData.inep));
+        
+        if (existingInep) {
+          return res.status(400).json({ message: "Código INEP já está em uso" });
+        }
+      }
+
+      // Check if CNPJ already exists (if provided)
+      if (validatedData.cnpj) {
+        const [existingCnpj] = await db.select()
+          .from(escolas)
+          .where(eq(escolas.cnpj, validatedData.cnpj));
+        
+        if (existingCnpj) {
+          return res.status(400).json({ message: "CNPJ já está em uso" });
+        }
+      }
+
+      const [newEscola] = await db.insert(escolas).values(validatedData).returning();
+      return res.status(201).json(newEscola);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors });
+      }
+      console.error("Error creating school:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get school by id (admin only)
+  app.get("/api/escolas/:id", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const escolaId = parseInt(req.params.id);
+      const [escola] = await db.select()
+        .from(escolas)
+        .where(eq(escolas.id, escolaId));
+      
+      if (!escola) {
+        return res.status(404).json({ message: "Escola não encontrada" });
+      }
+
+      return res.status(200).json(escola);
+    } catch (error) {
+      console.error("Error fetching school:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Update school (admin only)
+  app.patch("/api/escolas/:id", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const escolaId = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      // Check if school exists
+      const [existingEscola] = await db.select()
+        .from(escolas)
+        .where(eq(escolas.id, escolaId));
+      
+      if (!existingEscola) {
+        return res.status(404).json({ message: "Escola não encontrada" });
+      }
+
+      // Validate INEP uniqueness if being updated
+      if (updateData.inep && updateData.inep !== existingEscola.inep) {
+        const [duplicateInep] = await db.select()
+          .from(escolas)
+          .where(eq(escolas.inep, updateData.inep));
+        
+        if (duplicateInep) {
+          return res.status(400).json({ message: "Código INEP já está em uso" });
+        }
+      }
+
+      // Validate CNPJ uniqueness if being updated
+      if (updateData.cnpj && updateData.cnpj !== existingEscola.cnpj) {
+        const [duplicateCnpj] = await db.select()
+          .from(escolas)
+          .where(eq(escolas.cnpj, updateData.cnpj));
+        
+        if (duplicateCnpj) {
+          return res.status(400).json({ message: "CNPJ já está em uso" });
+        }
+      }
+
+      const [updatedEscola] = await db.update(escolas)
+        .set(updateData)
+        .where(eq(escolas.id, escolaId))
+        .returning();
+
+      return res.status(200).json(updatedEscola);
+    } catch (error) {
+      console.error("Error updating school:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Delete school (admin only)
+  app.delete("/api/escolas/:id", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const escolaId = parseInt(req.params.id);
+      
+      // Check if school exists
+      const [existingEscola] = await db.select()
+        .from(escolas)
+        .where(eq(escolas.id, escolaId));
+      
+      if (!existingEscola) {
+        return res.status(404).json({ message: "Escola não encontrada" });
+      }
+
+      await db.delete(escolas).where(eq(escolas.id, escolaId));
+      return res.status(200).json({ message: "Escola removida com sucesso" });
+    } catch (error) {
+      console.error("Error deleting school:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get secretarias (for dropdown in forms)
+  app.get("/api/secretarias", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const allSecretarias = await db.select().from(secretarias);
+      return res.status(200).json(allSecretarias);
+    } catch (error) {
+      console.error("Error fetching secretarias:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get dashboard statistics for secretary panel
+  app.get("/api/secretary/stats", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const allEscolas = await db.select().from(escolas);
+      const allUsers = await db.select().from(users);
+      
+      const stats = {
+        totalEscolas: allEscolas.length,
+        totalProfessores: allUsers.filter(u => u.role === 'teacher').length,
+        totalAlunos: allUsers.filter(u => u.role === 'student').length,
+        escolasAtivas: allEscolas.filter(e => e.status === 'ativa').length
+      };
+      
+      return res.status(200).json(stats);
+    } catch (error) {
+      console.error("Error fetching secretary stats:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Get recent activities for secretary dashboard
+  app.get("/api/secretary/recent-activities", authenticate, authorize(["admin"]), async (req, res) => {
+    try {
+      const recentEscolas = await db.select()
+        .from(escolas)
+        .orderBy(desc(escolas.createdAt))
+        .limit(5);
+      
+      const activities = recentEscolas.map(escola => ({
+        id: escola.id,
+        type: 'escola_created',
+        description: `Nova escola cadastrada: ${escola.nomeEscola}`,
+        time: escola.createdAt
+      }));
+      
+      return res.status(200).json(activities);
+    } catch (error) {
+      console.error("Error fetching recent activities:", error);
+      return res.status(500).json({ message: "Server error" });
     }
   });
 
