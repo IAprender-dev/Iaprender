@@ -123,6 +123,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 28, 2025: Created comprehensive educational administration database structure
+  - Added Secretarias table with fields: id_secretaria, nome_secretaria, nome_secretario, cnpj, endereço, bairro, cidade, estado, cep, telefone, e-mail, data_criacao, site, status
+  - Added Escolas table with fields: id_escola, nome_escola, tipo_escola, inep, cnpj, id_secretaria (FK), nome_diretor, endereço, bairro, cidade, estado, cep, telefone, e-mail, zona, data_fundacao, numero_salas, numero_alunos, status
+  - Established foreign key relationship between Escolas and Secretarias for institutional hierarchy
+  - Added enum types for status control (ativa/inativa) and classification (municipal/estadual/federal/particular, urbana/rural)
+  - Populated tables with sample data demonstrating real-world usage scenarios
+  - Updated Drizzle schema with proper TypeScript types and insert schemas
 - June 26, 2025: Complete redesign of Analytics Dashboard with billion-dollar platform aesthetics
   - Rebuilt entire /professor/analises with premium visual design and sophisticated charts
   - Added enterprise-level metrics: revenue (₹42.8M), valuation (₹847M), global presence (127 countries)
