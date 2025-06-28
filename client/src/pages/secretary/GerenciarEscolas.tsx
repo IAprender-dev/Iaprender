@@ -356,15 +356,15 @@ export default function GerenciarEscolas() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="font-bold">Nome da Escola</TableHead>
-                      <TableHead className="font-bold">Tipo</TableHead>
-                      <TableHead className="font-bold">Diretor(a)</TableHead>
-                      <TableHead className="font-bold">Localização</TableHead>
-                      <TableHead className="font-bold">Zona</TableHead>
-                      <TableHead className="font-bold">Alunos</TableHead>
-                      <TableHead className="font-bold">Contato</TableHead>
-                      <TableHead className="font-bold">Status</TableHead>
-                      <TableHead className="font-bold">Ações</TableHead>
+                      <TableHead className="font-bold text-slate-900">Nome da Escola</TableHead>
+                      <TableHead className="font-bold text-slate-900">Tipo</TableHead>
+                      <TableHead className="font-bold text-slate-900">Diretor(a)</TableHead>
+                      <TableHead className="font-bold text-slate-900">Localização</TableHead>
+                      <TableHead className="font-bold text-slate-900">Zona</TableHead>
+                      <TableHead className="font-bold text-slate-900">Alunos</TableHead>
+                      <TableHead className="font-bold text-slate-900">Contato</TableHead>
+                      <TableHead className="font-bold text-slate-900">Status</TableHead>
+                      <TableHead className="font-bold text-slate-900">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
