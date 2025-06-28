@@ -382,11 +382,11 @@ export default function GerenciarEscolas() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="font-medium">{escola.nomeDiretor || 'Não informado'}</div>
+                          <div className="font-bold text-slate-900">{escola.nomeDiretor || 'Não informado'}</div>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <div className="font-medium">{escola.cidade}, {escola.estado}</div>
+                            <div className="font-bold text-slate-900">{escola.cidade}, {escola.estado}</div>
                             <div className="text-slate-700 font-medium">{escola.bairro}</div>
                           </div>
                         </TableCell>
@@ -397,7 +397,7 @@ export default function GerenciarEscolas() {
                         </TableCell>
                         <TableCell>
                           <div className="text-center">
-                            <div className="font-semibold">{escola.numeroAlunos || 0}</div>
+                            <div className="font-bold text-slate-900 text-lg">{escola.numeroAlunos || 0}</div>
                             <div className="text-xs text-slate-700 font-medium">{escola.numeroSalas || 0} salas</div>
                           </div>
                         </TableCell>
