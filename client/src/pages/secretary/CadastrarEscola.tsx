@@ -61,7 +61,7 @@ export default function CadastrarEscola() {
     telefone: '',
     email: '',
     zona: '',
-    dataFundacao: '',
+    dataFundacao: '28/06/2025',
     numeroSalas: 0,
     numeroAlunos: 0,
     status: 'ativa'
@@ -126,6 +126,40 @@ export default function CadastrarEscola() {
       ...prev,
       [field]: value
     }));
+  };
+
+  // Máscaras de entrada
+  const maskCNPJ = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/^(\d{2})(\d)/, '$1.$2')
+      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1/$2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+      .slice(0, 18);
+  };
+
+  const maskCEP = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/^(\d{5})(\d)/, '$1-$2')
+      .slice(0, 9);
+  };
+
+  const maskPhone = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/^(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4,5})(\d{4})$/, '$1-$2')
+      .slice(0, 15);
+  };
+
+  const formatDate = (value: string) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/^(\d{2})(\d)/, '$1/$2')
+      .replace(/^(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
+      .slice(0, 10);
   };
 
 
@@ -257,9 +291,9 @@ export default function CadastrarEscola() {
                       <Input
                         id="cnpj"
                         value={formData.cnpj}
-                        onChange={(e) => handleInputChange('cnpj', e.target.value)}
-                        placeholder="Ex: 12.345.678/0001-90"
-                        className="mt-2"
+                        onChange={(e) => handleInputChange('cnpj', maskCNPJ(e.target.value))}
+                        placeholder="12.345.678/0001-90"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -271,8 +305,8 @@ export default function CadastrarEscola() {
                         id="nomeDiretor"
                         value={formData.nomeDiretor}
                         onChange={(e) => handleInputChange('nomeDiretor', e.target.value)}
-                        placeholder="Ex: Maria Silva Santos"
-                        className="mt-2"
+                        placeholder="Maria Silva Santos"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -281,7 +315,7 @@ export default function CadastrarEscola() {
                         Zona *
                       </Label>
                       <Select value={formData.zona} onValueChange={(value) => handleInputChange('zona', value)}>
-                        <SelectTrigger className="mt-2">
+                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium">
                           <SelectValue placeholder="Selecione a zona" />
                         </SelectTrigger>
                         <SelectContent>
@@ -309,9 +343,9 @@ export default function CadastrarEscola() {
                         id="endereco"
                         value={formData.endereco}
                         onChange={(e) => handleInputChange('endereco', e.target.value)}
-                        placeholder="Ex: Rua das Flores, 456"
+                        placeholder="Rua das Flores, 456"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -322,10 +356,10 @@ export default function CadastrarEscola() {
                       <Input
                         id="cep"
                         value={formData.cep}
-                        onChange={(e) => handleInputChange('cep', e.target.value)}
-                        placeholder="Ex: 01234-567"
+                        onChange={(e) => handleInputChange('cep', maskCEP(e.target.value))}
+                        placeholder="01234-567"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -337,9 +371,9 @@ export default function CadastrarEscola() {
                         id="bairro"
                         value={formData.bairro}
                         onChange={(e) => handleInputChange('bairro', e.target.value)}
-                        placeholder="Ex: Centro"
+                        placeholder="Centro"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -351,9 +385,9 @@ export default function CadastrarEscola() {
                         id="cidade"
                         value={formData.cidade}
                         onChange={(e) => handleInputChange('cidade', e.target.value)}
-                        placeholder="Ex: São Paulo"
+                        placeholder="São Paulo"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -362,7 +396,7 @@ export default function CadastrarEscola() {
                         Estado *
                       </Label>
                       <Select value={formData.estado} onValueChange={(value) => handleInputChange('estado', value)}>
-                        <SelectTrigger className="mt-2">
+                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium">
                           <SelectValue placeholder="UF" />
                         </SelectTrigger>
                         <SelectContent>
@@ -390,10 +424,10 @@ export default function CadastrarEscola() {
                       <Input
                         id="telefone"
                         value={formData.telefone}
-                        onChange={(e) => handleInputChange('telefone', e.target.value)}
-                        placeholder="Ex: (11) 3021-1234"
+                        onChange={(e) => handleInputChange('telefone', maskPhone(e.target.value))}
+                        placeholder="(11) 3021-1234"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -406,9 +440,9 @@ export default function CadastrarEscola() {
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
-                        placeholder="Ex: escola@educacao.gov.br"
+                        placeholder="escola@educacao.gov.br"
                         required
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
                   </div>
@@ -428,10 +462,10 @@ export default function CadastrarEscola() {
                       </Label>
                       <Input
                         id="dataFundacao"
-                        type="date"
                         value={formData.dataFundacao}
-                        onChange={(e) => handleInputChange('dataFundacao', e.target.value)}
-                        className="mt-2"
+                        onChange={(e) => handleInputChange('dataFundacao', formatDate(e.target.value))}
+                        placeholder="28/06/2025"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -444,9 +478,9 @@ export default function CadastrarEscola() {
                         type="number"
                         value={formData.numeroSalas}
                         onChange={(e) => handleInputChange('numeroSalas', parseInt(e.target.value) || 0)}
-                        placeholder="Ex: 12"
+                        placeholder="12"
                         min="0"
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
 
@@ -459,9 +493,9 @@ export default function CadastrarEscola() {
                         type="number"
                         value={formData.numeroAlunos}
                         onChange={(e) => handleInputChange('numeroAlunos', parseInt(e.target.value) || 0)}
-                        placeholder="Ex: 480"
+                        placeholder="480"
                         min="0"
-                        className="mt-2"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
                       />
                     </div>
                   </div>
