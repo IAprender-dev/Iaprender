@@ -292,9 +292,9 @@ export default function CadastrarEscola() {
                         id="nomeEscola"
                         value={formData.nomeEscola}
                         onChange={(e) => handleInputChange('nomeEscola', e.target.value)}
-                        placeholder="Ex: EMEF Professor João Silva"
+                        placeholder="EMEF Professor João Silva"
                         required
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -323,8 +323,8 @@ export default function CadastrarEscola() {
                         id="inep"
                         value={formData.inep}
                         onChange={(e) => handleInputChange('inep', e.target.value)}
-                        placeholder="Ex: 35052562"
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        placeholder="35052562"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -337,7 +337,7 @@ export default function CadastrarEscola() {
                         value={formData.cnpj}
                         onChange={(e) => handleInputChange('cnpj', maskCNPJ(e.target.value))}
                         placeholder="12.345.678/0001-90"
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -350,7 +350,7 @@ export default function CadastrarEscola() {
                         value={formData.nomeDiretor}
                         onChange={(e) => handleInputChange('nomeDiretor', e.target.value)}
                         placeholder="Maria Silva Santos"
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -389,7 +389,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('endereco', e.target.value)}
                         placeholder="Rua das Flores, 456"
                         required
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -403,7 +403,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('cep', maskCEP(e.target.value))}
                         placeholder="01234-567"
                         required
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -417,7 +417,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('bairro', e.target.value)}
                         placeholder="Centro"
                         required
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -431,7 +431,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('cidade', e.target.value)}
                         placeholder="São Paulo"
                         required
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -471,7 +471,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('telefone', maskPhone(e.target.value))}
                         placeholder="(11) 3021-1234"
                         required
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -486,7 +486,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="escola@educacao.gov.br"
                         required
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
                   </div>
