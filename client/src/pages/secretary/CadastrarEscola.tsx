@@ -460,13 +460,16 @@ export default function CadastrarEscola() {
                       <Label htmlFor="dataFundacao" className="text-sm font-semibold text-slate-700">
                         Data de Fundação
                       </Label>
-                      <Input
-                        id="dataFundacao"
-                        value={formData.dataFundacao}
-                        onChange={(e) => handleInputChange('dataFundacao', formatDate(e.target.value))}
-                        placeholder="28/06/2025"
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
-                      />
+                      <div className="relative mt-2">
+                        <Input
+                          id="dataFundacao"
+                          value={formData.dataFundacao}
+                          onChange={(e) => handleInputChange('dataFundacao', formatDate(e.target.value))}
+                          placeholder="28/06/2025"
+                          className="bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium pr-10"
+                        />
+                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-600 pointer-events-none" />
+                      </div>
                     </div>
 
                     <div>
@@ -480,7 +483,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('numeroSalas', parseInt(e.target.value) || 0)}
                         placeholder="12"
                         min="0"
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
@@ -495,7 +498,7 @@ export default function CadastrarEscola() {
                         onChange={(e) => handleInputChange('numeroAlunos', parseInt(e.target.value) || 0)}
                         placeholder="480"
                         min="0"
-                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500"
+                        className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
                   </div>
