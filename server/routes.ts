@@ -57,6 +57,9 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import { inepService } from './services/inep-service';
 import { realINEPService } from './services/real-inep-service';
+import { apiINEPReal } from './services/api-inep-real';
+import { baseDadosINEP } from './services/basedosdados-inep';
+import { inepOficial } from './services/inep-oficial';
 
 // Define login schema
 const loginSchema = z.object({
@@ -4016,28 +4019,28 @@ Fale sempre em português brasileiro claro e natural.`,
       let fonte = '';
 
       if (codigoInep) {
-        if (!realINEPService.validarCodigoINEP(codigoInep)) {
+        if (!inepOficial.validarCodigoINEP(codigoInep)) {
           return res.status(400).json({ 
             error: 'Código INEP inválido', 
             message: 'O código INEP deve ter 8 dígitos numéricos' 
           });
         }
         
-        console.log(`🔍 Consultando código INEP ${codigoInep} em APIs externas...`);
-        escola = await realINEPService.buscarPorCodigoINEP(codigoInep);
-        fonte = 'APIs Externas (INEP/Receita Federal)';
+        console.log(`🔍 Consultando código INEP ${codigoInep} nas fontes oficiais do INEP...`);
+        escola = await inepOficial.buscarPorCodigoINEP(codigoInep);
+        fonte = 'Portal de Dados Abertos - INEP';
         
       } else if (cnpj) {
-        if (!realINEPService.validarCNPJ(cnpj)) {
+        if (!inepOficial.validarCNPJ(cnpj)) {
           return res.status(400).json({ 
             error: 'CNPJ inválido', 
             message: 'O CNPJ deve ter 14 dígitos numéricos' 
           });
         }
         
-        console.log(`🔍 Consultando CNPJ ${cnpj} em APIs externas...`);
-        escola = await realINEPService.buscarPorCNPJ(cnpj);
-        fonte = 'APIs Externas (Receita Federal)';
+        console.log(`🔍 Consultando CNPJ ${cnpj} nas fontes oficiais...`);
+        escola = await inepOficial.buscarPorCNPJ(cnpj);
+        fonte = 'Portal de Dados Abertos - INEP';
       }
 
       if (!escola) {
@@ -4048,7 +4051,7 @@ Fale sempre em português brasileiro claro e natural.`,
       }
 
       // Retorna dados formatados para preencher o formulário
-      const dadosFormulario = realINEPService.formatarDadosEscola(escola);
+      const dadosFormulario = escola;
 
       res.json({
         success: true,
@@ -4056,7 +4059,7 @@ Fale sempre em português brasileiro claro e natural.`,
         data: dadosFormulario,
         source: fonte,
         timestamp: new Date().toISOString(),
-        message: 'Dados encontrados e carregados com sucesso a partir de fontes oficiais!'
+        message: 'Dados encontrados e carregados com sucesso a partir das fontes oficiais do INEP!'
       });
 
     } catch (error: any) {
