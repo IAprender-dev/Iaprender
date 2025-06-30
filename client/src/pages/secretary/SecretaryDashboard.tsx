@@ -8,7 +8,7 @@ import {
   Building2, School, Users, FileText, BarChart3, Settings, 
   Plus, Database, MapPin, Calendar, Phone, Mail, 
   BookOpen, UserCheck, ClipboardList, Bell, GraduationCap,
-  TrendingUp, Target, Award, Activity, Clock, Sparkles
+  TrendingUp, Target, Award, Activity, Clock, Sparkles, Coins
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import iAprenderLogo from "@assets/IAprender_1750262377399.png";
@@ -106,22 +106,13 @@ export default function SecretaryDashboard() {
       iconColor: "text-purple-600"
     },
     {
-      title: "Professores",
-      description: "Gestão de profissionais",
-      icon: UserCheck,
-      href: "/panel.sme/professores",
+      title: "Gerenciamento de Tokens",
+      description: "Controle de tokens IA",
+      icon: Coins,
+      href: "/panel.sme/tokens",
       color: "bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700",
       iconBg: "bg-amber-100",
       iconColor: "text-amber-600"
-    },
-    {
-      title: "Documentos",
-      description: "Arquivos e certificados",
-      icon: FileText,
-      href: "/panel.sme/documentos",
-      color: "bg-gradient-to-br from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700",
-      iconBg: "bg-rose-100",
-      iconColor: "text-rose-600"
     },
     {
       title: "Notificações",
@@ -131,24 +122,6 @@ export default function SecretaryDashboard() {
       color: "bg-gradient-to-br from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700",
       iconBg: "bg-cyan-100",
       iconColor: "text-cyan-600"
-    },
-    {
-      title: "Configurações",
-      description: "Ajustes do sistema",
-      icon: Settings,
-      href: "/panel.sme/configuracoes",
-      color: "bg-gradient-to-br from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700",
-      iconBg: "bg-slate-100",
-      iconColor: "text-slate-600"
-    },
-    {
-      title: "Atividades",
-      description: "Log de ações recentes",
-      icon: Activity,
-      href: "/panel.sme/atividades",
-      color: "bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700",
-      iconBg: "bg-indigo-100",
-      iconColor: "text-indigo-600"
     }
   ];
 
