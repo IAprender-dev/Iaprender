@@ -5,6 +5,7 @@ import {
   OpenAIService, 
   AnthropicService, 
   PerplexityService,
+  BedrockService,
   checkAIServicesAvailability
 } from "../utils/ai-services";
 

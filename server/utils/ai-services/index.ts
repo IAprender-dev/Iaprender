@@ -1,8 +1,9 @@
 import * as OpenAIService from './openai';
 import * as AnthropicService from './anthropic';
 import * as PerplexityService from './perplexity';
+import * as BedrockService from './bedrock';
 
-export { OpenAIService, AnthropicService, PerplexityService };
+export { OpenAIService, AnthropicService, PerplexityService, BedrockService };
 
 // Tipagem de entrada para interface comum
 export interface AIRequestBase {
@@ -19,6 +20,7 @@ export async function checkAIServicesAvailability() {
     openai: !!process.env.OPENAI_API_KEY,
     anthropic: !!process.env.ANTHROPIC_API_KEY,
     perplexity: !!process.env.PERPLEXITY_API_KEY,
+    bedrock: !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_REGION),
   };
 
   return availability;
@@ -37,6 +39,12 @@ export function getTokenEstimates() {
     },
     perplexity: {
       search: 1.0, // ~1.0 tokens por caractere (estimativa)
+    },
+    bedrock: {
+      claude: 0.8,  // ~0.8 tokens por caractere (similar ao Anthropic)
+      titan: 0.7,   // ~0.7 tokens por caractere
+      llama: 0.9,   // ~0.9 tokens por caractere
+      jurassic: 0.8, // ~0.8 tokens por caractere
     },
   };
 }
