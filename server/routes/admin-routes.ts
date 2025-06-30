@@ -46,11 +46,11 @@ export async function getSystemMetrics(req: Request, res: Response) {
     // Calculate monthly revenue based on contracts
     const revenueStats = await db
       .select({
-        totalRevenue: sql<number>`coalesce(sum(monthly_cost), 0)`,
-        totalContracts: sql<number>`count(*)`,
-        activeContracts: sql<number>`count(case when status = 'active' then 1 end)`
+        revenue: sql<number>`coalesce(sum((c.total_licenses - c.available_licenses) * c.price_per_license), 0)`
       })
-      .from(contracts);
+      .from(contracts)
+      .innerJoin(companies, eq(contracts.companyId, companies.id))
+      .where(eq(contracts.status, 'active'));
 
     // Get latest system health metrics
     const healthMetrics = await db
