@@ -89,33 +89,33 @@ export default function TokenManagement() {
         <meta name="description" content="Gestão e distribuição de tokens IA para escolas municipais" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-100">
         {/* Header */}
-        <header className="bg-white/95 backdrop-blur-xl border-b border-blue-200/60 sticky top-0 z-50 shadow-sm">
+        <header className="bg-white/95 backdrop-blur-xl border-b border-orange-200/60 sticky top-0 z-50 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-20">
               <div className="flex items-center space-x-4">
                 <Link href="/panel.sme">
-                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-900 hover:bg-blue-50">
+                  <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-900 hover:bg-orange-50">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Voltar
                   </Button>
                 </Link>
-                <div className="h-8 w-px bg-blue-200 mx-2"></div>
+                <div className="h-8 w-px bg-orange-200 mx-2"></div>
                 <div className="relative">
                   <img src={iAprenderLogo} alt="IAprender" className="h-12 w-12 rounded-xl shadow-lg" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-700 to-amber-600 bg-clip-text text-transparent">
                     Gerenciamento de Tokens
                   </h1>
-                  <p className="text-blue-600 text-sm font-medium">Distribuição e controle de tokens IA</p>
+                  <p className="text-orange-600 text-sm font-medium">Distribuição e controle de tokens IA</p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-4">
-                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 text-sm font-semibold">
+                <Badge className="bg-gradient-to-r from-orange-500 to-amber-600 text-white px-4 py-2 text-sm font-semibold">
                   <Coins className="h-4 w-4 mr-2" />
                   {tokenData.remainingTokens.toLocaleString()} disponíveis
                 </Badge>
@@ -208,7 +208,7 @@ export default function TokenManagement() {
             {/* Token Allocation Form */}
             <div className="lg:col-span-2">
               <Card className="shadow-xl border-0">
-                <CardHeader className="bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-t-lg">
+                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
                   <CardTitle className="text-xl flex items-center gap-3">
                     <Settings className="h-6 w-6" />
                     Alocar Tokens
@@ -225,7 +225,7 @@ export default function TokenManagement() {
                           value={formData.allocationType}
                           onValueChange={(value) => setFormData(prev => ({ ...prev, allocationType: value }))}
                         >
-                          <SelectTrigger className="border-slate-300 focus:border-amber-500">
+                          <SelectTrigger className="border-slate-300 focus:border-orange-500">
                             <SelectValue placeholder="Selecione o tipo" />
                           </SelectTrigger>
                           <SelectContent>
@@ -246,7 +246,7 @@ export default function TokenManagement() {
                           onValueChange={(value) => setFormData(prev => ({ ...prev, targetSchool: value }))}
                           disabled={formData.allocationType === 'todas-escolas'}
                         >
-                          <SelectTrigger className="border-slate-300 focus:border-amber-500">
+                          <SelectTrigger className="border-slate-300 focus:border-orange-500">
                             <SelectValue placeholder="Selecione a escola" />
                           </SelectTrigger>
                           <SelectContent>
@@ -269,7 +269,7 @@ export default function TokenManagement() {
                             placeholder="Ex: 10000"
                             value={formData.tokenAmount}
                             onChange={(e) => setFormData(prev => ({ ...prev, tokenAmount: e.target.value }))}
-                            className="border-slate-300 focus:border-amber-500 pl-10"
+                            className="border-slate-300 focus:border-orange-500 pl-10"
                           />
                           <Coins className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                         </div>
@@ -285,7 +285,7 @@ export default function TokenManagement() {
                             type="date"
                             value={formData.expirationDate}
                             onChange={(e) => setFormData(prev => ({ ...prev, expirationDate: e.target.value }))}
-                            className="border-slate-300 focus:border-amber-500 pl-10"
+                            className="border-slate-300 focus:border-orange-500 pl-10"
                           />
                           <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                         </div>
@@ -299,7 +299,7 @@ export default function TokenManagement() {
                           value={formData.priority}
                           onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
                         >
-                          <SelectTrigger className="border-slate-300 focus:border-amber-500">
+                          <SelectTrigger className="border-slate-300 focus:border-orange-500">
                             <SelectValue placeholder="Selecione a prioridade" />
                           </SelectTrigger>
                           <SelectContent>
@@ -321,7 +321,7 @@ export default function TokenManagement() {
                         placeholder="Descreva o motivo da alocação de tokens..."
                         value={formData.description}
                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        className="border-slate-300 focus:border-amber-500 min-h-[100px]"
+                        className="border-slate-300 focus:border-orange-500 min-h-[100px]"
                       />
                     </div>
 
@@ -354,7 +354,7 @@ export default function TokenManagement() {
                         <Button
                           type="submit"
                           disabled={isLoading || !formData.allocationType || !formData.tokenAmount}
-                          className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-8"
+                          className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-8"
                         >
                           {isLoading ? (
                             <>
@@ -378,7 +378,7 @@ export default function TokenManagement() {
             {/* Usage Statistics */}
             <div className="space-y-6">
               <Card className="shadow-lg border-0">
-                <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
                   <CardTitle className="text-lg flex items-center gap-3">
                     <BarChart3 className="h-5 w-5" />
                     Top Escolas - Uso de Tokens
@@ -410,7 +410,7 @@ export default function TokenManagement() {
               </Card>
 
               <Card className="shadow-lg border-0">
-                <CardHeader className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-t-lg">
+                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
                   <CardTitle className="text-lg flex items-center gap-3">
                     <TrendingUp className="h-5 w-5" />
                     Estatísticas Rápidas
