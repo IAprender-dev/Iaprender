@@ -48,6 +48,8 @@ export default function Auth() {
     if (user) {
       if (user.role === "admin") {
         navigate("/admin/master");
+      } else if (user.role === "municipal_manager") {
+        navigate("/municipal/dashboard");
       } else if (user.role === "teacher") {
         navigate("/professor");
       } else if (user.role === "student") {

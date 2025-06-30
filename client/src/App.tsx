@@ -24,6 +24,7 @@ import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
 import TeacherNotificationCenter from "@/pages/teacher/NotificationCenter";
 import AdminMasterDashboard from "@/pages/admin/AdminMasterDashboard";
+import MunicipalManagerDashboard from "@/pages/municipal/MunicipalManagerDashboard";
 
 import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
@@ -129,6 +130,9 @@ function Router() {
       
       {/* Admin Master Dashboard */}
       <Route path="/admin/master" component={AdminMasterDashboard} />
+      
+      {/* Municipal Manager Dashboard */}
+      <Route path="/municipal/dashboard" component={MunicipalManagerDashboard} />
       
       {/* Student routes */}
       <Route path="/student" component={StudentDashboard} />

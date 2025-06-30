@@ -108,6 +108,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Redirect based on user role
       if (userData.role === 'admin') {
         setLocation('/admin/master'); // Admin users redirected to master dashboard
+      } else if (userData.role === 'municipal_manager') {
+        setLocation('/municipal/dashboard'); // Municipal managers redirected to municipal dashboard
       } else if (userData.role === 'teacher') {
         setLocation('/professor');
       } else if (userData.role === 'student') {

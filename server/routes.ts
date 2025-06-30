@@ -55,6 +55,7 @@ import { registerTokenRoutes } from "./modules/tokenCounter/routes/tokenRoutes";
 import jwt from "jsonwebtoken";
 import axios from "axios";
 import * as adminRoutes from "./routes/admin-routes";
+import { registerMunicipalRoutes } from "./routes/municipal-routes";
 
 
 // Define login schema
@@ -1228,6 +1229,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/admin/audit-logs', authenticateAdmin, adminRoutes.getAuditLogs);
   app.post('/api/admin/security-alerts', authenticateAdmin, adminRoutes.createSecurityAlert);
   app.post('/api/admin/system-metrics', authenticateAdmin, adminRoutes.recordSystemMetric);
+
+  // Register Municipal Manager Routes
+  registerMunicipalRoutes(app);
 
   // Create and return HTTP server
   const httpServer = createServer(app);
