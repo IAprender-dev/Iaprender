@@ -28,13 +28,7 @@ import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
 import StudentDashboard from "@/pages/student/StudentDashboard";
 import StudentCourses from "@/pages/student/StudentCourses";
 import StudentNotificationCenter from "@/pages/student/NotificationCenter";
-import SecretaryDashboard from "@/pages/secretary/SecretaryDashboard";
-import UserManagement from "@/pages/secretary/UserManagement";
-import NotificationCenter from "@/pages/secretary/NotificationCenter";
-import CadastrarEscola from "@/pages/secretary/CadastrarEscola";
-import GerenciarEscolas from "@/pages/secretary/GerenciarEscolas";
-import SMENotificationCenter from "@/pages/secretary/SMENotificationCenter";
-import TokenManagement from "@/pages/secretary/TokenManagement";
+
 
 import StudentProfile from "@/pages/student/StudentProfile";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
@@ -151,15 +145,7 @@ function Router() {
       <Route path="/aluno/tutor-ia" component={AITutorChat} />
       <Route path="/aluno/tutor-voz" component={VoiceTutorTeacher} />
       
-      {/* Secretary routes */}
-      <ProtectedRoute path="/secretary" component={SecretaryDashboard} roles={['admin']} />
-      <ProtectedRoute path="/panel.sme" component={SecretaryDashboard} roles={['admin']} />
-      <ProtectedRoute path="/panel.sme/cadastrar-escola" component={CadastrarEscola} roles={['admin']} />
-      <ProtectedRoute path="/panel.sme/escolas" component={GerenciarEscolas} roles={['admin']} />
-      <ProtectedRoute path="/panel.sme/tokens" component={TokenManagement} roles={['admin']} />
-      <ProtectedRoute path="/panel.sme/notificacoes" component={SMENotificationCenter} roles={['admin']} />
-      <ProtectedRoute path="/secretary/users" component={UserManagement} roles={['admin']} />
-      <ProtectedRoute path="/secretary/notifications" component={NotificationCenter} roles={['admin']} />
+
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

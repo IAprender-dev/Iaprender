@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Redirect based on user role
       if (userData.role === 'admin') {
-        setLocation('/secretary');
+        setLocation('/professor'); // Admin users redirected to teacher dashboard
       } else if (userData.role === 'teacher') {
         setLocation('/professor');
       } else if (userData.role === 'student') {

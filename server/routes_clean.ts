@@ -17,7 +17,8 @@ import {
   insertContractSchema,
   insertContractUserSchema,
   insertNotificationSchema,
-
+  insertSecretariaSchema,
+  insertEscolaSchema,
   users,
   companies,
   contracts,
@@ -1195,15 +1196,3 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
-
-
-
-
-
-
-  // Create and return HTTP server
-  const httpServer = createServer(app);
-  
-  return httpServer;
-}

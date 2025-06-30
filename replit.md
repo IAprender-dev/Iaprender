@@ -123,6 +123,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 30, 2025: MAJOR ARCHITECTURAL CHANGE - Complete removal of secretary-level functionality
+  - Removed all secretary dashboard pages, components, and routes from frontend
+  - Eliminated all secretary-related API endpoints and database operations from backend
+  - Removed secretarias and escolas database tables and their associated schemas
+  - Updated all navigation and authentication flows to redirect admin users to teacher dashboard
+  - Cleaned up notification systems to remove secretary references
+  - Simplified system architecture by eliminating the three-tier user role system
 - June 30, 2025: Complete AWS Bedrock integration with comprehensive token monitoring system
   - Implemented AWS Bedrock service with support for Claude 3.5 Sonnet, Amazon Titan, Meta Llama 2, and AI21 Jurassic models
   - Created comprehensive token monitoring system with usage tracking, cost calculation, and alert system

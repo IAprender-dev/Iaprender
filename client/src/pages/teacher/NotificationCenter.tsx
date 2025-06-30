@@ -72,7 +72,7 @@ export default function TeacherNotificationCenter() {
   const [respondingTo, setRespondingTo] = useState<number | null>(null);
   
   const [newNotification, setNewNotification] = useState({
-    recipientType: 'secretary',
+    recipientType: 'all_students',
     selectedRecipients: [] as number[],
     title: '',
     message: '',
@@ -736,7 +736,6 @@ export default function TeacherNotificationCenter() {
                         <SelectValue placeholder="Selecione o destinatário" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="secretary">Secretaria</SelectItem>
                         <SelectItem value="all_students">Todos os Estudantes</SelectItem>
                       </SelectContent>
                     </Select>
@@ -822,7 +821,7 @@ export default function TeacherNotificationCenter() {
                   <Button 
                     variant="outline"
                     onClick={() => setNewNotification({
-                      recipientType: 'secretary',
+                      recipientType: 'all_students',
                       selectedRecipients: [],
                       title: '',
                       message: '',

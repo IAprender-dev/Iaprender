@@ -15,10 +15,7 @@ export const newsletterStatusEnum = pgEnum('newsletter_status', ['subscribed', '
 export const notificationStatusEnum = pgEnum('notification_status', ['pending', 'read', 'archived']);
 export const notificationPriorityEnum = pgEnum('notification_priority', ['low', 'medium', 'high', 'urgent']);
 export const notificationTypeEnum = pgEnum('notification_type', ['behavior', 'academic', 'administrative', 'communication']);
-export const secretariaStatusEnum = pgEnum('secretaria_status', ['ativa', 'inativa']);
-export const escolaStatusEnum = pgEnum('escola_status', ['ativa', 'inativa']);
-export const tipoEscolaEnum = pgEnum('tipo_escola', ['municipal', 'estadual', 'federal', 'particular']);
-export const zonaEscolaEnum = pgEnum('zona_escola', ['urbana', 'rural']);
+
 
 // Users table
 export const users = pgTable("users", {
@@ -375,45 +372,7 @@ export const notifications = pgTable("notifications", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Secretarias table - Administração educacional
-export const secretarias = pgTable("secretarias", {
-  id: serial("id_secretaria").primaryKey(),
-  nomeSecretaria: text("nome_secretaria").notNull(),
-  nomeSecretario: text("nome_secretario").notNull(), // responsável
-  cnpj: text("cnpj").notNull().unique(),
-  endereco: text("endereco").notNull(),
-  bairro: text("bairro").notNull(),
-  cidade: text("cidade").notNull(),
-  estado: text("estado").notNull(),
-  cep: text("cep").notNull(),
-  telefone: text("telefone").notNull(),
-  email: text("email").notNull(),
-  dataCriacao: timestamp("data_criacao").defaultNow().notNull(),
-  site: text("site"),
-  status: secretariaStatusEnum("status").default('ativa').notNull(),
-});
 
-// Escolas table - Unidades educacionais
-export const escolas = pgTable("escolas", {
-  id: serial("id_escola").primaryKey(),
-  nomeEscola: text("nome_escola").notNull(),
-  inep: text("inep").unique(), // código da escola no INEP
-  cnpj: text("cnpj").unique(),
-  idSecretaria: integer("id_secretaria").references(() => secretarias.id).notNull(),
-  nomeDiretor: text("nome_diretor"),
-  endereco: text("endereco").notNull(),
-  bairro: text("bairro").notNull(),
-  cidade: text("cidade").notNull(),
-  estado: text("estado").notNull(),
-  cep: text("cep").notNull(),
-  telefone: text("telefone").notNull(),
-  email: text("email").notNull(),
-  zona: zonaEscolaEnum("zona").notNull(),
-  numeroSalas: integer("numero_salas"),
-  numeroAlunos: integer("numero_alunos"),
-  status: escolaStatusEnum("status").default('ativa').notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
 
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -561,15 +520,7 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   respondedAt: true,
 });
 
-export const insertSecretariaSchema = createInsertSchema(secretarias).omit({
-  id: true,
-  dataCriacao: true,
-});
 
-export const insertEscolaSchema = createInsertSchema(escolas).omit({
-  id: true,
-  createdAt: true,
-});
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -654,8 +605,4 @@ export type InsertTokenProviderRate = z.infer<typeof insertTokenProviderRateSche
 // Notifications types already defined above
 export type TokenProviderRate = typeof tokenProviderRates.$inferSelect;
 
-export type InsertSecretaria = z.infer<typeof insertSecretariaSchema>;
-export type Secretaria = typeof secretarias.$inferSelect;
 
-export type InsertEscola = z.infer<typeof insertEscolaSchema>;
-export type Escola = typeof escolas.$inferSelect;

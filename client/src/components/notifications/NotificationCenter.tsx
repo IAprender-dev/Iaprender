@@ -85,16 +85,8 @@ export default function NotificationCenter() {
     },
   });
 
-  // Fetch users for recipient selection
-  const { data: allUsers } = useQuery({
-    queryKey: ['/api/secretary/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/secretary/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
-    enabled: user?.role === 'admin',
-  });
+  // Fetch users for recipient selection - disabled due to secretary API removal
+  const allUsers = [];
 
   // Send notification mutation
   const sendNotificationMutation = useMutation({

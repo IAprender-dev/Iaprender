@@ -58,7 +58,7 @@ export default function PerplexityPage() {
       case 'student':
         return '/student/dashboard';
       case 'admin':
-        return '/secretary';
+        return '/professor';
       default:
         return '/student/dashboard';
     }

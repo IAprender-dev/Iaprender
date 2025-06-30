@@ -97,7 +97,7 @@ export default function CentralIA() {
       case 'student':
         return '/student/dashboard';
       case 'admin':
-        return '/secretary';
+        return '/professor';
       default:
         return '/student/dashboard'; // Default to student dashboard
     }
