@@ -208,7 +208,7 @@ export default function TokenManagement() {
             {/* Token Allocation Form */}
             <div className="lg:col-span-2">
               <Card className="shadow-xl border-0">
-                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
+                <CardHeader className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 rounded-t-lg border-b border-orange-200">
                   <CardTitle className="text-xl flex items-center gap-3">
                     <Settings className="h-6 w-6" />
                     Alocar Tokens
@@ -378,7 +378,7 @@ export default function TokenManagement() {
             {/* Usage Statistics */}
             <div className="space-y-6">
               <Card className="shadow-lg border-0">
-                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
+                <CardHeader className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 rounded-t-lg border-b border-orange-200">
                   <CardTitle className="text-lg flex items-center gap-3">
                     <BarChart3 className="h-5 w-5" />
                     Top Escolas - Uso de Tokens
@@ -410,7 +410,7 @@ export default function TokenManagement() {
               </Card>
 
               <Card className="shadow-lg border-0">
-                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
+                <CardHeader className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 rounded-t-lg border-b border-orange-200">
                   <CardTitle className="text-lg flex items-center gap-3">
                     <TrendingUp className="h-5 w-5" />
                     Estatísticas Rápidas
