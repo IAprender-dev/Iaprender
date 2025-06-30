@@ -209,8 +209,11 @@ export const tokenUsage = pgTable("token_usage", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
   contractId: integer("contract_id").references(() => contracts.id).notNull(),
-  aiToolId: integer("ai_tool_id").references(() => aiTools.id).notNull(),
+  aiToolId: integer("ai_tool_id").references(() => aiTools.id),
+  provider: text("provider").notNull(), // openai, anthropic, perplexity, bedrock
+  model: text("model"), // modelo específico usado
   tokensUsed: integer("tokens_used").notNull(),
+  cost: doublePrecision("cost").default(0), // custo em USD
   requestData: jsonb("request_data"),
   responseData: jsonb("response_data"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

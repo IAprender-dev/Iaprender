@@ -1326,4 +1326,265 @@ INSTRUÇÕES ESPECÍFICAS:
   }
 });
 
+// ================================
+// ROTAS AWS BEDROCK
+// ================================
+
+// Rota para listar modelos disponíveis no Bedrock
+aiRouter.get("/bedrock/models", authenticate, async (_req: Request, res: Response) => {
+  try {
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      return res.status(503).json({ message: "AWS Bedrock service is not available. Missing credentials." });
+    }
+
+    const models = await BedrockService.listAvailableModels();
+    return res.status(200).json({ models });
+  } catch (error: any) {
+    console.error("Error listing Bedrock models:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Rota para verificar conectividade com Bedrock
+aiRouter.get("/bedrock/health", authenticate, async (_req: Request, res: Response) => {
+  try {
+    const healthCheck = await BedrockService.checkBedrockConnectivity();
+    return res.status(200).json(healthCheck);
+  } catch (error: any) {
+    console.error("Error checking Bedrock connectivity:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Rota para chat com Claude 3.5 Sonnet via Bedrock
+aiRouter.post("/bedrock/claude/chat", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const { prompt, model, temperature, maxTokens, systemPrompt } = chatRequestSchema.extend({
+      systemPrompt: z.string().optional(),
+    }).parse(req.body);
+    
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      return res.status(503).json({ message: "AWS Bedrock service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+    
+    const result = await BedrockService.generateClaudeCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: model || BedrockService.BEDROCK_MODELS.CLAUDE_3_5_SONNET,
+      temperature: temperature || 0.7,
+      maxTokens: maxTokens || 1000,
+      systemPrompt: systemPrompt || "Você é um assistente educacional especializado da plataforma IAprender, focado em ajudar professores e alunos brasileiros.",
+    });
+    
+    return res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in Bedrock Claude chat endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Rota para geração de texto com Amazon Titan
+aiRouter.post("/bedrock/titan/chat", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const { prompt, model, temperature, maxTokens } = chatRequestSchema.parse(req.body);
+    
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      return res.status(503).json({ message: "AWS Bedrock service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+    
+    const result = await BedrockService.generateTitanCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: model || BedrockService.BEDROCK_MODELS.TITAN_TEXT_G1_EXPRESS,
+      temperature: temperature || 0.7,
+      maxTokens: maxTokens || 1000,
+    });
+    
+    return res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in Bedrock Titan chat endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Rota para geração de texto com Meta Llama
+aiRouter.post("/bedrock/llama/chat", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const { prompt, model, temperature, maxTokens, topP } = chatRequestSchema.extend({
+      topP: z.number().min(0).max(1).optional(),
+    }).parse(req.body);
+    
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      return res.status(503).json({ message: "AWS Bedrock service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+    
+    const result = await BedrockService.generateLlamaCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: model || BedrockService.BEDROCK_MODELS.LLAMA_2_13B,
+      temperature: temperature || 0.7,
+      maxTokens: maxTokens || 1000,
+      topP: topP || 0.9,
+    });
+    
+    return res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in Bedrock Llama chat endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Rota para geração de texto com AI21 Jurassic
+aiRouter.post("/bedrock/jurassic/chat", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const { prompt, model, temperature, maxTokens, topP } = chatRequestSchema.extend({
+      topP: z.number().min(0).max(1).optional(),
+    }).parse(req.body);
+    
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      return res.status(503).json({ message: "AWS Bedrock service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+    
+    const result = await BedrockService.generateJurassicCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: model || BedrockService.BEDROCK_MODELS.JURASSIC_2_MID,
+      temperature: temperature || 0.7,
+      maxTokens: maxTokens || 1000,
+      topP: topP || 0.9,
+    });
+    
+    return res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in Bedrock Jurassic chat endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Rota universal para Bedrock (automaticamente escolhe o modelo baseado no parâmetro)
+aiRouter.post("/bedrock/chat", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const { prompt, model, temperature, maxTokens, systemPrompt } = chatRequestSchema.extend({
+      systemPrompt: z.string().optional(),
+    }).parse(req.body);
+    
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      return res.status(503).json({ message: "AWS Bedrock service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+    
+    const result = await BedrockService.generateCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: model || BedrockService.BEDROCK_MODELS.CLAUDE_3_5_SONNET,
+      temperature: temperature || 0.7,
+      maxTokens: maxTokens || 1000,
+      systemPrompt,
+    });
+    
+    return res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in Bedrock universal chat endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
+// Rota para geração de atividades educacionais com Bedrock
+aiRouter.post("/bedrock/education/generate-activity", authenticate, hasContract, async (req: Request, res: Response) => {
+  try {
+    const schema = z.object({
+      tema: z.string().min(1).max(200),
+      materia: z.string(),
+      serie: z.string(),
+      tipoAtividade: z.string(),
+      quantidadeQuestoes: z.number().int().min(1).max(20),
+      nivelDificuldade: z.string(),
+      incluirGabarito: z.boolean(),
+      model: z.string().optional(),
+    });
+    
+    const params = schema.parse(req.body);
+    
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      return res.status(503).json({ message: "AWS Bedrock service is not available" });
+    }
+    
+    const userId = req.session.user?.id || 1;
+    const contractId = req.session.user?.contractId || 1;
+    
+    const prompt = `
+      Você é um educador especialista que cria atividades educacionais de alta qualidade seguindo as diretrizes da BNCC.
+      
+      Crie uma atividade educacional completa com as seguintes características:
+      - Tema: ${params.tema}
+      - Matéria: ${params.materia}
+      - Série/Ano: ${params.serie}
+      - Tipo de atividade: ${params.tipoAtividade}
+      - Quantidade de questões: ${params.quantidadeQuestoes} (IMPORTANTE: gere EXATAMENTE este número de questões)
+      - Nível de dificuldade: ${params.nivelDificuldade}
+      - Incluir gabarito: ${params.incluirGabarito ? 'Sim' : 'Não'}
+      
+      Formate a atividade em HTML com design moderno e profissional, seguindo padrões educacionais brasileiros.
+      Use elementos visuais apropriados e organize o conteúdo de forma clara e didática.
+    `;
+    
+    const result = await BedrockService.generateCompletion({
+      userId,
+      contractId,
+      prompt,
+      model: params.model || BedrockService.BEDROCK_MODELS.CLAUDE_3_5_SONNET,
+      temperature: 0.7,
+      maxTokens: 4000,
+      systemPrompt: "Você é um especialista em educação brasileira que cria atividades pedagógicas alinhadas à BNCC.",
+    });
+    
+    return res.status(200).json({
+      content: result.content,
+      tokensUsed: result.tokensUsed,
+      provider: result.provider,
+      model: result.model,
+    });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: error.errors });
+    }
+    console.error("Error in Bedrock activity generation endpoint:", error);
+    return res.status(500).json({ message: error.message });
+  }
+});
+
 export default aiRouter;
