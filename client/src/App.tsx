@@ -33,6 +33,7 @@ import UserManagement from "@/pages/secretary/UserManagement";
 import NotificationCenter from "@/pages/secretary/NotificationCenter";
 import CadastrarEscola from "@/pages/secretary/CadastrarEscola";
 import GerenciarEscolas from "@/pages/secretary/GerenciarEscolas";
+import SMENotificationCenter from "@/pages/secretary/SMENotificationCenter";
 
 import StudentProfile from "@/pages/student/StudentProfile";
 import StudyPlanning from "@/pages/student/StudyPlanningSimple";
@@ -181,6 +182,7 @@ function Router() {
       <ProtectedRoute path="/panel.sme" component={SecretaryDashboard} roles={['admin']} />
       <ProtectedRoute path="/panel.sme/cadastrar-escola" component={CadastrarEscola} roles={['admin']} />
       <ProtectedRoute path="/panel.sme/escolas" component={GerenciarEscolas} roles={['admin']} />
+      <ProtectedRoute path="/panel.sme/notificacoes" component={SMENotificationCenter} roles={['admin']} />
       <ProtectedRoute path="/secretary/users" component={UserManagement} roles={['admin']} />
       <ProtectedRoute path="/secretary/notifications" component={NotificationCenter} roles={['admin']} />
       

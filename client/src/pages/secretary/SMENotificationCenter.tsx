@@ -92,7 +92,7 @@ export default function SMENotificationCenter() {
   // Create notification mutation
   const createNotificationMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('/api/notifications', 'POST', data);
+      return apiRequest('POST', '/api/notifications', data);
     },
     onSuccess: () => {
       toast({
@@ -114,7 +114,7 @@ export default function SMENotificationCenter() {
   // Mark as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      return apiRequest(`/api/notifications/${notificationId}/read`, 'PATCH');
+      return apiRequest('PATCH', `/api/notifications/${notificationId}/read`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/secretary/notifications'] });
@@ -124,7 +124,7 @@ export default function SMENotificationCenter() {
   // Archive notification mutation
   const archiveNotificationMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      return apiRequest(`/api/notifications/${notificationId}/archive`, 'PATCH');
+      return apiRequest('PATCH', `/api/notifications/${notificationId}/archive`);
     },
     onSuccess: () => {
       toast({
@@ -138,7 +138,7 @@ export default function SMENotificationCenter() {
   // Respond to notification mutation
   const respondNotificationMutation = useMutation({
     mutationFn: async ({ notificationId, response }: { notificationId: number; response: string }) => {
-      return apiRequest(`/api/notifications/${notificationId}/respond`, 'PATCH', { response });
+      return apiRequest('PATCH', `/api/notifications/${notificationId}/respond`, { response });
     },
     onSuccess: () => {
       toast({
@@ -150,7 +150,7 @@ export default function SMENotificationCenter() {
   });
 
   // Filter notifications
-  const filteredNotifications = notifications.filter((notification: NotificationData) => {
+  const filteredNotifications = (notifications as NotificationData[]).filter((notification: NotificationData) => {
     const matchesStatus = filterStatus === 'all' || notification.status === filterStatus;
     const matchesPriority = filterPriority === 'all' || notification.priority === filterPriority;
     const matchesSearch = searchTerm === '' || 
@@ -258,15 +258,15 @@ export default function SMENotificationCenter() {
                 placeholder="Buscar notificações..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 border-green-300 focus:border-green-500 text-slate-900 font-medium"
+                className="pl-10 border-green-300 focus:border-green-500 text-slate-900 font-medium placeholder:text-slate-800 placeholder:font-medium"
               />
             </div>
           </div>
           
           <div className="flex gap-3">
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-40 border-green-300 focus:border-green-500">
-                <SelectValue placeholder="Status" />
+              <SelectTrigger className="w-40 border-green-300 focus:border-green-500 text-slate-900 font-medium">
+                <SelectValue placeholder="Status" className="placeholder:text-slate-800 placeholder:font-medium" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
@@ -277,8 +277,8 @@ export default function SMENotificationCenter() {
             </Select>
 
             <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger className="w-40 border-green-300 focus:border-green-500">
-                <SelectValue placeholder="Prioridade" />
+              <SelectTrigger className="w-40 border-green-300 focus:border-green-500 text-slate-900 font-medium">
+                <SelectValue placeholder="Prioridade" className="placeholder:text-slate-800 placeholder:font-medium" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
@@ -308,8 +308,8 @@ export default function SMENotificationCenter() {
                         value={newNotification.recipientType} 
                         onValueChange={(value) => setNewNotification({...newNotification, recipientType: value, recipientId: ''})}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
+                        <SelectTrigger className="text-slate-900 font-medium">
+                          <SelectValue placeholder="Selecione o tipo" className="placeholder:text-slate-800 placeholder:font-medium" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="admin_general">Administradores Gerais</SelectItem>
@@ -326,11 +326,11 @@ export default function SMENotificationCenter() {
                           value={newNotification.recipientId} 
                           onValueChange={(value) => setNewNotification({...newNotification, recipientId: value})}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione a escola" />
+                          <SelectTrigger className="text-slate-900 font-medium">
+                            <SelectValue placeholder="Selecione a escola" className="placeholder:text-slate-800 placeholder:font-medium" />
                           </SelectTrigger>
                           <SelectContent>
-                            {schools.map((school: School) => (
+                            {(schools as School[]).map((school: School) => (
                               <SelectItem key={school.id} value={school.id.toString()}>
                                 {school.nomeEscola}
                               </SelectItem>
@@ -348,8 +348,8 @@ export default function SMENotificationCenter() {
                         value={newNotification.priority} 
                         onValueChange={(value: any) => setNewNotification({...newNotification, priority: value})}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
+                        <SelectTrigger className="text-slate-900 font-medium">
+                          <SelectValue className="placeholder:text-slate-800 placeholder:font-medium" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="low">Baixa</SelectItem>
@@ -366,8 +366,8 @@ export default function SMENotificationCenter() {
                         value={newNotification.type} 
                         onValueChange={(value: any) => setNewNotification({...newNotification, type: value})}
                       >
-                        <SelectTrigger>
-                          <SelectValue />
+                        <SelectTrigger className="text-slate-900 font-medium">
+                          <SelectValue className="placeholder:text-slate-800 placeholder:font-medium" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="administrative">Administrativo</SelectItem>
@@ -385,7 +385,7 @@ export default function SMENotificationCenter() {
                       value={newNotification.title}
                       onChange={(e) => setNewNotification({...newNotification, title: e.target.value})}
                       placeholder="Digite o título da notificação"
-                      className="text-slate-900 font-medium"
+                      className="text-slate-900 font-medium placeholder:text-slate-800 placeholder:font-medium"
                     />
                   </div>
 
@@ -397,7 +397,7 @@ export default function SMENotificationCenter() {
                       onChange={(e) => setNewNotification({...newNotification, message: e.target.value})}
                       placeholder="Digite a mensagem da notificação"
                       rows={4}
-                      className="text-slate-900 font-medium"
+                      className="text-slate-900 font-medium placeholder:text-slate-800 placeholder:font-medium"
                     />
                   </div>
 
@@ -521,7 +521,7 @@ export default function SMENotificationCenter() {
                             value={responseText}
                             onChange={(e) => setResponseText(e.target.value)}
                             rows={3}
-                            className="text-slate-900 font-medium"
+                            className="text-slate-900 font-medium placeholder:text-slate-800 placeholder:font-medium"
                           />
                           <div className="flex gap-2">
                             <Button
