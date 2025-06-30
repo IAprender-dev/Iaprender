@@ -40,6 +40,7 @@ export default function VoiceTutorChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioQueueRef = useRef<string[]>([]);
   const isPlayingRef = useRef(false);
+  const wsRef = useRef<WebSocket | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,13 +76,35 @@ export default function VoiceTutorChat() {
   const cleanup = () => {
     if (wsRef.current) {
       wsRef.current.close();
+      wsRef.current = null;
+    }
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    if (dataChannelRef.current) {
+      dataChannelRef.current = null;
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
-    if (audioContextRef.current) {
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
       audioContextRef.current.close();
+      audioContextRef.current = null;
     }
+    
+    // Reset states
+    setConnectionState('disconnected');
+    setIsConnected(false);
+    setConversationState('idle');
+    setCurrentTranscript('');
+    audioQueueRef.current = [];
+    isPlayingRef.current = false;
   };
 
   const connectToRealtimeAPI = useCallback(async () => {
@@ -227,35 +250,31 @@ Lembre-se: Fale de forma natural e educativa, deixe a lousa para apoio visual!`,
       
       await pc.setRemoteDescription(answer);
       
-      ws.onmessage = (event) => {
-        try {
-          if (typeof event.data === 'string') {
-            const message = JSON.parse(event.data);
-            handleRealtimeMessage(message);
-          } else {
-            // Handle binary audio data
-            console.log('Received binary audio data');
-          }
-        } catch (error) {
-          console.error('Failed to parse WebSocket message:', error, event.data);
+      // Handle peer connection state changes
+      pc.onconnectionstatechange = () => {
+        console.log('Connection state:', pc.connectionState);
+        if (pc.connectionState === 'connected') {
+          console.log('WebRTC connection established');
+        } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+          setConnectionState('disconnected');
+          setIsConnected(false);
+          setConversationState('idle');
+          toast({
+            title: "Conexão perdida",
+            description: "A conexão com a ProVersa foi interrompida.",
+            variant: "destructive",
+          });
         }
       };
       
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+      pc.onicecandidateerror = (event) => {
+        console.error('ICE candidate error:', event);
         setConnectionState('error');
         toast({
           title: "Erro de conexão",
-          description: "Não foi possível conectar com o servidor de voz.",
+          description: "Não foi possível estabelecer conexão de áudio.",
           variant: "destructive",
         });
-      };
-      
-      ws.onclose = () => {
-        console.log('Disconnected from Realtime API');
-        setConnectionState('disconnected');
-        setIsConnected(false);
-        setConversationState('idle');
       };
       
     } catch (error) {
@@ -269,12 +288,12 @@ Lembre-se: Fale de forma natural e educativa, deixe a lousa para apoio visual!`,
     }
   }, [user?.firstName, toast]);
 
-  const setupAudioProcessing = (audioContext: AudioContext, stream: MediaStream, ws: WebSocket) => {
+  const setupAudioProcessing = (audioContext: AudioContext, stream: MediaStream, dataChannel: RTCDataChannel) => {
     const source = audioContext.createMediaStreamSource(stream);
     const processor = audioContext.createScriptProcessor(4096, 1, 1);
     
     processor.onaudioprocess = (event) => {
-      if (ws.readyState === WebSocket.OPEN && conversationState !== 'speaking') {
+      if (dataChannel.readyState === 'open' && conversationState !== 'speaking') {
         const inputData = event.inputBuffer.getChannelData(0);
         
         // Convert float32 to int16 PCM
@@ -283,8 +302,8 @@ Lembre-se: Fale de forma natural e educativa, deixe a lousa para apoio visual!`,
           pcmData[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
         }
         
-        // Send audio data to Realtime API
-        ws.send(JSON.stringify({
+        // Send audio data to Realtime API via data channel
+        dataChannel.send(JSON.stringify({
           type: 'input_audio_buffer.append',
           audio: arrayBufferToBase64(pcmData.buffer)
         }));
@@ -310,8 +329,8 @@ Lembre-se: Fale de forma natural e educativa, deixe a lousa para apoio visual!`,
         setIsConnected(true);
         setConversationState('listening');
         
-        if (wsRef.current && audioContextRef.current && streamRef.current) {
-          setupAudioProcessing(audioContextRef.current, streamRef.current, wsRef.current);
+        if (dataChannelRef.current && audioContextRef.current && streamRef.current) {
+          setupAudioProcessing(audioContextRef.current, streamRef.current, dataChannelRef.current);
           toast({
             title: "Conectado!",
             description: "Conversa por voz ativa. Fale naturalmente.",
@@ -377,8 +396,8 @@ Lembre-se: Fale de forma natural e educativa, deixe a lousa para apoio visual!`,
         console.log('User stopped speaking');
         setConversationState('thinking');
         // Commit the input audio buffer to get transcription
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({
+        if (dataChannelRef.current && dataChannelRef.current.readyState === 'open') {
+          dataChannelRef.current.send(JSON.stringify({
             type: 'input_audio_buffer.commit'
           }));
         }
