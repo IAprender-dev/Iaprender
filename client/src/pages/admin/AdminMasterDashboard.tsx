@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "wouter";
+import { LogOut } from "lucide-react";
 
 interface SystemMetrics {
   totalContracts: number;
@@ -33,7 +34,7 @@ interface SystemMetrics {
 }
 
 export default function AdminMasterDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
 
   // Mock data para demonstração
@@ -70,11 +71,19 @@ export default function AdminMasterDashboard() {
                 <p className="text-xs text-gray-500">Administrador Principal</p>
               </div>
               <Avatar>
-                <AvatarImage src={user?.profileImage} />
                 <AvatarFallback className="bg-violet-600 text-white">
                   {user?.firstName?.[0]}{user?.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={logout}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </div>

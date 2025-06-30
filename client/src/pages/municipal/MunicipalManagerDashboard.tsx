@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { AlertCircle, CheckCircle, Users, School, TrendingUp, Settings, Eye, UserPlus, AlertTriangle, BarChart3, Calendar, Clock, Shield, Building2, MapPin, Phone, Mail, FileText, Monitor } from 'lucide-react';
+import { AlertCircle, CheckCircle, Users, School, TrendingUp, Settings, Eye, UserPlus, AlertTriangle, BarChart3, Calendar, Clock, Shield, Building2, MapPin, Phone, Mail, FileText, Monitor, LogOut } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/lib/AuthContext';
 
 interface MunicipalStats {
   totalSchools: number;
@@ -55,6 +56,7 @@ interface MunicipalPolicy {
 }
 
 export default function MunicipalManagerDashboard() {
+  const { logout } = useAuth();
   const { toast } = useToast();
   const [selectedTab, setSelectedTab] = useState('overview');
 
@@ -216,6 +218,15 @@ export default function MunicipalManagerDashboard() {
                 <Users className="h-4 w-4 mr-1" />
                 Gestor Municipal
               </Badge>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={logout}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </div>

@@ -36,7 +36,8 @@ import {
   DollarSign,
   Calendar,
   Send,
-  Download
+  Download,
+  LogOut
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "wouter";
@@ -101,7 +102,7 @@ interface SchoolReport {
 }
 
 export default function SchoolDirectorDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -271,11 +272,19 @@ export default function SchoolDirectorDashboard() {
                 <p className="text-xs text-gray-500">Diretor</p>
               </div>
               <Avatar>
-                <AvatarImage src={user?.profileImage} />
                 <AvatarFallback className="bg-blue-600 text-white">
                   {user?.firstName?.[0]}{user?.lastName?.[0]}
                 </AvatarFallback>
               </Avatar>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={logout}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
             </div>
           </div>
         </div>

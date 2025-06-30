@@ -123,6 +123,11 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 30, 2025: Added logout buttons to all three administrative dashboards
+  - Added red-styled logout buttons with LogOut icon in headers of AdminMasterDashboard, MunicipalManagerDashboard, and SchoolDirectorDashboard
+  - Buttons positioned consistently on the right side of each dashboard header
+  - Integrated with existing useAuth logout functionality for secure session termination
+  - Maintained visual consistency with red hover states and border styling across all dashboards
 - June 30, 2025: Updated all three administrative dashboards with clean, simple layouts
   - Changed background colors from dark/gradient themes to light gray-50 for consistency with teacher/student dashboards
   - Simplified AdminMasterDashboard with clean card layouts and basic tab structure
