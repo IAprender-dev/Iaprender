@@ -397,7 +397,6 @@ export const secretarias = pgTable("secretarias", {
 export const escolas = pgTable("escolas", {
   id: serial("id_escola").primaryKey(),
   nomeEscola: text("nome_escola").notNull(),
-  tipoEscola: tipoEscolaEnum("tipo_escola").notNull(),
   inep: text("inep").unique(), // código da escola no INEP
   cnpj: text("cnpj").unique(),
   idSecretaria: integer("id_secretaria").references(() => secretarias.id).notNull(),
@@ -410,7 +409,6 @@ export const escolas = pgTable("escolas", {
   telefone: text("telefone").notNull(),
   email: text("email").notNull(),
   zona: zonaEscolaEnum("zona").notNull(),
-  dataFundacao: date("data_fundacao"),
   numeroSalas: integer("numero_salas"),
   numeroAlunos: integer("numero_alunos"),
   status: escolaStatusEnum("status").default('ativa').notNull(),

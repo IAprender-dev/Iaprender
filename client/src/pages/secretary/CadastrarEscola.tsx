@@ -5,23 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { 
   ArrowLeft, School, MapPin, Building2, Phone, Mail, 
-  Users, Calendar, FileText, CheckCircle, AlertCircle,
-  Save, RefreshCw, ChevronLeft, ChevronRight
+  Users, FileText, CheckCircle, AlertCircle,
+  Save, RefreshCw
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 interface EscolaForm {
   nomeEscola: string;
-  tipoEscola: string;
   inep: string;
   cnpj: string;
   idSecretaria: number;
@@ -34,7 +32,6 @@ interface EscolaForm {
   telefone: string;
   email: string;
   zona: string;
-  dataFundacao: string;
   numeroSalas: number;
   numeroAlunos: number;
   status: string;
@@ -45,13 +42,11 @@ export default function CadastrarEscola() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-
   const [formData, setFormData] = useState<EscolaForm>({
     nomeEscola: '',
-    tipoEscola: '',
     inep: '',
     cnpj: '',
-    idSecretaria: 1, // Default to first secretaria
+    idSecretaria: 1,
     nomeDiretor: '',
     endereco: '',
     bairro: '',
@@ -61,7 +56,6 @@ export default function CadastrarEscola() {
     telefone: '',
     email: '',
     zona: '',
-    dataFundacao: '28/06/2025',
     numeroSalas: 0,
     numeroAlunos: 0,
     status: 'ativa'
@@ -74,11 +68,7 @@ export default function CadastrarEscola() {
   });
 
   const createEscolaMutation = useMutation({
-    mutationFn: (data: EscolaForm) => apiRequest('/api/escolas', {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' }
-    }),
+    mutationFn: (data: EscolaForm) => apiRequest('POST', '/api/escolas', data),
     onSuccess: () => {
       toast({
         title: "Escola cadastrada com sucesso!",
@@ -87,7 +77,6 @@ export default function CadastrarEscola() {
       // Reset form
       setFormData({
         nomeEscola: '',
-        tipoEscola: '',
         inep: '',
         cnpj: '',
         idSecretaria: 1,
@@ -100,7 +89,6 @@ export default function CadastrarEscola() {
         telefone: '',
         email: '',
         zona: '',
-        dataFundacao: '',
         numeroSalas: 0,
         numeroAlunos: 0,
         status: 'ativa'
@@ -115,28 +103,6 @@ export default function CadastrarEscola() {
       });
     },
   });
-
-  // Estado para o date picker
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState({ day: 28, month: 6, year: 2025 });
-  const datePickerRef = useRef<HTMLDivElement>(null);
-
-  // Fechar popup ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
-        setShowDatePicker(false);
-      }
-    };
-
-    if (showDatePicker) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showDatePicker]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,38 +141,6 @@ export default function CadastrarEscola() {
       .replace(/(\d{4,5})(\d{4})$/, '$1-$2')
       .slice(0, 15);
   };
-
-  const formatDate = (value: string) => {
-    return value
-      .replace(/\D/g, '')
-      .replace(/^(\d{2})(\d)/, '$1/$2')
-      .replace(/^(\d{2})\/(\d{2})(\d)/, '$1/$2/$3')
-      .slice(0, 10);
-  };
-
-  // Funções para o date picker
-  const handleDateSelect = (day: number, month: number, year: number) => {
-    const formattedDate = `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
-    handleInputChange('dataFundacao', formattedDate);
-    setSelectedDate({ day, month, year });
-    setShowDatePicker(false);
-  };
-
-  const handleCalendarClick = () => {
-    setShowDatePicker(!showDatePicker);
-  };
-
-  // Gerar dias do mês
-  const getDaysInMonth = (month: number, year: number) => {
-    return new Date(year, month, 0).getDate();
-  };
-
-  const months = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-  ];
-
-
 
   const estados = [
     'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 
@@ -299,23 +233,6 @@ export default function CadastrarEscola() {
                     </div>
 
                     <div>
-                      <Label htmlFor="tipoEscola" className="text-sm font-semibold text-slate-700">
-                        Tipo de Escola *
-                      </Label>
-                      <Select value={formData.tipoEscola} onValueChange={(value) => handleInputChange('tipoEscola', value)}>
-                        <SelectTrigger className="mt-2 bg-slate-50 border-slate-300 focus:bg-white focus:border-blue-500 data-[placeholder]:text-slate-800 data-[placeholder]:font-medium text-slate-900 font-medium">
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="municipal">Municipal</SelectItem>
-                          <SelectItem value="estadual">Estadual</SelectItem>
-                          <SelectItem value="federal">Federal</SelectItem>
-                          <SelectItem value="particular">Particular</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
                       <Label htmlFor="inep" className="text-sm font-semibold text-slate-700">
                         Código INEP
                       </Label>
@@ -401,7 +318,7 @@ export default function CadastrarEscola() {
                         id="cep"
                         value={formData.cep}
                         onChange={(e) => handleInputChange('cep', maskCEP(e.target.value))}
-                        placeholder="01234-567"
+                        placeholder="12345-678"
                         required
                         className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
@@ -457,27 +374,26 @@ export default function CadastrarEscola() {
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Phone className="h-5 w-5 text-blue-600" />
-                    <h3 className="text-lg font-bold text-slate-900">Informações de Contato</h3>
+                    <h3 className="text-lg font-bold text-slate-900">Contato</h3>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="telefone" className="text-sm font-semibold text-slate-700">
-                        Telefone *
+                        Telefone
                       </Label>
                       <Input
                         id="telefone"
                         value={formData.telefone}
                         onChange={(e) => handleInputChange('telefone', maskPhone(e.target.value))}
-                        placeholder="(11) 3021-1234"
-                        required
+                        placeholder="(11) 99999-9999"
                         className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
 
                     <div>
                       <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
-                        E-mail *
+                        E-mail
                       </Label>
                       <Input
                         id="email"
@@ -485,7 +401,6 @@ export default function CadastrarEscola() {
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="escola@educacao.gov.br"
-                        required
                         className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
@@ -499,100 +414,7 @@ export default function CadastrarEscola() {
                     <h3 className="text-lg font-bold text-slate-900">Dados Adicionais</h3>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <Label htmlFor="dataFundacao" className="text-sm font-semibold text-slate-700">
-                        Data de Fundação
-                      </Label>
-                      <div className="relative mt-2">
-                        <Input
-                          id="dataFundacao"
-                          value={formData.dataFundacao}
-                          onChange={(e) => handleInputChange('dataFundacao', formatDate(e.target.value))}
-                          placeholder="28/06/2025"
-                          className="bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium pr-10"
-                        />
-                        <Calendar 
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-600 cursor-pointer hover:text-blue-600 transition-colors" 
-                          onClick={handleCalendarClick}
-                        />
-                        
-                        {/* Date Picker Popup */}
-                        {showDatePicker && (
-                          <div ref={datePickerRef} className="absolute top-full left-0 mt-2 bg-white border border-slate-300 rounded-lg shadow-lg z-50 p-4 w-80">
-                            <div className="flex items-center justify-between mb-4">
-                              <button
-                                type="button"
-                                onClick={() => setSelectedDate(prev => ({ ...prev, year: prev.year - 1 }))}
-                                className="p-1 hover:bg-slate-100 rounded"
-                              >
-                                <ChevronLeft className="h-4 w-4" />
-                              </button>
-                              <span className="font-medium text-slate-900">{selectedDate.year}</span>
-                              <button
-                                type="button"
-                                onClick={() => setSelectedDate(prev => ({ ...prev, year: prev.year + 1 }))}
-                                className="p-1 hover:bg-slate-100 rounded"
-                              >
-                                <ChevronRight className="h-4 w-4" />
-                              </button>
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                              {months.map((month, index) => (
-                                <button
-                                  key={month}
-                                  type="button"
-                                  onClick={() => setSelectedDate(prev => ({ ...prev, month: index + 1 }))}
-                                  className={`p-2 text-sm rounded hover:bg-blue-100 ${
-                                    selectedDate.month === index + 1 
-                                      ? 'bg-blue-500 text-white' 
-                                      : 'text-slate-700'
-                                  }`}
-                                >
-                                  {month.slice(0, 3)}
-                                </button>
-                              ))}
-                            </div>
-                            
-                            <div className="grid grid-cols-7 gap-1 mb-4">
-                              {Array.from({ length: getDaysInMonth(selectedDate.month, selectedDate.year) }, (_, i) => i + 1).map(day => (
-                                <button
-                                  key={day}
-                                  type="button"
-                                  onClick={() => handleDateSelect(day, selectedDate.month, selectedDate.year)}
-                                  className={`p-2 text-sm rounded hover:bg-blue-100 ${
-                                    selectedDate.day === day 
-                                      ? 'bg-blue-500 text-white' 
-                                      : 'text-slate-700'
-                                  }`}
-                                >
-                                  {day}
-                                </button>
-                              ))}
-                            </div>
-                            
-                            <div className="flex justify-end gap-2">
-                              <button
-                                type="button"
-                                onClick={() => setShowDatePicker(false)}
-                                className="px-3 py-1 text-sm text-slate-600 hover:text-slate-800"
-                              >
-                                Cancelar
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleDateSelect(selectedDate.day, selectedDate.month, selectedDate.year)}
-                                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
-                              >
-                                Confirmar
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <Label htmlFor="numeroSalas" className="text-sm font-semibold text-slate-700">
                         Número de Salas
@@ -603,7 +425,6 @@ export default function CadastrarEscola() {
                         value={formData.numeroSalas}
                         onChange={(e) => handleInputChange('numeroSalas', parseInt(e.target.value) || 0)}
                         placeholder="12"
-                        min="0"
                         className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
@@ -617,38 +438,40 @@ export default function CadastrarEscola() {
                         type="number"
                         value={formData.numeroAlunos}
                         onChange={(e) => handleInputChange('numeroAlunos', parseInt(e.target.value) || 0)}
-                        placeholder="480"
-                        min="0"
+                        placeholder="450"
                         className="mt-2 bg-slate-50 border-slate-300 placeholder:text-slate-800 placeholder:font-medium focus:bg-white focus:border-blue-500 text-slate-900 font-medium"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Submit Button */}
-                <div className="flex items-center justify-end space-x-4 pt-6 border-t">
+                {/* Buttons */}
+                <div className="flex justify-end space-x-4 pt-6 border-t border-slate-200">
                   <Button
                     type="button"
-                    variant="outline"
-                    onClick={() => window.history.back()}
-                    className="flex items-center gap-2"
+                    onClick={() => setFormData({
+                      nomeEscola: '', inep: '', cnpj: '', idSecretaria: 1, nomeDiretor: '',
+                      endereco: '', bairro: '', cidade: '', estado: '', cep: '', telefone: '',
+                      email: '', zona: '', numeroSalas: 0, numeroAlunos: 0, status: 'ativa'
+                    })}
+                    className="bg-slate-100 text-slate-700 hover:bg-slate-200"
                   >
-                    <ArrowLeft className="h-4 w-4" />
-                    Cancelar
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Limpar
                   </Button>
                   <Button
                     type="submit"
                     disabled={createEscolaMutation.isPending}
-                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
                   >
                     {createEscolaMutation.isPending ? (
                       <>
-                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                         Cadastrando...
                       </>
                     ) : (
                       <>
-                        <Save className="h-4 w-4" />
+                        <Save className="h-4 w-4 mr-2" />
                         Cadastrar Escola
                       </>
                     )}

@@ -8,13 +8,13 @@ import {
   Building2, School, Users, FileText, BarChart3, Settings, 
   Plus, Database, MapPin, Calendar, Phone, Mail, 
   BookOpen, UserCheck, ClipboardList, Bell, GraduationCap,
-  TrendingUp, Target, Award, Activity, Clock, Sparkles, Coins
+  TrendingUp, Target, Award, Activity, Clock, Sparkles, Coins, LogOut
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import iAprenderLogo from "@assets/IAprender_1750262377399.png";
 
 export default function SecretaryDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   // Fetch dashboard statistics
   const { data: stats, isLoading } = useQuery({
@@ -175,6 +175,15 @@ export default function SecretaryDashboard() {
                   </p>
                   <p className="text-xs text-slate-600 font-medium">Secretário(a) de Educação</p>
                 </div>
+                <Button
+                  onClick={logout}
+                  variant="outline"
+                  size="sm"
+                  className="border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </Button>
               </div>
             </div>
           </div>
