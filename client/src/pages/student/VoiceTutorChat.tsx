@@ -108,8 +108,17 @@ export default function VoiceTutorChat() {
   };
 
   const connectToRealtimeAPI = useCallback(async () => {
+    // Prevent multiple simultaneous connections
+    if (connectionState === 'connecting' || isConnected) {
+      console.log('Connection already in progress or established');
+      return;
+    }
+    
     try {
       setConnectionState('connecting');
+      
+      // Clean up any existing connections
+      cleanup();
       
       // Get ephemeral token from our backend
       const sessionResponse = await fetch('/api/realtime/session', {
@@ -129,6 +138,10 @@ export default function VoiceTutorChat() {
       const pc = new RTCPeerConnection();
       peerConnectionRef.current = pc;
       
+      // Initialize audio context
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = audioContext;
+      
       // Get microphone access
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -145,8 +158,14 @@ export default function VoiceTutorChat() {
       const dc = pc.createDataChannel('oai-events');
       dataChannelRef.current = dc;
       
-      dc.addEventListener('open', () => {
+      dc.addEventListener('open', async () => {
         console.log('Data channel opened');
+        
+        // Resume audio context if needed
+        if (audioContextRef.current?.state === 'suspended') {
+          await audioContextRef.current.resume();
+        }
+        
         setConnectionState('connected');
         setIsConnected(true);
         setConversationState('listening');
@@ -219,6 +238,19 @@ Lembre-se: Fale de forma natural e educativa, deixe a lousa para apoio visual!`,
       
       dc.addEventListener('error', (error) => {
         console.error('Data channel error:', error);
+        setConnectionState('error');
+        toast({
+          title: "Erro na conexão",
+          description: "Problema na comunicação com a ProVersa.",
+          variant: "destructive",
+        });
+      });
+      
+      dc.addEventListener('close', () => {
+        console.log('Data channel closed');
+        setConnectionState('disconnected');
+        setIsConnected(false);
+        setConversationState('idle');
       });
       
       // Create offer and set local description
@@ -479,21 +511,17 @@ Lembre-se: Fale de forma natural e educativa, deixe a lousa para apoio visual!`,
     setMessages(prev => [...prev, message]);
   };
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
+    console.log('Disconnecting ProVersa...');
     cleanup();
-    setConnectionState('disconnected');
-    setIsConnected(false);
-    setConversationState('idle');
     setConversationTime(0);
-    audioQueueRef.current = [];
-    isPlayingRef.current = false;
     
     toast({
       title: "Desconectado",
       description: "Conversa por voz finalizada.",
       variant: "default",
     });
-  };
+  }, []);
 
   const clearConversation = () => {
     setMessages([{
