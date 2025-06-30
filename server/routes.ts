@@ -42,6 +42,7 @@ import { sendLoginCredentials } from "./utils/email-service";
 import { sendWhatsAppCredentials } from "./utils/whatsapp-service";
 import aiRouter from "./routes/ai-routes";
 import translateRoutes from "./routes/translate-routes";
+import tokenRouter from "./routes/token-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse-new";
@@ -3214,12 +3215,14 @@ O documento deve ser educativo, bem estruturado e adequado para impressão. Use 
     }
   });
 
-  // Apply token monitoring middleware to AI routes
-  app.use('/api/ai', tokenAlertMiddleware);
-  app.use('/api/ai', tokenInterceptor);
+  // Register AI routes
+  app.use('/api/ai', aiRouter);
+  
+  // Register translate routes
+  app.use('/api/translate', translateRoutes);
   
   // Register token management routes
-  registerTokenRoutes(app);
+  app.use('/api/tokens', tokenRouter);
 
   const httpServer = createServer(app);
   

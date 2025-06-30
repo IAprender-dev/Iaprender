@@ -123,6 +123,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 30, 2025: Complete AWS Bedrock integration with comprehensive token monitoring system
+  - Implemented AWS Bedrock service with support for Claude 3.5 Sonnet, Amazon Titan, Meta Llama 2, and AI21 Jurassic models
+  - Created comprehensive token monitoring system with usage tracking, cost calculation, and alert system
+  - Added AWS Bedrock API routes for all supported models (Claude, Titan, Llama, Jurassic)
+  - Built token dashboard with real-time monitoring, usage analytics, and pricing information
+  - Enhanced database schema to support provider-specific token tracking with cost analysis
+  - Integrated AWS credentials management for secure Bedrock access
+  - Created token management API endpoints for usage statistics, alerts, and pricing data
+  - Implemented token limit checking and alert system for usage monitoring
+  - Added comprehensive dashboard for teachers to monitor AWS Bedrock usage and costs
 - June 28, 2025: Cleaned up school registration system by removing non-functional APIs
   - Removed "Buscar Dados" button from school registration form
   - Deleted all CNPJ and INEP code lookup APIs (/api/cnpj/autocompletar, /api/inep/autocompletar, /api/inep/escola endpoints)
