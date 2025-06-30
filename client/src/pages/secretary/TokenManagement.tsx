@@ -208,7 +208,7 @@ export default function TokenManagement() {
             {/* Token Allocation Form */}
             <div className="lg:col-span-2">
               <Card className="shadow-xl border-0">
-                <CardHeader className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 rounded-t-lg border-b border-orange-200">
+                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
                   <CardTitle className="text-xl flex items-center gap-3">
                     <Settings className="h-6 w-6" />
                     Alocar Tokens
@@ -378,7 +378,7 @@ export default function TokenManagement() {
             {/* Usage Statistics */}
             <div className="space-y-6">
               <Card className="shadow-lg border-0">
-                <CardHeader className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 rounded-t-lg border-b border-orange-200">
+                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
                   <CardTitle className="text-lg flex items-center gap-3">
                     <BarChart3 className="h-5 w-5" />
                     Top Escolas - Uso de Tokens
@@ -389,8 +389,8 @@ export default function TokenManagement() {
                     {tokenData.topSchools.map((school, index) => (
                       <div key={school.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                         <div className="flex items-center space-x-3">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                            index === 0 ? 'bg-amber-500' : index === 1 ? 'bg-slate-400' : 'bg-orange-500'
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                            index === 0 ? 'bg-amber-100 text-amber-800' : index === 1 ? 'bg-slate-100 text-slate-700' : 'bg-orange-100 text-orange-800'
                           }`}>
                             {index + 1}
                           </div>
@@ -410,7 +410,7 @@ export default function TokenManagement() {
               </Card>
 
               <Card className="shadow-lg border-0">
-                <CardHeader className="bg-gradient-to-r from-orange-100 to-amber-100 text-orange-800 rounded-t-lg border-b border-orange-200">
+                <CardHeader className="bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-t-lg">
                   <CardTitle className="text-lg flex items-center gap-3">
                     <TrendingUp className="h-5 w-5" />
                     Estatísticas Rápidas
