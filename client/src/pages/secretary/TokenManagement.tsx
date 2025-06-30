@@ -214,11 +214,11 @@ export default function TokenManagement() {
                     Alocar Tokens
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-8">
+                <CardContent className="p-8 bg-orange-50">
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="allocationType" className="text-sm font-semibold text-slate-700">
+                        <Label htmlFor="allocationType" className="text-sm font-semibold text-orange-800">
                           Tipo de Alocação
                         </Label>
                         <Select
@@ -238,7 +238,7 @@ export default function TokenManagement() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="targetSchool" className="text-sm font-semibold text-slate-700">
+                        <Label htmlFor="targetSchool" className="text-sm font-semibold text-orange-800">
                           Escola de Destino
                         </Label>
                         <Select
@@ -259,7 +259,7 @@ export default function TokenManagement() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="tokenAmount" className="text-sm font-semibold text-slate-700">
+                        <Label htmlFor="tokenAmount" className="text-sm font-semibold text-orange-800">
                           Quantidade de Tokens
                         </Label>
                         <div className="relative">
@@ -276,7 +276,7 @@ export default function TokenManagement() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="expirationDate" className="text-sm font-semibold text-slate-700">
+                        <Label htmlFor="expirationDate" className="text-sm font-semibold text-orange-800">
                           Data de Expiração
                         </Label>
                         <div className="relative">
@@ -292,7 +292,7 @@ export default function TokenManagement() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="priority" className="text-sm font-semibold text-slate-700">
+                        <Label htmlFor="priority" className="text-sm font-semibold text-orange-800">
                           Prioridade
                         </Label>
                         <Select
@@ -313,7 +313,7 @@ export default function TokenManagement() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="description" className="text-sm font-semibold text-slate-700">
+                      <Label htmlFor="description" className="text-sm font-semibold text-orange-800">
                         Descrição/Justificativa
                       </Label>
                       <Textarea
@@ -384,7 +384,7 @@ export default function TokenManagement() {
                     Top Escolas - Uso de Tokens
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-6 bg-orange-50">
                   <div className="space-y-4">
                     {tokenData.topSchools.map((school, index) => (
                       <div key={school.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
@@ -416,24 +416,24 @@ export default function TokenManagement() {
                     Estatísticas Rápidas
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-6">
+                <CardContent className="p-6 bg-orange-50">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Taxa de Utilização</span>
+                      <span className="text-orange-700 font-medium">Taxa de Utilização</span>
                       <span className="font-bold text-slate-900">
                         {((tokenData.usedTokens / tokenData.totalTokens) * 100).toFixed(1)}%
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Tokens por Dia</span>
+                      <span className="text-orange-700 font-medium">Tokens por Dia</span>
                       <span className="font-bold text-slate-900">4,250</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Economia Estimada</span>
+                      <span className="text-orange-700 font-medium">Economia Estimada</span>
                       <span className="font-bold text-green-600">R$ 12,450</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-600 font-medium">Próxima Renovação</span>
+                      <span className="text-orange-700 font-medium">Próxima Renovação</span>
                       <span className="font-bold text-slate-900">12 dias</span>
                     </div>
                   </div>
