@@ -89,33 +89,33 @@ export default function TokenManagement() {
         <meta name="description" content="Gestão e distribuição de tokens IA para escolas municipais" />
       </Helmet>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
         {/* Header */}
-        <header className="bg-white/95 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm">
+        <header className="bg-white/95 backdrop-blur-xl border-b border-blue-200/60 sticky top-0 z-50 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-20">
               <div className="flex items-center space-x-4">
                 <Link href="/panel.sme">
-                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-900 hover:bg-blue-50">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Voltar
                   </Button>
                 </Link>
-                <div className="h-8 w-px bg-slate-300 mx-2"></div>
+                <div className="h-8 w-px bg-blue-200 mx-2"></div>
                 <div className="relative">
                   <img src={iAprenderLogo} alt="IAprender" className="h-12 w-12 rounded-xl shadow-lg" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-900 to-amber-700 bg-clip-text text-transparent">
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
                     Gerenciamento de Tokens
                   </h1>
-                  <p className="text-slate-600 text-sm font-medium">Distribuição e controle de tokens IA</p>
+                  <p className="text-blue-600 text-sm font-medium">Distribuição e controle de tokens IA</p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-4">
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-4 py-2 text-sm font-semibold">
+                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 text-sm font-semibold">
                   <Coins className="h-4 w-4 mr-2" />
                   {tokenData.remainingTokens.toLocaleString()} disponíveis
                 </Badge>
