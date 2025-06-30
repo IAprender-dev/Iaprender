@@ -648,6 +648,142 @@ export type NewsletterIssue = typeof newsletterIssues.$inferSelect;
 export type InsertSavedItem = z.infer<typeof insertSavedItemSchema>;
 export type SavedItem = typeof savedItems.$inferSelect;
 
+// Security Alerts Table
+export const securityAlerts = pgTable("security_alerts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  severity: varchar("severity", { length: 20 }).default("medium"),
+  status: varchar("status", { length: 20 }).default("pending"),
+  affectedUserId: integer("affected_user_id").references(() => users.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  resolvedBy: integer("resolved_by").references(() => users.id),
+});
+
+// Platform Configs Table
+export const platformConfigs = pgTable("platform_configs", {
+  id: serial("id").primaryKey(),
+  configKey: varchar("config_key", { length: 100 }).unique().notNull(),
+  configValue: text("config_value"),
+  description: text("description"),
+  configType: varchar("config_type", { length: 50 }).default("string"),
+  updatedBy: integer("updated_by").references(() => users.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// Audit Logs Table
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  action: varchar("action", { length: 100 }).notNull(),
+  resourceType: varchar("resource_type", { length: 50 }),
+  resourceId: integer("resource_id"),
+  details: text("details"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
+// Municipal Managers Table
+export const municipalManagers = pgTable("municipal_managers", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).unique().notNull(),
+  municipalityName: varchar("municipality_name", { length: 255 }).notNull(),
+  municipalityCode: varchar("municipality_code", { length: 20 }),
+  cnpj: varchar("cnpj", { length: 18 }),
+  address: text("address"),
+  phone: varchar("phone", { length: 20 }),
+  totalLicenses: integer("total_licenses").default(0),
+  usedLicenses: integer("used_licenses").default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// Municipal Schools Table
+export const municipalSchools = pgTable("municipal_schools", {
+  id: serial("id").primaryKey(),
+  municipalManagerId: integer("municipal_manager_id").references(() => municipalManagers.id).notNull(),
+  schoolName: varchar("school_name", { length: 255 }).notNull(),
+  schoolCode: varchar("school_code", { length: 50 }),
+  inepCode: varchar("inep_code", { length: 20 }),
+  address: text("address"),
+  principalName: varchar("principal_name", { length: 255 }),
+  principalEmail: varchar("principal_email", { length: 255 }),
+  phone: varchar("phone", { length: 20 }),
+  allocatedLicenses: integer("allocated_licenses").default(0),
+  usedLicenses: integer("used_licenses").default(0),
+  status: varchar("status", { length: 20 }).default("active"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// Municipal Policies Table
+export const municipalPolicies = pgTable("municipal_policies", {
+  id: serial("id").primaryKey(),
+  municipalManagerId: integer("municipal_manager_id").references(() => municipalManagers.id).notNull(),
+  policyType: varchar("policy_type", { length: 50 }).notNull(),
+  policyName: varchar("policy_name", { length: 255 }).notNull(),
+  policyValue: text("policy_value"),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// Insert schemas for new tables
+export const insertSecurityAlertSchema = createInsertSchema(securityAlerts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPlatformConfigSchema = createInsertSchema(platformConfigs).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMunicipalManagerSchema = createInsertSchema(municipalManagers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMunicipalSchoolSchema = createInsertSchema(municipalSchools).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMunicipalPolicySchema = createInsertSchema(municipalPolicies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for new tables
+export type SecurityAlert = typeof securityAlerts.$inferSelect;
+export type InsertSecurityAlert = z.infer<typeof insertSecurityAlertSchema>;
+
+export type PlatformConfig = typeof platformConfigs.$inferSelect;
+export type InsertPlatformConfig = z.infer<typeof insertPlatformConfigSchema>;
+
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
+
+export type MunicipalManager = typeof municipalManagers.$inferSelect;
+export type InsertMunicipalManager = z.infer<typeof insertMunicipalManagerSchema>;
+
+export type MunicipalSchool = typeof municipalSchools.$inferSelect;
+export type InsertMunicipalSchool = z.infer<typeof insertMunicipalSchoolSchema>;
+
+export type MunicipalPolicy = typeof municipalPolicies.$inferSelect;
+export type InsertMunicipalPolicy = z.infer<typeof insertMunicipalPolicySchema>;
+
 export type InsertStudyPlan = z.infer<typeof insertStudyPlanSchema>;
 export type StudyPlan = typeof studyPlans.$inferSelect;
 
