@@ -123,6 +123,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- June 30, 2025: Updated all three administrative dashboards with clean, simple layouts
+  - Changed background colors from dark/gradient themes to light gray-50 for consistency with teacher/student dashboards
+  - Simplified AdminMasterDashboard with clean card layouts and basic tab structure
+  - Updated MunicipalManagerDashboard background to match clean theme
+  - Modified SchoolDirectorDashboard to use simple gray background instead of blue gradients
+  - Ensured consistent typography and spacing across all administrative levels
+  - Maintained functionality while improving visual consistency and readability
 - June 30, 2025: Complete Admin Master Dashboard implementation
   - Created comprehensive admin master dashboard with enterprise-level functionality
   - Implemented system metrics monitoring (contracts, users, revenue, uptime)
