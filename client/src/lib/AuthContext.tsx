@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else if (userData.role === 'teacher') {
         setLocation('/professor');
       } else if (userData.role === 'student') {
-        setLocation('/student');
+        setLocation('/student/dashboard');
       }
     },
     onError: (error: Error) => {

@@ -113,7 +113,7 @@ export default function TokenDashboard() {
       </div>
 
       {/* Alerts */}
-      {alerts?.filter(alert => !alert.isRead).length > 0 && (
+      {alerts && Array.isArray(alerts) && alerts.filter(alert => !alert.isRead).length > 0 && (
         <div className="mb-6">
           {alerts
             .filter(alert => !alert.isRead)

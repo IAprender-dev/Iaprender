@@ -46,10 +46,12 @@ export default function Auth() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === "teacher") {
+      if (user.role === "admin") {
+        navigate("/secretary");
+      } else if (user.role === "teacher") {
         navigate("/professor");
       } else if (user.role === "student") {
-        navigate("/aluno/dashboard");
+        navigate("/student/dashboard");
       } else {
         navigate("/");
       }

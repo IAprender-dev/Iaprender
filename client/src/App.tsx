@@ -88,33 +88,6 @@ const ProtectedRoute = ({ component: Component, roles = [], ...rest }: {
 };
 
 function Router() {
-  const [location, setLocation] = useLocation();
-  
-  // Ensure platform always starts with landing page for unauthenticated users
-  useEffect(() => {
-    const isProtectedRoute = location.startsWith("/professor") || 
-                            location.startsWith("/student") || 
-                            location.startsWith("/secretary") ||
-                            location.startsWith("/teacher") ||
-                            location.startsWith("/aluno");
-    
-    if (isProtectedRoute) {
-      // Check authentication status for protected routes
-      const checkAuth = async () => {
-        try {
-          const response = await fetch('/api/auth/me');
-          if (!response.ok) {
-            // Not authenticated, redirect to landing page
-            setLocation("/");
-          }
-        } catch (error) {
-          // Error checking auth, redirect to landing page  
-          setLocation("/");
-        }
-      };
-      checkAuth();
-    }
-  }, [location, setLocation]);
   
   return (
     <Switch>
