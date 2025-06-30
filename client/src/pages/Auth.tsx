@@ -50,6 +50,8 @@ export default function Auth() {
         navigate("/admin/master");
       } else if (user.role === "municipal_manager") {
         navigate("/municipal/dashboard");
+      } else if (user.role === "school_director") {
+        navigate("/school/dashboard");
       } else if (user.role === "teacher") {
         navigate("/professor");
       } else if (user.role === "student") {

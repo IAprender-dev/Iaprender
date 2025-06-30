@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Enums
-export const userRoleEnum = pgEnum('user_role', ['admin', 'teacher', 'student', 'municipal_manager']);
+export const userRoleEnum = pgEnum('user_role', ['admin', 'teacher', 'student', 'municipal_manager', 'school_director']);
 export const courseStatusEnum = pgEnum('course_status', ['not_started', 'in_progress', 'completed']);
 export const contentTypeEnum = pgEnum('content_type', ['video', 'pdf', 'quiz']);
 export const activityPriorityEnum = pgEnum('activity_priority', ['high', 'medium', 'low']);
@@ -696,6 +696,104 @@ export const municipalPolicies = pgTable("municipal_policies", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// School Directors Table - NEW HIERARCHY LEVEL 3: DIRETOR DE ESCOLA
+export const schoolDirectors = pgTable("school_directors", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").unique().references(() => users.id).notNull(),
+  schoolId: integer("school_id").references(() => municipalSchools.id).notNull(),
+  directorCode: text("director_code").unique(),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// School Classes Table
+export const schoolClasses = pgTable("school_classes", {
+  id: serial("id").primaryKey(),
+  schoolId: integer("school_id").references(() => municipalSchools.id).notNull(),
+  className: text("class_name").notNull(), // "1º Ano A", "5º Ano B", etc.
+  grade: text("grade").notNull(), // "1", "2", "3", etc.
+  section: text("section").notNull(), // "A", "B", "C", etc.
+  academicYear: text("academic_year").notNull(),
+  maxStudents: integer("max_students").default(30),
+  currentStudents: integer("current_students").default(0),
+  allocatedLicenses: integer("allocated_licenses").default(0),
+  usedLicenses: integer("used_licenses").default(0),
+  coordinatorId: integer("coordinator_id").references(() => users.id),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// School Invitations Table
+export const schoolInvitations = pgTable("school_invitations", {
+  id: serial("id").primaryKey(),
+  schoolId: integer("school_id").references(() => municipalSchools.id).notNull(),
+  directorId: integer("director_id").references(() => schoolDirectors.id).notNull(),
+  email: text("email").notNull(),
+  role: text("role").notNull(), // 'teacher', 'student'
+  classId: integer("class_id").references(() => schoolClasses.id),
+  invitationCode: text("invitation_code").unique().notNull(),
+  status: text("status").notNull().default('pending'), // 'pending', 'accepted', 'rejected', 'expired'
+  documentRequired: boolean("document_required").default(false),
+  documentVerified: boolean("document_verified").default(false),
+  expiresAt: timestamp("expires_at"),
+  sentAt: timestamp("sent_at").defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+  rejectedAt: timestamp("rejected_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// School User Approvals Table
+export const schoolUserApprovals = pgTable("school_user_approvals", {
+  id: serial("id").primaryKey(),
+  schoolId: integer("school_id").references(() => municipalSchools.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  requestedRole: text("requested_role").notNull(),
+  classId: integer("class_id").references(() => schoolClasses.id),
+  requesterId: integer("requester_id").references(() => users.id), // quem fez a solicitação
+  approverId: integer("approver_id").references(() => users.id), // diretor que aprovou/rejeitou
+  status: text("status").notNull().default('pending'), // 'pending', 'approved', 'rejected'
+  reason: text("reason"), // motivo da aprovação/rejeição
+  documentsSubmitted: jsonb("documents_submitted"),
+  parentalConsent: boolean("parental_consent").default(false), // para menores
+  parentName: text("parent_name"),
+  parentEmail: text("parent_email"),
+  parentPhone: text("parent_phone"),
+  requestedAt: timestamp("requested_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// School Reports Table
+export const schoolReports = pgTable("school_reports", {
+  id: serial("id").primaryKey(),
+  schoolId: integer("school_id").references(() => municipalSchools.id).notNull(),
+  reportType: text("report_type").notNull(), // 'usage', 'pedagogical', 'compliance', 'security'
+  title: text("title").notNull(),
+  description: text("description"),
+  data: jsonb("data"), // dados do relatório em formato JSON
+  generatedBy: integer("generated_by").references(() => users.id).notNull(),
+  periodStart: timestamp("period_start"),
+  periodEnd: timestamp("period_end"),
+  isPublic: boolean("is_public").default(false), // se pode ser visto pelo gestor municipal
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// School Configurations Table
+export const schoolConfigs = pgTable("school_configs", {
+  id: serial("id").primaryKey(),
+  schoolId: integer("school_id").references(() => municipalSchools.id).notNull(),
+  configKey: text("config_key").notNull(),
+  configValue: text("config_value").notNull(),
+  configType: text("config_type").notNull(), // 'token_limit', 'age_restriction', 'content_filter', etc.
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Insert schemas for municipal tables
 export const insertMunicipalManagerSchema = createInsertSchema(municipalManagers).omit({
   id: true,
@@ -724,6 +822,59 @@ export type InsertMunicipalSchool = z.infer<typeof insertMunicipalSchoolSchema>;
 
 export type MunicipalPolicy = typeof municipalPolicies.$inferSelect;
 export type InsertMunicipalPolicy = z.infer<typeof insertMunicipalPolicySchema>;
+
+// Insert schemas for school tables
+export const insertSchoolDirectorSchema = createInsertSchema(schoolDirectors).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSchoolClassSchema = createInsertSchema(schoolClasses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSchoolInvitationSchema = createInsertSchema(schoolInvitations).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSchoolUserApprovalSchema = createInsertSchema(schoolUserApprovals).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSchoolReportSchema = createInsertSchema(schoolReports).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSchoolConfigSchema = createInsertSchema(schoolConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for school tables
+export type SchoolDirector = typeof schoolDirectors.$inferSelect;
+export type InsertSchoolDirector = z.infer<typeof insertSchoolDirectorSchema>;
+
+export type SchoolClass = typeof schoolClasses.$inferSelect;
+export type InsertSchoolClass = z.infer<typeof insertSchoolClassSchema>;
+
+export type SchoolInvitation = typeof schoolInvitations.$inferSelect;
+export type InsertSchoolInvitation = z.infer<typeof insertSchoolInvitationSchema>;
+
+export type SchoolUserApproval = typeof schoolUserApprovals.$inferSelect;
+export type InsertSchoolUserApproval = z.infer<typeof insertSchoolUserApprovalSchema>;
+
+export type SchoolReport = typeof schoolReports.$inferSelect;
+export type InsertSchoolReport = z.infer<typeof insertSchoolReportSchema>;
+
+export type SchoolConfig = typeof schoolConfigs.$inferSelect;
+export type InsertSchoolConfig = z.infer<typeof insertSchoolConfigSchema>;
 
 export type InsertStudyPlan = z.infer<typeof insertStudyPlanSchema>;
 export type StudyPlan = typeof studyPlans.$inferSelect;

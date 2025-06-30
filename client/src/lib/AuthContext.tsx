@@ -110,6 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLocation('/admin/master'); // Admin users redirected to master dashboard
       } else if (userData.role === 'municipal_manager') {
         setLocation('/municipal/dashboard'); // Municipal managers redirected to municipal dashboard
+      } else if (userData.role === 'school_director') {
+        setLocation('/school/dashboard'); // School directors redirected to school dashboard
       } else if (userData.role === 'teacher') {
         setLocation('/professor');
       } else if (userData.role === 'student') {
