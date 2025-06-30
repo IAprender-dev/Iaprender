@@ -15,7 +15,58 @@ export const newsletterStatusEnum = pgEnum('newsletter_status', ['subscribed', '
 export const notificationStatusEnum = pgEnum('notification_status', ['pending', 'read', 'archived']);
 export const notificationPriorityEnum = pgEnum('notification_priority', ['low', 'medium', 'high', 'urgent']);
 export const notificationTypeEnum = pgEnum('notification_type', ['behavior', 'academic', 'administrative', 'communication']);
+export const planTypeEnum = pgEnum('plan_type', ['basic', 'standard', 'premium', 'enterprise']);
+export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'access_denied', 'token_usage', 'api_call', 'system_alert']);
+export const securityAlertTypeEnum = pgEnum('security_alert_type', ['suspicious_login', 'unusual_token_usage', 'multiple_sessions', 'rate_limit_exceeded', 'unauthorized_access']);
 
+// Platform configurations
+export const platformConfigs = pgTable("platform_configs", {
+  id: serial("id").primaryKey(),
+  configKey: text("config_key").notNull().unique(),
+  configValue: jsonb("config_value").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// System audit logs
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  contractId: integer("contract_id").references(() => contracts.id),
+  action: auditActionEnum("action").notNull(),
+  resourceType: text("resource_type"),
+  resourceId: text("resource_id"),
+  details: jsonb("details"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Security alerts
+export const securityAlerts = pgTable("security_alerts", {
+  id: serial("id").primaryKey(),
+  type: securityAlertTypeEnum("type").notNull(),
+  severity: text("severity").notNull(), // low, medium, high, critical
+  userId: integer("user_id").references(() => users.id),
+  contractId: integer("contract_id").references(() => contracts.id),
+  message: text("message").notNull(),
+  details: jsonb("details"),
+  resolved: boolean("resolved").default(false),
+  resolvedBy: integer("resolved_by").references(() => users.id),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// System health metrics
+export const systemHealthMetrics = pgTable("system_health_metrics", {
+  id: serial("id").primaryKey(),
+  metricName: text("metric_name").notNull(),
+  metricValue: doublePrecision("metric_value").notNull(),
+  unit: text("unit"),
+  source: text("source"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
 
 // Users table
 export const users = pgTable("users", {
@@ -168,10 +219,22 @@ export const contracts = pgTable("contracts", {
   companyId: integer("company_id").references(() => companies.id).notNull(),
   name: text("name").notNull(),
   description: text("description"),
+  planType: planTypeEnum("plan_type").default('basic').notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
   maxUsers: integer("max_users").notNull(),
   maxTokens: integer("max_tokens").notNull(),
+  maxTeachers: integer("max_teachers").default(0).notNull(),
+  maxStudents: integer("max_students").default(0).notNull(),
+  pricePerLicense: doublePrecision("price_per_license").default(0).notNull(),
+  totalLicenses: integer("total_licenses").notNull(),
+  availableLicenses: integer("available_licenses").notNull(),
+  monthlyTokenLimitTeacher: integer("monthly_token_limit_teacher").default(10000).notNull(),
+  monthlyTokenLimitStudent: integer("monthly_token_limit_student").default(5000).notNull(),
+  enabledAIModels: text("enabled_ai_models").array().default([]).notNull(),
+  allowedUsageHours: jsonb("allowed_usage_hours"), // {"start": "08:00", "end": "18:00"}
+  contentPolicies: jsonb("content_policies"),
+  technicalLimits: jsonb("technical_limits"), // rate limiting, timeouts
   status: contractStatusEnum("status").default('active').notNull(),
   settings: jsonb("settings"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

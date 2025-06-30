@@ -1,0 +1,68 @@
+crie um dashboard do asministrador master do sistema. 1. ADMINISTRADOR DA PLATAFORMA (Nível Superior)
+ Gestão Global
+Controle de contratos
+
+Criar/editar/suspender contas de contratos
+Definir número total de licenças por contrato
+Configurar limites globais de tokens mensais por tipo de usuário de cada contrato
+Gestão de renovações e vencimentos de contratos
+Configurar preços por licença do contrato
+configurar total de licenças liberadas por contrato
+Configurações da Plataforma:
+
+Integração AWS Bedrock (configurar modelos disponíveis, custos por modelo)
+Definir políticas globais de uso (horários permitidos, tipos de conteúdo)
+Configurar limites técnicos (rate limiting, timeouts)
+Gestão de features por plano (quais IAs disponíveis por tipo de contrato)
+
+📊 Monitoramento Global
+Dashboard Executivo:
+
+Visão consolidada de todas as prefeituras
+Consumo de tokens em tempo real por região/prefeitura
+Custos AWS Bedrock por prefeitura
+Métricas de adoção (usuários ativos, engajamento)
+Alertas de uso anômalo ou suspeito
+
+Centro de Controle:
+
+Status de saúde da plataforma
+Performance dos serviços AWS
+Monitoramento de segurança (tentativas de invasão, acessos suspeitos)
+Logs de sistema e auditoria completa
+
+📈 Relatórios Estratégicos
+
+Relatório consolidado de uso por prefeitura
+Análise de ROI por contrato
+Previsão de consumo e custos AWS
+Relatório de incidentes e resoluções
+Métricas de satisfação por prefeitura
+
+
+utilizando a integração com a bedrock, inclua Funcionalidades de Segurança Transversais
+Para Todos os Níveis:
+Monitoramento em Tempo Real:
+
+Detecção de uso simultâneo suspeito
+Alertas de acesso de IPs não reconhecidos
+Monitoramento de padrões anômalos de uso
+Bloqueio automático por inatividade
+Log completo de todas as ações
+
+Auditoria e Compliance:
+
+Trilha de auditoria completa
+Relatórios de conformidade LGPD
+Exportação de dados para órgãos de controle
+Backup de logs e decisões administrativas
+Certificação de integridade dos dados
+
+Integrações Técnicas
+AWS Bedrock:
+
+Monitoramento de custos por token
+Seleção de modelos por tipo de usuário
+Throttling inteligente por cota
+Fallback entre modelos (custo vs. qualidade)
+Cache de respostas para otimização

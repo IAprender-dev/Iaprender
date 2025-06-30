@@ -54,6 +54,7 @@ import { tokenInterceptor, tokenAlertMiddleware } from "./modules/tokenCounter/m
 import { registerTokenRoutes } from "./modules/tokenCounter/routes/tokenRoutes";
 import jwt from "jsonwebtoken";
 import axios from "axios";
+import * as adminRoutes from "./routes/admin-routes";
 
 
 // Define login schema
@@ -133,6 +134,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       next();
     };
+  };
+
+  // Admin authentication middleware  
+  const authenticateAdmin = (req: Request, res: Response, next: Function) => {
+    if (!req.session.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    
+    if (req.session.user.role !== 'admin') {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    
+    next();
   };
 
   // HEALTH CHECK ROUTE
@@ -1201,6 +1215,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+
+  // Admin Master Routes
+  app.get('/api/admin/system-metrics', authenticateAdmin, adminRoutes.getSystemMetrics);
+  app.get('/api/admin/contracts', authenticateAdmin, adminRoutes.getContracts);
+  app.get('/api/admin/security-alerts', authenticateAdmin, adminRoutes.getSecurityAlerts);
+  app.patch('/api/admin/security-alerts/:alertId/resolve', authenticateAdmin, adminRoutes.resolveSecurityAlert);
+  app.get('/api/admin/platform-configs', authenticateAdmin, adminRoutes.getPlatformConfigs);
+  app.patch('/api/admin/platform-configs/:configKey', authenticateAdmin, adminRoutes.updatePlatformConfig);
+  app.patch('/api/admin/contracts/:contractId/suspend', authenticateAdmin, adminRoutes.suspendContract);
+  app.patch('/api/admin/contracts/:contractId/activate', authenticateAdmin, adminRoutes.activateContract);
+  app.get('/api/admin/audit-logs', authenticateAdmin, adminRoutes.getAuditLogs);
+  app.post('/api/admin/security-alerts', authenticateAdmin, adminRoutes.createSecurityAlert);
+  app.post('/api/admin/system-metrics', authenticateAdmin, adminRoutes.recordSystemMetric);
 
   // Create and return HTTP server
   const httpServer = createServer(app);
