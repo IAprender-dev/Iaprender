@@ -123,6 +123,12 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 1, 2025: Fixed AWS Console Button Redirection and Database Audit Issues
+  - Corrected AWS Console Bedrock button redirection in AI Management Dashboard to proper AWS Bedrock console URL
+  - Fixed database audit_logs table schema mismatch by adding missing contract_id column and correcting resource_id type
+  - Added functional "Gestão de Custos" button linking to /admin/ai/cost-management page
+  - Resolved AWS console access authentication and audit logging system
+  - Both Console AWS Bedrock and Cost Management buttons now working correctly in dashboard header
 - July 1, 2025: Secure AWS Bedrock Console Access System Implementation
   - Created comprehensive AWSConsoleAccessService with SSO authentication and temporary credentials
   - Implemented secure access flow: user validation → AWS role assumption → signed console URL generation
