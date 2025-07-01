@@ -263,8 +263,7 @@ class AWSConsoleAccessService {
   checkAWSConfiguration(): { configured: boolean; missingVars: string[] } {
     const requiredVars = [
       'AWS_ACCESS_KEY_ID',
-      'AWS_SECRET_ACCESS_KEY',
-      'AWS_CONSOLE_ROLE_ARN'
+      'AWS_SECRET_ACCESS_KEY'
     ];
 
     const missingVars = requiredVars.filter(varName => !process.env[varName]);

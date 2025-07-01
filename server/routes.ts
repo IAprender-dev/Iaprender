@@ -2114,27 +2114,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AWS Console Access Routes - Secure Access Management
   app.post('/api/admin/aws/console/access', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { awsConsoleAccessService } = await import('./services/aws-console-access');
+      const { simpleAWSConsoleService } = await import('./services/simple-aws-console.js');
       const { region = 'us-east-1' } = req.body;
       
       if (!req.session.user) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      console.log(`🔐 Solicitação de acesso seguro ao console AWS para usuário ${req.session.user.username}`);
+      console.log(`🔐 Acesso direto ao console AWS para usuário ${req.session.user.username}`);
 
-      // Verificar configuração AWS
-      const configCheck = awsConsoleAccessService.checkAWSConfiguration();
-      if (!configCheck.configured) {
-        return res.status(503).json({ 
-          error: 'AWS não configurado completamente',
-          missingVars: configCheck.missingVars,
-          message: 'Entre em contato com o administrador do sistema'
-        });
-      }
-
-      // Gerar acesso seguro
-      const accessResponse = await awsConsoleAccessService.accessBedrock(req.session.user, region);
+      // Gerar acesso direto
+      const accessResponse = await simpleAWSConsoleService.accessBedrock(req.session.user, region);
       
       res.json({
         success: true,

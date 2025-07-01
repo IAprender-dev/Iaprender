@@ -16,7 +16,7 @@ export const notificationStatusEnum = pgEnum('notification_status', ['pending', 
 export const notificationPriorityEnum = pgEnum('notification_priority', ['low', 'medium', 'high', 'urgent']);
 export const notificationTypeEnum = pgEnum('notification_type', ['behavior', 'academic', 'administrative', 'communication']);
 export const planTypeEnum = pgEnum('plan_type', ['basic', 'standard', 'premium', 'enterprise']);
-export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'access_denied', 'token_usage', 'api_call', 'system_alert']);
+export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'access_denied', 'token_usage', 'api_call', 'system_alert', 'aws_console_access']);
 export const securityAlertTypeEnum = pgEnum('security_alert_type', ['suspicious_login', 'unusual_token_usage', 'multiple_sessions', 'rate_limit_exceeded', 'unauthorized_access']);
 
 // Platform configurations
