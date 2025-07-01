@@ -35,6 +35,17 @@ export class CognitoService {
     this.redirectUri = process.env.COGNITO_REDIRECT_URI || '';
     this.userPoolId = process.env.COGNITO_USER_POOL_ID || '';
     this.region = process.env.AWS_REGION || 'us-east-1';
+    
+    // Garantir que o domínio tenha https://
+    if (this.domain && !this.domain.startsWith('http')) {
+      this.domain = `https://${this.domain}`;
+    }
+    
+    console.log('Cognito Config Corrected:', {
+      domain: this.domain,
+      clientId: this.clientId?.substring(0, 6) + '...',
+      userPoolId: this.userPoolId
+    });
   }
 
   /**
