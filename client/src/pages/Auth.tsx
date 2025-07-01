@@ -292,6 +292,31 @@ export default function Auth() {
                           )}
                         </Button>
                       </form>
+                      
+                      {/* Divisor */}
+                      <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-slate-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-4 bg-white text-slate-500 font-medium">ou continue com</span>
+                        </div>
+                      </div>
+                      
+                      {/* Login AWS Cognito */}
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        className="w-full border-2 border-orange-200 hover:border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 rounded-2xl h-14 text-orange-700 font-bold text-lg transition-all duration-300 transform hover:scale-[1.02]"
+                        onClick={() => window.location.href = '/start-login'}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
+                            <span className="text-white font-bold text-xs">AWS</span>
+                          </div>
+                          <span>Login Institucional (AWS Cognito)</span>
+                        </div>
+                      </Button>
                     </CardContent>
                   </Card>
                 </TabsContent>
