@@ -577,7 +577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Cognito callback
-  app.get("/callback", async (req, res) => {
+  app.get("/auth/callback", async (req, res) => {
     try {
       const { code, error, error_description } = req.query;
 
@@ -673,7 +673,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Logout callback
-  app.get("/logout-callback", (req, res) => {
+  app.get("/auth/logout-callback", (req, res) => {
     // Destruir sessão local
     req.session.destroy((err) => {
       if (err) {
