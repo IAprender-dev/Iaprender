@@ -229,6 +229,12 @@ export default function AdminMasterDashboard() {
                           Controle de Contratos
                         </Button>
                       </Link>
+                      <Link href="/admin/ai-management">
+                        <Button className="w-full justify-start bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Administração de IAs
+                        </Button>
+                      </Link>
                       <Button onClick={() => setActiveTab("contracts")} variant="outline" className="w-full justify-start border-slate-200 hover:bg-slate-50">
                         <Building className="h-4 w-4 mr-2" />
                         Visão Geral Contratos

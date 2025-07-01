@@ -1721,6 +1721,338 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Management Dashboard Routes
+  app.get('/api/admin/ai/providers', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Mock data for AI providers - in real implementation, this would come from database
+      const providers = [
+        {
+          id: 'bedrock-1',
+          name: 'AWS Bedrock',
+          type: 'bedrock',
+          status: 'active',
+          models: ['Claude 3.5 Sonnet', 'Claude 3 Haiku', 'Titan Text', 'Llama 2'],
+          usage: { requests: 15420, tokens: 2847592, cost: 847.32 },
+          limits: { requestsPerDay: 50000, tokensPerDay: 10000000, costPerDay: 2000 },
+          configuration: {
+            region: 'us-east-1',
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID ? 'Configured' : 'Not Configured',
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ? 'Configured' : 'Not Configured'
+          }
+        },
+        {
+          id: 'litellm-1',
+          name: 'LiteLLM Gateway',
+          type: 'litellm',
+          status: 'active',
+          models: ['GPT-4', 'GPT-3.5-turbo', 'Gemini Pro', 'PaLM 2'],
+          usage: { requests: 8932, tokens: 1542847, cost: 432.18 },
+          limits: { requestsPerDay: 30000, tokensPerDay: 5000000, costPerDay: 1500 },
+          configuration: {
+            endpoint: process.env.LITELLM_ENDPOINT || 'Not Configured',
+            apiKey: process.env.LITELLM_API_KEY ? 'Configured' : 'Not Configured'
+          }
+        }
+      ];
+      
+      res.json({ providers });
+    } catch (error) {
+      console.error('Error fetching AI providers:', error);
+      res.status(500).json({ error: 'Failed to fetch AI providers' });
+    }
+  });
+
+  app.get('/api/admin/ai/applications', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Mock data for platform applications
+      const applications = [
+        {
+          id: 'lesson-planner',
+          name: 'Planejador de Aulas',
+          description: 'Geração automática de planos de aula',
+          category: 'Educação',
+          currentProvider: 'bedrock-1',
+          currentModel: 'Claude 3.5 Sonnet',
+          usage: { dailyRequests: 342, dailyTokens: 89432, dailyCost: 28.47 },
+          configuration: {
+            maxTokens: 4000,
+            temperature: 0.7,
+            topP: 0.9
+          }
+        },
+        {
+          id: 'ai-tutor',
+          name: 'Tutor IA',
+          description: 'Sistema de tutoria inteligente',
+          category: 'Educação',
+          currentProvider: 'litellm-1',
+          currentModel: 'GPT-4',
+          usage: { dailyRequests: 1247, dailyTokens: 342847, dailyCost: 87.23 },
+          configuration: {
+            maxTokens: 2000,
+            temperature: 0.8,
+            topP: 0.95
+          }
+        },
+        {
+          id: 'content-generator',
+          name: 'Gerador de Conteúdo',
+          description: 'Criação de materiais educacionais',
+          category: 'Conteúdo',
+          currentProvider: 'bedrock-1',
+          currentModel: 'Claude 3 Haiku',
+          usage: { dailyRequests: 567, dailyTokens: 124783, dailyCost: 34.21 },
+          configuration: {
+            maxTokens: 3000,
+            temperature: 0.6,
+            topP: 0.9
+          }
+        },
+        {
+          id: 'quiz-generator',
+          name: 'Gerador de Quiz',
+          description: 'Criação automática de questões',
+          category: 'Avaliação',
+          currentProvider: 'litellm-1',
+          currentModel: 'GPT-3.5-turbo',
+          usage: { dailyRequests: 289, dailyTokens: 67432, dailyCost: 15.67 },
+          configuration: {
+            maxTokens: 1500,
+            temperature: 0.5,
+            topP: 0.8
+          }
+        }
+      ];
+      
+      res.json({ applications });
+    } catch (error) {
+      console.error('Error fetching platform applications:', error);
+      res.status(500).json({ error: 'Failed to fetch platform applications' });
+    }
+  });
+
+  app.get('/api/admin/ai/virtual-keys', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Mock data for virtual keys
+      const virtualKeys = [
+        {
+          id: 'key-1',
+          name: 'Equipe Desenvolvimento',
+          team: 'dev-team',
+          permissions: ['read', 'write', 'deploy'],
+          models: ['Claude 3.5 Sonnet', 'GPT-4'],
+          limits: { requestsPerDay: 10000, tokensPerDay: 2000000, costPerDay: 500 },
+          usage: { requests: 3247, tokens: 642847, cost: 162.18 },
+          status: 'active',
+          tags: ['desenvolvimento', 'teste'],
+          createdAt: '2025-06-15T10:00:00Z',
+          lastUsed: '2025-07-01T08:30:00Z'
+        },
+        {
+          id: 'key-2',
+          name: 'Professores Premium',
+          team: 'teachers',
+          permissions: ['read'],
+          models: ['Claude 3 Haiku', 'GPT-3.5-turbo'],
+          limits: { requestsPerDay: 5000, tokensPerDay: 1000000, costPerDay: 200 },
+          usage: { requests: 1834, tokens: 324782, cost: 87.43 },
+          status: 'active',
+          tags: ['educação', 'premium'],
+          createdAt: '2025-06-20T14:30:00Z',
+          lastUsed: '2025-07-01T07:45:00Z'
+        },
+        {
+          id: 'key-3',
+          name: 'Equipe QA',
+          team: 'qa-team',
+          permissions: ['read', 'test'],
+          models: ['GPT-3.5-turbo'],
+          limits: { requestsPerDay: 2000, tokensPerDay: 500000, costPerDay: 100 },
+          usage: { requests: 892, tokens: 156432, cost: 23.67 },
+          status: 'active',
+          tags: ['teste', 'qualidade'],
+          createdAt: '2025-06-25T09:15:00Z',
+          lastUsed: '2025-06-30T16:20:00Z'
+        }
+      ];
+      
+      res.json({ keys: virtualKeys });
+    } catch (error) {
+      console.error('Error fetching virtual keys:', error);
+      res.status(500).json({ error: 'Failed to fetch virtual keys' });
+    }
+  });
+
+  app.get('/api/admin/ai/analytics', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Mock analytics data
+      const analytics = {
+        bedrock: {
+          totalCost30d: 15847,
+          totalTokens30d: 84200000,
+          topModels: [
+            { name: 'Claude 3.5 Sonnet', usage: 45 },
+            { name: 'Claude 3 Haiku', usage: 32 },
+            { name: 'Titan Text', usage: 23 }
+          ],
+          dailyUsage: Array.from({ length: 30 }, (_, i) => ({
+            date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            requests: Math.floor(Math.random() * 1000) + 500,
+            cost: Math.floor(Math.random() * 100) + 50
+          }))
+        },
+        litellm: {
+          totalCost30d: 8432,
+          totalRequests30d: 267000,
+          topModels: [
+            { name: 'GPT-4', usage: 52 },
+            { name: 'GPT-3.5-turbo', usage: 31 },
+            { name: 'Gemini Pro', usage: 17 }
+          ],
+          dailyUsage: Array.from({ length: 30 }, (_, i) => ({
+            date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            requests: Math.floor(Math.random() * 500) + 300,
+            cost: Math.floor(Math.random() * 50) + 25
+          }))
+        },
+        costBreakdown: [
+          { application: 'Planejador de Aulas', cost: 28.47, requests: 342 },
+          { application: 'Tutor IA', cost: 87.23, requests: 1247 },
+          { application: 'Gerador de Conteúdo', cost: 34.21, requests: 567 },
+          { application: 'Gerador de Quiz', cost: 15.67, requests: 289 }
+        ]
+      };
+      
+      res.json({ analytics });
+    } catch (error) {
+      console.error('Error fetching AI analytics:', error);
+      res.status(500).json({ error: 'Failed to fetch AI analytics' });
+    }
+  });
+
+  // AI Management Configuration Routes
+  app.patch('/api/admin/ai/applications/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { currentProvider, currentModel, configuration } = req.body;
+      
+      // In real implementation, update database
+      console.log(`Updating application ${id}:`, { currentProvider, currentModel, configuration });
+      
+      res.json({ 
+        success: true, 
+        message: 'Application updated successfully',
+        application: {
+          id,
+          currentProvider,
+          currentModel,
+          configuration,
+          updatedAt: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error updating application:', error);
+      res.status(500).json({ error: 'Failed to update application' });
+    }
+  });
+
+  app.post('/api/admin/ai/virtual-keys', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, team, permissions, models, limits, tags } = req.body;
+      
+      // In real implementation, save to database
+      const newKey = {
+        id: `key-${Date.now()}`,
+        name,
+        team,
+        permissions,
+        models,
+        limits,
+        usage: { requests: 0, tokens: 0, cost: 0 },
+        status: 'active',
+        tags,
+        createdAt: new Date().toISOString(),
+        lastUsed: null
+      };
+      
+      console.log('Creating new virtual key:', newKey);
+      
+      res.json({ 
+        success: true, 
+        message: 'Virtual key created successfully',
+        key: newKey
+      });
+    } catch (error) {
+      console.error('Error creating virtual key:', error);
+      res.status(500).json({ error: 'Failed to create virtual key' });
+    }
+  });
+
+  app.patch('/api/admin/ai/virtual-keys/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      // In real implementation, update database
+      console.log(`Updating virtual key ${id}:`, updates);
+      
+      res.json({ 
+        success: true, 
+        message: 'Virtual key updated successfully',
+        key: {
+          id,
+          ...updates,
+          updatedAt: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error updating virtual key:', error);
+      res.status(500).json({ error: 'Failed to update virtual key' });
+    }
+  });
+
+  app.delete('/api/admin/ai/virtual-keys/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      // In real implementation, delete from database
+      console.log(`Deleting virtual key ${id}`);
+      
+      res.json({ 
+        success: true, 
+        message: 'Virtual key deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting virtual key:', error);
+      res.status(500).json({ error: 'Failed to delete virtual key' });
+    }
+  });
+
+  app.patch('/api/admin/ai/providers/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { configuration, status, limits } = req.body;
+      
+      // In real implementation, update provider configuration
+      console.log(`Updating provider ${id}:`, { configuration, status, limits });
+      
+      res.json({ 
+        success: true, 
+        message: 'Provider updated successfully',
+        provider: {
+          id,
+          configuration,
+          status,
+          limits,
+          updatedAt: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error updating provider:', error);
+      res.status(500).json({ error: 'Failed to update provider' });
+    }
+  });
+
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
 
