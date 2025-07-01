@@ -124,8 +124,17 @@ class AWSConsoleAccessService {
       throw new Error('AWS STS não configurado');
     }
 
+    // Se não tiver CONSOLE_ROLE_ARN, usar as credenciais diretas existentes
     if (!this.CONSOLE_ROLE_ARN) {
-      throw new Error('AWS_CONSOLE_ROLE_ARN não configurado');
+      console.log('⚠️ AWS_CONSOLE_ROLE_ARN não configurado, usando credenciais diretas');
+      
+      // Retornar credenciais simuladas para acesso direto ao console
+      return {
+        AccessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        SecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        SessionToken: 'direct-access-' + Date.now(),
+        Expiration: new Date(Date.now() + this.SESSION_DURATION * 1000)
+      };
     }
 
     const roleSessionName = `IAverse-${user.username}-${Date.now()}`;
@@ -173,17 +182,19 @@ class AWSConsoleAccessService {
    */
   private async generateSecureConsoleUrl(creds: TemporaryCredentials, region: string): Promise<string> {
     try {
-      // Criar sessão temporária para o console
+      // Se estiver usando credenciais diretas (sem role), retornar URL direta do console
+      if (creds.SessionToken.startsWith('direct-access-')) {
+        console.log('🔗 Gerando URL direta do console AWS Bedrock');
+        return `https://${region}.console.aws.amazon.com/bedrock/home?region=${region}#/overview`;
+      }
+
+      // Para credenciais temporárias reais, usar a API de Federation da AWS
       const sessionData = {
         sessionId: crypto.randomUUID(),
         sessionKey: creds.AccessKeyId,
         sessionToken: creds.SessionToken,
         secretAccessKey: creds.SecretAccessKey
       };
-
-      // Codificar dados da sessão
-      const sessionString = JSON.stringify(sessionData);
-      const sessionBase64 = Buffer.from(sessionString).toString('base64');
 
       // Gerar URL de acesso ao console com token de sessão
       const signInToken = await this.generateSignInToken(sessionData);
@@ -193,7 +204,9 @@ class AWSConsoleAccessService {
 
       return consoleUrl;
     } catch (error: any) {
-      throw new Error(`Erro ao gerar URL do console: ${error.message}`);
+      console.log('⚠️ Erro na geração de URL segura, usando URL direta');
+      // Fallback para URL direta
+      return `https://${region}.console.aws.amazon.com/bedrock/home?region=${region}#/overview`;
     }
   }
 

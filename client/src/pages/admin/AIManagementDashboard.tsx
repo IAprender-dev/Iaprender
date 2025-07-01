@@ -254,7 +254,11 @@ export default function AIManagementDashboard() {
                       window.open(data.consoleUrl, '_blank');
                     } else {
                       console.error('❌ Erro ao obter acesso:', data.message);
-                      alert(`Erro de acesso: ${data.message || 'Falha na autenticação'}`);
+                      if (data.message === 'Unauthorized') {
+                        alert('⚠️ Acesso negado: Você precisa fazer login como administrador primeiro.\n\nUse: admin / admin123');
+                      } else {
+                        alert(`Erro de acesso: ${data.message || 'Falha na autenticação'}`);
+                      }
                     }
                   } catch (error) {
                     console.error('❌ Erro na requisição:', error);
@@ -572,7 +576,11 @@ export default function AIManagementDashboard() {
                             window.open(data.consoleUrl, '_blank');
                           } else {
                             console.error('❌ Erro ao obter acesso:', data.message);
-                            alert(`Erro de acesso: ${data.message || 'Falha na autenticação'}`);
+                            if (data.message === 'Unauthorized') {
+                              alert('⚠️ Acesso negado: Você precisa fazer login como administrador primeiro.\n\nUse: admin / admin123');
+                            } else {
+                              alert(`Erro de acesso: ${data.message || 'Falha na autenticação'}`);
+                            }
                           }
                         } catch (error) {
                           console.error('❌ Erro na requisição:', error);
