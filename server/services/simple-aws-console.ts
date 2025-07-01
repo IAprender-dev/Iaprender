@@ -105,11 +105,13 @@ class SimpleAWSConsoleService {
       await db.insert(auditLogs).values({
         userId: user.id,
         action: 'aws_console_access' as any,
-        details: JSON.stringify({
+        resourceType: 'aws_console',
+        resourceId: metadata.region || 'us-east-1',
+        details: {
           message: `AWS Console access by ${user.username}`,
           action: action,
           ...metadata
-        }),
+        },
         ipAddress: '127.0.0.1'
       });
     } catch (error) {
