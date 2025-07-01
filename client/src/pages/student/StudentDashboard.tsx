@@ -604,7 +604,7 @@ export default function StudentDashboard() {
                   </Card>
                 </Link>
 
-                <Link href="/aluno/tutor-voz">
+                <Link href="/student/proversa-simple">
                   <Card className="group hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 cursor-pointer border-0 bg-gradient-to-br from-pink-600 via-purple-600 to-indigo-700 text-white overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <CardContent className="p-6 relative z-10">
