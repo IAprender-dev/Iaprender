@@ -1721,10 +1721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Register Municipal Manager Routes
-  registerMunicipalRoutes(app);
-
-  // ProVersa AI - Endpoint for generating ephemeral tokens with user context
+  // ProVersa AI - Endpoint for generating ephemeral tokens with user context (MUST BE BEFORE OTHER MIDDLEWARES)
   app.post('/api/realtime/session', async (req: Request, res: Response) => {
     try {
       const user = req.session?.user;
@@ -1867,6 +1864,14 @@ Fale sempre em português brasileiro claro e natural.`,
       console.error('Error creating ephemeral token:', error);
       res.status(500).json({ error: 'Failed to create session' });
     }
+  });
+
+  // Register Municipal Manager Routes
+  registerMunicipalRoutes(app);
+
+  // Test route to verify no middleware interference
+  app.get('/api/test-no-auth', (req: Request, res: Response) => {
+    res.json({ message: 'Test successful - no auth required' });
   });
 
   // Create and return HTTP server
