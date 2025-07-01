@@ -323,7 +323,7 @@ export default function AIManagementDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {providers.map((provider) => (
+                    {providers.map((provider: AIProvider) => (
                       <div key={provider.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           {provider.type === 'bedrock' ? (
@@ -360,9 +360,9 @@ export default function AIManagementDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {applications
-                      .sort((a, b) => b.usage.dailyRequests - a.usage.dailyRequests)
+                      .sort((a: PlatformApplication, b: PlatformApplication) => b.usage.dailyRequests - a.usage.dailyRequests)
                       .slice(0, 4)
-                      .map((app) => (
+                      .map((app: PlatformApplication) => (
                         <div key={app.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                           <div>
                             <p className="font-medium text-slate-900">{app.name}</p>
