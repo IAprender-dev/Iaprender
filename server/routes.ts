@@ -1725,7 +1725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerMunicipalRoutes(app);
 
   // ProVersa AI - Endpoint for generating ephemeral tokens with user context
-  app.post('/api/realtime/session', authenticate, async (req: Request, res: Response) => {
+  app.post('/api/realtime/session', async (req: Request, res: Response) => {
     try {
       const user = req.session?.user;
       const studentName = user?.firstName || 'estudante';
