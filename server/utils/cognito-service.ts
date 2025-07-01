@@ -172,13 +172,73 @@ export class CognitoService {
    * Valida se o serviço está configurado corretamente
    */
   isConfigured(): boolean {
-    return !!(
+    const hasBasicConfig = !!(
       this.domain &&
       this.clientId &&
       this.clientSecret &&
       this.redirectUri &&
       this.userPoolId
     );
+    
+    // Verifica se o domínio tem o formato correto
+    const hasDomainFormat = this.domain ? 
+      this.domain.includes('.auth.') && this.domain.includes('.amazoncognito.com') : 
+      false;
+    
+    return hasBasicConfig && hasDomainFormat;
+  }
+
+  /**
+   * Validação detalhada da configuração
+   */
+  validateConfiguration(): { isValid: boolean; errors: string[]; warnings: string[] } {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (!this.domain) {
+      errors.push('COGNITO_DOMAIN não está configurado no arquivo .env');
+    } else if (!this.domain.includes('.auth.') || !this.domain.includes('.amazoncognito.com')) {
+      errors.push('COGNITO_DOMAIN deve ter formato: https://[prefixo].auth.[região].amazoncognito.com');
+      warnings.push('Exemplo: https://iaverse-education.auth.us-east-1.amazoncognito.com');
+    }
+
+    if (!this.clientId) {
+      errors.push('COGNITO_CLIENT_ID não está configurado no arquivo .env');
+    }
+
+    if (!this.userPoolId) {
+      errors.push('COGNITO_USER_POOL_ID não está configurado no arquivo .env');
+    }
+
+    if (!this.redirectUri) {
+      errors.push('COGNITO_REDIRECT_URI não está configurado no arquivo .env');
+    }
+
+    if (!this.clientSecret) {
+      errors.push('COGNITO_CLIENT_SECRET não está configurado no arquivo .env');
+    }
+
+    // Verifica se as URLs estão usando HTTPS
+    if (this.redirectUri && !this.redirectUri.startsWith('https://')) {
+      warnings.push('COGNITO_REDIRECT_URI deve usar HTTPS em produção');
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings
+    };
+  }
+
+  /**
+   * Gera URL de teste direto para Cognito
+   */
+  getTestUrl(): string | null {
+    if (!this.isConfigured()) {
+      return null;
+    }
+
+    return this.getLoginUrl();
   }
 
   /**

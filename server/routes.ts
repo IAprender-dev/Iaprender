@@ -294,20 +294,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test Cognito configuration
   app.get("/api/cognito/test", async (req, res) => {
     try {
-      const isConfigured = cognitoService.isConfigured();
-      const isConnected = await cognitoService.testConnection();
+      const validation = cognitoService.validateConfiguration();
+      const isConnected = validation.isValid ? await cognitoService.testConnection() : false;
       
       res.json({
-        configured: isConfigured,
+        configured: validation.isValid,
         connected: isConnected,
-        loginUrl: isConfigured ? cognitoService.getLoginUrl() : null
+        loginUrl: validation.isValid ? cognitoService.getLoginUrl() : null,
+        validation: {
+          errors: validation.errors,
+          warnings: validation.warnings
+        },
+        environment: {
+          domain: process.env.COGNITO_DOMAIN || 'NÃO CONFIGURADO',
+          clientId: process.env.COGNITO_CLIENT_ID || 'NÃO CONFIGURADO',
+          userPoolId: process.env.COGNITO_USER_POOL_ID || 'NÃO CONFIGURADO',
+          redirectUri: process.env.COGNITO_REDIRECT_URI || 'NÃO CONFIGURADO'
+        }
       });
     } catch (error) {
       console.error('Erro ao testar Cognito:', error);
       res.status(500).json({ 
         error: 'Erro ao testar configuração do Cognito',
         configured: false,
-        connected: false
+        connected: false,
+        validation: {
+          errors: ['Erro interno do servidor'],
+          warnings: []
+        }
       });
     }
   });
@@ -398,6 +412,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         <h2>⚡ Ações Rápidas</h2>
         <a href="/api/cognito/test" class="button">📊 Teste de API</a>
         <a href="/" class="button">🏠 Voltar ao site</a>
+        <a href="/AWS_COGNITO_SETUP_GUIDE.md" class="button" target="_blank">📖 Guia Completo</a>
+        
+        <div style="margin-top: 20px;">
+          <button onclick="testCognitoApi()" class="button" style="background: #28a745;">🧪 Testar Agora</button>
+          <button onclick="copyCallbackUrl()" class="button" style="background: #17a2b8;">📋 Copiar Callback URL</button>
+        </div>
+
+        <div id="test-results" style="margin-top: 20px; display: none;"></div>
+
+        <script>
+          async function testCognitoApi() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<p>🔄 Testando configuração...</p>';
+            
+            try {
+              const response = await fetch('/api/cognito/test');
+              const data = await response.json();
+              
+              let html = '<div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">';
+              html += '<h3>📋 Resultado do Teste</h3>';
+              
+              if (data.configured) {
+                html += '<p style="color: green;"><strong>✅ Configuração:</strong> OK</p>';
+              } else {
+                html += '<p style="color: red;"><strong>❌ Configuração:</strong> Incompleta</p>';
+              }
+              
+              if (data.connected) {
+                html += '<p style="color: green;"><strong>✅ Conexão:</strong> OK</p>';
+              } else {
+                html += '<p style="color: red;"><strong>❌ Conexão:</strong> Falhou</p>';
+              }
+              
+              if (data.validation && data.validation.errors.length > 0) {
+                html += '<h4 style="color: red;">❌ Erros:</h4><ul>';
+                data.validation.errors.forEach(error => {
+                  html += '<li style="color: red;">' + error + '</li>';
+                });
+                html += '</ul>';
+              }
+              
+              if (data.validation && data.validation.warnings.length > 0) {
+                html += '<h4 style="color: orange;">⚠️ Avisos:</h4><ul>';
+                data.validation.warnings.forEach(warning => {
+                  html += '<li style="color: orange;">' + warning + '</li>';
+                });
+                html += '</ul>';
+              }
+              
+              if (data.loginUrl) {
+                html += '<p><strong>🔗 URL de Login:</strong><br>';
+                html += '<a href="' + data.loginUrl + '" target="_blank" class="button">🚀 Testar Login</a></p>';
+              }
+              
+              html += '</div>';
+              resultsDiv.innerHTML = html;
+            } catch (error) {
+              resultsDiv.innerHTML = '<p style="color: red;">❌ Erro ao testar: ' + error.message + '</p>';
+            }
+          }
+          
+          function copyCallbackUrl() {
+            const url = '${redirectUri}';
+            navigator.clipboard.writeText(url).then(() => {
+              alert('✅ URL copiada para área de transferência!\\n\\n' + url);
+            }).catch(() => {
+              alert('URL para copiar:\\n\\n' + url);
+            });
+          }
+        </script>
         
         <h2>📝 Status do Sistema</h2>
         <div class="config">
@@ -408,14 +493,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         <h2>🆘 Próximos Passos</h2>
         <ol>
-          <li>Configure o domínio no AWS Cognito Console</li>
-          <li>Habilite Hosted UI no App Client</li>
-          <li>Adicione as callback URLs corretas</li>
-          <li>Teste a URL de login acima</li>
+          <li><strong>Configure o domínio no AWS Cognito Console</strong>
+            <ul>
+              <li>Acesse: AWS Console → Cognito → User Pools → ${userPoolId}</li>
+              <li>Vá em "App integration" → "Domain"</li>
+              <li>Configure um prefixo único (ex: iaverse-education)</li>
+            </ul>
+          </li>
+          <li><strong>Habilite Hosted UI no App Client</strong>
+            <ul>
+              <li>Em "App integration" → "App clients" → ${clientId}</li>
+              <li>Habilite "Hosted UI"</li>
+              <li>Configure OAuth scopes: openid, email, profile</li>
+            </ul>
+          </li>
+          <li><strong>Adicione as callback URLs corretas</strong>
+            <ul>
+              <li>Callback: ${redirectUri}</li>
+              <li>Sign out: ${redirectUri ? redirectUri.replace('/callback', '/logout-callback') : 'NÃO CONFIGURADO'}</li>
+            </ul>
+          </li>
+          <li><strong>Atualize o arquivo .env</strong>
+            <ul>
+              <li>COGNITO_DOMAIN=https://[seu-prefixo].auth.us-east-1.amazoncognito.com</li>
+            </ul>
+          </li>
         </ol>
 
+        <h2>📋 Checklist de Configuração</h2>
+        <div class="config">
+          <p>☐ Domínio configurado no AWS Console</p>
+          <p>☐ Hosted UI habilitada</p>
+          <p>☐ Authorization code grant ativado</p>
+          <p>☐ Scopes configurados (openid, email, profile)</p>
+          <p>☐ Callback URLs adicionadas</p>
+          <p>☐ Arquivo .env atualizado</p>
+        </div>
+
+        <h2>🔧 Comandos Úteis</h2>
+        <div class="config">
+          <p><strong>Testar configuração:</strong> <code>curl ${req.protocol}://${req.get('host')}/api/cognito/test</code></p>
+          <p><strong>Ver logs:</strong> <code>tail -f server.log</code></p>
+          <p><strong>Reiniciar servidor:</strong> Salve qualquer arquivo do projeto</p>
+        </div>
+
         <hr>
-        <p><small>IAverse AWS Cognito Integration v1.0</small></p>
+        <p><small>IAverse AWS Cognito Integration v1.0 - <a href="/AWS_COGNITO_SETUP_GUIDE.md" target="_blank">📖 Guia Completo</a></small></p>
       </body>
       </html>
     `);
