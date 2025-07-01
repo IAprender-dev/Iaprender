@@ -312,6 +312,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cognito diagnostic page
+  app.get("/api/cognito/debug", (req, res) => {
+    const userPoolId = process.env.COGNITO_USER_POOL_ID;
+    const clientId = process.env.COGNITO_CLIENT_ID;
+    const redirectUri = process.env.COGNITO_REDIRECT_URI;
+    const domain = process.env.COGNITO_DOMAIN;
+    
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>AWS Cognito Debug - IAverse</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+          .config { background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0; }
+          .error { color: red; font-weight: bold; }
+          .success { color: green; font-weight: bold; }
+          .warning { color: orange; font-weight: bold; }
+          .button { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            background: #007bff; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            margin: 5px;
+          }
+          .button:hover { background: #0056b3; }
+        </style>
+      </head>
+      <body>
+        <h1>🔧 AWS Cognito Diagnóstico</h1>
+        
+        <h2>📋 Configuração Atual</h2>
+        <div class="config">
+          <p><strong>User Pool ID:</strong> ${userPoolId || '<span class="error">NÃO CONFIGURADO</span>'}</p>
+          <p><strong>Client ID:</strong> ${clientId || '<span class="error">NÃO CONFIGURADO</span>'}</p>
+          <p><strong>Domain:</strong> ${domain || '<span class="error">NÃO CONFIGURADO</span>'}</p>
+          <p><strong>Redirect URI:</strong> ${redirectUri || '<span class="error">NÃO CONFIGURADO</span>'}</p>
+        </div>
+
+        <h2>🔍 Possíveis Problemas e Soluções</h2>
+        
+        <h3>1. Domain Configuration</h3>
+        <p>O User Pool precisa ter um domínio configurado no AWS Console:</p>
+        <ul>
+          <li>Acesse AWS Cognito Console → User Pools → ${userPoolId}</li>
+          <li>Vá em "App integration" → "Domain"</li>
+          <li>Configure um domínio customizado ou use o domínio Amazon Cognito</li>
+        </ul>
+
+        <h3>2. App Client Configuration</h3>
+        <p>Verifique se o App Client está configurado corretamente:</p>
+        <ul>
+          <li>Em "App integration" → "App clients"</li>
+          <li>Edite o client ID: ${clientId}</li>
+          <li>Habilite "Hosted UI"</li>
+          <li>Configure Identity providers (Cognito user pool)</li>
+          <li>Configure OAuth 2.0 grant types: Authorization code grant</li>
+          <li>Configure OpenID Connect scopes: openid, email, profile</li>
+        </ul>
+
+        <h3>3. Callback URLs</h3>
+        <p>Adicione estas URLs nas configurações do App Client:</p>
+        <div class="config">
+          <p><strong>Callback URLs:</strong></p>
+          <p>${redirectUri}</p>
+          <p><strong>Sign out URLs:</strong></p>
+          <p>${redirectUri ? redirectUri.replace('/callback', '/logout-callback') : 'NÃO CONFIGURADO'}</p>
+        </div>
+
+        <h2>🧪 Teste Manual</h2>
+        <p>URLs de teste baseadas na configuração atual:</p>
+        
+        ${domain ? `
+          <p>
+            <a href="${cognitoService.getLoginUrl()}" class="button" target="_blank">
+              ✅ Testar Login URL
+            </a>
+          </p>
+          <p><small>URL: ${cognitoService.getLoginUrl()}</small></p>
+        ` : '<p class="error">❌ Não é possível gerar URL - domínio não configurado</p>'}
+
+        <h2>⚡ Ações Rápidas</h2>
+        <a href="/api/cognito/test" class="button">📊 Teste de API</a>
+        <a href="/" class="button">🏠 Voltar ao site</a>
+        
+        <h2>📝 Status do Sistema</h2>
+        <div class="config">
+          <p><strong>Configuração:</strong> ${cognitoService.isConfigured() ? '<span class="success">✅ Completa</span>' : '<span class="error">❌ Incompleta</span>'}</p>
+          <p><strong>Replit Domain:</strong> ${req.get('host')}</p>
+          <p><strong>Protocol:</strong> ${req.protocol}</p>
+        </div>
+
+        <h2>🆘 Próximos Passos</h2>
+        <ol>
+          <li>Configure o domínio no AWS Cognito Console</li>
+          <li>Habilite Hosted UI no App Client</li>
+          <li>Adicione as callback URLs corretas</li>
+          <li>Teste a URL de login acima</li>
+        </ol>
+
+        <hr>
+        <p><small>IAverse AWS Cognito Integration v1.0</small></p>
+      </body>
+      </html>
+    `);
+  });
+
   // Start login redirect to Cognito
   app.get("/start-login", (req, res) => {
     try {
