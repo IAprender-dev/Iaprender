@@ -275,7 +275,10 @@ export default function AIManagementDashboard() {
               </Button>
               
               <Button
-                onClick={() => setLocation('/admin/ai/cost-management')}
+                onClick={() => {
+                  console.log('🔗 Navegando para gestão de custos AWS...');
+                  setLocation('/admin/ai/cost-management');
+                }}
                 className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg"
                 size="sm"
               >
