@@ -2111,6 +2111,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AWS Console Access Routes - Secure Access Management
+  app.post('/api/admin/aws/console/access', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { awsConsoleAccessService } = await import('./services/aws-console-access');
+      const { region = 'us-east-1' } = req.body;
+      
+      if (!req.session.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      console.log(`🔐 Solicitação de acesso seguro ao console AWS para usuário ${req.session.user.username}`);
+
+      // Verificar configuração AWS
+      const configCheck = awsConsoleAccessService.checkAWSConfiguration();
+      if (!configCheck.configured) {
+        return res.status(503).json({ 
+          error: 'AWS não configurado completamente',
+          missingVars: configCheck.missingVars,
+          message: 'Entre em contato com o administrador do sistema'
+        });
+      }
+
+      // Gerar acesso seguro
+      const accessResponse = await awsConsoleAccessService.accessBedrock(req.session.user, region);
+      
+      res.json({
+        success: true,
+        consoleUrl: accessResponse.consoleUrl,
+        expiresAt: accessResponse.expiresAt,
+        region: accessResponse.region,
+        message: 'Acesso autorizado ao console AWS Bedrock'
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erro ao gerar acesso ao console AWS:', error.message);
+      res.status(403).json({ 
+        error: 'Acesso negado',
+        message: error.message 
+      });
+    }
+  });
+
+  app.get('/api/admin/aws/console/status', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { awsConsoleAccessService } = await import('./services/aws-console-access');
+      
+      const configCheck = awsConsoleAccessService.checkAWSConfiguration();
+      
+      res.json({
+        configured: configCheck.configured,
+        missingVars: configCheck.missingVars,
+        availableRegions: ['us-east-1', 'us-west-2', 'eu-west-1'],
+        message: configCheck.configured ? 'AWS Console configurado' : 'Configuração AWS incompleta'
+      });
+    } catch (error) {
+      console.error('Error checking AWS console status:', error);
+      res.status(500).json({ error: 'Failed to check AWS console status' });
+    }
+  });
+
+  app.get('/api/admin/aws/cloudwatch/:region?', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { awsConsoleAccessService } = await import('./services/aws-console-access');
+      const { region = 'us-east-1' } = req.params;
+      
+      if (!req.session.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Gerar URL do CloudWatch (método mais simples)
+      const cloudWatchUrl = awsConsoleAccessService.generateCloudWatchUrl(region);
+      
+      // Log do acesso
+      await awsConsoleAccessService.logAccess(req.session.user, 'cloudwatch-access', { region });
+      
+      res.json({
+        success: true,
+        cloudWatchUrl,
+        region,
+        message: 'URL do CloudWatch gerada'
+      });
+
+    } catch (error: any) {
+      console.error('Error generating CloudWatch URL:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate CloudWatch URL',
+        message: error.message 
+      });
+    }
+  });
+
+  app.post('/api/admin/aws/console/revoke', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { awsConsoleAccessService } = await import('./services/aws-console-access');
+      const { sessionToken } = req.body;
+      
+      if (!req.session.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      await awsConsoleAccessService.revokeSession(sessionToken, req.session.user);
+      
+      res.json({
+        success: true,
+        message: 'Sessão revogada com sucesso'
+      });
+
+    } catch (error: any) {
+      console.error('Error revoking session:', error);
+      res.status(500).json({ 
+        error: 'Failed to revoke session',
+        message: error.message 
+      });
+    }
+  });
+
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
 

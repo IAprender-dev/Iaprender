@@ -238,10 +238,28 @@ export default function AIManagementDashboard() {
             <div className="flex items-center space-x-4">
               {/* Botão para Console AWS Bedrock Nativo */}
               <Button 
-                onClick={() => {
-                  const region = 'us-east-1'; // ou usar process.env.AWS_REGION
-                  const bedrockConsoleUrl = `https://${region}.console.aws.amazon.com/bedrock/home?region=${region}#/overview`;
-                  window.open(bedrockConsoleUrl, '_blank');
+                onClick={async () => {
+                  try {
+                    console.log('🔐 Solicitando acesso seguro ao console AWS...');
+                    const response = await fetch('/api/admin/aws/console/access', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ region: 'us-east-1' })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.consoleUrl) {
+                      console.log('✅ Acesso autorizado, abrindo console AWS...');
+                      window.open(data.consoleUrl, '_blank');
+                    } else {
+                      console.error('❌ Erro ao obter acesso:', data.message);
+                      alert(`Erro de acesso: ${data.message || 'Falha na autenticação'}`);
+                    }
+                  } catch (error) {
+                    console.error('❌ Erro na requisição:', error);
+                    alert('Erro ao solicitar acesso ao console AWS. Verifique sua conexão.');
+                  }
                 }}
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg"
                 size="sm"
@@ -538,10 +556,28 @@ export default function AIManagementDashboard() {
                   </div>
                   <div className="flex space-x-2">
                     <Button 
-                      onClick={() => {
-                        const region = 'us-east-1';
-                        const bedrockConsoleUrl = `https://${region}.console.aws.amazon.com/bedrock/home?region=${region}#/overview`;
-                        window.open(bedrockConsoleUrl, '_blank');
+                      onClick={async () => {
+                        try {
+                          console.log('🔐 Solicitando acesso seguro ao console AWS...');
+                          const response = await fetch('/api/admin/aws/console/access', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ region: 'us-east-1' })
+                          });
+                          
+                          const data = await response.json();
+                          
+                          if (data.success && data.consoleUrl) {
+                            console.log('✅ Acesso autorizado, abrindo console AWS...');
+                            window.open(data.consoleUrl, '_blank');
+                          } else {
+                            console.error('❌ Erro ao obter acesso:', data.message);
+                            alert(`Erro de acesso: ${data.message || 'Falha na autenticação'}`);
+                          }
+                        } catch (error) {
+                          console.error('❌ Erro na requisição:', error);
+                          alert('Erro ao solicitar acesso ao console AWS. Verifique sua conexão.');
+                        }
                       }}
                       className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg px-4 py-2"
                     >
@@ -549,10 +585,27 @@ export default function AIManagementDashboard() {
                       Console AWS
                     </Button>
                     <Button 
-                      onClick={() => {
-                        const region = 'us-east-1';
-                        const cloudWatchUrl = `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#metricsV2:graph=~();query=AWS~2FBedrock`;
-                        window.open(cloudWatchUrl, '_blank');
+                      onClick={async () => {
+                        try {
+                          console.log('📊 Acessando CloudWatch...');
+                          const response = await fetch('/api/admin/aws/cloudwatch/us-east-1');
+                          const data = await response.json();
+                          
+                          if (data.success && data.cloudWatchUrl) {
+                            window.open(data.cloudWatchUrl, '_blank');
+                          } else {
+                            // Fallback para URL direta se a API falhar
+                            const region = 'us-east-1';
+                            const cloudWatchUrl = `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#metricsV2:graph=~();query=AWS~2FBedrock`;
+                            window.open(cloudWatchUrl, '_blank');
+                          }
+                        } catch (error) {
+                          console.error('Error accessing CloudWatch:', error);
+                          // Fallback para URL direta
+                          const region = 'us-east-1';
+                          const cloudWatchUrl = `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#metricsV2:graph=~();query=AWS~2FBedrock`;
+                          window.open(cloudWatchUrl, '_blank');
+                        }
                       }}
                       variant="outline"
                       className="border-orange-300 text-orange-700 hover:bg-orange-50 px-4 py-2"
