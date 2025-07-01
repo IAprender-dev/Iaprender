@@ -106,7 +106,7 @@ class SimpleAWSConsoleService {
         userId: user.id,
         action: 'aws_console_access' as any,
         resourceType: 'aws_console',
-        resourceId: metadata.region || 'us-east-1',
+        resourceId: 'aws-console-bedrock',
         details: {
           message: `AWS Console access by ${user.username}`,
           action: action,

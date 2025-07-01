@@ -273,6 +273,15 @@ export default function AIManagementDashboard() {
                 <Cloud className="h-4 w-4 mr-2" />
                 Console AWS Bedrock
               </Button>
+              
+              <Button
+                onClick={() => setLocation('/admin/aws-costs')}
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg"
+                size="sm"
+              >
+                <DollarSign className="h-4 w-4 mr-2" />
+                Gestão de Custos
+              </Button>
 
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
