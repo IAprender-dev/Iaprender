@@ -123,6 +123,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 1, 2025: Native AWS Bedrock Console Access Implementation
+  - Added direct access button to AWS Bedrock native console in AI Management Dashboard header
+  - Implemented dedicated section in Providers tab with automatic CloudWatch integration
+  - Created dual-button access: Console AWS (full dashboard) and CloudWatch (metrics only)
+  - Added visual indicators for dashboard readiness, automatic metrics, and configurable logging
+  - Provided detailed resource list available in native console (real-time monitoring, cost tracking, logs, alerts, security)
+  - Enhanced admin workflow with seamless transition to AWS native tools
 - July 1, 2025: Real AI Provider Data Integration Implementation
   - Created comprehensive AIProvidersService for fetching real usage data from AWS Bedrock and LiteLLM APIs
   - Integrated CloudWatch metrics to retrieve actual Bedrock usage, costs, and token consumption

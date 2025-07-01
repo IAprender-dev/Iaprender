@@ -236,6 +236,20 @@ export default function AIManagementDashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
+              {/* Botão para Console AWS Bedrock Nativo */}
+              <Button 
+                onClick={() => {
+                  const region = 'us-east-1'; // ou usar process.env.AWS_REGION
+                  const bedrockConsoleUrl = `https://${region}.console.aws.amazon.com/bedrock/home?region=${region}#/overview`;
+                  window.open(bedrockConsoleUrl, '_blank');
+                }}
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg"
+                size="sm"
+              >
+                <Cloud className="h-4 w-4 mr-2" />
+                Console AWS Bedrock
+              </Button>
+
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
                 <p className="text-xs text-gray-500">Administrador</p>
@@ -507,6 +521,92 @@ export default function AIManagementDashboard() {
           </TabsContent>
 
           <TabsContent value="providers" className="space-y-6 mt-6">
+            {/* Seção de Console AWS Bedrock Nativo */}
+            <Card className="bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 shadow-lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 bg-gradient-to-r from-orange-500 to-red-600 rounded-lg">
+                      <Cloud className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl text-slate-900">Console AWS Bedrock Nativo</CardTitle>
+                      <CardDescription className="text-slate-700">
+                        Acesso direto ao dashboard completo da AWS com CloudWatch integrado
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={() => {
+                        const region = 'us-east-1';
+                        const bedrockConsoleUrl = `https://${region}.console.aws.amazon.com/bedrock/home?region=${region}#/overview`;
+                        window.open(bedrockConsoleUrl, '_blank');
+                      }}
+                      className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white border-0 shadow-lg px-4 py-2"
+                    >
+                      <Cloud className="h-4 w-4 mr-2" />
+                      Console AWS
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        const region = 'us-east-1';
+                        const cloudWatchUrl = `https://${region}.console.aws.amazon.com/cloudwatch/home?region=${region}#metricsV2:graph=~();query=AWS~2FBedrock`;
+                        window.open(cloudWatchUrl, '_blank');
+                      }}
+                      variant="outline"
+                      className="border-orange-300 text-orange-700 hover:bg-orange-50 px-4 py-2"
+                    >
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      CloudWatch
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white/60 rounded-lg p-4 border border-orange-200">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <h4 className="font-semibold text-slate-900">Dashboard Pronto</h4>
+                    </div>
+                    <p className="text-sm text-slate-700">Console nativo + CloudWatch automático</p>
+                  </div>
+                  <div className="bg-white/60 rounded-lg p-4 border border-orange-200">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <h4 className="font-semibold text-slate-900">Métricas Automáticas</h4>
+                    </div>
+                    <p className="text-sm text-slate-700">Sem configuração necessária</p>
+                  </div>
+                  <div className="bg-white/60 rounded-lg p-4 border border-orange-200">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <h4 className="font-semibold text-slate-900">Logging Configurável</h4>
+                    </div>
+                    <p className="text-sm text-slate-700">Para auditoria detalhada</p>
+                  </div>
+                </div>
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-start space-x-3">
+                    <div className="p-1 bg-blue-100 rounded">
+                      <TrendingUp className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-blue-900">Recursos Disponíveis no Console Nativo</h5>
+                      <ul className="mt-2 text-sm text-blue-800 space-y-1">
+                        <li>• Monitoramento em tempo real de todos os modelos</li>
+                        <li>• Métricas detalhadas de uso, custo e performance</li>
+                        <li>• Logs de requisições e respostas completos</li>
+                        <li>• Alertas automáticos de limites e custos</li>
+                        <li>• Configuração avançada de segurança e acesso</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {providers.map((provider) => (
                 <Card key={provider.id} className="bg-white/80 backdrop-blur-sm border-slate-200/50">
