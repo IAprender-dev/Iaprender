@@ -33,6 +33,7 @@ import {
   Database
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import { useLocation } from "wouter";
 import { Link } from "wouter";
 
 interface AIProvider {
@@ -89,6 +90,7 @@ interface VirtualKey {
 
 export default function AIManagementDashboard() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
   const queryClient = useQueryClient();
 
