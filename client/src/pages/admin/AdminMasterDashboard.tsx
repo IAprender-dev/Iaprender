@@ -223,9 +223,15 @@ export default function AdminMasterDashboard() {
                   <div className="space-y-3">
                     <h4 className="font-semibold text-slate-800">Ações Rápidas</h4>
                     <div className="space-y-2">
-                      <Button onClick={() => setActiveTab("contracts")} className="w-full justify-start bg-slate-700 hover:bg-slate-800 text-white">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Gerenciar Contratos
+                      <Link href="/admin/contracts">
+                        <Button className="w-full justify-start bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Controle de Contratos
+                        </Button>
+                      </Link>
+                      <Button onClick={() => setActiveTab("contracts")} variant="outline" className="w-full justify-start border-slate-200 hover:bg-slate-50">
+                        <Building className="h-4 w-4 mr-2" />
+                        Visão Geral Contratos
                       </Button>
                       <Button onClick={() => setActiveTab("security")} variant="outline" className="w-full justify-start border-slate-200 hover:bg-slate-50">
                         <Shield className="h-4 w-4 mr-2" />
@@ -389,17 +395,19 @@ export default function AdminMasterDashboard() {
                   <CardDescription className="text-slate-600">Gestão de contratos</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button variant="outline" className="w-full justify-start text-left h-auto p-4 border-slate-200 hover:bg-slate-50">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                        <FileText className="h-4 w-4 text-emerald-600" />
+                  <Link href="/admin/contracts">
+                    <Button variant="outline" className="w-full justify-start text-left h-auto p-4 border-slate-200 hover:bg-slate-50">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                          <FileText className="h-4 w-4 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">Gestão de Contratos</p>
+                          <p className="text-xs text-slate-500">Criar/editar contratos e licenças</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-slate-900">Criar Contrato</p>
-                        <p className="text-xs text-slate-500">Novo contrato de licenças</p>
-                      </div>
-                    </div>
-                  </Button>
+                    </Button>
+                  </Link>
 
                   <Button variant="outline" className="w-full justify-start text-left h-auto p-4 border-slate-200 hover:bg-slate-50">
                     <div className="flex items-center space-x-3">
