@@ -100,7 +100,7 @@ class SimpleAWSConsoleService {
   /**
    * Registrar acesso para auditoria
    */
-  private async logAccess(user: User, action: string, metadata: any = {}): Promise<void> {
+  async logAccess(user: User, action: string, metadata: any = {}): Promise<void> {
     try {
       await db.insert(auditLogs).values({
         userId: user.id,

@@ -1,0 +1,142 @@
+🏠 1. AWS Billing and Cost Management Dashboard
+Local Principal para Custos
+Para ver sua fatura do Bedrock, vá para o Billing and Cost Management Dashboard no console AWS Billing and Cost Management.
+📍 Como acessar:
+AWS Console → Billing and Cost Management → Dashboard
+📊 O que você encontra:
+
+Custos mensais do Bedrock
+Gastos por modelo (Claude, Llama, etc.)
+Trend de gastos dos últimos meses
+Previsão de custos futuros
+
+🔍 2. AWS Cost Explorer
+Análise Detalhada de Custos
+O AWS Cost Explorer permite visualizar e analisar seus custos e uso, podendo explorar até 13 meses de dados históricos.
+📍 Como acessar:
+AWS Console → Cost Management → Cost Explorer
+📊 Filtros específicos para Bedrock:
+
+Service: Amazon Bedrock
+Usage Type: Input/Output tokens
+Region: us-east-1, us-west-2, etc.
+Linked Account: Por conta da organização
+
+Exemplo de análise:
+Filter by: Service = "Amazon Bedrock"
+Group by: Usage Type
+Time range: Last 3 months
+📈 3. Amazon CloudWatch
+Métricas de Performance e Uso
+No CloudWatch console, vá para a seção metrics e pesquise pelo model ID para ver métricas do Amazon Bedrock Unlock AWS Cost and Usage insights with generative AI powered by Amazon Bedrock | Artificial Intelligence.
+📍 Como acessar:
+AWS Console → CloudWatch → Metrics → AWS/Bedrock
+📊 Métricas disponíveis:
+
+Invocations: Número de chamadas
+InvocationLatency: Tempo de resposta
+InputTokenCount: Tokens de entrada
+OutputTokenCount: Tokens de saída
+InvocationClientErrors: Erros
+InvocationThrottles: Limitações
+
+Dashboard automático:
+CloudWatch → Dashboards → Automatic Dashboards → Bedrock
+💰 4. Detailed Billing Reports
+Custos Granulares por Recurso
+📍 Como acessar:
+Billing Console → Bills → Expand "Amazon Bedrock"
+📊 Detalhamento por:
+
+Model ID (anthropic.claude-v2, etc.)
+Usage Type (Input tokens, Output tokens)
+Region
+Linked Account
+
+Exemplo de linha de billing:
+Service: Amazon Bedrock
+Usage Type: Claude-InputTokens-APN1
+Resource: anthropic.claude-v2
+Quantity: 50,000 tokens
+Rate: $0.008 per 1K tokens
+Cost: $0.40
+🏷️ 5. Cost Allocation Tags
+Rastreamento por Projeto/Equipe
+📍 Como configurar:
+Billing Console → Cost Allocation Tags → User-Defined Cost Allocation Tags
+📊 Tags úteis para Bedrock:
+json{
+  "Project": "ChatBot-Vendas",
+  "Team": "AI-Engineering", 
+  "Environment": "Production",
+  "Application": "Customer-Support"
+}
+🎯 6. AWS Budgets
+Alertas e Controle de Gastos
+📍 Como acessar:
+Billing Console → Budgets → Create Budget
+📊 Tipos de budget para Bedrock:
+
+Cost Budget: "Bedrock não deve passar de $500/mês"
+Usage Budget: "Máximo 1M tokens/dia"
+RI Coverage: Para throughput provisionado
+
+Exemplo de configuração:
+Budget Type: Cost Budget
+Service: Amazon Bedrock
+Amount: $1,000 USD
+Period: Monthly
+Alerts: 80%, 100% of budget
+📋 7. AWS Cost and Usage Reports (CUR)
+Dados Mais Detalhados (Para Análise Avançada)
+📍 Como configurar:
+Billing Console → Cost & Usage Reports → Create Report
+📊 Dados incluídos:
+
+Hourly usage: Uso por hora
+Resource IDs: IDs específicos dos recursos
+Pricing: Detalhes de preços
+Tags: Todas as tags aplicadas
+
+Análise com Athena:
+sqlSELECT 
+  line_item_usage_start_date,
+  product_servicename,
+  line_item_usage_type,
+  line_item_unblended_cost,
+  resource_tags_user_team
+FROM cur_database.cur_table 
+WHERE product_servicename = 'Amazon Bedrock'
+ORDER BY line_item_usage_start_date DESC;
+🎨 8. Console do Bedrock
+Estatísticas de Uso dos Modelos
+📍 Como acessar:
+AWS Console → Amazon Bedrock → Usage
+📊 Informações disponíveis:
+
+Modelos ativos
+Requests por modelo
+Throughput utilizado
+Model access status
+
+⚡ 9. Ferramentas Terceiras
+Vantage.sh (Especializada em custos AWS):
+Com Vantage, você pode filtrar e agrupar custos do Amazon Bedrock de forma granular Cloud Financial Management – AWS Billing and Cost Management
+CloudZero, Datadog, etc.:
+Ferramentas que oferecem dashboards especializados em custos de AI/ML.
+📋 Checklist de Monitoramento:
+✅ Diário: CloudWatch metrics e dashboards
+✅ Semanal: Cost Explorer trends
+✅ Mensal: Detailed billing review
+✅ Configurar: Budgets com alertas
+✅ Implementar: Cost allocation tags
+✅ Automatizar: Cost anomaly detection
+🎯 Recomendação de Setup:
+
+Configure budgets com alertas em 80% e 100%
+Ative cost allocation tags em todos os recursos Bedrock
+Crie dashboard personalizado no CloudWatch
+Configure Cost Anomaly Detection para alertas automáticos
+Revise monthly o detailed billing por modelo
+
+Pro tip: Use ferramentas como CloudWatch para monitorar métricas em tempo real como uso de tokens e atividade dos modelos What is AWS Billing and Cost Management? - AWS Billing para otimizar custos proativamente.

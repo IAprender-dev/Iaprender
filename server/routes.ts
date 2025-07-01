@@ -2217,6 +2217,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint para registrar acesso a recursos AWS
+  app.post('/api/admin/aws/resource-access', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { simpleAWSConsoleService } = await import('./services/simple-aws-console.js');
+      const { resource, url, timestamp } = req.body;
+      
+      if (!req.session.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Log do acesso ao recurso
+      await simpleAWSConsoleService.logAccess(req.session.user, 'resource_access', {
+        resource,
+        url,
+        timestamp
+      });
+      
+      res.json({
+        success: true,
+        message: 'Acesso registrado com sucesso'
+      });
+
+    } catch (error: any) {
+      console.error('Error logging resource access:', error);
+      res.status(500).json({ 
+        error: 'Failed to log resource access',
+        message: error.message 
+      });
+    }
+  });
+
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
 
