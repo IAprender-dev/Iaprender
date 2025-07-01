@@ -42,6 +42,7 @@ import aiRouter from "./routes/ai-routes";
 import translateRoutes from "./routes/translate-routes";
 import tokenRouter from "./routes/token-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
+import { cognitoService } from "./utils/cognito-service";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse-new";
 import OpenAI from "openai";
@@ -286,6 +287,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get current user
   app.get("/api/auth/me", authenticate, (req, res) => {
     return res.status(200).json(req.session.user);
+  });
+
+  // AWS COGNITO OAUTH ROUTES
+  
+  // Test Cognito configuration
+  app.get("/api/cognito/test", async (req, res) => {
+    try {
+      const isConfigured = cognitoService.isConfigured();
+      const isConnected = await cognitoService.testConnection();
+      
+      res.json({
+        configured: isConfigured,
+        connected: isConnected,
+        loginUrl: isConfigured ? cognitoService.getLoginUrl() : null
+      });
+    } catch (error) {
+      console.error('Erro ao testar Cognito:', error);
+      res.status(500).json({ 
+        error: 'Erro ao testar configuração do Cognito',
+        configured: false,
+        connected: false
+      });
+    }
+  });
+
+  // Start login redirect to Cognito
+  app.get("/start-login", (req, res) => {
+    try {
+      if (!cognitoService.isConfigured()) {
+        return res.status(500).send(`
+          <h1>Configuração do AWS Cognito Incompleta</h1>
+          <p>O serviço Cognito não está configurado corretamente.</p>
+          <p>Verifique as variáveis de ambiente:</p>
+          <ul>
+            <li>COGNITO_DOMAIN</li>
+            <li>COGNITO_CLIENT_ID</li>
+            <li>COGNITO_CLIENT_SECRET</li>
+            <li>COGNITO_REDIRECT_URI</li>
+            <li>COGNITO_USER_POOL_ID</li>
+          </ul>
+          <p><a href="/">Voltar ao início</a></p>
+        `);
+      }
+
+      const loginUrl = cognitoService.getLoginUrl();
+      console.log('Redirecionando para Cognito:', loginUrl);
+      res.redirect(loginUrl);
+    } catch (error) {
+      console.error('Erro ao iniciar login:', error);
+      res.status(500).send(`
+        <h1>Erro na Autenticação</h1>
+        <p>Ocorreu um erro ao tentar redirecionar para o login.</p>
+        <p><a href="/">Voltar ao início</a></p>
+      `);
+    }
+  });
+
+  // Cognito callback
+  app.get("/callback", async (req, res) => {
+    try {
+      const { code, error, error_description } = req.query;
+
+      // Verificar se houve erro no Cognito
+      if (error) {
+        console.error('Erro do Cognito:', error, error_description);
+        return res.status(400).send(`
+          <h1>Erro na Autenticação</h1>
+          <p>Erro: ${error}</p>
+          <p>Descrição: ${error_description}</p>
+          <p><a href="/">Voltar ao início</a></p>
+        `);
+      }
+
+      // Verificar se o código foi retornado
+      if (!code || typeof code !== 'string') {
+        return res.status(400).send(`
+          <h1>Erro na Autenticação</h1>
+          <p>Código de autorização não encontrado.</p>
+          <p><a href="/">Voltar ao início</a></p>
+        `);
+      }
+
+      console.log('Código de autorização recebido:', code);
+
+      // Trocar código por tokens
+      const tokens = await cognitoService.exchangeCodeForTokens(code);
+      console.log('Tokens obtidos com sucesso');
+
+      // Decodificar informações do usuário
+      const userInfo = cognitoService.decodeIdToken(tokens.id_token);
+      console.log('Informações do usuário:', userInfo);
+
+      // Determinar role baseado nos grupos
+      const userRole = cognitoService.getUserRoleFromGroups(userInfo['cognito:groups']);
+      console.log('Role determinado:', userRole);
+
+      // Verificar se usuário já existe na base
+      let user = await storage.getUserByEmail(userInfo.email);
+      
+      if (!user) {
+        // Criar novo usuário
+        const newUser = {
+          firstName: userInfo.given_name || userInfo.name?.split(' ')[0] || 'Usuário',
+          lastName: userInfo.family_name || userInfo.name?.split(' ').slice(1).join(' ') || '',
+          email: userInfo.email,
+          username: userInfo.email.split('@')[0],
+          password: 'cognito_auth', // Placeholder para autenticação externa
+          role: userRole,
+          isActive: true
+        };
+        
+        user = await storage.createUser(newUser);
+        console.log('Novo usuário criado:', user.id);
+      } else {
+        // Atualizar role se necessário
+        if (user.role !== userRole) {
+          console.log(`Atualizando role de ${user.role} para ${userRole}`);
+          // Aqui você pode implementar lógica para atualizar o role se necessário
+        }
+      }
+
+      // Criar sessão
+      const { password, ...userWithoutPassword } = user;
+      req.session.user = userWithoutPassword;
+
+      console.log('Usuário logado:', req.session.user);
+
+      // Redirecionar baseado no tipo de usuário
+      const redirectPaths = {
+        admin: '/admin/master',
+        municipal_manager: '/municipal',
+        school_director: '/school',
+        teacher: '/professor',
+        student: '/student/dashboard'
+      };
+
+      const redirectPath = redirectPaths[userRole as keyof typeof redirectPaths] || '/student/dashboard';
+      
+      console.log('Redirecionando para:', redirectPath);
+      res.redirect(redirectPath);
+
+    } catch (error) {
+      console.error('Erro no callback do Cognito:', error);
+      
+      res.status(500).send(`
+        <h1>Erro na Autenticação</h1>
+        <p>Ocorreu um erro durante o processo de autenticação.</p>
+        <p>Erro: ${error instanceof Error ? error.message : 'Erro desconhecido'}</p>
+        <p><a href="/">Voltar ao início</a></p>
+      `);
+    }
+  });
+
+  // Logout callback
+  app.get("/logout-callback", (req, res) => {
+    // Destruir sessão local
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Erro ao destruir sessão:', err);
+      }
+      res.clearCookie('connect.sid');
+      res.redirect('/');
+    });
   });
 
   // COURSE ROUTES
