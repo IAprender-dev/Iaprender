@@ -274,17 +274,16 @@ export default function AIManagementDashboard() {
                 Console AWS Bedrock
               </Button>
               
-              <Button
-                onClick={() => {
-                  console.log('🔗 Navegando para gestão de custos AWS...');
-                  setLocation('/admin/ai/cost-management');
-                }}
-                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg"
-                size="sm"
-              >
-                <DollarSign className="h-4 w-4 mr-2" />
-                Gestão de Custos
-              </Button>
+              <Link href="/admin/ai/cost-management">
+                <Button
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white border-0 shadow-lg"
+                  size="sm"
+                  type="button"
+                >
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Gestão de Custos
+                </Button>
+              </Link>
 
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
