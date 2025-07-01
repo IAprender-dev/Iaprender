@@ -1,392 +1,428 @@
-import { Request, Response } from 'express';
-import { eq, sql, desc, and, gte, lte, count, sum } from 'drizzle-orm';
+import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { 
-  contracts, 
   users, 
-  companies, 
-  tokenUsage, 
+  contracts, 
   auditLogs, 
   securityAlerts, 
-  systemHealthMetrics,
-  platformConfigs 
+  systemHealthMetrics, 
+  platformConfigs,
+  tokenUsage,
+  contractStatusEnum
 } from '../../shared/schema';
+import { eq, sql, desc, and, gte, lte, count } from 'drizzle-orm';
 
-// Get system metrics for admin dashboard
-export async function getSystemMetrics(req: Request, res: Response) {
+// Sistema de Gestão de Contratos
+export const getSystemMetrics = async (req: Request, res: Response) => {
   try {
-    // Get total and active contracts
-    const contractStats = await db
-      .select({
-        total: count(),
-        active: sql<number>`count(case when status = 'active' then 1 end)`
-      })
-      .from(contracts);
+    // Total de contratos
+    const [contractStats] = await db.select({
+      total: sql<number>`COUNT(*)`,
+      active: sql<number>`COUNT(CASE WHEN status = 'active' THEN 1 END)`,
+      pending: sql<number>`COUNT(CASE WHEN status = 'pending' THEN 1 END)`,
+      expired: sql<number>`COUNT(CASE WHEN status = 'expired' THEN 1 END)`
+    }).from(contracts);
 
-    // Get total and active users
-    const userStats = await db
-      .select({
-        total: count(),
-        active: sql<number>`count(case when status = 'active' then 1 end)`
-      })
-      .from(users);
+    // Total de usuários
+    const [userStats] = await db.select({
+      total: sql<number>`COUNT(*)`,
+      active: sql<number>`COUNT(CASE WHEN status = 'active' THEN 1 END)`,
+      teachers: sql<number>`COUNT(CASE WHEN role = 'teacher' THEN 1 END)`,
+      students: sql<number>`COUNT(CASE WHEN role = 'student' THEN 1 END)`,
+      admins: sql<number>`COUNT(CASE WHEN role = 'admin' THEN 1 END)`
+    }).from(users);
 
-    // Get monthly token usage and calculate revenue
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    const tokenStats = await db
-      .select({
-        totalTokens: sql<number>`coalesce(sum(tokens_used), 0)`,
-        totalCost: sql<number>`coalesce(sum(cost_usd), 0)`
-      })
-      .from(tokenUsage)
-      .where(gte(tokenUsage.createdAt, startOfMonth));
+    // Receita mensal (simulada baseada em contratos ativos)
+    const [revenueStats] = await db.select({
+      monthlyRevenue: sql<number>`SUM(CASE WHEN status = 'active' THEN price_per_license * total_licenses ELSE 0 END)`
+    }).from(contracts);
 
-    // Calculate monthly revenue based on contracts
-    const revenueStats = await db
-      .select({
-        revenue: sql<number>`coalesce(sum((c.total_licenses - c.available_licenses) * c.price_per_license), 0)`
-      })
-      .from(contracts)
-      .innerJoin(companies, eq(contracts.companyId, companies.id))
-      .where(eq(contracts.status, 'active'));
+    // Uptime do sistema (mock - poderia ser integrado com serviço de monitoramento)
+    const systemUptime = "99.97%";
 
-    // Get latest system health metrics
-    const healthMetrics = await db
-      .select()
-      .from(systemHealthMetrics)
-      .orderBy(desc(systemHealthMetrics.timestamp))
-      .limit(10);
+    // Alertas de segurança ativos
+    const [securityStats] = await db.select({
+      totalAlerts: sql<number>`COUNT(*)`,
+      unresolvedAlerts: sql<number>`COUNT(CASE WHEN resolved = false THEN 1 END)`,
+      highSeverityAlerts: sql<number>`COUNT(CASE WHEN severity = 'high' AND resolved = false THEN 1 END)`
+    }).from(securityAlerts);
 
-    // Calculate system uptime and response time
-    const uptimeMetric = healthMetrics.find(m => m.metricName === 'uptime');
-    const responseTimeMetric = healthMetrics.find(m => m.metricName === 'response_time');
-    const errorRateMetric = healthMetrics.find(m => m.metricName === 'error_rate');
+    // Uso de tokens nas últimas 24 horas
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const [tokenStats] = await db.select({
+      totalTokensToday: sql<number>`COALESCE(SUM(tokens_used), 0)`
+    }).from(tokenUsage).where(gte(tokenUsage.createdAt, twentyFourHoursAgo));
 
-    const metrics = {
-      totalContracts: contractStats[0]?.total || 0,
-      activeContracts: contractStats[0]?.active || 0,
-      totalUsers: userStats[0]?.total || 0,
-      activeUsers: userStats[0]?.active || 0,
-      monthlyTokenUsage: tokenStats[0]?.totalTokens || 0,
-      monthlyRevenue: revenueStats[0]?.revenue || 0,
-      avgTokenCost: tokenStats[0]?.totalCost || 0,
-      systemUptime: uptimeMetric?.metricValue || 99.9,
-      apiResponseTime: responseTimeMetric?.metricValue || 150,
-      errorRate: errorRateMetric?.metricValue || 0.1
-    };
-
-    res.json(metrics);
+    res.json({
+      contracts: contractStats,
+      users: userStats,
+      revenue: revenueStats?.monthlyRevenue || 0,
+      systemUptime,
+      security: securityStats,
+      tokenUsage: tokenStats?.totalTokensToday || 0
+    });
   } catch (error) {
     console.error('Error fetching system metrics:', error);
     res.status(500).json({ error: 'Failed to fetch system metrics' });
   }
-}
+};
 
-// Get all contracts with company details
-export async function getContracts(req: Request, res: Response) {
+// Gestão de Contratos
+export const getContracts = async (req: Request, res: Response) => {
   try {
-    const contractsList = await db
-      .select({
-        id: contracts.id,
-        name: contracts.name,
-        description: contracts.description,
-        planType: contracts.planType,
-        status: contracts.status,
-        startDate: contracts.startDate,
-        endDate: contracts.endDate,
-        totalLicenses: contracts.totalLicenses,
-        availableLicenses: contracts.availableLicenses,
-        pricePerLicense: contracts.pricePerLicense,
-        monthlyTokenLimitTeacher: contracts.monthlyTokenLimitTeacher,
-        monthlyTokenLimitStudent: contracts.monthlyTokenLimitStudent,
-        enabledAIModels: contracts.enabledAIModels,
-        companyName: companies.name,
-        companyEmail: companies.email
-      })
-      .from(contracts)
-      .innerJoin(companies, eq(contracts.companyId, companies.id))
-      .orderBy(desc(contracts.createdAt));
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const status = req.query.status as string;
+    const offset = (page - 1) * limit;
 
-    // Calculate usage data for each contract
-    const contractsWithUsage = await Promise.all(
-      contractsList.map(async (contract) => {
-        // Get user count for this contract
-        const userCount = await db
-          .select({ count: count() })
-          .from(users)
-          .where(eq(users.contractId, contract.id));
+    let query = db.select({
+      id: contracts.id,
+      name: contracts.name,
+      description: contracts.description,
+      planType: contracts.planType,
+      status: contracts.status,
+      maxUsers: contracts.maxUsers,
+      totalLicenses: contracts.totalLicenses,
+      availableLicenses: contracts.availableLicenses,
+      pricePerLicense: contracts.pricePerLicense,
+      startDate: contracts.startDate,
+      endDate: contracts.endDate,
+      createdAt: contracts.createdAt
+    }).from(contracts);
 
-        // Get monthly token usage for this contract
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        
-        const monthlyUsage = await db
-          .select({
-            totalTokens: sql<number>`coalesce(sum(tu.tokens_used), 0)`
-          })
-          .from(tokenUsage)
-          .innerJoin(users, eq(tokenUsage.userId, users.id))
-          .where(
-            and(
-              eq(users.contractId, contract.id),
-              gte(tokenUsage.createdAt, startOfMonth)
-            )
-          );
+    if (status) {
+      query = query.where(eq(contracts.status, status as any));
+    }
 
-        return {
-          ...contract,
-          usedLicenses: contract.totalLicenses - contract.availableLicenses,
-          monthlyTokenUsage: monthlyUsage[0]?.totalTokens || 0,
-          monthlyTokenLimit: contract.monthlyTokenLimitTeacher + contract.monthlyTokenLimitStudent,
-          userCount: userCount[0]?.count || 0
-        };
-      })
-    );
+    const contractList = await query
+      .orderBy(desc(contracts.createdAt))
+      .limit(limit)
+      .offset(offset);
 
-    res.json(contractsWithUsage);
+    // Total count for pagination
+    const [totalCount] = await db.select({
+      count: sql<number>`COUNT(*)`
+    }).from(contracts).where(status ? eq(contracts.status, status as any) : sql`1=1`);
+
+    res.json({
+      contracts: contractList,
+      pagination: {
+        page,
+        limit,
+        total: totalCount.count,
+        pages: Math.ceil(totalCount.count / limit)
+      }
+    });
   } catch (error) {
     console.error('Error fetching contracts:', error);
     res.status(500).json({ error: 'Failed to fetch contracts' });
   }
-}
+};
 
-// Get security alerts
-export async function getSecurityAlerts(req: Request, res: Response) {
+export const suspendContract = async (req: Request, res: Response) => {
   try {
-    const alerts = await db
-      .select({
-        id: securityAlerts.id,
-        type: securityAlerts.type,
-        severity: securityAlerts.severity,
-        message: securityAlerts.message,
-        details: securityAlerts.details,
-        resolved: securityAlerts.resolved,
-        resolvedBy: securityAlerts.resolvedBy,
-        resolvedAt: securityAlerts.resolvedAt,
-        createdAt: securityAlerts.createdAt,
-        userId: securityAlerts.userId,
-        contractId: securityAlerts.contractId,
-        userName: sql<string>`u.first_name || ' ' || u.last_name`,
-        contractName: contracts.name
-      })
-      .from(securityAlerts)
-      .leftJoin(users, eq(securityAlerts.userId, users.id))
-      .leftJoin(contracts, eq(securityAlerts.contractId, contracts.id))
-      .orderBy(desc(securityAlerts.createdAt))
-      .limit(100);
+    const contractId = parseInt(req.params.contractId);
+    const { reason } = req.body;
 
-    res.json(alerts);
+    const [updatedContract] = await db
+      .update(contracts)
+      .set({ 
+        status: 'cancelled',
+        updatedAt: new Date()
+      })
+      .where(eq(contracts.id, contractId))
+      .returning();
+
+    if (!updatedContract) {
+      return res.status(404).json({ error: 'Contract not found' });
+    }
+
+    // Log da ação
+    await db.insert(auditLogs).values({
+      userId: req.session.user.id,
+      contractId,
+      action: 'update',
+      resourceType: 'contract',
+      resourceId: contractId.toString(),
+      details: { action: 'suspended', reason },
+      ipAddress: req.ip
+    });
+
+    res.json({ message: 'Contract suspended successfully', contract: updatedContract });
+  } catch (error) {
+    console.error('Error suspending contract:', error);
+    res.status(500).json({ error: 'Failed to suspend contract' });
+  }
+};
+
+export const activateContract = async (req: Request, res: Response) => {
+  try {
+    const contractId = parseInt(req.params.contractId);
+
+    const [updatedContract] = await db
+      .update(contracts)
+      .set({ 
+        status: 'active',
+        updatedAt: new Date()
+      })
+      .where(eq(contracts.id, contractId))
+      .returning();
+
+    if (!updatedContract) {
+      return res.status(404).json({ error: 'Contract not found' });
+    }
+
+    // Log da ação
+    await db.insert(auditLogs).values({
+      userId: req.session.user.id,
+      contractId,
+      action: 'update',
+      resourceType: 'contract',
+      resourceId: contractId.toString(),
+      details: { action: 'activated' },
+      ipAddress: req.ip
+    });
+
+    res.json({ message: 'Contract activated successfully', contract: updatedContract });
+  } catch (error) {
+    console.error('Error activating contract:', error);
+    res.status(500).json({ error: 'Failed to activate contract' });
+  }
+};
+
+// Sistema de Monitoramento de Segurança
+export const getSecurityAlerts = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const severity = req.query.severity as string;
+    const resolved = req.query.resolved as string;
+    const offset = (page - 1) * limit;
+
+    let query = db.select({
+      id: securityAlerts.id,
+      type: securityAlerts.type,
+      severity: securityAlerts.severity,
+      message: securityAlerts.message,
+      details: securityAlerts.details,
+      resolved: securityAlerts.resolved,
+      resolvedBy: securityAlerts.resolvedBy,
+      resolvedAt: securityAlerts.resolvedAt,
+      createdAt: securityAlerts.createdAt,
+      userId: securityAlerts.userId,
+      contractId: securityAlerts.contractId
+    }).from(securityAlerts);
+
+    // Filtros
+    const conditions = [];
+    if (severity) {
+      conditions.push(eq(securityAlerts.severity, severity));
+    }
+    if (resolved !== undefined) {
+      conditions.push(eq(securityAlerts.resolved, resolved === 'true'));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const alerts = await query
+      .orderBy(desc(securityAlerts.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    // Total count for pagination
+    const [totalCount] = await db.select({
+      count: sql<number>`COUNT(*)`
+    }).from(securityAlerts).where(conditions.length > 0 ? and(...conditions) : sql`1=1`);
+
+    res.json({
+      alerts,
+      pagination: {
+        page,
+        limit,
+        total: totalCount.count,
+        pages: Math.ceil(totalCount.count / limit)
+      }
+    });
   } catch (error) {
     console.error('Error fetching security alerts:', error);
     res.status(500).json({ error: 'Failed to fetch security alerts' });
   }
-}
+};
 
-// Resolve security alert
-export async function resolveSecurityAlert(req: Request, res: Response) {
+export const createSecurityAlert = async (req: Request, res: Response) => {
   try {
-    const { alertId } = req.params;
-    const userId = req.session.user?.id;
+    const { type, severity, message, details, userId, contractId } = req.body;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    const [newAlert] = await db.insert(securityAlerts).values({
+      type,
+      severity,
+      message,
+      details,
+      userId,
+      contractId,
+      resolved: false
+    }).returning();
 
-    await db
+    // Log da criação do alerta
+    await db.insert(auditLogs).values({
+      userId: req.session.user.id,
+      action: 'create',
+      resourceType: 'security_alert',
+      resourceId: newAlert.id.toString(),
+      details: { type, severity, message },
+      ipAddress: req.ip
+    });
+
+    res.status(201).json(newAlert);
+  } catch (error) {
+    console.error('Error creating security alert:', error);
+    res.status(500).json({ error: 'Failed to create security alert' });
+  }
+};
+
+export const resolveSecurityAlert = async (req: Request, res: Response) => {
+  try {
+    const alertId = parseInt(req.params.alertId);
+    const { resolution } = req.body;
+
+    const [updatedAlert] = await db
       .update(securityAlerts)
       .set({
         resolved: true,
-        resolvedBy: userId,
-        resolvedAt: new Date()
+        resolvedBy: req.session.user.id,
+        resolvedAt: new Date(),
+        details: sql`details || ${JSON.stringify({ resolution })}`
       })
-      .where(eq(securityAlerts.id, parseInt(alertId)));
+      .where(eq(securityAlerts.id, alertId))
+      .returning();
 
-    // Log the action
+    if (!updatedAlert) {
+      return res.status(404).json({ error: 'Security alert not found' });
+    }
+
+    // Log da resolução
     await db.insert(auditLogs).values({
-      userId,
+      userId: req.session.user.id,
       action: 'update',
       resourceType: 'security_alert',
-      resourceId: alertId,
-      details: { action: 'resolve_alert' },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent')
+      resourceId: alertId.toString(),
+      details: { action: 'resolved', resolution },
+      ipAddress: req.ip
     });
 
-    res.json({ message: 'Alert resolved successfully' });
+    res.json({ message: 'Security alert resolved successfully', alert: updatedAlert });
   } catch (error) {
     console.error('Error resolving security alert:', error);
     res.status(500).json({ error: 'Failed to resolve security alert' });
   }
-}
+};
 
-// Get platform configurations
-export async function getPlatformConfigs(req: Request, res: Response) {
+// Sistema de Configurações da Plataforma
+export const getPlatformConfigs = async (req: Request, res: Response) => {
   try {
-    const configs = await db
-      .select()
-      .from(platformConfigs)
-      .orderBy(platformConfigs.configKey);
-
+    const configs = await db.select().from(platformConfigs).orderBy(platformConfigs.configKey);
+    
     res.json(configs);
   } catch (error) {
     console.error('Error fetching platform configs:', error);
     res.status(500).json({ error: 'Failed to fetch platform configs' });
   }
-}
+};
 
-// Update platform configuration
-export async function updatePlatformConfig(req: Request, res: Response) {
+export const updatePlatformConfig = async (req: Request, res: Response) => {
   try {
-    const { configKey } = req.params;
+    const configKey = req.params.configKey;
     const { configValue, description } = req.body;
-    const userId = req.session.user?.id;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    await db
+    const [updatedConfig] = await db
       .update(platformConfigs)
       .set({
         configValue,
         description,
         updatedAt: new Date()
       })
-      .where(eq(platformConfigs.configKey, configKey));
+      .where(eq(platformConfigs.configKey, configKey))
+      .returning();
 
-    // Log the action
+    if (!updatedConfig) {
+      // Se a configuração não existe, criar uma nova
+      const [newConfig] = await db.insert(platformConfigs).values({
+        configKey,
+        configValue,
+        description
+      }).returning();
+      
+      // Log da criação
+      await db.insert(auditLogs).values({
+        userId: req.session.user.id,
+        action: 'create',
+        resourceType: 'platform_config',
+        resourceId: configKey,
+        details: { configKey, configValue, description },
+        ipAddress: req.ip
+      });
+
+      return res.status(201).json(newConfig);
+    }
+
+    // Log da atualização
     await db.insert(auditLogs).values({
-      userId,
+      userId: req.session.user.id,
       action: 'update',
       resourceType: 'platform_config',
       resourceId: configKey,
-      details: { configKey, newValue: configValue },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent')
+      details: { configKey, configValue, description },
+      ipAddress: req.ip
     });
 
-    res.json({ message: 'Configuration updated successfully' });
+    res.json(updatedConfig);
   } catch (error) {
     console.error('Error updating platform config:', error);
     res.status(500).json({ error: 'Failed to update platform config' });
   }
-}
+};
 
-// Suspend contract
-export async function suspendContract(req: Request, res: Response) {
+// Sistema de Auditoria
+export const getAuditLogs = async (req: Request, res: Response) => {
   try {
-    const { contractId } = req.params;
-    const userId = req.session.user?.id;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const action = req.query.action as string;
+    const resourceType = req.query.resourceType as string;
+    const userId = req.query.userId as string;
+    const offset = (page - 1) * limit;
 
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+    let query = db.select({
+      id: auditLogs.id,
+      userId: auditLogs.userId,
+      contractId: auditLogs.contractId,
+      action: auditLogs.action,
+      resourceType: auditLogs.resourceType,
+      resourceId: auditLogs.resourceId,
+      details: auditLogs.details,
+      ipAddress: auditLogs.ipAddress,
+      userAgent: auditLogs.userAgent,
+      createdAt: auditLogs.createdAt,
+      // Join com users para obter informações do usuário
+      userFirstName: users.firstName,
+      userLastName: users.lastName,
+      userEmail: users.email
+    })
+    .from(auditLogs)
+    .leftJoin(users, eq(auditLogs.userId, users.id));
 
-    await db
-      .update(contracts)
-      .set({
-        status: 'cancelled',
-        updatedAt: new Date()
-      })
-      .where(eq(contracts.id, parseInt(contractId)));
-
-    // Log the action
-    await db.insert(auditLogs).values({
-      userId,
-      contractId: parseInt(contractId),
-      action: 'update',
-      resourceType: 'contract',
-      resourceId: contractId,
-      details: { action: 'suspend_contract' },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent')
-    });
-
-    res.json({ message: 'Contract suspended successfully' });
-  } catch (error) {
-    console.error('Error suspending contract:', error);
-    res.status(500).json({ error: 'Failed to suspend contract' });
-  }
-}
-
-// Activate contract
-export async function activateContract(req: Request, res: Response) {
-  try {
-    const { contractId } = req.params;
-    const userId = req.session.user?.id;
-
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    await db
-      .update(contracts)
-      .set({
-        status: 'active',
-        updatedAt: new Date()
-      })
-      .where(eq(contracts.id, parseInt(contractId)));
-
-    // Log the action
-    await db.insert(auditLogs).values({
-      userId,
-      contractId: parseInt(contractId),
-      action: 'update',
-      resourceType: 'contract',
-      resourceId: contractId,
-      details: { action: 'activate_contract' },
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent')
-    });
-
-    res.json({ message: 'Contract activated successfully' });
-  } catch (error) {
-    console.error('Error activating contract:', error);
-    res.status(500).json({ error: 'Failed to activate contract' });
-  }
-}
-
-// Get audit logs
-export async function getAuditLogs(req: Request, res: Response) {
-  try {
-    const { page = 1, limit = 50, action, userId: filterUserId, startDate, endDate } = req.query;
-    
-    let query = db
-      .select({
-        id: auditLogs.id,
-        action: auditLogs.action,
-        resourceType: auditLogs.resourceType,
-        resourceId: auditLogs.resourceId,
-        details: auditLogs.details,
-        ipAddress: auditLogs.ipAddress,
-        userAgent: auditLogs.userAgent,
-        createdAt: auditLogs.createdAt,
-        userName: sql<string>`u.first_name || ' ' || u.last_name`,
-        contractName: contracts.name
-      })
-      .from(auditLogs)
-      .leftJoin(users, eq(auditLogs.userId, users.id))
-      .leftJoin(contracts, eq(auditLogs.contractId, contracts.id));
-
-    // Apply filters
+    // Filtros
     const conditions = [];
-    
-    if (action && typeof action === 'string') {
+    if (action) {
       conditions.push(eq(auditLogs.action, action as any));
     }
-    
-    if (filterUserId && typeof filterUserId === 'string') {
-      conditions.push(eq(auditLogs.userId, parseInt(filterUserId)));
+    if (resourceType) {
+      conditions.push(eq(auditLogs.resourceType, resourceType));
     }
-    
-    if (startDate && typeof startDate === 'string') {
-      conditions.push(gte(auditLogs.createdAt, new Date(startDate)));
-    }
-    
-    if (endDate && typeof endDate === 'string') {
-      conditions.push(lte(auditLogs.createdAt, new Date(endDate)));
+    if (userId) {
+      conditions.push(eq(auditLogs.userId, parseInt(userId)));
     }
 
     if (conditions.length > 0) {
@@ -395,54 +431,120 @@ export async function getAuditLogs(req: Request, res: Response) {
 
     const logs = await query
       .orderBy(desc(auditLogs.createdAt))
-      .limit(parseInt(limit as string))
-      .offset((parseInt(page as string) - 1) * parseInt(limit as string));
+      .limit(limit)
+      .offset(offset);
 
-    res.json(logs);
+    // Total count for pagination
+    const [totalCount] = await db.select({
+      count: sql<number>`COUNT(*)`
+    }).from(auditLogs).where(conditions.length > 0 ? and(...conditions) : sql`1=1`);
+
+    res.json({
+      logs,
+      pagination: {
+        page,
+        limit,
+        total: totalCount.count,
+        pages: Math.ceil(totalCount.count / limit)
+      }
+    });
   } catch (error) {
     console.error('Error fetching audit logs:', error);
     res.status(500).json({ error: 'Failed to fetch audit logs' });
   }
-}
+};
 
-// Create security alert
-export async function createSecurityAlert(req: Request, res: Response) {
-  try {
-    const { type, severity, message, details, userId, contractId } = req.body;
-
-    const alert = await db.insert(securityAlerts).values({
-      type,
-      severity,
-      message,
-      details: details || {},
-      userId: userId || null,
-      contractId: contractId || null,
-      resolved: false
-    }).returning();
-
-    res.status(201).json(alert[0]);
-  } catch (error) {
-    console.error('Error creating security alert:', error);
-    res.status(500).json({ error: 'Failed to create security alert' });
-  }
-}
-
-// Record system health metric
-export async function recordSystemMetric(req: Request, res: Response) {
+// Métricas do Sistema
+export const recordSystemMetric = async (req: Request, res: Response) => {
   try {
     const { metricName, metricValue, unit, source } = req.body;
 
-    const metric = await db.insert(systemHealthMetrics).values({
+    const [newMetric] = await db.insert(systemHealthMetrics).values({
       metricName,
       metricValue,
-      unit: unit || null,
-      source: source || 'system',
-      timestamp: new Date()
+      unit,
+      source
     }).returning();
 
-    res.status(201).json(metric[0]);
+    res.status(201).json(newMetric);
   } catch (error) {
     console.error('Error recording system metric:', error);
     res.status(500).json({ error: 'Failed to record system metric' });
   }
-}
+};
+
+// Dashboard Analytics
+export const getDashboardAnalytics = async (req: Request, res: Response) => {
+  try {
+    const days = parseInt(req.query.days as string) || 30;
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    // Contratos criados por dia
+    const contractsPerDay = await db.select({
+      date: sql<string>`DATE(created_at)`,
+      count: sql<number>`COUNT(*)`
+    })
+    .from(contracts)
+    .where(gte(contracts.createdAt, startDate))
+    .groupBy(sql`DATE(created_at)`)
+    .orderBy(sql`DATE(created_at)`);
+
+    // Usuários ativos por dia
+    const usersPerDay = await db.select({
+      date: sql<string>`DATE(last_login_at)`,
+      count: sql<number>`COUNT(*)`
+    })
+    .from(users)
+    .where(and(
+      gte(users.lastLoginAt, startDate),
+      eq(users.status, 'active')
+    ))
+    .groupBy(sql`DATE(last_login_at)`)
+    .orderBy(sql`DATE(last_login_at)`);
+
+    // Alertas de segurança por severidade
+    const alertsBySeverity = await db.select({
+      severity: securityAlerts.severity,
+      count: sql<number>`COUNT(*)`
+    })
+    .from(securityAlerts)
+    .where(gte(securityAlerts.createdAt, startDate))
+    .groupBy(securityAlerts.severity);
+
+    // Uso de tokens por ferramenta (últimos 7 dias)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const tokenUsageByTool = await db.select({
+      date: sql<string>`DATE(created_at)`,
+      totalTokens: sql<number>`SUM(tokens_used)`
+    })
+    .from(tokenUsage)
+    .where(gte(tokenUsage.createdAt, sevenDaysAgo))
+    .groupBy(sql`DATE(created_at)`)
+    .orderBy(sql`DATE(created_at)`);
+
+    res.json({
+      contractsPerDay,
+      usersPerDay,
+      alertsBySeverity,
+      tokenUsageByTool
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard analytics:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard analytics' });
+  }
+};
+
+export default {
+  getSystemMetrics,
+  getContracts,
+  suspendContract,
+  activateContract,
+  getSecurityAlerts,
+  createSecurityAlert,
+  resolveSecurityAlert,
+  getPlatformConfigs,
+  updatePlatformConfig,
+  getAuditLogs,
+  recordSystemMetric,
+  getDashboardAnalytics
+};

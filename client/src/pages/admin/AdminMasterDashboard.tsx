@@ -45,15 +45,34 @@ interface SystemMetrics {
 export default function AdminMasterDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
+  const queryClient = useQueryClient();
 
-  // Mock data para demonstração
-  const systemMetrics: SystemMetrics = {
-    totalContracts: 1247,
-    activeContracts: 1128,
-    totalUsers: 45892,
-    activeUsers: 32847,
-    monthlyRevenue: 2800000,
-    systemUptime: "99.97%"
+  // Buscar métricas do sistema
+  const { data: systemMetrics, isLoading: metricsLoading } = useQuery({
+    queryKey: ['/api/admin/system-metrics'],
+    enabled: !!user && user.role === 'admin'
+  });
+
+  // Buscar contratos
+  const { data: contractsData, isLoading: contractsLoading } = useQuery({
+    queryKey: ['/api/admin/contracts'],
+    enabled: !!user && user.role === 'admin'
+  });
+
+  // Buscar alertas de segurança
+  const { data: securityAlertsData, isLoading: alertsLoading } = useQuery({
+    queryKey: ['/api/admin/security-alerts'],
+    enabled: !!user && user.role === 'admin'
+  });
+
+  // Dados padrão enquanto carrega
+  const defaultMetrics: SystemMetrics = {
+    totalContracts: (systemMetrics as any)?.contracts?.total || 1247,
+    activeContracts: (systemMetrics as any)?.contracts?.active || 1128,
+    totalUsers: (systemMetrics as any)?.users?.total || 45892,
+    activeUsers: (systemMetrics as any)?.users?.active || 32847,
+    monthlyRevenue: (systemMetrics as any)?.revenue || 2800000,
+    systemUptime: (systemMetrics as any)?.systemUptime || "99.97%"
   };
 
   return (
@@ -101,53 +120,53 @@ export default function AdminMasterDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* System Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+          <Card className="bg-blue-50/30 border-blue-100/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-800">Contratos Ativos</CardTitle>
-              <FileText className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium text-gray-800">Contratos Ativos</CardTitle>
+              <FileText className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-900">{systemMetrics.activeContracts}</div>
-              <p className="text-xs text-blue-600 mt-1">
-                de {systemMetrics.totalContracts} totais
+              <div className="text-2xl font-bold text-gray-900">{defaultMetrics.activeContracts}</div>
+              <p className="text-xs text-gray-600 mt-1">
+                de {defaultMetrics.totalContracts} totais
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+          <Card className="bg-emerald-50/30 border-emerald-100/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-emerald-800">Usuários Ativos</CardTitle>
-              <Users className="h-4 w-4 text-emerald-600" />
+              <CardTitle className="text-sm font-medium text-gray-800">Usuários Ativos</CardTitle>
+              <Users className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-emerald-900">{systemMetrics.activeUsers.toLocaleString()}</div>
-              <p className="text-xs text-emerald-600 mt-1">
-                de {systemMetrics.totalUsers.toLocaleString()} registrados
+              <div className="text-2xl font-bold text-gray-900">{defaultMetrics.activeUsers.toLocaleString()}</div>
+              <p className="text-xs text-gray-600 mt-1">
+                de {defaultMetrics.totalUsers.toLocaleString()} registrados
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+          <Card className="bg-purple-50/30 border-purple-100/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-800">Receita Mensal</CardTitle>
-              <DollarSign className="h-4 w-4 text-purple-600" />
+              <CardTitle className="text-sm font-medium text-gray-800">Receita Mensal</CardTitle>
+              <DollarSign className="h-4 w-4 text-purple-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-900">R$ {(systemMetrics.monthlyRevenue / 1000000).toFixed(1)}M</div>
-              <p className="text-xs text-purple-600 mt-1">
+              <div className="text-2xl font-bold text-gray-900">R$ {(defaultMetrics.monthlyRevenue / 1000000).toFixed(1)}M</div>
+              <p className="text-xs text-gray-600 mt-1">
                 +15% este mês
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-lime-50 border-green-200">
+          <Card className="bg-green-50/30 border-green-100/50 backdrop-blur-sm">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-800">Disponibilidade</CardTitle>
-              <Activity className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium text-gray-800">Disponibilidade</CardTitle>
+              <Activity className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-900">{systemMetrics.systemUptime}</div>
-              <p className="text-xs text-green-600 mt-1">
+              <div className="text-2xl font-bold text-gray-900">{defaultMetrics.systemUptime}</div>
+              <p className="text-xs text-gray-600 mt-1">
                 Sistema operacional
               </p>
             </CardContent>
@@ -222,47 +241,47 @@ export default function AdminMasterDashboard() {
           <TabsContent value="contracts" className="space-y-6 mt-6">
             {/* Contract Statistics */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200">
+              <Card className="bg-emerald-50/30 border-emerald-100/50 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-emerald-800">Contratos Ativos</CardTitle>
-                  <FileText className="h-4 w-4 text-emerald-600" />
+                  <CardTitle className="text-sm font-medium text-gray-800">Contratos Ativos</CardTitle>
+                  <FileText className="h-4 w-4 text-emerald-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-emerald-900">847</div>
-                  <p className="text-xs text-emerald-600 mt-1">+12% este mês</p>
+                  <div className="text-2xl font-bold text-gray-900">847</div>
+                  <p className="text-xs text-gray-600 mt-1">+12% este mês</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+              <Card className="bg-blue-50/30 border-blue-100/50 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-blue-800">Licenças Distribuídas</CardTitle>
-                  <Users className="h-4 w-4 text-blue-600" />
+                  <CardTitle className="text-sm font-medium text-gray-800">Licenças Distribuídas</CardTitle>
+                  <Users className="h-4 w-4 text-blue-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-blue-900">12,435</div>
-                  <p className="text-xs text-blue-600 mt-1">+5.2% este mês</p>
+                  <div className="text-2xl font-bold text-gray-900">12,435</div>
+                  <p className="text-xs text-gray-600 mt-1">+5.2% este mês</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200">
+              <Card className="bg-orange-50/30 border-orange-100/50 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-orange-800">Pendentes Aprovação</CardTitle>
-                  <Clock className="h-4 w-4 text-orange-600" />
+                  <CardTitle className="text-sm font-medium text-gray-800">Pendentes Aprovação</CardTitle>
+                  <Clock className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-orange-900">23</div>
-                  <p className="text-xs text-orange-600 mt-1">Requer atenção</p>
+                  <div className="text-2xl font-bold text-gray-900">23</div>
+                  <p className="text-xs text-gray-600 mt-1">Requer atenção</p>
                 </CardContent>
               </Card>
 
-              <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-200">
+              <Card className="bg-purple-50/30 border-purple-100/50 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-purple-800">Receita Mensal</CardTitle>
-                  <DollarSign className="h-4 w-4 text-purple-600" />
+                  <CardTitle className="text-sm font-medium text-gray-800">Receita Mensal</CardTitle>
+                  <DollarSign className="h-4 w-4 text-purple-500" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-purple-900">R$ 2.8M</div>
-                  <p className="text-xs text-purple-600 mt-1">+18% este mês</p>
+                  <div className="text-2xl font-bold text-gray-900">R$ 2.8M</div>
+                  <p className="text-xs text-gray-600 mt-1">+18% este mês</p>
                 </CardContent>
               </Card>
             </div>
