@@ -180,7 +180,7 @@ const AWSCostManagement = () => {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Button
-              onClick={() => setLocation('/admin/ai')}
+              onClick={() => setLocation('/admin/ai-management')}
               variant="outline"
               size="sm"
               className="flex items-center gap-2"
