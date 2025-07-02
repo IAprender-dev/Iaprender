@@ -4,5 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "asyncpg>=0.30.0",
     "litellm[proxy]>=1.73.6",
+    "prisma>=0.15.0",
 ]

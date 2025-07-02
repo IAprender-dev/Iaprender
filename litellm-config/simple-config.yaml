@@ -1,0 +1,9 @@
+model_list:
+  - model_name: test-model
+    litellm_params:
+      model: gpt-3.5-turbo
+      api_key: fake-key
+
+general_settings:
+  master_key: "litellm-master-key-2025"
+  ui_access_mode: "admin_only"
