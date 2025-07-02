@@ -26,6 +26,7 @@ import TeacherNotificationCenter from "@/pages/teacher/NotificationCenter";
 import AdminMasterDashboard from "@/pages/admin/AdminMasterDashboard";
 import AIManagementDashboard from "@/pages/admin/AIManagementDashboard";
 import AWSCostManagement from "@/pages/admin/AWSCostManagement";
+import LiteLLMManagement from "@/pages/admin/LiteLLMManagement";
 import ContractManagement from "@/pages/admin/ContractManagement";
 import MunicipalManagerDashboard from "@/pages/municipal/MunicipalManagerDashboard";
 import SchoolDirectorDashboard from "@/pages/school/SchoolDirectorDashboard";
@@ -136,6 +137,7 @@ function Router() {
       <Route path="/admin/master" component={AdminMasterDashboard} />
       <Route path="/admin/ai-management" component={AIManagementDashboard} />
       <Route path="/admin/ai/cost-management" component={AWSCostManagement} />
+      <Route path="/admin/ai/litellm-management" component={LiteLLMManagement} />
       <Route path="/admin/contracts" component={ContractManagement} />
       
       {/* Municipal Manager Dashboard */}

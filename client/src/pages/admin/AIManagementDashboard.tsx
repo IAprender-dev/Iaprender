@@ -284,6 +284,17 @@ export default function AIManagementDashboard() {
                   Gestão de Custos
                 </Button>
               </Link>
+              
+              <Link href="/admin/ai/litellm-management">
+                <Button
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white border-0 shadow-lg"
+                  size="sm"
+                  type="button"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  LiteLLM Control
+                </Button>
+              </Link>
 
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>

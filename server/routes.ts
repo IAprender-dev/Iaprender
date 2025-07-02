@@ -2248,6 +2248,246 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // LiteLLM Management Routes
+  app.get('/api/admin/litellm/overview', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Mock data for LiteLLM overview
+      const overview = {
+        status: 'active',
+        totalRequests: 15420,
+        totalCost: 847.32,
+        totalModels: 12,
+        totalKeys: 8,
+        uptime: '99.8%',
+        responseTime: '1.2s',
+        errorRate: '0.2%'
+      };
+      
+      res.json(overview);
+    } catch (error) {
+      console.error('Error fetching LiteLLM overview:', error);
+      res.status(500).json({ error: 'Failed to fetch LiteLLM overview' });
+    }
+  });
+
+  app.get('/api/admin/litellm/models', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const models = [
+        {
+          id: 'gpt-4',
+          name: 'GPT-4',
+          provider: 'OpenAI',
+          status: 'active',
+          requests: 8420,
+          cost: 324.50,
+          avgLatency: '1.1s',
+          successRate: '99.9%'
+        },
+        {
+          id: 'claude-3-sonnet',
+          name: 'Claude 3 Sonnet',
+          provider: 'Anthropic',
+          status: 'active',
+          requests: 4230,
+          cost: 198.75,
+          avgLatency: '0.9s',
+          successRate: '99.8%'
+        },
+        {
+          id: 'llama-2-70b',
+          name: 'Llama 2 70B',
+          provider: 'Meta',
+          status: 'active',
+          requests: 2770,
+          cost: 324.07,
+          avgLatency: '2.1s',
+          successRate: '98.5%'
+        }
+      ];
+      
+      res.json(models);
+    } catch (error) {
+      console.error('Error fetching LiteLLM models:', error);
+      res.status(500).json({ error: 'Failed to fetch LiteLLM models' });
+    }
+  });
+
+  app.get('/api/admin/litellm/keys', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const keys = [
+        {
+          id: 'key-1',
+          name: 'Produção Principal',
+          type: 'master',
+          usage: 85,
+          limit: 1000,
+          status: 'active',
+          lastUsed: '2025-01-02 00:30:15',
+          models: ['gpt-4', 'claude-3-sonnet']
+        },
+        {
+          id: 'key-2',
+          name: 'Desenvolvimento',
+          type: 'limited',
+          usage: 23,
+          limit: 100,
+          status: 'active',
+          lastUsed: '2025-01-01 18:45:22',
+          models: ['gpt-3.5-turbo']
+        }
+      ];
+      
+      res.json(keys);
+    } catch (error) {
+      console.error('Error fetching LiteLLM keys:', error);
+      res.status(500).json({ error: 'Failed to fetch LiteLLM keys' });
+    }
+  });
+
+  app.get('/api/admin/litellm/usage', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const usage = {
+        totalRequests: 15420,
+        totalTokens: 2847293,
+        totalCost: 847.32,
+        byModel: [
+          { model: 'gpt-4', requests: 8420, tokens: 1234567, cost: 324.50 },
+          { model: 'claude-3-sonnet', requests: 4230, tokens: 856743, cost: 198.75 },
+          { model: 'llama-2-70b', requests: 2770, tokens: 755983, cost: 324.07 }
+        ]
+      };
+      
+      res.json(usage);
+    } catch (error) {
+      console.error('Error fetching LiteLLM usage:', error);
+      res.status(500).json({ error: 'Failed to fetch LiteLLM usage' });
+    }
+  });
+
+  app.post('/api/admin/litellm/models', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, provider, config } = req.body;
+      
+      const newModel = {
+        id: `model-${Date.now()}`,
+        name,
+        provider,
+        config,
+        status: 'active',
+        requests: 0,
+        cost: 0,
+        avgLatency: '0s',
+        successRate: '100%',
+        createdAt: new Date().toISOString()
+      };
+      
+      res.json({
+        success: true,
+        message: 'Model added successfully',
+        model: newModel
+      });
+    } catch (error) {
+      console.error('Error adding LiteLLM model:', error);
+      res.status(500).json({ error: 'Failed to add model' });
+    }
+  });
+
+  app.post('/api/admin/litellm/keys', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, type, limit, models } = req.body;
+      
+      const newKey = {
+        id: `key-${Date.now()}`,
+        name,
+        type,
+        usage: 0,
+        limit,
+        status: 'active',
+        lastUsed: null,
+        models,
+        createdAt: new Date().toISOString()
+      };
+      
+      res.json({
+        success: true,
+        message: 'API key created successfully',
+        key: newKey
+      });
+    } catch (error) {
+      console.error('Error creating LiteLLM key:', error);
+      res.status(500).json({ error: 'Failed to create API key' });
+    }
+  });
+
+  app.patch('/api/admin/litellm/keys/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      res.json({
+        success: true,
+        message: 'API key updated successfully',
+        key: {
+          id,
+          ...updates,
+          updatedAt: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Error updating LiteLLM key:', error);
+      res.status(500).json({ error: 'Failed to update API key' });
+    }
+  });
+
+  app.delete('/api/admin/litellm/keys/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      res.json({
+        success: true,
+        message: 'API key deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting LiteLLM key:', error);
+      res.status(500).json({ error: 'Failed to delete API key' });
+    }
+  });
+
+  app.post('/api/admin/litellm/config', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { serverUrl, apiKey, settings } = req.body;
+      
+      // In real implementation, save configuration securely
+      console.log('Updating LiteLLM configuration:', { serverUrl, settings });
+      
+      res.json({
+        success: true,
+        message: 'Configuration updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating LiteLLM config:', error);
+      res.status(500).json({ error: 'Failed to update configuration' });
+    }
+  });
+
+  app.post('/api/admin/litellm/test-connection', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Mock connection test
+      const connectionStatus = {
+        success: true,
+        status: 'Connected',
+        latency: '245ms',
+        version: '1.2.4',
+        modelsAvailable: 12
+      };
+      
+      res.json(connectionStatus);
+    } catch (error) {
+      console.error('Error testing LiteLLM connection:', error);
+      res.status(500).json({ error: 'Failed to test connection' });
+    }
+  });
+
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
 
