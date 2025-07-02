@@ -158,6 +158,7 @@ export default function PlanejamentoAula() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ tema: temaInput }),
       });
 
@@ -226,6 +227,7 @@ export default function PlanejamentoAula() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ 
           ...formData,
           anoSerie: temaAnalysis?.anoSerie || '',

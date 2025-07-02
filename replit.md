@@ -123,6 +123,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 2, 2025: Fixed Lesson Planning Document Generation System
+  - Added missing `/api/analyze-tema` endpoint for automatic theme analysis using Anthropic Claude
+  - Added missing `/api/generate-comprehensive-lesson-plan` endpoint for complete lesson plan generation
+  - Fixed authentication issues by adding `credentials: 'include'` to fetch requests in frontend
+  - Implemented comprehensive BNCC-aligned lesson plan generation with 15 required sections
+  - Added retry logic and error handling for AI API calls
+  - Connected lesson planning system to Anthropic Claude 3.5 Sonnet for professional educational content
+  - Fixed "Gerar Plano de Aula" button being disabled due to authentication errors
 - July 2, 2025: AWS Cognito Connection Resilience System Implementation
   - Enhanced AWS Cognito service with robust connectivity testing using multiple endpoints
   - Added pre-redirection connectivity tests to prevent connection refused errors
