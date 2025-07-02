@@ -241,6 +241,12 @@ export default function AdminMasterDashboard() {
                           Gestão de Usuários
                         </Button>
                       </Link>
+                      <Link href="/admin/cognito-users">
+                        <Button className="w-full justify-start bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white">
+                          <Shield className="h-4 w-4 mr-2" />
+                          AWS Cognito Users
+                        </Button>
+                      </Link>
                       <Button onClick={() => setActiveTab("contracts")} variant="outline" className="w-full justify-start border-slate-200 hover:bg-slate-50">
                         <Building className="h-4 w-4 mr-2" />
                         Visão Geral Contratos
