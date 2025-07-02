@@ -235,6 +235,12 @@ export default function AdminMasterDashboard() {
                           Administração de IAs
                         </Button>
                       </Link>
+                      <Link href="/admin/users">
+                        <Button className="w-full justify-start bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Gestão de Usuários
+                        </Button>
+                      </Link>
                       <Button onClick={() => setActiveTab("contracts")} variant="outline" className="w-full justify-start border-slate-200 hover:bg-slate-50">
                         <Building className="h-4 w-4 mr-2" />
                         Visão Geral Contratos

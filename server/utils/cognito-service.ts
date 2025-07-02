@@ -1,6 +1,7 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { URLSearchParams } from 'url';
+import AWS from 'aws-sdk';
 
 interface CognitoUserInfo {
   sub: string;
@@ -20,6 +21,22 @@ interface TokenResponse {
   expires_in: number;
 }
 
+interface CreateUserRequest {
+  email: string;
+  name: string;
+  group: 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin';
+  tempPassword?: string;
+  municipio?: string;
+  escola?: string;
+}
+
+interface CreateUserResponse {
+  success: boolean;
+  userId?: string;
+  tempPassword?: string;
+  error?: string;
+}
+
 export class CognitoService {
   private domain: string;
   private clientId: string;
@@ -27,6 +44,7 @@ export class CognitoService {
   private redirectUri: string;
   private userPoolId: string;
   private region: string;
+  private cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
 
   constructor() {
     this.domain = process.env.COGNITO_DOMAIN || '';
@@ -35,6 +53,15 @@ export class CognitoService {
     this.redirectUri = process.env.COGNITO_REDIRECT_URI || '';
     this.userPoolId = process.env.COGNITO_USER_POOL_ID || '';
     this.region = process.env.AWS_REGION || 'us-east-1';
+    
+    // Inicializar cliente AWS
+    AWS.config.update({
+      region: this.region,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    });
+    
+    this.cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider();
     
     // Garantir que o domínio tenha https://
     if (this.domain && !this.domain.startsWith('http')) {
@@ -307,6 +334,157 @@ export class CognitoService {
     } catch (error) {
       console.error('Erro ao testar conexão com Cognito:', error);
       return false;
+    }
+  }
+
+  /**
+   * Gera senha temporária segura
+   */
+  private generateTempPassword(): string {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    
+    // Garantir pelo menos 1 maiúscula, 1 minúscula, 1 número, 1 símbolo
+    password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)];
+    password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)];
+    password += '0123456789'[Math.floor(Math.random() * 10)];
+    password += '!@#$%^&*'[Math.floor(Math.random() * 8)];
+    
+    // Adicionar mais 4 caracteres aleatórios
+    for (let i = 0; i < 4; i++) {
+      password += chars[Math.floor(Math.random() * chars.length)];
+    }
+    
+    // Embaralhar a senha
+    return password.split('').sort(() => Math.random() - 0.5).join('');
+  }
+
+  /**
+   * Criar usuário no AWS Cognito
+   */
+  async createUser(request: CreateUserRequest): Promise<CreateUserResponse> {
+    try {
+      console.log(`🔄 Criando usuário no Cognito: ${request.email}`);
+      
+      const tempPassword = request.tempPassword || this.generateTempPassword();
+      
+      // Dividir nome em partes
+      const nameParts = request.name.split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ') || firstName;
+
+      // Criar usuário no Cognito
+      const createParams = {
+        UserPoolId: this.userPoolId,
+        Username: request.email,
+        TemporaryPassword: tempPassword,
+        MessageAction: 'SUPPRESS', // Não enviar email automático
+        UserAttributes: [
+          { Name: 'email', Value: request.email },
+          { Name: 'email_verified', Value: 'true' },
+          { Name: 'given_name', Value: firstName },
+          { Name: 'family_name', Value: lastName },
+          { Name: 'name', Value: request.name }
+        ]
+      };
+
+      // Adicionar atributos customizados se fornecidos
+      if (request.municipio) {
+        createParams.UserAttributes.push({ Name: 'custom:municipio', Value: request.municipio });
+      }
+      if (request.escola) {
+        createParams.UserAttributes.push({ Name: 'custom:escola', Value: request.escola });
+      }
+
+      const createResult = await this.cognitoIdentityServiceProvider.adminCreateUser(createParams).promise();
+      
+      if (!createResult.User?.Username) {
+        throw new Error('Falha ao criar usuário - resposta inválida do Cognito');
+      }
+
+      console.log(`✅ Usuário criado no Cognito: ${createResult.User.Username}`);
+
+      // Adicionar usuário ao grupo
+      const groupParams = {
+        UserPoolId: this.userPoolId,
+        Username: request.email,
+        GroupName: request.group
+      };
+
+      await this.cognitoIdentityServiceProvider.adminAddUserToGroup(groupParams).promise();
+      console.log(`✅ Usuário adicionado ao grupo: ${request.group}`);
+
+      // Definir senha como permanente (usuário pode alterá-la no primeiro login)
+      const setPasswordParams = {
+        UserPoolId: this.userPoolId,
+        Username: request.email,
+        Password: tempPassword,
+        Permanent: false // Força mudança no primeiro login
+      };
+
+      await this.cognitoIdentityServiceProvider.adminSetUserPassword(setPasswordParams).promise();
+      console.log(`✅ Senha temporária definida para: ${request.email}`);
+
+      return {
+        success: true,
+        userId: createResult.User.Username,
+        tempPassword: tempPassword
+      };
+
+    } catch (error: any) {
+      console.error('❌ Erro ao criar usuário no Cognito:', error);
+      
+      let errorMessage = 'Erro desconhecido ao criar usuário';
+      
+      if (error.code === 'UsernameExistsException') {
+        errorMessage = 'Já existe um usuário com este email';
+      } else if (error.code === 'InvalidParameterException') {
+        errorMessage = 'Parâmetros inválidos fornecidos';
+      } else if (error.code === 'InvalidPasswordException') {
+        errorMessage = 'Senha não atende aos requisitos de segurança';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      return {
+        success: false,
+        error: errorMessage
+      };
+    }
+  }
+
+  /**
+   * Listar grupos disponíveis no User Pool
+   */
+  async listGroups(): Promise<string[]> {
+    try {
+      const params = { UserPoolId: this.userPoolId };
+      const result = await this.cognitoIdentityServiceProvider.listGroups(params).promise();
+      
+      return result.Groups?.map(group => group.GroupName || '') || [];
+    } catch (error) {
+      console.error('❌ Erro ao listar grupos:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Verificar se usuário existe no Cognito
+   */
+  async userExists(email: string): Promise<boolean> {
+    try {
+      const params = {
+        UserPoolId: this.userPoolId,
+        Username: email
+      };
+      
+      await this.cognitoIdentityServiceProvider.adminGetUser(params).promise();
+      return true;
+    } catch (error: any) {
+      if (error.code === 'UserNotFoundException') {
+        return false;
+      }
+      throw error;
     }
   }
 }

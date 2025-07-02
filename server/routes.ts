@@ -2527,6 +2527,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
 
+  // ============= GESTÃO DE USUÁRIOS COGNITO =============
+
+  // Middleware para verificar se usuário pode criar outro usuário
+  const canCreateUser = (creatorRole: string, targetRole: string): boolean => {
+    const hierarchy = {
+      admin: ['admin', 'municipal_manager', 'school_director', 'teacher', 'student'],
+      municipal_manager: ['school_director', 'teacher', 'student'],
+      school_director: ['teacher', 'student'],
+      teacher: ['student']
+    };
+    return hierarchy[creatorRole as keyof typeof hierarchy]?.includes(targetRole) || false;
+  };
+
+  // Criar usuário no Cognito - rota para administradores
+  app.post('/api/admin/users/create', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { email, name, group, municipio, escola } = req.body;
+
+      // Validação básica
+      if (!email || !name || !group) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Email, nome e grupo são obrigatórios' 
+        });
+      }
+
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Formato de email inválido' 
+        });
+      }
+
+      // Validar grupos permitidos
+      const allowedGroups = ['GestorMunicipal', 'Diretor', 'Professor', 'Aluno', 'Admin'];
+      if (!allowedGroups.includes(group)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Grupo inválido. Grupos permitidos: ' + allowedGroups.join(', ') 
+        });
+      }
+
+      // Verificar se usuário já existe
+      const userExists = await cognitoService.userExists(email);
+      if (userExists) {
+        return res.status(409).json({ 
+          success: false, 
+          error: 'Já existe um usuário com este email' 
+        });
+      }
+
+      console.log(`🔄 Admin criando usuário: ${email} no grupo: ${group}`);
+
+      // Criar usuário no Cognito
+      const result = await cognitoService.createUser({
+        email,
+        name,
+        group: group as 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin',
+        municipio,
+        escola
+      });
+
+      if (result.success) {
+        console.log(`✅ Usuário criado com sucesso: ${email}`);
+        
+        // Log da ação administrativa
+        console.log(`📋 Log de auditoria: Admin criou usuário ${email} no grupo ${group}`);
+
+        return res.status(201).json({
+          success: true,
+          message: 'Usuário criado com sucesso',
+          userId: result.userId,
+          tempPassword: result.tempPassword,
+          userEmail: email,
+          group: group
+        });
+      } else {
+        return res.status(400).json({ 
+          success: false, 
+          error: result.error || 'Erro ao criar usuário' 
+        });
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erro na rota de criação de usuário:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  // Listar grupos disponíveis no Cognito
+  app.get('/api/admin/cognito/groups', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const groups = await cognitoService.listGroups();
+      return res.status(200).json({ 
+        success: true, 
+        groups 
+      });
+    } catch (error) {
+      console.error('❌ Erro ao listar grupos:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao listar grupos disponíveis' 
+      });
+    }
+  });
+
+  // Verificar se usuário existe no Cognito
+  app.get('/api/admin/cognito/user-exists/:email', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { email } = req.params;
+      const exists = await cognitoService.userExists(email);
+      return res.status(200).json({ 
+        success: true, 
+        exists 
+      });
+    } catch (error) {
+      console.error('❌ Erro ao verificar usuário:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao verificar se usuário existe' 
+      });
+    }
+  });
+
+  // Validar domínios de email institucionais
+  app.post('/api/admin/validate-email-domain', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      
+      // Domínios institucionais autorizados
+      const authorizedDomains = [
+        '@prefeitura.', '@educacao.', '@escola.', '@estudante.',
+        '.gov.br', '.edu.br', '@municipal.', '@secretaria.'
+      ];
+      
+      const isAuthorized = authorizedDomains.some(domain => email.includes(domain));
+      
+      return res.status(200).json({ 
+        success: true, 
+        isAuthorized,
+        message: isAuthorized 
+          ? 'Domínio autorizado para criação de usuário' 
+          : 'Domínio não autorizado. Use email institucional'
+      });
+    } catch (error) {
+      console.error('❌ Erro ao validar domínio:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao validar domínio de email' 
+      });
+    }
+  });
+
   // Create and return HTTP server
   const httpServer = createServer(app);
   
