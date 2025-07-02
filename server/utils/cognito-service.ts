@@ -326,12 +326,41 @@ export class CognitoService {
    */
   async testConnection(): Promise<boolean> {
     try {
-      const response = await axios.head(`${this.domain}/.well-known/jwks.json`, {
-        timeout: 5000
-      });
-      return response.status === 200;
+      if (!this.isConfigured()) {
+        console.log('❌ Cognito não configurado');
+        return false;
+      }
+
+      // Teste com múltiplos endpoints para melhor diagnóstico
+      const testEndpoints = [
+        `${this.domain}/.well-known/jwks.json`,
+        `${this.domain}/.well-known/openid-configuration`,
+        `${this.domain}/login`
+      ];
+      
+      for (const endpoint of testEndpoints) {
+        try {
+          console.log('🔍 Testando endpoint:', endpoint);
+          const response = await axios.head(endpoint, { 
+            timeout: 15000,
+            validateStatus: (status) => status >= 200 && status < 500
+          });
+          console.log(`✅ Endpoint ${endpoint} respondeu com status:`, response.status);
+          return true;
+        } catch (error: any) {
+          console.log(`❌ Falha no endpoint ${endpoint}:`, error.code || error.message);
+          
+          // Se for erro de DNS ou conexão, tentar próximo endpoint
+          if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+            continue;
+          }
+        }
+      }
+      
+      console.log('❌ Todos os endpoints falharam');
+      return false;
     } catch (error) {
-      console.error('Erro ao testar conexão com Cognito:', error);
+      console.error('❌ Erro geral no teste de conectividade:', error);
       return false;
     }
   }

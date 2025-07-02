@@ -544,8 +544,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     `);
   });
 
+  // Teste de conectividade do Cognito
+  app.get("/cognito-test", async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 Iniciando teste de conectividade do Cognito...');
+      const isConnected = await cognitoService.testConnection();
+      
+      res.json({
+        success: isConnected,
+        message: isConnected ? 'Conexão com Cognito estabelecida' : 'Falha na conexão com Cognito',
+        timestamp: new Date().toISOString(),
+        domain: process.env.COGNITO_DOMAIN,
+        isConfigured: cognitoService.isConfigured()
+      });
+    } catch (error) {
+      console.error('Erro no teste de conectividade:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno no teste de conectividade',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
   // Start login redirect to Cognito
-  app.get("/start-login", (req, res) => {
+  app.get("/start-login", async (req, res) => {
     try {
       if (!cognitoService.isConfigured()) {
         return res.status(500).send(`
@@ -563,16 +586,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `);
       }
 
-      // Cognito temporariamente desabilitado - redirecionar para login padrão
-      console.log('Cognito desabilitado, redirecionando para login padrão');
-      res.redirect('/auth');
+      // Testar conectividade antes de redirecionar
+      console.log('🔍 Testando conectividade do Cognito antes do redirecionamento...');
+      const isConnected = await cognitoService.testConnection();
+      
+      if (!isConnected) {
+        console.log('❌ Cognito não está acessível, redirecionando para login padrão');
+        return res.redirect('/auth?cognito_error=connection_failed');
+      }
+
+      const loginUrl = cognitoService.getLoginUrl();
+      console.log('✅ Cognito acessível, redirecionando para:', loginUrl);
+      res.redirect(loginUrl);
     } catch (error) {
       console.error('Erro ao iniciar login:', error);
-      res.status(500).send(`
-        <h1>Erro na Autenticação</h1>
-        <p>Ocorreu um erro ao tentar redirecionar para o login.</p>
-        <p><a href="/">Voltar ao início</a></p>
-      `);
+      res.redirect('/auth?cognito_error=internal_error');
     }
   });
 

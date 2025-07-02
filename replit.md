@@ -123,6 +123,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 2, 2025: AWS Cognito Connection Resilience System Implementation
+  - Enhanced AWS Cognito service with robust connectivity testing using multiple endpoints
+  - Added pre-redirection connectivity tests to prevent connection refused errors
+  - Implemented automatic fallback to standard login when Cognito is unavailable
+  - Created `/cognito-test` endpoint for real-time connectivity diagnosis
+  - Enhanced error handling with graceful degradation and user-friendly error messages
+  - Updated login flow to test Cognito availability before attempting redirection
+  - Maintained email validation support for Brazilian institutional domains (.gov.br, .edu.br)
 - July 2, 2025: Enhanced User Creation System with Company-Contract Integration for Municipal Managers
   - Extended platform-based user creation system to require company contracting data for Municipal Managers
   - Added mandatory company and contract selection when creating Municipal Manager accounts
