@@ -77,73 +77,24 @@ const ContractManagement = () => {
     autoRenewal: true
   });
 
-  // Simulated data - in real app, this would come from API
+  // Fetch real contracts from database
   useEffect(() => {
-    const mockContracts: Contract[] = [
-      {
-        id: "CTR-2025-001",
-        companyName: "Escola Municipal João Silva",
-        clientName: "Maria Santos",
-        email: "maria@escolajoao.edu.br",
-        phone: "(11) 99999-9999",
-        planType: "premium",
-        status: "active",
-        startDate: "2025-01-01",
-        endDate: "2025-12-31",
-        totalLicenses: 50,
-        availableLicenses: 12,
-        usedLicenses: 38,
-        pricePerLicense: 49.90,
-        monthlyRevenue: 2495.00,
-        tokenLimits: { teacher: 15000, student: 7500 },
-        enabledModels: ['openai-gpt-4', 'anthropic-claude', 'perplexity'],
-        autoRenewal: true,
-        createdAt: "2024-12-15"
-      },
-      {
-        id: "CTR-2025-002",
-        companyName: "Colégio Estadual Dom Pedro",
-        clientName: "Carlos Oliveira",
-        email: "carlos@dompedro.edu.br",
-        phone: "(21) 88888-8888",
-        planType: "enterprise",
-        status: "active",
-        startDate: "2025-02-01",
-        endDate: "2026-01-31",
-        totalLicenses: 200,
-        availableLicenses: 45,
-        usedLicenses: 155,
-        pricePerLicense: 39.90,
-        monthlyRevenue: 7980.00,
-        tokenLimits: { teacher: 20000, student: 10000 },
-        enabledModels: ['openai-gpt-4', 'anthropic-claude', 'perplexity', 'bedrock'],
-        autoRenewal: false,
-        createdAt: "2025-01-20"
-      },
-      {
-        id: "CTR-2025-003",
-        companyName: "Instituto Educacional Futuro",
-        clientName: "Ana Costa",
-        email: "ana@futuro.edu.br",
-        phone: "(31) 77777-7777",
-        planType: "standard",
-        status: "suspended",
-        startDate: "2024-08-01",
-        endDate: "2025-07-31",
-        totalLicenses: 25,
-        availableLicenses: 8,
-        usedLicenses: 17,
-        pricePerLicense: 34.90,
-        monthlyRevenue: 872.50,
-        tokenLimits: { teacher: 12000, student: 6000 },
-        enabledModels: ['openai-gpt-4', 'anthropic-claude'],
-        autoRenewal: true,
-        createdAt: "2024-07-15"
+    const fetchContracts = async () => {
+      try {
+        const response = await fetch('/api/admin/contracts');
+        if (response.ok) {
+          const data = await response.json();
+          setContracts(data.contracts);
+          setFilteredContracts(data.contracts);
+        } else {
+          console.error('Erro ao buscar contratos:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Erro na requisição de contratos:', error);
       }
-    ];
-    
-    setContracts(mockContracts);
-    setFilteredContracts(mockContracts);
+    };
+
+    fetchContracts();
   }, []);
 
   // Filter contracts based on search and status
@@ -190,7 +141,7 @@ const ContractManagement = () => {
       enterprise: { color: "bg-slate-100 text-slate-800", label: "Enterprise" }
     };
 
-    const config = planConfig[plan as keyof typeof planConfig];
+    const config = planConfig[plan as keyof typeof planConfig] || planConfig.basic;
     return (
       <Badge className={`${config.color} font-medium`}>
         {config.label}
@@ -208,39 +159,61 @@ const ContractManagement = () => {
     }));
   };
 
-  const handleCreateContract = () => {
-    const contract: Contract = {
-      id: `CTR-2025-${String(contracts.length + 1).padStart(3, '0')}`,
-      companyName: newContract.companyName || '',
-      clientName: newContract.clientName || '',
-      email: newContract.email || '',
-      phone: newContract.phone || '',
-      planType: newContract.planType as any || 'basic',
-      status: newContract.status as any || 'active',
-      startDate: newContract.startDate || new Date().toISOString().split('T')[0],
-      endDate: newContract.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      totalLicenses: newContract.totalLicenses || 10,
-      availableLicenses: newContract.totalLicenses || 10,
-      usedLicenses: 0,
-      pricePerLicense: newContract.pricePerLicense || 29.90,
-      monthlyRevenue: (newContract.totalLicenses || 10) * (newContract.pricePerLicense || 29.90),
-      tokenLimits: newContract.tokenLimits || { teacher: 10000, student: 5000 },
-      enabledModels: newContract.enabledModels || ['openai-gpt-4'],
-      autoRenewal: newContract.autoRenewal ?? true,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
+  const handleCreateContract = async () => {
+    try {
+      const contractData = {
+        companyName: newContract.companyName || '',
+        clientName: newContract.clientName || '',
+        email: newContract.email || '',
+        phone: newContract.phone || '',
+        planType: newContract.planType || 'basic',
+        status: newContract.status || 'active',
+        startDate: newContract.startDate || new Date().toISOString().split('T')[0],
+        endDate: newContract.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        totalLicenses: newContract.totalLicenses || 10,
+        pricePerLicense: newContract.pricePerLicense || 29.90,
+        tokenLimits: newContract.tokenLimits || { teacher: 10000, student: 5000 },
+        enabledModels: newContract.enabledModels || ['openai-gpt-4'],
+        autoRenewal: newContract.autoRenewal ?? true
+      };
 
-    setContracts(prev => [...prev, contract]);
-    setIsCreateModalOpen(false);
-    setNewContract({
-      planType: 'basic',
-      status: 'active',
-      totalLicenses: 10,
-      pricePerLicense: 29.90,
-      tokenLimits: { teacher: 10000, student: 5000 },
-      enabledModels: ['openai-gpt-4'],
-      autoRenewal: true
-    });
+      const response = await fetch('/api/admin/contracts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contractData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Atualizar lista de contratos
+        setContracts(prev => [result.contract, ...prev]);
+        setFilteredContracts(prev => [result.contract, ...prev]);
+        
+        // Fechar modal e resetar formulário
+        setIsCreateModalOpen(false);
+        setNewContract({
+          planType: 'basic',
+          status: 'active',
+          totalLicenses: 10,
+          pricePerLicense: 29.90,
+          tokenLimits: { teacher: 10000, student: 5000 },
+          enabledModels: ['openai-gpt-4'],
+          autoRenewal: true
+        });
+
+        console.log('✅ Contrato criado com sucesso:', result.contract);
+      } else {
+        const error = await response.json();
+        console.error('❌ Erro ao criar contrato:', error);
+        alert('Erro ao criar contrato: ' + (error.error || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      console.error('❌ Erro na requisição:', error);
+      alert('Erro na requisição. Verifique os dados e tente novamente.');
+    }
   };
 
   const handleEditContract = () => {

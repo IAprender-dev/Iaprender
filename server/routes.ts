@@ -1655,45 +1655,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Lista de contratos
+  // Lista de contratos - dados reais do banco
   app.get('/api/admin/contracts', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const mockContracts = [
-        {
-          id: "CTR-2025-001",
-          client: "Prefeitura de São Paulo",
-          type: "Educacional Premium", 
-          licenses: 5000,
-          value: "R$ 450.000",
-          status: "active",
-          startDate: "2025-01-15",
-          endDate: "2025-12-31"
-        },
-        {
-          id: "CTR-2025-002",
-          client: "Secretaria de Educação RJ", 
-          type: "Educacional Básico",
-          licenses: 2500,
-          value: "R$ 180.000",
-          status: "pending",
-          startDate: "2025-02-01",
-          endDate: "2025-12-31"
-        },
-        {
-          id: "CTR-2025-003",
-          client: "Escola Técnica Federal",
-          type: "Institucional",
-          licenses: 800, 
-          value: "R$ 95.000",
-          status: "active",
-          startDate: "2025-01-20",
-          endDate: "2025-12-31"
-        }
-      ];
-      res.json({ contracts: mockContracts, pagination: { page: 1, total: 1200, pages: 60 } });
+      const contractsData = await db
+        .select({
+          id: contracts.id,
+          companyName: companies.name,
+          clientName: companies.contactPerson,
+          email: companies.email,
+          phone: companies.phone,
+          planType: contracts.planType,
+          status: contracts.status,
+          startDate: contracts.startDate,
+          endDate: contracts.endDate,
+          totalLicenses: contracts.totalLicenses,
+          availableLicenses: contracts.availableLicenses,
+          usedLicenses: sql<number>`${contracts.totalLicenses} - ${contracts.availableLicenses}`,
+          pricePerLicense: contracts.pricePerLicense,
+          monthlyRevenue: sql<number>`${contracts.totalLicenses} * ${contracts.pricePerLicense}`,
+          tokenLimits: sql<any>`json_build_object('teacher', ${contracts.monthlyTokenLimitTeacher}, 'student', ${contracts.monthlyTokenLimitStudent})`,
+          enabledModels: contracts.enabledAIModels,
+          autoRenewal: sql<boolean>`true`,
+          createdAt: contracts.createdAt
+        })
+        .from(contracts)
+        .leftJoin(companies, eq(contracts.companyId, companies.id))
+        .orderBy(desc(contracts.createdAt));
+
+      // Formatando dados para o frontend
+      const formattedContracts = contractsData.map(contract => ({
+        id: `CTR-${contract.id}`,
+        companyName: contract.companyName || 'N/A',
+        clientName: contract.clientName || 'N/A',
+        email: contract.email || 'N/A',
+        phone: contract.phone || 'N/A',
+        planType: contract.planType || 'basic',
+        status: contract.status,
+        startDate: contract.startDate,
+        endDate: contract.endDate,
+        totalLicenses: contract.totalLicenses,
+        availableLicenses: contract.availableLicenses,
+        usedLicenses: contract.usedLicenses,
+        pricePerLicense: contract.pricePerLicense,
+        monthlyRevenue: contract.monthlyRevenue,
+        tokenLimits: contract.tokenLimits,
+        enabledModels: contract.enabledModels || [],
+        autoRenewal: contract.autoRenewal,
+        createdAt: contract.createdAt
+      }));
+      
+      res.json({ 
+        contracts: formattedContracts, 
+        pagination: { 
+          page: 1, 
+          total: formattedContracts.length, 
+          pages: Math.ceil(formattedContracts.length / 20) 
+        } 
+      });
     } catch (error) {
-      console.error('Error fetching contracts:', error);
-      res.status(500).json({ error: 'Failed to fetch contracts' });
+      console.error('❌ Erro ao buscar contratos:', error);
+      res.status(500).json({ error: 'Erro ao buscar contratos' });
+    }
+  });
+
+  // Criar novo contrato
+  app.post('/api/admin/contracts', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const {
+        companyId,
+        companyName,
+        clientName,
+        email,
+        phone,
+        planType,
+        status,
+        startDate,
+        endDate,
+        totalLicenses,
+        pricePerLicense,
+        tokenLimits,
+        enabledModels,
+        autoRenewal
+      } = req.body;
+
+      // Validar dados obrigatórios
+      if (!companyName || !clientName || !email || !totalLicenses || !pricePerLicense) {
+        return res.status(400).json({ error: 'Dados obrigatórios não fornecidos' });
+      }
+
+      // Buscar ou criar empresa
+      let company;
+      if (companyId) {
+        const existingCompany = await db.select().from(companies).where(eq(companies.id, companyId)).limit(1);
+        company = existingCompany[0];
+      } else {
+        // Criar nova empresa se não existir
+        const newCompany = await db.insert(companies).values({
+          name: companyName,
+          email: email,
+          phone: phone || '',
+          contactPerson: clientName,
+          address: '',
+          createdAt: new Date()
+        }).returning();
+        company = newCompany[0];
+      }
+
+      // Criar contrato
+      const newContract = await db.insert(contracts).values({
+        companyId: company.id,
+        name: `Contrato ${companyName} - ${new Date().getFullYear()}`,
+        description: `Contrato ${planType} para ${companyName}`,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        maxUsers: totalLicenses,
+        maxTokens: (tokenLimits?.teacher || 10000) + (tokenLimits?.student || 5000),
+        status: status || 'active',
+        planType: planType || 'basic',
+        costUsd: totalLicenses * pricePerLicense,
+        maxTeachers: Math.floor(totalLicenses * 0.1), // 10% professores
+        maxStudents: Math.floor(totalLicenses * 0.9), // 90% alunos
+        pricePerLicense: pricePerLicense,
+        totalLicenses: totalLicenses,
+        availableLicenses: totalLicenses,
+        monthlyTokenLimitTeacher: tokenLimits?.teacher || 10000,
+        monthlyTokenLimitStudent: tokenLimits?.student || 5000,
+        enabledAIModels: enabledModels || ['openai-gpt-4'],
+        settings: {
+          autoRenewal: autoRenewal ?? true,
+          notificationsEnabled: true
+        }
+      }).returning();
+
+      res.status(201).json({
+        success: true,
+        contract: {
+          id: `CTR-${newContract[0].id}`,
+          companyName: company.name,
+          clientName: company.contactPerson,
+          email: company.email,
+          phone: company.phone,
+          planType: newContract[0].planType,
+          status: newContract[0].status,
+          startDate: newContract[0].startDate,
+          endDate: newContract[0].endDate,
+          totalLicenses: newContract[0].totalLicenses,
+          availableLicenses: newContract[0].availableLicenses,
+          usedLicenses: 0,
+          pricePerLicense: newContract[0].pricePerLicense,
+          monthlyRevenue: newContract[0].totalLicenses * newContract[0].pricePerLicense,
+          tokenLimits: {
+            teacher: newContract[0].monthlyTokenLimitTeacher,
+            student: newContract[0].monthlyTokenLimitStudent
+          },
+          enabledModels: newContract[0].enabledAIModels,
+          autoRenewal: (newContract[0].settings as any)?.autoRenewal || true,
+          createdAt: newContract[0].createdAt
+        }
+      });
+    } catch (error) {
+      console.error('❌ Erro ao criar contrato:', error);
+      res.status(500).json({ error: 'Erro ao criar contrato' });
     }
   });
 
