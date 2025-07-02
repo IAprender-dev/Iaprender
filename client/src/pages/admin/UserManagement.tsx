@@ -17,7 +17,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 const createUserSchema = z.object({
   email: z.string().email('Formato de email inválido'),
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  group: z.enum(['GestorMunicipal', 'Diretor', 'Professor', 'Aluno', 'Admin'], {
+  group: z.enum(['Admin', 'GestorMunicipal'], {
     required_error: 'Selecione um grupo'
   }),
   municipio: z.string().optional(),
@@ -25,13 +25,13 @@ const createUserSchema = z.object({
   companyId: z.string().optional(),
   contractId: z.string().optional()
 }).refine((data) => {
-  // Se for Gestor Municipal, empresa e contrato são obrigatórios
+  // Se for Gestor Municipal, empresa é obrigatória
   if (data.group === 'GestorMunicipal') {
-    return data.companyId && data.contractId;
+    return data.companyId;
   }
   return true;
 }, {
-  message: 'Empresa e contrato são obrigatórios para Gestores Municipais',
+  message: 'Empresa é obrigatória para Gestores Municipais',
   path: ['companyId']
 });
 
@@ -176,10 +176,7 @@ export default function UserManagement() {
 
   const groupLabels = {
     'Admin': 'Administrador Geral',
-    'GestorMunicipal': 'Gestor Municipal',
-    'Diretor': 'Diretor de Escola',
-    'Professor': 'Professor',
-    'Aluno': 'Aluno'
+    'GestorMunicipal': 'Gestor Municipal'
   };
 
   return (
@@ -331,108 +328,31 @@ export default function UserManagement() {
                         )}
                       />
 
-                      {/* Contrato */}
-                      {selectedCompany && (
-                        <FormField
-                          control={form.control}
-                          name="contractId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Contrato *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Selecione o contrato" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {contractsData?.contracts ? 
-                                    contractsData.contracts.map((contract: Contract) => (
-                                      <SelectItem key={contract.id} value={contract.id.toString()}>
-                                        <div className="flex flex-col">
-                                          <span className="font-medium">{contract.name}</span>
-                                          <span className="text-sm text-gray-500">
-                                            ID: {contract.id} • Status: {contract.status}
-                                          </span>
-                                        </div>
-                                      </SelectItem>
-                                    )) : 
-                                    <SelectItem value="loading-contracts" disabled>Carregando contratos ativos...</SelectItem>
-                                  }
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
 
-                      {/* Informações detalhadas da empresa selecionada */}
+
+                      {/* Card simples com informações da empresa selecionada */}
                       {selectedCompany && companiesData?.companies && (
                         (() => {
                           const selectedCompanyData = companiesData.companies.find((c: any) => c.id.toString() === selectedCompany);
                           return selectedCompanyData && (
-                            <Alert className="border-blue-200 bg-blue-50">
-                              <AlertTriangle className="h-4 w-4 text-blue-600" />
-                              <AlertDescription className="text-blue-700">
-                                <div className="space-y-2">
+                            <Card className="border-blue-200 bg-blue-50">
+                              <CardContent className="p-4">
+                                <div className="space-y-3">
                                   <div>
-                                    <strong className="text-blue-800">🏢 Empresa Selecionada:</strong><br />
-                                    <span className="font-semibold">{selectedCompanyData.name}</span>
+                                    <h4 className="text-blue-800 font-semibold text-lg">{selectedCompanyData.name}</h4>
                                   </div>
                                   
-                                  <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <strong>📧 Email:</strong> {selectedCompanyData.email}<br />
-                                      <strong>📞 Telefone:</strong> {selectedCompanyData.phone || 'N/A'}<br />
-                                      <strong>👤 Contato:</strong> {selectedCompanyData.contactPerson || 'N/A'}
-                                    </div>
-                                    <div>
-                                      <strong>📊 Resumo:</strong><br />
-                                      • {selectedCompanyData.summary?.contracts || 0} contrato(s) ativo(s)<br />
-                                      • {selectedCompanyData.summary?.licenses || 0} licenças totais<br />
-                                      • {selectedCompanyData.summary?.teachers || 0} prof. + {selectedCompanyData.summary?.students || 0} alunos
-                                    </div>
+                                  <div className="text-sm text-blue-700 space-y-1">
+                                    <div><strong>Email:</strong> {selectedCompanyData.email || 'N/A'}</div>
+                                    <div><strong>Contato:</strong> {selectedCompanyData.contactPerson || 'N/A'}</div>
+                                    <div><strong>Telefone:</strong> {selectedCompanyData.phone || 'N/A'}</div>
+                                    <div><strong>Contratos Ativos:</strong> {selectedCompanyData.activeContractsCount || 0}</div>
                                   </div>
-                                  
-                                  {selectedCompanyData.address && (
-                                    <div className="text-sm">
-                                      <strong>📍 Endereço:</strong> {selectedCompanyData.address}
-                                    </div>
-                                  )}
                                 </div>
-                              </AlertDescription>
-                            </Alert>
+                              </CardContent>
+                            </Card>
                           );
                         })()
-                      )}
-
-                      {/* Informações dos contratos disponíveis */}
-                      {selectedCompany && contractsData?.contracts && (
-                        <Alert className={contractsData.contracts.length > 0 ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50"}>
-                          <AlertTriangle className={`h-4 w-4 ${contractsData.contracts.length > 0 ? "text-green-600" : "text-yellow-600"}`} />
-                          <AlertDescription className={contractsData.contracts.length > 0 ? "text-green-700" : "text-yellow-700"}>
-                            <strong>📋 Contratos ATIVOS disponíveis:</strong> {contractsData.contracts.length}
-                            {contractsData.contracts.length === 0 && (
-                              <><br /><span className="text-yellow-800 font-medium">⚠️ Nenhum contrato ativo encontrado para esta empresa</span></>
-                            )}
-                            {contractsData.contracts.length > 0 && (
-                              <><br /><div className="text-sm mt-2">
-                                <strong>Contratos disponíveis para seleção:</strong>
-                                <ul className="list-disc ml-4 mt-1">
-                                  {contractsData.contracts.map((contract: any) => (
-                                    <li key={contract.id} className="text-green-600 mb-1">
-                                      <strong>{contract.name}</strong> (ID: {contract.id})<br />
-                                      <span className="text-xs text-green-700">
-                                        Status: ATIVO • {contract.maxTeachers || 0} professores • {contract.maxStudents || 0} alunos
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div></>
-                            )}
-                          </AlertDescription>
-                        </Alert>
                       )}
                     </>
                   )}
