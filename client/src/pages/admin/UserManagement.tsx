@@ -20,10 +20,7 @@ const createUserSchema = z.object({
   group: z.enum(['Admin', 'GestorMunicipal'], {
     required_error: 'Selecione um grupo'
   }),
-  municipio: z.string().optional(),
-  escola: z.string().optional(),
-  companyId: z.string().optional(),
-  contractId: z.string().optional()
+  companyId: z.string().optional()
 }).refine((data) => {
   // Se for Gestor Municipal, empresa é obrigatória
   if (data.group === 'GestorMunicipal') {
@@ -78,9 +75,7 @@ export default function UserManagement() {
     resolver: zodResolver(createUserSchema),
     defaultValues: {
       email: '',
-      name: '',
-      municipio: '',
-      escola: ''
+      name: ''
     }
   });
 
@@ -424,35 +419,7 @@ export default function UserManagement() {
                     </>
                   )}
 
-                  {/* Município (opcional) */}
-                  <FormField
-                    control={form.control}
-                    name="municipio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Município (Opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: São Paulo" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
-                  {/* Escola (opcional) */}
-                  <FormField
-                    control={form.control}
-                    name="escola"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Escola (Opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: Escola Municipal João Silva" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   <Button 
                     type="submit" 

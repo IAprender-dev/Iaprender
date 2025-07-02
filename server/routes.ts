@@ -2669,7 +2669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Criar usuário no Cognito - rota para administradores
   app.post('/api/admin/users/create', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { email, name, group, municipio, escola, companyId } = req.body;
+      const { email, name, group, companyId } = req.body;
 
       // Validação básica
       if (!email || !name || !group) {
