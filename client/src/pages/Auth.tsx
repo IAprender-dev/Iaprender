@@ -309,18 +309,23 @@ export default function Auth() {
                         </div>
                       </div>
                       
-                      {/* Login AWS Cognito */}
+                      {/* Login Alternativo */}
                       <Button 
                         type="button"
                         variant="outline"
-                        className="w-full border-2 border-orange-200 hover:border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 rounded-2xl h-14 text-orange-700 font-bold text-lg transition-all duration-300 transform hover:scale-[1.02]"
-                        onClick={() => window.location.href = '/start-login'}
+                        className="w-full border-2 border-emerald-200 hover:border-emerald-300 bg-gradient-to-r from-emerald-50 to-green-50 hover:from-emerald-100 hover:to-green-100 rounded-2xl h-14 text-emerald-700 font-bold text-lg transition-all duration-300 transform hover:scale-[1.02]"
+                        onClick={() => {
+                          toast({
+                            title: "Login Institucional",
+                            description: "Funcionalidade disponível em breve. Use o login padrão por enquanto.",
+                          });
+                        }}
                       >
                         <div className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-xs">AWS</span>
+                          <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-green-500 rounded-lg flex items-center justify-center">
+                            <span className="text-white font-bold text-xs">GOV</span>
                           </div>
-                          <span>Login Institucional (AWS Cognito)</span>
+                          <span>Login Institucional</span>
                         </div>
                       </Button>
                     </CardContent>
