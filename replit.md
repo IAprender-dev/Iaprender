@@ -123,17 +123,18 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
-- July 2, 2025: Platform-Based User Creation System with AWS Cognito Integration
-  - Implemented comprehensive user creation interface for General Administrators at /admin/users
-  - Created backend API endpoints for Cognito user management with validation and security
-  - Added CognitoService methods: createUser(), userExists(), listGroups(), generateTempPassword()
-  - Built user creation form with real-time email domain validation and group selection
-  - Added hierarchical user creation system (Admin → GestorMunicipal → Diretor → Professor → Aluno)
-  - Integrated automatic AWS Cognito group assignment and temporary password generation
-  - Created secure API routes: /api/admin/users/create, /api/admin/cognito/groups, /api/admin/validate-email-domain
-  - Added "Gestão de Usuários" button to AdminMasterDashboard for easy access
-  - Implemented comprehensive error handling, validation, and audit logging
-  - System now supports institutional email validation and secure credential generation
+- July 2, 2025: Enhanced User Creation System with Company-Contract Integration for Municipal Managers
+  - Extended platform-based user creation system to require company contracting data for Municipal Managers
+  - Added mandatory company and contract selection when creating Municipal Manager accounts
+  - Created API endpoints: /api/admin/companies and /api/admin/companies/:id/contracts for contract data
+  - Modified user creation form to show company selection dropdown for Municipal Managers
+  - Implemented contract validation ensuring selected contract belongs to selected company
+  - Enhanced backend validation to verify company and contract existence before user creation
+  - Updated CognitoService to store company_id and contract_id as custom attributes in AWS Cognito
+  - Added conditional form fields that appear only when Municipal Manager role is selected
+  - Created company-contract relationship display with real-time contract filtering
+  - Integrated company contracting data with Municipal Manager registration process
+  - System now enforces business rule: Municipal Manager creation requires valid company contract
 - July 2, 2025: AWS Cognito Group-Based Role Authentication and URL Redirection System
   - Enhanced CognitoService with comprehensive group-to-role mapping for 4 user types
   - Implemented automatic URL redirection based on AWS Cognito group membership

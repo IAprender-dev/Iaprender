@@ -21,7 +21,18 @@ const createUserSchema = z.object({
     required_error: 'Selecione um grupo'
   }),
   municipio: z.string().optional(),
-  escola: z.string().optional()
+  escola: z.string().optional(),
+  companyId: z.string().optional(),
+  contractId: z.string().optional()
+}).refine((data) => {
+  // Se for Gestor Municipal, empresa e contrato são obrigatórios
+  if (data.group === 'GestorMunicipal') {
+    return data.companyId && data.contractId;
+  }
+  return true;
+}, {
+  message: 'Empresa e contrato são obrigatórios para Gestores Municipais',
+  path: ['companyId']
 });
 
 type CreateUserForm = z.infer<typeof createUserSchema>;
@@ -41,6 +52,8 @@ export default function UserManagement() {
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
   const [createdUser, setCreatedUser] = useState<CreateUserResponse | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string>('');
+  const [selectedGroup, setSelectedGroup] = useState<string>('');
 
   const form = useForm<CreateUserForm>({
     resolver: zodResolver(createUserSchema),
@@ -56,6 +69,18 @@ export default function UserManagement() {
   const { data: groupsData } = useQuery({
     queryKey: ['/api/admin/cognito/groups'],
     enabled: true
+  });
+
+  // Query para listar empresas
+  const { data: companiesData } = useQuery({
+    queryKey: ['/api/admin/companies'],
+    enabled: true
+  });
+
+  // Query para listar contratos da empresa selecionada
+  const { data: contractsData } = useQuery({
+    queryKey: ['/api/admin/companies', selectedCompany, 'contracts'],
+    enabled: !!selectedCompany
   });
 
   // Mutation para criar usuário
@@ -221,7 +246,10 @@ export default function UserManagement() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Nível de Acesso</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={(value) => {
+                          field.onChange(value);
+                          setSelectedGroup(value);
+                        }} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o grupo de usuário" />
@@ -239,6 +267,80 @@ export default function UserManagement() {
                       </FormItem>
                     )}
                   />
+
+                  {/* Campos específicos para Gestor Municipal */}
+                  {selectedGroup === 'GestorMunicipal' && (
+                    <>
+                      {/* Empresa Contratante */}
+                      <FormField
+                        control={form.control}
+                        name="companyId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Empresa Contratante *</FormLabel>
+                            <Select onValueChange={(value) => {
+                              field.onChange(value);
+                              setSelectedCompany(value);
+                            }} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione a empresa contratante" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {companiesData?.companies?.map((company: any) => (
+                                  <SelectItem key={company.id} value={company.id.toString()}>
+                                    {company.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Contrato */}
+                      {selectedCompany && (
+                        <FormField
+                          control={form.control}
+                          name="contractId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Contrato *</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Selecione o contrato" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {contractsData?.contracts?.map((contract: any) => (
+                                    <SelectItem key={contract.id} value={contract.id.toString()}>
+                                      {contract.name} ({contract.status})
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
+
+                      {/* Informações do contrato selecionado */}
+                      {selectedCompany && contractsData?.contracts && contractsData.contracts.length > 0 && (
+                        <Alert className="border-blue-200 bg-blue-50">
+                          <AlertTriangle className="h-4 w-4 text-blue-600" />
+                          <AlertDescription className="text-blue-700">
+                            <strong>Informações da Empresa:</strong><br />
+                            Empresa: {companiesData?.companies?.find((c: any) => c.id.toString() === selectedCompany)?.name}<br />
+                            Contratos disponíveis: {contractsData.contracts.length}
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </>
+                  )}
 
                   {/* Município (opcional) */}
                   <FormField

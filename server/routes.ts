@@ -29,7 +29,7 @@ import {
   tokenUsageLogs,
 
 } from "@shared/schema";
-import { eq, sql, gte, desc } from "drizzle-orm";
+import { eq, sql, gte, desc, and } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import session from "express-session";
@@ -2543,7 +2543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Criar usuário no Cognito - rota para administradores
   app.post('/api/admin/users/create', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { email, name, group, municipio, escola } = req.body;
+      const { email, name, group, municipio, escola, companyId, contractId } = req.body;
 
       // Validação básica
       if (!email || !name || !group) {
@@ -2551,6 +2551,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           success: false, 
           error: 'Email, nome e grupo são obrigatórios' 
         });
+      }
+
+      // Validação específica para Gestor Municipal
+      if (group === 'GestorMunicipal') {
+        if (!companyId || !contractId) {
+          return res.status(400).json({ 
+            success: false, 
+            error: 'Empresa e contrato são obrigatórios para Gestores Municipais' 
+          });
+        }
+
+        // Verificar se empresa existe
+        const companyExists = await db.select().from(companies).where(eq(companies.id, parseInt(companyId)));
+        if (companyExists.length === 0) {
+          return res.status(400).json({ 
+            success: false, 
+            error: 'Empresa não encontrada' 
+          });
+        }
+
+        // Verificar se contrato existe e pertence à empresa
+        const contractExists = await db.select().from(contracts)
+          .where(and(
+            eq(contracts.id, parseInt(contractId)),
+            eq(contracts.companyId, parseInt(companyId))
+          ));
+        
+        if (contractExists.length === 0) {
+          return res.status(400).json({ 
+            success: false, 
+            error: 'Contrato não encontrado ou não pertence à empresa selecionada' 
+          });
+        }
       }
 
       // Validar formato de email
@@ -2588,7 +2621,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name,
         group: group as 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin',
         municipio,
-        escola
+        escola,
+        companyId,
+        contractId
       });
 
       if (result.success) {
@@ -2682,6 +2717,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         error: 'Erro ao validar domínio de email' 
       });
+    }
+  });
+
+  // Buscar empresas contratantes
+  app.get('/api/admin/companies', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const companiesData = await db.select().from(companies);
+      res.json({ companies: companiesData });
+    } catch (error) {
+      console.error('❌ Erro ao buscar empresas:', error);
+      res.status(500).json({ error: 'Erro ao buscar empresas' });
+    }
+  });
+
+  // Buscar contratos de uma empresa
+  app.get('/api/admin/companies/:companyId/contracts', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { companyId } = req.params;
+      const contractsData = await db.select().from(contracts).where(eq(contracts.companyId, parseInt(companyId)));
+      res.json({ contracts: contractsData });
+    } catch (error) {
+      console.error('❌ Erro ao buscar contratos da empresa:', error);
+      res.status(500).json({ error: 'Erro ao buscar contratos da empresa' });
     }
   });
 
