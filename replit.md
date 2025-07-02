@@ -123,6 +123,12 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 1, 2025: Fixed Recurring Black Background Issue in Admin Dashboards
+  - Created AdminLayout component (/client/src/components/layouts/AdminLayout.tsx) to solve black background problem
+  - Updated AWSCostManagement.tsx to use AdminLayout with forced white background and black text
+  - AdminLayout provides consistent white background (#ffffff) and black text (#000000) for all admin dashboards
+  - Created reusable solution to prevent black background issues in future dashboard development
+  - Component forces inline styles to override any CSS conflicts or dark theme interference
 - July 1, 2025: Fixed AWS Console Button Redirection and Database Audit Issues
   - Corrected AWS Console Bedrock button redirection in AI Management Dashboard to proper AWS Bedrock console URL
   - Fixed database audit_logs table schema mismatch by adding missing contract_id column and correcting resource_id type

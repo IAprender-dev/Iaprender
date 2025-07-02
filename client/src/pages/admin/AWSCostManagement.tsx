@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ExternalLink, DollarSign, BarChart3, AlertTriangle, Settings, Clock, Tag, FileText, Eye, TrendingUp } from 'lucide-react';
 import { useLocation } from 'wouter';
+import AdminLayout from '@/components/layouts/AdminLayout';
 
 const AWSCostManagement = () => {
   const [, setLocation] = useLocation();
@@ -173,7 +174,7 @@ const AWSCostManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <AdminLayout>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -344,7 +345,7 @@ const AWSCostManagement = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 
