@@ -529,6 +529,100 @@ export class CognitoService {
       throw error;
     }
   }
+
+  /**
+   * Verificar se grupos da hierarquia existem no Cognito
+   */
+  async checkRequiredGroups(): Promise<{ exists: string[]; missing: string[] }> {
+    const requiredGroups = ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos'];
+    
+    try {
+      const existingGroups = await this.listGroups();
+      const exists = requiredGroups.filter(group => existingGroups.includes(group));
+      const missing = requiredGroups.filter(group => !existingGroups.includes(group));
+      
+      console.log('📋 Status dos grupos:');
+      console.log(`   Existem: [${exists.join(', ')}]`);
+      console.log(`   Faltam: [${missing.join(', ')}]`);
+      
+      return { exists, missing };
+    } catch (error: any) {
+      console.error('❌ Erro ao verificar grupos:', error);
+      return { exists: [], missing: requiredGroups };
+    }
+  }
+
+  /**
+   * Criar um grupo específico no Cognito
+   */
+  async createGroup(groupName: string, description: string, precedence: number): Promise<boolean> {
+    try {
+      const params = {
+        UserPoolId: this.userPoolId,
+        GroupName: groupName,
+        Description: description,
+        Precedence: precedence
+      };
+      
+      await this.cognitoIdentityServiceProvider.createGroup(params).promise();
+      console.log(`✅ Grupo '${groupName}' criado com sucesso`);
+      return true;
+    } catch (error: any) {
+      if (error.code === 'GroupExistsException') {
+        console.log(`ℹ️ Grupo '${groupName}' já existe`);
+        return true;
+      }
+      
+      console.error(`❌ Erro ao criar grupo '${groupName}':`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Criar todos os grupos necessários da hierarquia
+   */
+  async createRequiredGroups(): Promise<{ success: boolean; results: Array<{ group: string; created: boolean }> }> {
+    const groupsToCreate = [
+      { name: 'Admin', description: 'Administradores da plataforma - acesso total', precedence: 0 },
+      { name: 'Gestores', description: 'Gestores municipais de educação', precedence: 1 },
+      { name: 'Diretores', description: 'Diretores de escolas', precedence: 2 },
+      { name: 'Professores', description: 'Professores da rede educacional', precedence: 3 },
+      { name: 'Alunos', description: 'Estudantes da rede', precedence: 4 }
+    ];
+
+    const results = [];
+    let allSuccess = true;
+
+    console.log('🔄 Criando grupos da hierarquia...');
+    
+    for (const group of groupsToCreate) {
+      const created = await this.createGroup(group.name, group.description, group.precedence);
+      results.push({ group: group.name, created });
+      
+      if (!created) {
+        allSuccess = false;
+      }
+    }
+
+    console.log(`${allSuccess ? '✅' : '⚠️'} Processo de criação de grupos concluído`);
+    return { success: allSuccess, results };
+  }
+
+  /**
+   * Atualizar grupo para usar a nova nomenclatura se necessário
+   */
+  private mapLegacyGroupName(groupName: string): string {
+    const mapping: { [key: string]: string } = {
+      'GestorMunicipal': 'Gestores',
+      'Diretor': 'Diretores',
+      'Professor': 'Professores',
+      'Aluno': 'Alunos',
+      'Administrador': 'Admin',
+      'AdminMaster': 'Admin'
+    };
+    
+    return mapping[groupName] || groupName;
+  }
 }
 
 // Instância singleton

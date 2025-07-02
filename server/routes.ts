@@ -3463,6 +3463,105 @@ Estrutura JSON obrigatória:
 
   // Register school routes
 
+  // COGNITO GROUPS MANAGEMENT ROUTES
+  // Verificar status dos grupos necessários no Cognito
+  app.get('/api/admin/cognito/groups/status', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { cognitoService } = await import('../utils/cognito-service');
+      
+      if (!cognitoService.isConfigured()) {
+        return res.status(400).json({
+          error: 'AWS Cognito não está configurado corretamente',
+          configured: false
+        });
+      }
+
+      const groupStatus = await cognitoService.checkRequiredGroups();
+      
+      res.json({
+        configured: true,
+        totalRequired: 5,
+        totalExists: groupStatus.exists.length,
+        totalMissing: groupStatus.missing.length,
+        groups: {
+          exists: groupStatus.exists,
+          missing: groupStatus.missing
+        },
+        allGroupsReady: groupStatus.missing.length === 0
+      });
+    } catch (error: any) {
+      console.error('❌ Erro ao verificar status dos grupos:', error);
+      res.status(500).json({ 
+        error: 'Erro ao verificar grupos do Cognito',
+        details: error.message 
+      });
+    }
+  });
+
+  // Criar grupos necessários no Cognito
+  app.post('/api/admin/cognito/groups/create', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { cognitoService } = await import('../utils/cognito-service');
+      
+      if (!cognitoService.isConfigured()) {
+        return res.status(400).json({
+          error: 'AWS Cognito não está configurado corretamente'
+        });
+      }
+
+      console.log('🔄 Iniciando criação de grupos no Cognito...');
+      const result = await cognitoService.createRequiredGroups();
+      
+      const responseData = {
+        success: result.success,
+        message: result.success ? 
+          'Todos os grupos foram criados/verificados com sucesso' : 
+          'Alguns grupos não puderam ser criados',
+        results: result.results,
+        totalGroups: result.results.length,
+        successfulGroups: result.results.filter(r => r.created).length
+      };
+
+      if (result.success) {
+        res.json(responseData);
+      } else {
+        res.status(207).json(responseData); // 207 Multi-Status for partial success
+      }
+    } catch (error: any) {
+      console.error('❌ Erro ao criar grupos:', error);
+      res.status(500).json({ 
+        error: 'Erro ao criar grupos no Cognito',
+        details: error.message 
+      });
+    }
+  });
+
+  // Listar todos os grupos existentes no Cognito
+  app.get('/api/admin/cognito/groups', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { cognitoService } = await import('../utils/cognito-service');
+      
+      if (!cognitoService.isConfigured()) {
+        return res.status(400).json({
+          error: 'AWS Cognito não está configurado corretamente'
+        });
+      }
+
+      const groups = await cognitoService.listGroups();
+      
+      res.json({
+        groups,
+        totalGroups: groups.length,
+        requiredGroups: ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos']
+      });
+    } catch (error: any) {
+      console.error('❌ Erro ao listar grupos:', error);
+      res.status(500).json({ 
+        error: 'Erro ao listar grupos do Cognito',
+        details: error.message 
+      });
+    }
+  });
 
   // Create and return HTTP server
   const httpServer = createServer(app);

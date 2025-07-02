@@ -123,6 +123,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 2, 2025: AWS Cognito User Registration System - Database and Groups Setup (Phase 1 Complete)
+  - Extended users table with AWS Cognito integration fields: cognito_user_id, cognito_group, cognito_status
+  - Created cognito_group enum with hierarchical structure: Admin, Gestores, Diretores, Professores, Alunos
+  - Enhanced CognitoService with group management methods: checkRequiredGroups(), createRequiredGroups(), createGroup()
+  - Added admin API endpoints for Cognito group management: /api/admin/cognito/groups/status, /api/admin/cognito/groups/create, /api/admin/cognito/groups
+  - Conducted system diagnostics showing Cognito connectivity working but AWS permissions needed for group creation
+  - Updated COGNITO_GRUPOS_SETUP.md with comprehensive configuration guide and permission requirements
+  - Database schema successfully updated and ready for hierarchical user registration system
 - July 2, 2025: Fixed Lesson Planning Document Generation System
   - Added missing `/api/analyze-tema` endpoint for automatic theme analysis using Anthropic Claude
   - Added missing `/api/generate-comprehensive-lesson-plan` endpoint for complete lesson plan generation
