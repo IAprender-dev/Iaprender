@@ -2679,6 +2679,466 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analyze theme endpoint for lesson planning
+  app.post("/api/analyze-tema", authenticate, async (req, res) => {
+    try {
+      const { tema } = req.body;
+      
+      if (!tema || typeof tema !== 'string') {
+        return res.status(400).json({ message: "Tema é obrigatório" });
+      }
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY!,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 1024,
+          messages: [{
+            role: 'user',
+            content: `Você é um especialista em educação brasileira e BNCC. Analise o tema de aula:
+
+TEMA: "${tema}"
+
+Baseado nas diretrizes da BNCC (Base Nacional Comum Curricular) do MEC, identifique:
+
+1. Disciplina principal (Língua Portuguesa, Matemática, Ciências, História, Geografia, Arte, Educação Física, Inglês, etc.)
+2. Ano/série mais adequado (1º ao 9º ano do Ensino Fundamental ou 1ª à 3ª série do Ensino Médio)
+3. Se o tema está presente na BNCC para a disciplina identificada
+4. Observações importantes se não estiver alinhado
+
+RESPONDA APENAS COM JSON VÁLIDO:
+{
+  "disciplina": "nome da disciplina",
+  "anoSerie": "X ano" ou "Xa série",
+  "conformeRegulasBNCC": true ou false,
+  "observacoes": "texto explicativo se necessário"
+}`
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro na API da Anthropic');
+      }
+
+      const data = await response.json();
+      const analysisText = data.content[0].text;
+      
+      console.log('Resposta da IA para análise do tema:', analysisText);
+      
+      try {
+        // Tentar extrair JSON do texto da resposta
+        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const analysis = JSON.parse(jsonMatch[0]);
+          console.log('Análise parseada com sucesso:', analysis);
+          return res.status(200).json(analysis);
+        } else {
+          throw new Error('JSON não encontrado na resposta');
+        }
+      } catch (parseError) {
+        console.error('Erro no parse da análise:', parseError);
+        console.error('Texto recebido:', analysisText);
+        
+        // Fallback se não conseguir fazer parse do JSON
+        return res.status(200).json({
+          disciplina: "Multidisciplinar",
+          anoSerie: "A definir",
+          conformeRegulasBNCC: false,
+          observacoes: "Não foi possível analisar automaticamente. Verifique se o tema está alinhado com as diretrizes da BNCC."
+        });
+      }
+    } catch (error: any) {
+      console.error("Error analyzing tema:", error);
+      return res.status(500).json({ message: "Erro interno do servidor" });
+    }
+  });
+
+  // Comprehensive lesson plan generation endpoint
+  app.post('/api/generate-comprehensive-lesson-plan', authenticate, async (req: Request, res: Response) => {
+    try {
+      const { 
+        disciplina, 
+        anoSerie, 
+        etapaEnsino, 
+        tema, 
+        duracao, 
+        recursos, 
+        perfilTurma, 
+        numeroAlunos, 
+        objetivosEspecificos, 
+        escola, 
+        professor,
+        emailProfessor,
+        analysis 
+      } = req.body;
+
+      // Extract disciplina and anoSerie from analysis if not provided
+      const finalDisciplina = disciplina || analysis?.disciplina || 'Não especificado';
+      const finalAnoSerie = anoSerie || analysis?.anoSerie || 'Não especificado';
+
+      const comprehensivePrompt = `Você é um especialista em educação brasileira com amplo conhecimento da BNCC, diretrizes do MEC e metodologias pedagógicas contemporâneas. Sua função é criar planejamentos de aula completos, profissionais e alinhados às normativas educacionais brasileiras.
+
+**IMPORTANTE - GESTÃO DE TEMPO E DIVISÃO DE CONTEÚDO:**
+
+Antes de criar o plano de aula, analise a relação entre o tempo disponível e a quantidade de conteúdo a ser ensinado. Se o tema proposto for muito extenso para o tempo de aula disponível, você DEVE:
+
+1. **Avaliar a carga de conteúdo**: Considere quantos conceitos, explicações, exemplos e atividades práticas são necessários para um ensino efetivo do tema.
+2. **Subdividir quando necessário**: Se o conteúdo não couber adequadamente em uma única aula, divida o tema em múltiplas aulas sequenciais (Aula 1, Aula 2, etc.).
+3. **Para cada subdivisão, especifique**:
+- Objetivos específicos da aula
+- Tópicos que serão abordados
+- Tempo estimado para cada tópico/atividade
+- Pré-requisitos da aula anterior (quando aplicável)
+4. **Critérios de tempo por atividade**:
+- Explicação de conceitos novos: mínimo 10-15 minutos
+- Exemplos práticos: 5-10 minutos cada
+- Atividades práticas: 15-30 minutos
+- Discussões e perguntas: 5-10 minutos
+- Revisão/síntese: 5-10 minutos
+5. **Priorização**: Se optar por manter em uma aula, indique claramente quais tópicos são essenciais e quais são complementares, ajustando a profundidade conforme o tempo.
+
+**Sempre justifique sua decisão** de manter em uma aula ou dividir em múltiplas, explicando o raciocínio sobre a gestão do tempo e do conteúdo.
+
+DADOS FORNECIDOS PELO PROFESSOR:
+- Disciplina/Componente Curricular: ${finalDisciplina}
+- Ano/Série e Etapa de Ensino: ${finalAnoSerie} - ${etapaEnsino || 'Não especificado'}
+- Tema/Conteúdo específico: ${tema}
+- Duração da aula: ${duracao} minutos
+- Recursos disponíveis: ${recursos || 'Não especificado'}
+- Perfil da turma: ${perfilTurma || 'Não especificado'}
+- Número de alunos: ${numeroAlunos || 'Não especificado'}
+- Objetivos específicos: ${objetivosEspecificos || 'Não especificado'}
+- Nome da escola: ${escola || 'Não especificado'}
+- Professor responsável: ${professor || 'Não especificado'}
+- Email do professor: ${emailProfessor || 'Não especificado'}
+
+ESTRUTURA OBRIGATÓRIA DO PLANEJAMENTO:
+
+1. IDENTIFICAÇÃO
+- Nome da escola/instituição: ${escola || 'Não especificado'}
+- Professor(a) responsável: ${professor || 'Não especificado'}
+- Email do professor: ${emailProfessor || 'Não especificado'}
+- Disciplina/Componente curricular: ${finalDisciplina}
+- Ano/Série: ${finalAnoSerie}
+- Data da aula: ${new Date().toLocaleDateString('pt-BR')}
+- Duração da aula: ${duracao}
+- Número de alunos: ${numeroAlunos || 'Não especificado'}
+
+2. ALINHAMENTO CURRICULAR BNCC
+- Unidade Temática (quando aplicável)
+- Objeto de Conhecimento específico
+- Habilidades BNCC (códigos e descrições completas)
+- Competências Gerais da BNCC mobilizadas (específicas e numeradas)
+- Competências Específicas da área/componente
+
+3. TEMA DA AULA
+- Título claro e atrativo
+- Contextualização do tema no currículo
+- Relevância social e científica do conteúdo
+
+4. OBJETIVOS DE APRENDIZAGEM
+Objetivo Geral:
+- Formulado com verbo no infinitivo
+- Claro e alcançável na duração proposta
+
+Objetivos Específicos:
+- Baseados na Taxonomia de Bloom revisada
+- Contemplando dimensões: conceitual, procedimental e atitudinal
+- Mensuráveis e observáveis
+
+5. CONTEÚDOS
+- Conceituais: (saber que)
+- Procedimentais: (saber fazer)
+- Atitudinais: (saber ser/conviver)
+
+6. METODOLOGIA E ESTRATÉGIAS DIDÁTICAS
+- Metodologias Ativas sugeridas (quando apropriado)
+- Estratégias de ensino diversificadas
+- Momentos pedagógicos estruturados:
+  * Problematização inicial
+  * Organização do conhecimento
+  * Aplicação do conhecimento
+- Diferenciação pedagógica para atender diferentes estilos de aprendizagem
+
+7. SEQUÊNCIA DIDÁTICA DETALHADA
+INÍCIO (X minutos):
+- Acolhimento e organização da turma
+- Verificação de conhecimentos prévios
+- Apresentação dos objetivos
+- Contextualização/problematização inicial
+
+DESENVOLVIMENTO (X minutos):
+- Passo a passo das atividades
+- Explicação dos conceitos
+- Atividades práticas/experimentais
+- Momentos de interação e discussão
+- Sistematização do conhecimento
+
+FECHAMENTO (X minutos):
+- Síntese dos aprendizados
+- Verificação da compreensão
+- Reflexão sobre o processo
+- Orientações para próximas etapas
+
+8. RECURSOS DIDÁTICOS
+- Materiais: lista completa e organizada
+- Tecnológicos: quando aplicável
+- Espaços: sala de aula, laboratório, pátio, etc.
+- Recursos humanos: palestrantes, monitores, etc.
+
+9. AVALIAÇÃO
+- Diagnóstica: verificação de conhecimentos prévios
+- Formativa: durante o processo (instrumentos e critérios)
+- Somativa: ao final da aula/sequência
+- Instrumentos avaliativos: específicos e variados
+- Critérios de avaliação: claros e objetivos
+- Feedback: como será fornecido aos estudantes
+
+10. INCLUSÃO E ACESSIBILIDADE
+- Adaptações curriculares para estudantes com necessidades especiais
+- Estratégias inclusivas para diferentes perfis de aprendizagem
+- Recursos de acessibilidade quando necessários
+
+11. INTERDISCIPLINARIDADE
+- Conexões com outras disciplinas
+- Temas transversais da BNCC abordados
+- Projetos integradores quando aplicável
+
+12. CONTEXTUALIZAÇÃO
+- Conexão com a realidade local dos estudantes
+- Aplicação prática do conhecimento
+- Relevância social do conteúdo
+
+13. EXTENSÃO E APROFUNDAMENTO
+- Atividades complementares para casa
+- Sugestões de pesquisa e leitura
+- Projetos de aprofundamento para estudantes interessados
+
+14. REFLEXÃO DOCENTE
+- Pontos de atenção durante a execução
+- Possíveis dificuldades e soluções
+- Indicadores de sucesso da aula
+- Espaço para anotações pós-aula
+
+15. REFERÊNCIAS
+- Bibliográficas: fundamentação teórica
+- Digitais: sites, vídeos, aplicativos
+- Documentos oficiais: BNCC, diretrizes específicas
+
+DIRETRIZES PARA ELABORAÇÃO:
+- Use linguagem técnica apropriada, mas acessível
+- Seja específico e detalhado nas orientações
+- Organize informações de forma clara e sequencial
+- Inclua tempo estimado para cada atividade
+- Garanta coerência entre objetivos, metodologia e avaliação
+- Respeite as especificidades da faixa etária
+- Considere os diferentes ritmos de aprendizagem
+- Promova participação ativa dos estudantes
+- Sempre citar os códigos específicos das habilidades BNCC
+- Garantir que todas as atividades tenham propósito pedagógico claro
+- Equilibrar momentos de explicação, prática e reflexão
+- Incluir momentos de autoavaliação dos estudantes
+- Prever tempo para dúvidas e esclarecimentos
+- Considere a progressão curricular vertical e horizontal
+- Integrar valores humanos e cidadania quando possível
+
+IMPORTANTE: Retorne APENAS um JSON válido e bem formatado. Use STRINGS para todos os valores, nunca objetos aninhados. 
+
+Para listas/arrays, use apenas strings separadas por vírgulas ou pontos. Para seções como "habilidades", "competências", use strings com formatação clara.
+
+Exemplo de formatação correta:
+- Para habilidades: "EF05CI11: Associar o movimento diário do Sol e das demais estrelas no céu ao movimento de rotação da Terra"
+- Para competências: "1. Valorizar e utilizar os conhecimentos historicamente construídos sobre o mundo físico, social, cultural e digital"
+- Para sequência didática: Use strings descritivas simples, não objetos
+
+Estrutura JSON obrigatória:
+{
+  "identificacao": {
+    "disciplina": "string",
+    "anoSerie": "string", 
+    "etapaEnsino": "string",
+    "tema": "string",
+    "duracao": "string",
+    "professor": "string"
+  },
+  "alinhamentoBNCC": {
+    "unidadeTematica": "string",
+    "objetoConhecimento": "string", 
+    "habilidades": "string com códigos e descrições completas",
+    "competenciasGerais": "string numerada com descrições",
+    "competenciasEspecificas": "string com descrições da área"
+  },
+  "temaDaAula": {
+    "titulo": "string",
+    "contextualizacao": "string",
+    "relevancia": "string"
+  },
+  "objetivosAprendizagem": {
+    "objetivoGeral": "string",
+    "objetivosEspecificos": "string com múltiplos objetivos separados por pontos"
+  },
+  "conteudos": {
+    "conceituais": "string",
+    "procedimentais": "string", 
+    "atitudinais": "string"
+  },
+  "metodologia": {
+    "metodologiasAtivas": "string",
+    "estrategiasEnsino": "string",
+    "momentosPedagogicos": "string"
+  },
+  "sequenciaDidatica": {
+    "inicio": "string detalhada das atividades iniciais com tempo",
+    "desenvolvimento": "string detalhada das atividades principais com tempo",
+    "fechamento": "string detalhada das atividades finais com tempo"
+  },
+  "recursosDidaticos": {
+    "materiaisNecessarios": "string",
+    "recursosDigitais": "string",
+    "espacosFisicos": "string"
+  },
+  "avaliacao": {
+    "instrumentos": "string",
+    "criterios": "string",
+    "momentos": "string"
+  },
+  "inclusaoAcessibilidade": {
+    "adaptacoes": "string",
+    "estrategiasInclusivas": "string"
+  },
+  "interdisciplinaridade": {
+    "conexoes": "string",
+    "integracaoAreas": "string"
+  },
+  "contextualizacao": {
+    "realidadeLocal": "string",
+    "aplicacoesPraticas": "string"
+  },
+  "extensaoAprofundamento": {
+    "atividadesComplementares": "string",
+    "pesquisasExtras": "string"
+  },
+  "reflexaoDocente": {
+    "pontosAtencao": "string",
+    "adaptacoesPossivel": "string"
+  },
+  "referencias": {
+    "bibliograficas": "string",
+    "digitais": "string"
+  }
+}`;
+
+      let fetchResponse: globalThis.Response | undefined;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          fetchResponse = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': process.env.ANTHROPIC_API_KEY!,
+              'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+              model: 'claude-3-5-sonnet-20241022',
+              max_tokens: 8000,
+              system: comprehensivePrompt,
+              messages: [
+                {
+                  role: 'user',
+                  content: `Crie um plano de aula completo e profissional seguindo todas as diretrizes da BNCC e metodologias pedagógicas contemporâneas para o tema "${tema}" em ${disciplina} para ${anoSerie} (${etapaEnsino}) com duração de ${duracao} minutos. Retorne APENAS o JSON válido conforme a estrutura especificada.`
+                }
+              ]
+            }),
+            signal: AbortSignal.timeout(120000) // 2 minute timeout
+          });
+
+          if (!fetchResponse.ok) {
+            if (fetchResponse.status === 429) {
+              throw new Error('Limite de requisições excedido. Tente novamente em alguns segundos.');
+            } else if (fetchResponse.status === 401) {
+              throw new Error('Erro de autenticação com o serviço de IA. Verifique as configurações.');
+            } else {
+              throw new Error(`Erro na API: ${fetchResponse.status} - ${fetchResponse.statusText}`);
+            }
+          }
+          
+          break; // Success, exit retry loop
+          
+        } catch (error: any) {
+          retryCount++;
+          
+          if (error.name === 'TimeoutError') {
+            console.error(`Tentativa ${retryCount}: Timeout na requisição`);
+          } else if (error.code === 'ECONNRESET' || error.cause?.code === 'ECONNRESET') {
+            console.error(`Tentativa ${retryCount}: Conexão perdida durante a requisição`);
+          } else {
+            console.error(`Tentativa ${retryCount}: Erro na requisição:`, error.message);
+          }
+          
+          if (retryCount >= maxRetries) {
+            if (error.name === 'TimeoutError') {
+              throw new Error('A geração do plano está demorando muito. Tente novamente com um tema mais específico ou reduza a duração da aula.');
+            } else if (error.code === 'ECONNRESET' || error.cause?.code === 'ECONNRESET') {
+              throw new Error('Problema de conexão com o serviço de IA. Verifique sua conexão com a internet e tente novamente.');
+            } else {
+              throw error;
+            }
+          }
+          
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 1000));
+        }
+      }
+
+      if (!fetchResponse) {
+        throw new Error('Falha na conexão após múltiplas tentativas. Tente novamente mais tarde.');
+      }
+
+      const data = await fetchResponse.json();
+      const content = data.content[0].text;
+      
+      try {
+        // Clean and extract JSON from the response
+        let cleanContent = content.replace(/```json\n?|```\n?/g, '').trim();
+        
+        // Find the start and end of JSON object
+        const jsonStart = cleanContent.indexOf('{');
+        const jsonEnd = cleanContent.lastIndexOf('}');
+        
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          cleanContent = cleanContent.substring(jsonStart, jsonEnd + 1);
+        }
+        
+        const planoData = JSON.parse(cleanContent);
+        
+        res.json(planoData);
+      } catch (parseError) {
+        console.error('Erro ao parsear resposta da IA:', parseError);
+        console.error('Conteúdo recebido:', content.substring(0, 500) + '...');
+        res.status(500).json({ 
+          error: 'Erro interno do servidor ao processar resposta da IA',
+          details: String(parseError),
+          rawContent: content.substring(0, 500)
+        });
+      }
+    } catch (error: any) {
+      console.error('Erro na geração do plano de aula:', error);
+      res.status(500).json({ 
+        error: 'Erro interno do servidor',
+        details: error.message 
+      });
+    }
+  });
+
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
   registerSchoolRoutes(app);
