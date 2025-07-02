@@ -509,6 +509,20 @@ export default function UserManagement() {
                   </AlertDescription>
                 </Alert>
 
+                <Alert className="border-green-200 bg-green-50">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-700">
+                    <strong>Acesso à Plataforma:</strong>
+                    <div className="mt-2 space-y-1">
+                      <div>• Acessar: <span className="font-mono bg-white px-1 rounded">https://iaverse.com/auth</span></div>
+                      <div>• Entrar com AWS Cognito usando as credenciais acima</div>
+                      {(createdUser.group === 'Admin' || createdUser.group === 'GestorMunicipal') && (
+                        <div>• Será redirecionado automaticamente para: <strong>Dashboard {createdUser.group === 'Admin' ? 'Administrativo' : 'Municipal'}</strong></div>
+                      )}
+                    </div>
+                  </AlertDescription>
+                </Alert>
+
                 <Button 
                   variant="outline" 
                   className="w-full"

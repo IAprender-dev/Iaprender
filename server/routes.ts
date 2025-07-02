@@ -2732,8 +2732,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         name,
         group: group as 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin',
-        municipio,
-        escola,
         companyId
       });
 

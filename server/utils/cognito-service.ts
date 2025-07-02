@@ -26,8 +26,6 @@ interface CreateUserRequest {
   name: string;
   group: 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin';
   tempPassword?: string;
-  municipio?: string;
-  escola?: string;
   companyId?: string;
 }
 
@@ -390,12 +388,6 @@ export class CognitoService {
       };
 
       // Adicionar atributos customizados se fornecidos
-      if (request.municipio) {
-        createParams.UserAttributes.push({ Name: 'custom:municipio', Value: request.municipio });
-      }
-      if (request.escola) {
-        createParams.UserAttributes.push({ Name: 'custom:escola', Value: request.escola });
-      }
       if (request.companyId) {
         createParams.UserAttributes.push({ Name: 'custom:company_id', Value: request.companyId });
       }
