@@ -59,6 +59,11 @@ const LiteLLMManagement = () => {
     enabled: true
   });
 
+  const { data: dashboardUrlData } = useQuery({
+    queryKey: ['/api/admin/litellm/dashboard-url'],
+    enabled: true
+  });
+
   // Mock data for development
   const mockOverview = {
     status: 'active',
@@ -172,9 +177,36 @@ const LiteLLMManagement = () => {
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Administração LiteLLM
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
               Controle completo sobre modelos de IA, custos, chaves de API e analytics em tempo real
             </p>
+            
+            {/* Native Dashboard Button */}
+            {dashboardUrlData?.isConfigured && (
+              <div className="flex justify-center gap-4">
+                <Button
+                  onClick={() => window.open(dashboardUrlData.dashboardUrl, '_blank')}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
+                  size="lg"
+                >
+                  <Activity className="h-5 w-5 mr-2" />
+                  Dashboard Nativo LiteLLM
+                </Button>
+              </div>
+            )}
+            
+            {!dashboardUrlData?.isConfigured && (
+              <div className="flex justify-center">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-lg">
+                  <div className="flex">
+                    <AlertTriangle className="h-5 w-5 text-yellow-400 mr-2" />
+                    <p className="text-sm text-yellow-800">
+                      LiteLLM não configurado. Configure as variáveis LITELLM_URL e LITELLM_API_KEY para acessar dados reais.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

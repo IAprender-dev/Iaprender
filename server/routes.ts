@@ -2251,63 +2251,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // LiteLLM Management Routes
   app.get('/api/admin/litellm/overview', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      // Mock data for LiteLLM overview
-      const overview = {
-        status: 'active',
-        totalRequests: 15420,
-        totalCost: 847.32,
-        totalModels: 12,
-        totalKeys: 8,
-        uptime: '99.8%',
-        responseTime: '1.2s',
-        errorRate: '0.2%'
-      };
+      const { liteLLMService } = await import('./services/litellm-service.js');
       
-      res.json(overview);
+      console.log('📊 Buscando dados reais do LiteLLM...');
+      
+      try {
+        const overview = await liteLLMService.getOverview();
+        console.log('✅ Dados do LiteLLM carregados com sucesso');
+        res.json(overview);
+      } catch (liteLLMError: any) {
+        console.error('❌ Erro ao buscar dados do LiteLLM:', liteLLMError.message);
+        console.log('⚠️ Usando dados de fallback para LiteLLM');
+        
+        // Fallback data when LiteLLM is not configured or unavailable
+        const fallbackOverview = {
+          status: 'not_configured',
+          totalRequests: 0,
+          totalCost: 0,
+          totalModels: 0,
+          totalKeys: 0,
+          uptime: '0%',
+          responseTime: 'N/A',
+          errorRate: 'N/A',
+          error: liteLLMError.message,
+          configured: liteLLMService.isConfigured()
+        };
+        
+        res.json(fallbackOverview);
+      }
     } catch (error) {
-      console.error('Error fetching LiteLLM overview:', error);
+      console.error('Error in LiteLLM overview endpoint:', error);
       res.status(500).json({ error: 'Failed to fetch LiteLLM overview' });
     }
   });
 
   app.get('/api/admin/litellm/models', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const models = [
-        {
-          id: 'gpt-4',
-          name: 'GPT-4',
-          provider: 'OpenAI',
-          status: 'active',
-          requests: 8420,
-          cost: 324.50,
-          avgLatency: '1.1s',
-          successRate: '99.9%'
-        },
-        {
-          id: 'claude-3-sonnet',
-          name: 'Claude 3 Sonnet',
-          provider: 'Anthropic',
-          status: 'active',
-          requests: 4230,
-          cost: 198.75,
-          avgLatency: '0.9s',
-          successRate: '99.8%'
-        },
-        {
-          id: 'llama-2-70b',
-          name: 'Llama 2 70B',
-          provider: 'Meta',
-          status: 'active',
-          requests: 2770,
-          cost: 324.07,
-          avgLatency: '2.1s',
-          successRate: '98.5%'
-        }
-      ];
+      const { liteLLMService } = await import('./services/litellm-service.js');
       
-      res.json(models);
+      console.log('🔍 Buscando modelos reais do LiteLLM...');
+      
+      try {
+        const models = await liteLLMService.getModels();
+        console.log('✅ Modelos do LiteLLM carregados com sucesso');
+        res.json(models);
+      } catch (liteLLMError: any) {
+        console.error('❌ Erro ao buscar modelos do LiteLLM:', liteLLMError.message);
+        console.log('⚠️ Usando dados de fallback para modelos');
+        
+        // Fallback data when LiteLLM is not configured
+        const fallbackModels = [
+          {
+            id: 'not-configured',
+            name: 'LiteLLM Não Configurado',
+            provider: 'N/A',
+            status: 'inactive',
+            requests: 0,
+            cost: 0,
+            avgLatency: 'N/A',
+            successRate: 'N/A',
+            error: liteLLMError.message
+          }
+        ];
+        
+        res.json(fallbackModels);
+      }
     } catch (error) {
-      console.error('Error fetching LiteLLM models:', error);
+      console.error('Error in LiteLLM models endpoint:', error);
       res.status(500).json({ error: 'Failed to fetch LiteLLM models' });
     }
   });
@@ -2472,19 +2482,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/litellm/test-connection', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      // Mock connection test
-      const connectionStatus = {
-        success: true,
-        status: 'Connected',
-        latency: '245ms',
-        version: '1.2.4',
-        modelsAvailable: 12
-      };
+      const { liteLLMService } = await import('./services/litellm-service.js');
+      
+      console.log('🔗 Testando conexão com LiteLLM...');
+      const connectionStatus = await liteLLMService.testConnection();
+      
+      if (connectionStatus.success) {
+        console.log('✅ Conexão com LiteLLM bem-sucedida');
+      } else {
+        console.log('❌ Falha na conexão com LiteLLM:', connectionStatus.message);
+      }
       
       res.json(connectionStatus);
     } catch (error) {
       console.error('Error testing LiteLLM connection:', error);
       res.status(500).json({ error: 'Failed to test connection' });
+    }
+  });
+
+  // Get LiteLLM native dashboard URL
+  app.get('/api/admin/litellm/dashboard-url', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { liteLLMService } = await import('./services/litellm-service.js');
+      
+      const dashboardUrl = liteLLMService.getDashboardUrl();
+      const isConfigured = liteLLMService.isConfigured();
+      
+      res.json({
+        dashboardUrl,
+        isConfigured,
+        message: isConfigured 
+          ? 'Dashboard nativo do LiteLLM disponível' 
+          : 'LiteLLM não configurado. Configure LITELLM_URL e LITELLM_API_KEY.'
+      });
+    } catch (error) {
+      console.error('Error getting LiteLLM dashboard URL:', error);
+      res.status(500).json({ error: 'Failed to get dashboard URL' });
     }
   });
 
