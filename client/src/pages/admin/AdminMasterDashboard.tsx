@@ -322,80 +322,57 @@ export default function AdminMasterDashboard() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="space-y-0">
-                    {[
-                      {
-                        id: "CTR-2025-001",
-                        client: "Prefeitura de São Paulo",
-                        type: "Educacional Premium",
-                        licenses: 5000,
-                        value: "R$ 450.000",
-                        status: "active",
-                        startDate: "2025-01-15",
-                        endDate: "2025-12-31"
-                      },
-                      {
-                        id: "CTR-2025-002", 
-                        client: "Secretaria de Educação RJ",
-                        type: "Educacional Básico",
-                        licenses: 2500,
-                        value: "R$ 180.000",
-                        status: "pending",
-                        startDate: "2025-02-01",
-                        endDate: "2025-12-31"
-                      },
-                      {
-                        id: "CTR-2025-003",
-                        client: "Escola Técnica Federal",
-                        type: "Institucional",
-                        licenses: 800,
-                        value: "R$ 95.000",
-                        status: "active",
-                        startDate: "2025-01-20",
-                        endDate: "2025-12-31"
-                      }
-                    ].map((contract, index) => (
-                      <div key={contract.id} className={`p-4 border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${index === 0 ? 'border-t-0' : ''}`}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-3">
-                              <div className="flex-shrink-0">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
-                                  <Building className="h-5 w-5 text-blue-600" />
+                    {contractsLoading ? (
+                      <div className="p-4 text-center text-slate-600">
+                        Carregando contratos...
+                      </div>
+                    ) : (
+                      (contractsData?.contracts || []).slice(0, 3).map((contract: any, index: number) => (
+                        <div key={contract.id} className={`p-4 border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${index === 0 ? 'border-t-0' : ''}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-3">
+                                <div className="flex-shrink-0">
+                                  <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center">
+                                    <Building className="h-5 w-5 text-blue-600" />
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center space-x-2">
-                                  <p className="text-sm font-semibold text-slate-900 truncate">{contract.client}</p>
-                                  <Badge 
-                                    variant={contract.status === 'active' ? 'default' : 'secondary'}
-                                    className={contract.status === 'active' 
-                                      ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
-                                      : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
-                                    }
-                                  >
-                                    {contract.status === 'active' ? 'Ativo' : 'Pendente'}
-                                  </Badge>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center space-x-2">
+                                    <p className="text-sm font-semibold text-slate-900 truncate">{contract.companyName}</p>
+                                    <Badge 
+                                      variant={contract.status === 'active' ? 'default' : 'secondary'}
+                                      className={contract.status === 'active' 
+                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
+                                        : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                                      }
+                                    >
+                                      {contract.status === 'active' ? 'Ativo' : contract.status === 'suspended' ? 'Suspenso' : 'Pendente'}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center space-x-4 mt-1">
+                                    <p className="text-xs text-slate-500">CTR-{contract.id}</p>
+                                    <p className="text-xs text-slate-500">{contract.planType}</p>
+                                    <p className="text-xs text-slate-500">{contract.totalLicenses?.toLocaleString()} licenças</p>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-4 mt-1">
-                                  <p className="text-xs text-slate-500">{contract.id}</p>
-                                  <p className="text-xs text-slate-500">{contract.type}</p>
-                                  <p className="text-xs text-slate-500">{contract.licenses.toLocaleString()} licenças</p>
+                                <div className="flex-shrink-0 text-right">
+                                  <p className="text-sm font-semibold text-slate-900">
+                                    R$ {(contract.monthlyRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </p>
+                                  <p className="text-xs text-slate-500">{contract.startDate} - {contract.endDate}</p>
                                 </div>
-                              </div>
-                              <div className="flex-shrink-0 text-right">
-                                <p className="text-sm font-semibold text-slate-900">{contract.value}</p>
-                                <p className="text-xs text-slate-500">{contract.startDate} - {contract.endDate}</p>
-                              </div>
-                              <div className="flex-shrink-0">
-                                <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
+                                <div className="flex-shrink-0">
+                                  <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
