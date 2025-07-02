@@ -29,7 +29,6 @@ interface CreateUserRequest {
   municipio?: string;
   escola?: string;
   companyId?: string;
-  contractId?: string;
 }
 
 interface CreateUserResponse {
@@ -399,9 +398,6 @@ export class CognitoService {
       }
       if (request.companyId) {
         createParams.UserAttributes.push({ Name: 'custom:company_id', Value: request.companyId });
-      }
-      if (request.contractId) {
-        createParams.UserAttributes.push({ Name: 'custom:contract_id', Value: request.contractId });
       }
 
       const createResult = await this.cognitoIdentityServiceProvider.adminCreateUser(createParams).promise();

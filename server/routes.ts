@@ -622,8 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user = await storage.getUserByEmail(userInfo.email);
       
       if (!user) {
-        // Extrair contractId dos atributos customizados do Cognito para garantir isolamento de dados
-        const contractId = userInfo['custom:contract_id'] ? parseInt(userInfo['custom:contract_id']) : null;
+        // Usuário será criado sem contractId específico
         
         // Criar novo usuário com role baseado nos grupos do Cognito
         const newUser = {
@@ -633,16 +632,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: userInfo.email.split('@')[0],
           password: 'cognito_auth', // Placeholder para autenticação externa
           role: authData.role,
-          contractId: contractId, // CRÍTICO: Garantir isolamento de dados por contrato
+          contractId: null, // Sem vinculação específica a contrato
           isActive: true
         };
         
         user = await storage.createUser(newUser);
-        console.log('✅ Novo usuário criado com contractId:', {
+        console.log('✅ Novo usuário criado:', {
           id: user.id,
           email: user.email,
-          role: user.role,
-          contractId: contractId
+          role: user.role
         });
       } else {
         // Atualizar role se necessário (quando grupos do Cognito mudaram)
@@ -2671,7 +2669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Criar usuário no Cognito - rota para administradores
   app.post('/api/admin/users/create', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { email, name, group, municipio, escola, companyId, contractId } = req.body;
+      const { email, name, group, municipio, escola, companyId } = req.body;
 
       // Validação básica
       if (!email || !name || !group) {
@@ -2683,10 +2681,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validação específica para Gestor Municipal
       if (group === 'GestorMunicipal') {
-        if (!companyId || !contractId) {
+        if (!companyId) {
           return res.status(400).json({ 
             success: false, 
-            error: 'Empresa e contrato são obrigatórios para Gestores Municipais' 
+            error: 'Empresa é obrigatória para Gestores Municipais' 
           });
         }
 
@@ -2696,20 +2694,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ 
             success: false, 
             error: 'Empresa não encontrada' 
-          });
-        }
-
-        // Verificar se contrato existe e pertence à empresa
-        const contractExists = await db.select().from(contracts)
-          .where(and(
-            eq(contracts.id, parseInt(contractId)),
-            eq(contracts.companyId, parseInt(companyId))
-          ));
-        
-        if (contractExists.length === 0) {
-          return res.status(400).json({ 
-            success: false, 
-            error: 'Contrato não encontrado ou não pertence à empresa selecionada' 
           });
         }
       }
@@ -2750,8 +2734,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         group: group as 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin',
         municipio,
         escola,
-        companyId,
-        contractId
+        companyId
       });
 
       if (result.success) {
@@ -2790,12 +2773,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             username: email.split('@')[0],
             password: 'cognito_auth', // Placeholder para autenticação externa
             role: role,
-            contractId: contractId ? parseInt(contractId) : null, // CRÍTICO: Associar ao contrato
+            contractId: null, // Não vinculando a contrato específico
             status: 'active' as const
           };
           
           const localUser = await db.insert(users).values(newUser).returning();
-          console.log(`✅ Usuário salvo no banco local com contractId: ${contractId}`, localUser[0]);
+          console.log(`✅ Usuário salvo no banco local`, localUser[0]);
           
         } catch (dbError: any) {
           console.error('⚠️ Erro ao salvar usuário no banco local (usuário criado no Cognito):', dbError);
@@ -2803,7 +2786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Log da ação administrativa
-        console.log(`📋 Log de auditoria: Admin criou usuário ${email} no grupo ${group} com contractId: ${contractId}`);
+        console.log(`📋 Log de auditoria: Admin criou usuário ${email} no grupo ${group} para empresa ${companyId}`);
 
         return res.status(201).json({
           success: true,
@@ -2812,7 +2795,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           tempPassword: result.tempPassword,
           userEmail: email,
           group: group,
-          contractId: contractId
+          companyId: companyId
         });
       } else {
         return res.status(400).json({ 

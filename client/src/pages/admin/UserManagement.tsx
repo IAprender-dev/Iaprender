@@ -287,70 +287,137 @@ export default function UserManagement() {
                   {/* Campos específicos para Gestor Municipal */}
                   {selectedGroup === 'GestorMunicipal' && (
                     <>
-                      {/* Empresa Contratante */}
-                      <FormField
-                        control={form.control}
-                        name="companyId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Empresa Contratante *</FormLabel>
-                            <Select onValueChange={(value) => {
-                              field.onChange(value);
-                              setSelectedCompany(value);
-                            }} defaultValue={field.value}>
+                      {/* Empresa Contratante - Layout Premium */}
+                      <div className="space-y-4">
+                        <FormField
+                          control={form.control}
+                          name="companyId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                Empresa Contratante
+                                <span className="text-red-500">*</span>
+                              </FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione a empresa contratante" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {companiesData?.companies ? 
-                                  companiesData.companies.map((company: any) => (
-                                    <SelectItem key={company.id} value={company.id.toString()}>
-                                      <div className="flex flex-col py-1">
-                                        <span className="font-semibold text-gray-900">{company.name}</span>
-                                        <span className="text-sm text-blue-600">{company.description}</span>
-                                        <span className="text-xs text-gray-500 mt-1">
-                                          📧 {company.email} • 📞 {company.phone || 'N/A'}
-                                        </span>
-                                        <span className="text-xs text-green-600 mt-1">
-                                          👥 {company.contactInfo} • 📍 {company.address || 'N/A'}
-                                        </span>
+                                <div className="relative">
+                                  <Select onValueChange={(value) => {
+                                    field.onChange(value);
+                                    setSelectedCompany(value);
+                                  }} defaultValue={field.value}>
+                                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 bg-white">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
+                                          🏢
+                                        </div>
+                                        <SelectValue placeholder="Selecione a empresa contratante..." />
                                       </div>
-                                    </SelectItem>
-                                  )) : 
-                                  <SelectItem value="loading" disabled>Carregando empresas com contratos ativos...</SelectItem>
-                                }
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-w-lg">
+                                      {companiesData?.companies ? 
+                                        companiesData.companies.map((company: any) => (
+                                          <SelectItem key={company.id} value={company.id.toString()} className="p-3 hover:bg-blue-50 cursor-pointer">
+                                            <div className="flex items-center gap-3">
+                                              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                                                {company.name.substring(0, 2).toUpperCase()}
+                                              </div>
+                                              <div className="flex-1">
+                                                <div className="font-medium text-gray-900">{company.name}</div>
+                                                <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                                                  <span>📧 {company.email}</span>
+                                                  <span className="text-gray-300">•</span>
+                                                  <span>📋 {company.activeContractsCount || 0} contrato(s)</span>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </SelectItem>
+                                        )) : 
+                                        <SelectItem value="loading" disabled>Carregando empresas com contratos ativos...</SelectItem>
+                                      }
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
 
 
-                      {/* Card simples com informações da empresa selecionada */}
+                      {/* Card Premium da Empresa Selecionada */}
                       {selectedCompany && companiesData?.companies && (
                         (() => {
                           const selectedCompanyData = companiesData.companies.find((c: any) => c.id.toString() === selectedCompany);
                           return selectedCompanyData && (
-                            <Card className="border-blue-200 bg-blue-50">
-                              <CardContent className="p-4">
-                                <div className="space-y-3">
-                                  <div>
-                                    <h4 className="text-blue-800 font-semibold text-lg">{selectedCompanyData.name}</h4>
+                            <div className="relative overflow-hidden mt-4">
+                              <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                                <CardContent className="p-6">
+                                  <div className="flex items-start gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                                      {selectedCompanyData.name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 space-y-3">
+                                      <div>
+                                        <h3 className="text-xl font-bold text-gray-800 mb-1">{selectedCompanyData.name}</h3>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                            ✅ Empresa Verificada
+                                          </span>
+                                          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                                            📋 {selectedCompanyData.activeContractsCount || 0} Contrato(s) Ativo(s)
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <div className="flex items-center gap-2 text-gray-700">
+                                            <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                                              <span className="text-xs">📧</span>
+                                            </div>
+                                            <span className="text-sm"><strong>Email:</strong> {selectedCompanyData.email || 'N/A'}</span>
+                                          </div>
+                                          <div className="flex items-center gap-2 text-gray-700">
+                                            <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                                              <span className="text-xs">👤</span>
+                                            </div>
+                                            <span className="text-sm"><strong>Contato:</strong> {selectedCompanyData.contactPerson || 'N/A'}</span>
+                                          </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <div className="flex items-center gap-2 text-gray-700">
+                                            <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center">
+                                              <span className="text-xs">📞</span>
+                                            </div>
+                                            <span className="text-sm"><strong>Telefone:</strong> {selectedCompanyData.phone || 'N/A'}</span>
+                                          </div>
+                                          <div className="flex items-center gap-2 text-gray-700">
+                                            <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center">
+                                              <span className="text-xs">🏢</span>
+                                            </div>
+                                            <span className="text-sm"><strong>ID:</strong> #{selectedCompanyData.id}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      {selectedCompanyData.address && (
+                                        <div className="pt-3 border-t border-gray-200">
+                                          <div className="flex items-start gap-2 text-gray-700">
+                                            <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
+                                              <span className="text-xs">📍</span>
+                                            </div>
+                                            <span className="text-sm"><strong>Endereço:</strong> {selectedCompanyData.address}</span>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                  
-                                  <div className="text-sm text-blue-700 space-y-1">
-                                    <div><strong>Email:</strong> {selectedCompanyData.email || 'N/A'}</div>
-                                    <div><strong>Contato:</strong> {selectedCompanyData.contactPerson || 'N/A'}</div>
-                                    <div><strong>Telefone:</strong> {selectedCompanyData.phone || 'N/A'}</div>
-                                    <div><strong>Contratos Ativos:</strong> {selectedCompanyData.activeContractsCount || 0}</div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
+                                </CardContent>
+                              </Card>
+                            </div>
                           );
                         })()
                       )}
