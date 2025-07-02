@@ -2771,14 +2771,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Buscar empresas contratantes
+  // Buscar empresas contratantes com dados detalhados e contratos ativos
   app.get('/api/admin/companies', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const companiesData = await db.select().from(companies);
-      res.json({ companies: companiesData });
+      // Buscar empresas que têm contratos ativos com informações detalhadas
+      const companiesWithContracts = await db
+        .select({
+          id: companies.id,
+          name: companies.name,
+          email: companies.email,
+          phone: companies.phone,
+          address: companies.address,
+          contactPerson: companies.contactPerson,
+          logo: companies.logo,
+          createdAt: companies.createdAt,
+          // Informações dos contratos ativos
+          activeContractsCount: sql<number>`COUNT(CASE WHEN ${contracts.status} = 'active' THEN 1 END)`,
+          totalLicenses: sql<number>`SUM(CASE WHEN ${contracts.status} = 'active' THEN ${contracts.totalLicenses} ELSE 0 END)`,
+          totalTeachers: sql<number>`SUM(CASE WHEN ${contracts.status} = 'active' THEN ${contracts.maxTeachers} ELSE 0 END)`,
+          totalStudents: sql<number>`SUM(CASE WHEN ${contracts.status} = 'active' THEN ${contracts.maxStudents} ELSE 0 END)`,
+          nextExpirationDate: sql<string>`MIN(CASE WHEN ${contracts.status} = 'active' THEN ${contracts.endDate} END)`
+        })
+        .from(companies)
+        .leftJoin(contracts, eq(companies.id, contracts.companyId))
+        .groupBy(companies.id, companies.name, companies.email, companies.phone, companies.address, companies.contactPerson, companies.logo, companies.createdAt)
+        .having(sql`COUNT(CASE WHEN ${contracts.status} = 'active' THEN 1 END) > 0`) // Apenas empresas com contratos ativos
+        .orderBy(companies.name);
+
+      console.log(`📋 Empresas com contratos ativos encontradas: ${companiesWithContracts.length}`);
+      
+      // Formatar dados para melhor apresentação
+      const formattedCompanies = companiesWithContracts.map(company => ({
+        ...company,
+        displayName: `${company.name}`,
+        description: `${company.activeContractsCount} contrato(s) ativo(s) • ${company.totalLicenses || 0} licenças`,
+        contactInfo: `${company.contactPerson || 'N/A'} • ${company.phone || 'N/A'}`,
+        summary: {
+          contracts: company.activeContractsCount || 0,
+          licenses: company.totalLicenses || 0,
+          teachers: company.totalTeachers || 0,
+          students: company.totalStudents || 0,
+          nextExpiration: company.nextExpirationDate
+        }
+      }));
+
+      res.json({ companies: formattedCompanies });
     } catch (error) {
-      console.error('❌ Erro ao buscar empresas:', error);
-      res.status(500).json({ error: 'Erro ao buscar empresas' });
+      console.error('❌ Erro ao buscar empresas com contratos ativos:', error);
+      res.status(500).json({ error: 'Erro ao buscar empresas com contratos ativos' });
     }
   });
 
