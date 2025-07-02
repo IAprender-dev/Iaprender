@@ -18,6 +18,9 @@ export const notificationTypeEnum = pgEnum('notification_type', ['behavior', 'ac
 export const planTypeEnum = pgEnum('plan_type', ['basic', 'standard', 'premium', 'enterprise']);
 export const auditActionEnum = pgEnum('audit_action', ['create', 'update', 'delete', 'login', 'logout', 'access_denied', 'token_usage', 'api_call', 'system_alert', 'aws_console_access']);
 export const securityAlertTypeEnum = pgEnum('security_alert_type', ['suspicious_login', 'unusual_token_usage', 'multiple_sessions', 'rate_limit_exceeded', 'unauthorized_access']);
+export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approved', 'rejected']);
+export const invitationStatusEnum = pgEnum('invitation_status', ['pending', 'accepted', 'expired']);
+export const reportTypeEnum = pgEnum('report_type', ['usage', 'pedagogical', 'compliance']);
 
 // Platform configurations
 export const platformConfigs = pgTable("platform_configs", {
@@ -67,6 +70,8 @@ export const systemHealthMetrics = pgTable("system_health_metrics", {
   source: text("source"),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
+
+
 
 // Users table
 export const users = pgTable("users", {

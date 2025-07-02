@@ -1,765 +1,355 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  School, 
-  Users, 
-  UserCheck, 
-  UserX, 
-  Mail, 
-  BookOpen, 
-  BarChart3, 
-  ShieldCheck, 
-  Settings,
-  Plus,
-  Eye,
-  FileText,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  GraduationCap,
-  Building,
-  Monitor,
-  Target,
-  TrendingUp,
-  DollarSign,
-  Calendar,
-  Send,
-  Download,
-  LogOut
-} from "lucide-react";
+import { useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { Link } from "wouter";
-
-interface SchoolStats {
-  totalLicenses: number;
-  usedLicenses: number;
-  totalClasses: number;
-  totalTeachers: number;
-  totalStudents: number;
-  pendingApprovals: number;
-  activeInvitations: number;
-  monthlyTokenUsage: number;
-  tokenLimit: number;
-}
-
-interface SchoolClass {
-  id: number;
-  className: string;
-  grade: string;
-  section: string;
-  academicYear: string;
-  maxStudents: number;
-  currentStudents: number;
-  allocatedLicenses: number;
-  usedLicenses: number;
-  coordinatorName?: string;
-  isActive: boolean;
-}
-
-interface PendingApproval {
-  id: number;
-  userName: string;
-  userEmail: string;
-  requestedRole: string;
-  className?: string;
-  requestedAt: string;
-  parentalConsent: boolean;
-  parentName?: string;
-  parentEmail?: string;
-  documentsSubmitted: any;
-}
-
-interface Invitation {
-  id: number;
-  email: string;
-  role: string;
-  className?: string;
-  status: string;
-  sentAt: string;
-  expiresAt: string;
-}
-
-interface SchoolReport {
-  id: number;
-  reportType: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  periodStart: string;
-  periodEnd: string;
-}
+import { useQuery } from "@tanstack/react-query";
+import { 
+  Users, 
+  School, 
+  UserCheck, 
+  GraduationCap, 
+  LogOut, 
+  ClipboardList,
+  Settings,
+  FileText
+} from "lucide-react";
 
 export default function SchoolDirectorDashboard() {
   const { user, logout } = useAuth();
-  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Mock data para demonstração
-  const schoolStats: SchoolStats = {
-    totalLicenses: 150,
-    usedLicenses: 98,
-    totalClasses: 12,
-    totalTeachers: 18,
-    totalStudents: 342,
-    pendingApprovals: 3,
-    activeInvitations: 2,
-    monthlyTokenUsage: 15750,
-    tokenLimit: 25000,
-  };
+  // Queries para dados reais da API
+  const { data: schoolStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/school/stats'],
+    enabled: !!user
+  });
 
-  const schoolClasses: SchoolClass[] = [
-    {
-      id: 1,
-      className: "1º Ano A",
-      grade: "1",
-      section: "A",
-      academicYear: "2025",
-      maxStudents: 30,
-      currentStudents: 28,
-      allocatedLicenses: 15,
-      usedLicenses: 12,
-      coordinatorName: "Prof. Maria Silva",
-      isActive: true,
-    },
-    {
-      id: 2,
-      className: "2º Ano B",
-      grade: "2",
-      section: "B",
-      academicYear: "2025",
-      maxStudents: 30,
-      currentStudents: 25,
-      allocatedLicenses: 12,
-      usedLicenses: 10,
-      coordinatorName: "Prof. João Santos",
-      isActive: true,
-    },
-    {
-      id: 3,
-      className: "3º Ano C",
-      grade: "3",
-      section: "C",
-      academicYear: "2025",
-      maxStudents: 28,
-      currentStudents: 26,
-      allocatedLicenses: 14,
-      usedLicenses: 11,
-      coordinatorName: "Prof. Ana Costa",
-      isActive: true,
-    },
-  ];
+  const { data: schoolClasses, isLoading: classesLoading } = useQuery({
+    queryKey: ['/api/school/classes'],
+    enabled: !!user && activeTab === "classes"
+  });
 
-  const pendingApprovals: PendingApproval[] = [
-    {
-      id: 1,
-      userName: "Pedro Oliveira",
-      userEmail: "pedro.oliveira@gmail.com",
-      requestedRole: "teacher",
-      className: "4º Ano A",
-      requestedAt: "2025-06-29T10:30:00Z",
-      parentalConsent: false,
-      documentsSubmitted: { diploma: true, background_check: true },
-    },
-    {
-      id: 2,
-      userName: "Carla Mendes",
-      userEmail: "carla.mendes@yahoo.com",
-      requestedRole: "coordinator",
-      requestedAt: "2025-06-28T14:20:00Z",
-      parentalConsent: false,
-      documentsSubmitted: { diploma: true, background_check: false },
-    },
-    {
-      id: 3,
-      userName: "Lucas Silva",
-      userEmail: "lucas.silva@hotmail.com",
-      requestedRole: "student",
-      className: "2º Ano B",
-      requestedAt: "2025-06-27T16:45:00Z",
-      parentalConsent: true,
-      parentName: "Maria Silva",
-      parentEmail: "maria.silva@gmail.com",
-      documentsSubmitted: { birth_certificate: true, medical_records: true },
-    },
-  ];
+  const { data: pendingApprovals, isLoading: approvalsLoading } = useQuery({
+    queryKey: ['/api/school/approvals'],
+    enabled: !!user && activeTab === "approvals"
+  });
 
-  const invitations: Invitation[] = [
-    {
-      id: 1,
-      email: "prof.matematica@escola.com",
-      role: "teacher",
-      className: "5º Ano A",
-      status: "pending",
-      sentAt: "2025-06-30T09:00:00Z",
-      expiresAt: "2025-07-07T09:00:00Z",
-    },
-    {
-      id: 2,
-      email: "coord.pedagogico@escola.com",
-      role: "coordinator",
-      status: "accepted",
-      sentAt: "2025-06-28T11:30:00Z",
-      expiresAt: "2025-07-05T11:30:00Z",
-    },
-  ];
+  const { data: schoolInvitations, isLoading: invitationsLoading } = useQuery({
+    queryKey: ['/api/school/invitations'],
+    enabled: !!user && activeTab === "invitations"
+  });
 
-  const reports: SchoolReport[] = [
-    {
-      id: 1,
-      reportType: "usage",
-      title: "Relatório de Uso de IA - Dezembro 2025",
-      description: "Análise do uso de ferramentas de IA por turma e professor",
-      createdAt: "2025-06-30T08:00:00Z",
-      periodStart: "2025-06-01T00:00:00Z",
-      periodEnd: "2025-06-30T23:59:59Z",
-    },
-    {
-      id: 2,
-      reportType: "pedagogical",
-      title: "Relatório Pedagógico - 2º Trimestre",
-      description: "Análise de desempenho e engajamento dos alunos",
-      createdAt: "2025-06-29T16:30:00Z",
-      periodStart: "2025-04-01T00:00:00Z",
-      periodEnd: "2025-06-30T23:59:59Z",
-    },
-    {
-      id: 3,
-      reportType: "compliance",
-      title: "Relatório de Conformidade LGPD",
-      description: "Verificação de compliance com regulamentações",
-      createdAt: "2025-06-25T14:15:00Z",
-      periodStart: "2025-06-01T00:00:00Z",
-      periodEnd: "2025-06-30T23:59:59Z",
-    },
-  ];
+  const { data: schoolReports, isLoading: reportsLoading } = useQuery({
+    queryKey: ['/api/school/reports'],
+    enabled: !!user && activeTab === "reports"
+  });
 
-  const licenseUsagePercentage = (schoolStats.usedLicenses / schoolStats.totalLicenses) * 100;
-  const tokenUsagePercentage = (schoolStats.monthlyTokenUsage / schoolStats.tokenLimit) * 100;
+  // Estados de carregamento
+  if (statsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando dados da escola...</p>
+        </div>
+      </div>
+    );
+  }
 
+  // Renderização do dashboard
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <School className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Diretor de Escola</h1>
-                  <p className="text-sm text-gray-500">Gestão Pedagógica e Administrativa</p>
-                </div>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Dashboard do Diretor</h1>
+              <p className="text-gray-500">Bem-vindo, {user?.firstName} {user?.lastName}</p>
             </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{user?.firstName} {user?.lastName}</p>
-                <p className="text-xs text-gray-500">Diretor</p>
-              </div>
-              <Avatar>
-                <AvatarFallback className="bg-blue-600 text-white">
-                  {user?.firstName?.[0]}{user?.lastName?.[0]}
-                </AvatarFallback>
-              </Avatar>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={logout}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
-            </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </button>
           </div>
         </div>
       </div>
 
+      {/* Stats Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Licenças Escolares</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{schoolStats.usedLicenses}/{schoolStats.totalLicenses}</div>
-              <Progress value={licenseUsagePercentage} className="mt-2" />
-              <p className="text-xs text-muted-foreground mt-1">
-                {licenseUsagePercentage.toFixed(1)}% utilizadas
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Total de Licenças</p>
+                <p className="text-2xl font-bold text-gray-900">{(schoolStats as any)?.totalLicenses || 0}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <School className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Turmas Ativas</p>
+                <p className="text-2xl font-bold text-gray-900">{(schoolStats as any)?.totalClasses || 0}</p>
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Turmas Ativas</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{schoolStats.totalClasses}</div>
-              <p className="text-xs text-muted-foreground">
-                {schoolStats.totalStudents} alunos total
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <UserCheck className="h-8 w-8 text-purple-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Professores</p>
+                <p className="text-2xl font-bold text-gray-900">{(schoolStats as any)?.totalTeachers || 0}</p>
+              </div>
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aprovações Pendentes</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{schoolStats.pendingApprovals}</div>
-              <p className="text-xs text-muted-foreground">
-                Aguardando revisão
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Uso de Tokens IA</CardTitle>
-              <Monitor className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{(schoolStats.monthlyTokenUsage / 1000).toFixed(1)}K</div>
-              <Progress value={tokenUsagePercentage} className="mt-2" />
-              <p className="text-xs text-muted-foreground mt-1">
-                {tokenUsagePercentage.toFixed(1)}% do limite mensal
-              </p>
-            </CardContent>
-          </Card>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <GraduationCap className="h-8 w-8 text-indigo-600" />
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-500">Estudantes</p>
+                <p className="text-2xl font-bold text-gray-900">{(schoolStats as any)?.totalStudents || 0}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Main Dashboard Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="classes">Turmas</TabsTrigger>
-            <TabsTrigger value="approvals">Aprovações</TabsTrigger>
-            <TabsTrigger value="invitations">Convites</TabsTrigger>
-            <TabsTrigger value="reports">Relatórios</TabsTrigger>
-            <TabsTrigger value="config">Configurações</TabsTrigger>
-          </TabsList>
+        {/* Navigation Tabs */}
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              {[
+                { id: "overview", label: "Visão Geral", icon: ClipboardList },
+                { id: "classes", label: "Turmas", icon: School },
+                { id: "approvals", label: "Aprovações", icon: UserCheck },
+                { id: "invitations", label: "Convites", icon: Users },
+                { id: "reports", label: "Relatórios", icon: FileText },
+                { id: "settings", label: "Configurações", icon: Settings }
+              ].map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`${
+                      activeTab === tab.id
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <span>Atividades Recentes</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+          {/* Tab Content */}
+          <div className="p-6">
+            {activeTab === "overview" && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Resumo da Escola</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900">Uso de Tokens IA</h3>
+                    <div className="mt-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Usado este mês</span>
+                        <span>{(schoolStats as any)?.monthlyTokenUsage || 0} / {(schoolStats as any)?.tokenLimit || 0}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full" 
+                          style={{ 
+                            width: `${(((schoolStats as any)?.monthlyTokenUsage || 0) / ((schoolStats as any)?.tokenLimit || 1)) * 100}%` 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900">Aprovações Pendentes</h3>
+                    <p className="text-2xl font-bold text-orange-600 mt-2">
+                      {(schoolStats as any)?.pendingApprovals || 0}
+                    </p>
+                    <p className="text-sm text-gray-500">Aguardando sua aprovação</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "classes" && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Turmas da Escola</h2>
+                {classesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  </div>
+                ) : (
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-green-100 p-2 rounded-full">
-                        <UserCheck className="h-4 w-4 text-green-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Professor aprovado</p>
-                        <p className="text-xs text-gray-500">Prof. Maria Silva - 5º Ano A</p>
-                      </div>
-                      <span className="text-xs text-gray-400">2h atrás</span>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-blue-100 p-2 rounded-full">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Convite enviado</p>
-                        <p className="text-xs text-gray-500">prof.joao@escola.com - 3º Ano B</p>
-                      </div>
-                      <span className="text-xs text-gray-400">4h atrás</span>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-purple-100 p-2 rounded-full">
-                        <FileText className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">Relatório gerado</p>
-                        <p className="text-xs text-gray-500">Uso de IA - Dezembro 2025</p>
-                      </div>
-                      <span className="text-xs text-gray-400">1d atrás</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Target className="h-5 w-5" />
-                    <span>Ações Rápidas</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button 
-                      className="h-20 flex-col space-y-2"
-                      variant="outline"
-                      onClick={() => setActiveTab("invitations")}
-                    >
-                      <Mail className="h-6 w-6" />
-                      <span className="text-sm">Enviar Convite</span>
-                    </Button>
-                    
-                    <Button 
-                      className="h-20 flex-col space-y-2"
-                      variant="outline"
-                      onClick={() => setActiveTab("classes")}
-                    >
-                      <Plus className="h-6 w-6" />
-                      <span className="text-sm">Nova Turma</span>
-                    </Button>
-                    
-                    <Button 
-                      className="h-20 flex-col space-y-2"
-                      variant="outline"
-                      onClick={() => setActiveTab("approvals")}
-                    >
-                      <UserCheck className="h-6 w-6" />
-                      <span className="text-sm">Aprovações</span>
-                    </Button>
-                    
-                    <Button 
-                      className="h-20 flex-col space-y-2"
-                      variant="outline"
-                      onClick={() => setActiveTab("reports")}
-                    >
-                      <BarChart3 className="h-6 w-6" />
-                      <span className="text-sm">Relatórios</span>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="classes" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Gestão de Turmas</h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Turma
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {schoolClasses.map((schoolClass) => (
-                <Card key={schoolClass.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span>{schoolClass.className}</span>
-                      <Badge variant={schoolClass.isActive ? "default" : "secondary"}>
-                        {schoolClass.isActive ? "Ativa" : "Inativa"}
-                      </Badge>
-                    </CardTitle>
-                    <CardDescription>
-                      {schoolClass.grade}º Ano - Turma {schoolClass.section}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between text-sm">
-                        <span>Alunos:</span>
-                        <span>{schoolClass.currentStudents}/{schoolClass.maxStudents}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Licenças:</span>
-                        <span>{schoolClass.usedLicenses}/{schoolClass.allocatedLicenses}</span>
-                      </div>
-                      <Progress 
-                        value={(schoolClass.usedLicenses / schoolClass.allocatedLicenses) * 100} 
-                        className="h-2"
-                      />
-                      {schoolClass.coordinatorName && (
-                        <p className="text-xs text-gray-500">
-                          Coordenador: {schoolClass.coordinatorName}
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="approvals" className="space-y-6">
-            <h2 className="text-xl font-semibold">Aprovações Pendentes</h2>
-            
-            <div className="space-y-4">
-              {pendingApprovals.map((approval) => (
-                <Card key={approval.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
-                          <AvatarFallback>
-                            {approval.userName.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-medium">{approval.userName}</h3>
-                          <p className="text-sm text-gray-500">{approval.userEmail}</p>
-                          <p className="text-xs text-gray-400">
-                            Solicitação: {approval.requestedRole} 
-                            {approval.className && ` - ${approval.className}`}
-                          </p>
-                          {approval.parentalConsent && (
-                            <div className="mt-2">
-                              <Badge variant="outline" className="text-xs">
-                                Menor de idade - Responsável: {approval.parentName}
-                              </Badge>
-                            </div>
-                          )}
+                    {Array.isArray(schoolClasses) && schoolClasses.map((cls: any) => (
+                      <div key={cls.id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-gray-900">{cls.className}</h3>
+                            <p className="text-sm text-gray-500">
+                              {cls.currentStudents}/{cls.maxStudents} alunos • 
+                              {cls.usedLicenses}/{cls.allocatedLicenses} licenças
+                            </p>
+                            <p className="text-sm text-gray-500">Coordenador: {cls.coordinatorName}</p>
+                          </div>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            cls.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                            {cls.isActive ? 'Ativa' : 'Inativa'}
+                          </span>
                         </div>
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-green-600 border-green-600 hover:bg-green-50"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Aprovar
-                        </Button>
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 border-red-600 hover:bg-red-50"
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Rejeitar
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="invitations" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Send Invitation Form */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Enviar Convite</CardTitle>
-                  <CardDescription>
-                    Convide professores ou coordenadores para sua escola
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" placeholder="professor@email.com" />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="role">Função</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a função" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="teacher">Professor</SelectItem>
-                        <SelectItem value="coordinator">Coordenador</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="class">Turma (Opcional)</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a turma" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {schoolClasses.map((cls) => (
-                          <SelectItem key={cls.id} value={cls.id.toString()}>
-                            {cls.className}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <Button className="w-full">
-                    <Send className="h-4 w-4 mr-2" />
-                    Enviar Convite
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Sent Invitations */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Convites Enviados</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {invitations.map((invitation) => (
-                      <div key={invitation.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <p className="font-medium text-sm">{invitation.email}</p>
-                          <p className="text-xs text-gray-500">
-                            {invitation.role} {invitation.className && `- ${invitation.className}`}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            Enviado em {new Date(invitation.sentAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <Badge 
-                          variant={
-                            invitation.status === 'accepted' ? 'default' :
-                            invitation.status === 'pending' ? 'secondary' : 'destructive'
-                          }
-                        >
-                          {invitation.status === 'accepted' ? 'Aceito' :
-                           invitation.status === 'pending' ? 'Pendente' : 'Expirado'}
-                        </Badge>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+                )}
+              </div>
+            )}
 
-          <TabsContent value="reports" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Relatórios Escolares</h2>
-              <Button>
-                <FileText className="h-4 w-4 mr-2" />
-                Gerar Relatório
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reports.map((report) => (
-                <Card key={report.id}>
-                  <CardHeader>
-                    <CardTitle className="text-base">{report.title}</CardTitle>
-                    <CardDescription>{report.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Tipo:</span>
-                        <Badge variant="outline">{report.reportType}</Badge>
+            {activeTab === "approvals" && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Aprovações Pendentes</h2>
+                {approvalsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {Array.isArray(pendingApprovals) && pendingApprovals.map((approval: any) => (
+                      <div key={approval.id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-gray-900">{approval.userName}</h3>
+                            <p className="text-sm text-gray-500">{approval.userEmail}</p>
+                            <p className="text-sm text-gray-500">
+                              Função solicitada: {approval.requestedRole}
+                              {approval.className && ` • Turma: ${approval.className}`}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Solicitado em: {new Date(approval.requestedAt).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                            >
+                              Aprovar
+                            </button>
+                            <button
+                              className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                            >
+                              Rejeitar
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Período:</span>
-                        <span>{new Date(report.periodStart).toLocaleDateString()} - {new Date(report.periodEnd).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Criado:</span>
-                        <span>{new Date(report.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <Button className="w-full mt-4" variant="outline">
-                      <Download className="h-4 w-4 mr-2" />
-                      Baixar
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-          <TabsContent value="config" className="space-y-6">
-            <h2 className="text-xl font-semibold">Configurações da Escola</h2>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Limites de IA</CardTitle>
-                  <CardDescription>
-                    Configure os limites de uso de IA por faixa etária
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label>1º ao 3º Ano (6-8 anos)</Label>
-                    <Input type="number" placeholder="10" />
-                    <p className="text-xs text-gray-500 mt-1">Conversas por dia</p>
+            {activeTab === "invitations" && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Convites Enviados</h2>
+                {invitationsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                   </div>
-                  
-                  <div>
-                    <Label>4º ao 6º Ano (9-11 anos)</Label>
-                    <Input type="number" placeholder="20" />
-                    <p className="text-xs text-gray-500 mt-1">Conversas por dia</p>
+                ) : (
+                  <div className="space-y-4">
+                    {Array.isArray(schoolInvitations) && schoolInvitations.map((invitation: any) => (
+                      <div key={invitation.id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-gray-900">{invitation.email}</h3>
+                            <p className="text-sm text-gray-500">
+                              Função: {invitation.role}
+                              {invitation.className && ` • Turma: ${invitation.className}`}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              Enviado em: {new Date(invitation.sentAt).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            invitation.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            invitation.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {invitation.status === 'pending' ? 'Pendente' :
+                             invitation.status === 'accepted' ? 'Aceito' : 'Rejeitado'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  
-                  <div>
-                    <Label>7º ao 9º Ano (12-14 anos)</Label>
-                    <Input type="number" placeholder="30" />
-                    <p className="text-xs text-gray-500 mt-1">Conversas por dia</p>
-                  </div>
-                  
-                  <Button className="w-full">Salvar Configurações</Button>
-                </CardContent>
-              </Card>
+                )}
+              </div>
+            )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Segurança e Monitoramento</CardTitle>
-                  <CardDescription>
-                    Configure alertas e monitoramento
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Alertas de uso excessivo</Label>
-                    <input type="checkbox" className="h-4 w-4" defaultChecked />
+            {activeTab === "reports" && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Relatórios Gerados</h2>
+                {reportsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label>Filtro de conteúdo</Label>
-                    <input type="checkbox" className="h-4 w-4" defaultChecked />
+                ) : (
+                  <div className="space-y-4">
+                    {Array.isArray(schoolReports) && schoolReports.map((report: any) => (
+                      <div key={report.id} className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-medium text-gray-900">{report.title}</h3>
+                            <p className="text-sm text-gray-500">{report.description}</p>
+                            <p className="text-xs text-gray-400">
+                              Gerado em: {new Date(report.createdAt).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            report.reportType === 'usage' ? 'bg-blue-100 text-blue-800' :
+                            report.reportType === 'pedagogical' ? 'bg-green-100 text-green-800' :
+                            'bg-purple-100 text-purple-800'
+                          }`}>
+                            {report.reportType === 'usage' ? 'Uso' :
+                             report.reportType === 'pedagogical' ? 'Pedagógico' : 'Conformidade'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label>Log de conversas</Label>
-                    <input type="checkbox" className="h-4 w-4" defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <Label>Notificações para pais</Label>
-                    <input type="checkbox" className="h-4 w-4" />
-                  </div>
-                  
-                  <Button className="w-full">Salvar Configurações</Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+                )}
+              </div>
+            )}
+
+            {activeTab === "settings" && (
+              <div>
+                <h2 className="text-lg font-semibold mb-4">Configurações da Escola</h2>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-600">
+                    Configurações de limites de IA, filtros de conteúdo e notificações para pais.
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Em desenvolvimento...
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

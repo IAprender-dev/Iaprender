@@ -57,6 +57,7 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import * as adminRoutes from "./routes/admin-routes";
 import { registerMunicipalRoutes } from "./routes/municipal-routes";
+import { registerSchoolRoutes } from "./routes/school-routes";
 
 
 // Define login schema
@@ -2680,6 +2681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
+  registerSchoolRoutes(app);
 
   // ============= GESTÃO DE USUÁRIOS COGNITO =============
 
@@ -2998,6 +3000,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Erro ao buscar contratos ativos' });
     }
   });
+
+  // Register school routes
+
 
   // Create and return HTTP server
   const httpServer = createServer(app);
