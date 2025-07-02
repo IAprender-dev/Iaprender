@@ -244,7 +244,13 @@ export default function AdminMasterDashboard() {
                       <Link href="/admin/cognito-users">
                         <Button className="w-full justify-start bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white">
                           <Shield className="h-4 w-4 mr-2" />
-                          AWS Cognito Users
+                          Gestão de Usuários Cognito
+                        </Button>
+                      </Link>
+                      <Link href="/admin/aws-permissions">
+                        <Button className="w-full justify-start bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-700 hover:to-orange-600 text-white">
+                          <Settings className="h-4 w-4 mr-2" />
+                          Configurar Permissões AWS
                         </Button>
                       </Link>
                       <Button onClick={() => setActiveTab("contracts")} variant="outline" className="w-full justify-start border-slate-200 hover:bg-slate-50">

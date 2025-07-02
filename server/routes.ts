@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
 import { cognitoService } from "./utils/cognito-service";
+import { awsIAMService } from "./services/aws-iam-service";
 import { 
   insertUserSchema, 
   insertCourseSchema, 
@@ -3638,6 +3639,106 @@ Estrutura JSON obrigatória:
       res.status(500).json({ 
         error: 'Erro ao listar grupos do Cognito',
         details: error.message 
+      });
+    }
+  });
+
+  // FASE 2.1: ROTAS DE DIAGNÓSTICO E CONFIGURAÇÃO DE PERMISSÕES AWS
+  
+  // Diagnóstico completo de permissões AWS IAM
+  app.get('/api/admin/aws/permissions/diagnose', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('🔍 Iniciando diagnóstico de permissões AWS...');
+      
+      const diagnostic = await awsIAMService.diagnoseCognitoPermissions();
+      
+      return res.json({
+        success: true,
+        diagnostic,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erro no diagnóstico de permissões:', error);
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao diagnosticar permissões AWS',
+        details: error.message
+      });
+    }
+  });
+
+  // Verificar permissões específicas
+  app.get('/api/admin/aws/permissions/verify', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('✅ Verificando permissões AWS...');
+      
+      const isValid = await awsIAMService.verifyPermissions();
+      
+      return res.json({
+        success: true,
+        permissionsValid: isValid,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erro na verificação de permissões:', error);
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao verificar permissões AWS',
+        details: error.message
+      });
+    }
+  });
+
+  // Gerar instruções manuais para configuração
+  app.get('/api/admin/aws/permissions/instructions', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('📋 Gerando instruções de configuração...');
+      
+      const instructions = awsIAMService.generateManualInstructions();
+      
+      return res.json({
+        success: true,
+        instructions,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erro ao gerar instruções:', error);
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao gerar instruções',
+        details: error.message
+      });
+    }
+  });
+
+  // Tentar criar política automaticamente (requer permissões administrativas)
+  app.post('/api/admin/aws/permissions/create-policy', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('🔧 Tentando criar política AWS automaticamente...');
+      
+      const { policyName } = req.body;
+      const policyArn = await awsIAMService.createCognitoPolicy(policyName);
+      
+      return res.json({
+        success: true,
+        policyArn,
+        message: 'Política criada com sucesso'
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erro ao criar política:', error);
+      
+      return res.status(500).json({
+        success: false,
+        error: 'Erro ao criar política AWS',
+        details: error.message,
+        requiresManualSetup: true
       });
     }
   });

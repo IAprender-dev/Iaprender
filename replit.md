@@ -130,6 +130,18 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Corrected all cognito-service module import paths from dynamic to static imports
   - Fixed module resolution errors throughout the backend routes system
   - Enhanced user experience by allowing manual navigation to auth page without forced redirects
+- July 2, 2025: AWS Cognito Permissions System - Phase 2.1 Complete (Advanced Diagnostics & Configuration)
+  - ✅ Created comprehensive AWS IAM Service with automatic permission diagnostics and policy generation
+  - ✅ Implemented 4 new admin API endpoints for AWS permissions management (/api/admin/aws/permissions/*)
+  - ✅ Built advanced AWSPermissionsManager.tsx interface with real-time diagnostics and 3-tab layout
+  - ✅ Added automatic AWS user identification (arn:aws:iam::762723916379:user/UsuarioBedrock)
+  - ✅ Integrated permission verification system with visual progress tracking
+  - ✅ Generated automatic IAM policy JSON with 16 specific Cognito permissions
+  - ✅ Created manual configuration instructions with AWS Console integration
+  - ✅ Added "Configurar Permissões AWS" button to admin dashboard with /admin/aws-permissions route
+  - ✅ System provides copy-to-clipboard functionality for policies and URLs
+  - ✅ Real-time verification system confirms when permissions are properly configured
+  - 🔄 Next Phase 2.2: Apply generated policy in AWS Console to enable user creation functionality
 - July 2, 2025: AWS Cognito User Registration System - Phase 1.3 Complete (Administrative Interface Ready)
   - ✅ Extended users table with AWS Cognito integration fields: cognito_user_id, cognito_group, cognito_status
   - ✅ Created cognito_group enum with hierarchical structure: Admin, Gestores, Diretores, Professores, Alunos
@@ -138,7 +150,6 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Created comprehensive CognitoUserManagement.tsx administrative interface for user registration
   - ✅ Fixed all import path issues and module resolution errors
   - ✅ System ready for user creation once AWS permissions are configured
-  - 🔄 Next Phase 2: AWS IAM permissions configuration required for actual user creation in Cognito
   - Updated COGNITO_GRUPOS_SETUP.md with comprehensive configuration guide and permission requirements
 - July 2, 2025: Fixed Lesson Planning Document Generation System
   - Added missing `/api/analyze-tema` endpoint for automatic theme analysis using Anthropic Claude
