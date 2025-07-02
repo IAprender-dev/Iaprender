@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db } from "./db";
+import { cognitoService } from "./utils/cognito-service";
 import { 
   insertUserSchema, 
   insertCourseSchema, 
@@ -188,6 +189,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/notifications', notificationRoutes.default);
 
   // AUTH ROUTES
+  // Login
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, password, username } = req.body;
+      
+      // Support both email and username login
+      const identifier = email || username;
+      if (!identifier || !password) {
+        return res.status(400).json({ message: "Email/username and password are required" });
+      }
+
+      // Find user by email or username
+      let user;
+      if (identifier.includes('@')) {
+        user = await db.select().from(users).where(eq(users.email, identifier)).limit(1);
+      } else {
+        user = await db.select().from(users).where(eq(users.username, identifier)).limit(1);
+      }
+
+      if (user.length === 0) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const foundUser = user[0];
+
+      // Check password
+      const isValidPassword = await bcrypt.compare(password, foundUser.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Check if user is active
+      if (foundUser.status !== 'active') {
+        return res.status(401).json({ message: "Account is not active" });
+      }
+
+      // Create session
+      req.session.user = {
+        id: foundUser.id,
+        firstName: foundUser.firstName,
+        lastName: foundUser.lastName,
+        email: foundUser.email,
+        role: foundUser.role,
+        username: foundUser.username
+      };
+
+      // Update last login
+      await db.update(users)
+        .set({ lastLoginAt: new Date() })
+        .where(eq(users.id, foundUser.id));
+
+      // Return user data (without password)
+      const { password: userPassword, ...userWithoutPassword } = foundUser;
+      res.json({
+        success: true,
+        user: userWithoutPassword,
+        message: "Login successful"
+      });
+
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get current user
+  app.get("/api/auth/me", authenticate, (req, res) => {
+    res.json({ user: req.session.user });
+  });
+
+  // Logout
+  app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
   // Register
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -3467,7 +3549,6 @@ Estrutura JSON obrigatória:
   // Verificar status dos grupos necessários no Cognito
   app.get('/api/admin/cognito/groups/status', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { cognitoService } = await import('../utils/cognito-service');
       
       if (!cognitoService.isConfigured()) {
         return res.status(400).json({
@@ -3501,7 +3582,6 @@ Estrutura JSON obrigatória:
   // Criar grupos necessários no Cognito
   app.post('/api/admin/cognito/groups/create', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { cognitoService } = await import('../utils/cognito-service');
       
       if (!cognitoService.isConfigured()) {
         return res.status(400).json({
@@ -3539,7 +3619,6 @@ Estrutura JSON obrigatória:
   // Listar todos os grupos existentes no Cognito
   app.get('/api/admin/cognito/groups', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { cognitoService } = await import('../utils/cognito-service');
       
       if (!cognitoService.isConfigured()) {
         return res.status(400).json({
