@@ -3645,6 +3645,31 @@ Estrutura JSON obrigatória:
 
   // FASE 2.1: ROTAS DE DIAGNÓSTICO E CONFIGURAÇÃO DE PERMISSÕES AWS
   
+  // Inspecionar configuração do ambiente AWS
+  app.get('/api/admin/aws/environment/inspect', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('🔍 Inspecionando configuração do ambiente AWS...');
+      
+      const { EnvironmentInspector } = await import('./utils/environment-inspector');
+      
+      const report = EnvironmentInspector.generateEnvironmentReport();
+      
+      res.json({
+        success: true,
+        environment: report,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Erro na inspeção do ambiente:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao inspecionar ambiente AWS',
+        details: error.message
+      });
+    }
+  });
+  
   // Diagnóstico completo de permissões AWS IAM
   app.get('/api/admin/aws/permissions/diagnose', authenticateAdmin, async (req: Request, res: Response) => {
     try {
