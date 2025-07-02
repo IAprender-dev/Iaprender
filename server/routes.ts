@@ -3645,26 +3645,68 @@ Estrutura JSON obrigatória:
 
   // FASE 2.1: ROTAS DE DIAGNÓSTICO E CONFIGURAÇÃO DE PERMISSÕES AWS
   
-  // Inspecionar configuração do ambiente AWS
-  app.get('/api/admin/aws/environment/inspect', authenticateAdmin, async (req: Request, res: Response) => {
+  // Teste simples de API sem autenticação
+  app.get('/api/test/simple', async (req: Request, res: Response) => {
+    res.json({
+      success: true,
+      message: 'API funcionando',
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  // API Secrets Manager - Obter configuração AWS Cognito dos secrets
+  app.get('/api/admin/secrets/cognito-config', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      console.log('🔍 Inspecionando configuração do ambiente AWS...');
+      console.log('🔐 Acessando configuração Cognito dos secrets...');
       
-      const { EnvironmentInspector } = await import('./utils/environment-inspector');
+      const { SecretsManager } = await import('./services/secrets-manager');
+      const secretsManager = SecretsManager.getInstance();
       
-      const report = EnvironmentInspector.generateEnvironmentReport();
+      const cognitoConfig = await secretsManager.getCognitoSecrets();
+      const awsCredentials = await secretsManager.getAWSCredentials();
+      const comparison = await secretsManager.compareWithSecrets();
       
       res.json({
         success: true,
-        environment: report,
+        configuration: {
+          cognito: cognitoConfig,
+          aws: awsCredentials,
+          comparison
+        },
         timestamp: new Date().toISOString()
       });
       
     } catch (error: any) {
-      console.error('❌ Erro na inspeção do ambiente:', error);
+      console.error('❌ Erro ao acessar secrets:', error);
       res.status(500).json({
         success: false,
-        error: 'Erro ao inspecionar ambiente AWS',
+        error: 'Erro ao acessar configuração dos secrets',
+        details: error.message
+      });
+    }
+  });
+
+  // Comparar configuração atual com secrets
+  app.get('/api/admin/secrets/compare', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('🔍 Comparando configuração atual com secrets...');
+      
+      const { SecretsManager } = await import('./services/secrets-manager');
+      const secretsManager = SecretsManager.getInstance();
+      
+      const comparison = await secretsManager.compareWithSecrets();
+      
+      res.json({
+        success: true,
+        comparison,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Erro na comparação:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro ao comparar configurações',
         details: error.message
       });
     }
