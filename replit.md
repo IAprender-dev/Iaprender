@@ -123,6 +123,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 2, 2025: AWS Cognito Group-Based Role Authentication and URL Redirection System
+  - Enhanced CognitoService with comprehensive group-to-role mapping for 4 user types
+  - Implemented automatic URL redirection based on AWS Cognito group membership
+  - Created mapping system: GestorMunicipal → /municipal/dashboard, Diretor → /school/dashboard, Professor → /professor, Aluno → /student/dashboard
+  - Updated callback route to use processUserAuthentication() method with detailed logging
+  - Added support for multiple group name variations (Admin/AdminMaster, Professor/Professores/Teachers, etc.)
+  - Connected existing dashboard pages to authentication system with proper routing
+  - Created comprehensive setup guide (COGNITO_GRUPOS_SETUP.md) for AWS Console configuration
+  - System automatically creates users with correct roles based on Cognito group membership
+  - Enhanced debugging with detailed console logs showing group analysis and redirection flow
 - July 2, 2025: Complete LiteLLM Management Dashboard with Real Data Integration
   - Created comprehensive LiteLLM administration interface at /admin/ai/litellm-management
   - Implemented 5-tab dashboard: Overview, Models, API Keys, Analytics, Settings

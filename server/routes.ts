@@ -609,34 +609,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Decodificar informações do usuário
       const userInfo = cognitoService.decodeIdToken(tokens.id_token);
-      console.log('Informações do usuário:', userInfo);
+      console.log('🔍 Informações do usuário do Cognito:', {
+        email: userInfo.email,
+        name: userInfo.name,
+        groups: userInfo['cognito:groups']
+      });
 
-      // Determinar role baseado nos grupos
-      const userRole = cognitoService.getUserRoleFromGroups(userInfo['cognito:groups']);
-      console.log('Role determinado:', userRole);
-
+      // Processar autenticação com sistema aprimorado
+      const authData = cognitoService.processUserAuthentication(userInfo);
+      
       // Verificar se usuário já existe na base
       let user = await storage.getUserByEmail(userInfo.email);
       
       if (!user) {
-        // Criar novo usuário
+        // Criar novo usuário com role baseado nos grupos do Cognito
         const newUser = {
           firstName: userInfo.given_name || userInfo.name?.split(' ')[0] || 'Usuário',
           lastName: userInfo.family_name || userInfo.name?.split(' ').slice(1).join(' ') || '',
           email: userInfo.email,
           username: userInfo.email.split('@')[0],
           password: 'cognito_auth', // Placeholder para autenticação externa
-          role: userRole,
+          role: authData.role,
           isActive: true
         };
         
         user = await storage.createUser(newUser);
-        console.log('Novo usuário criado:', user.id);
+        console.log('✅ Novo usuário criado:', {
+          id: user.id,
+          email: user.email,
+          role: user.role
+        });
       } else {
-        // Atualizar role se necessário
-        if (user.role !== userRole) {
-          console.log(`Atualizando role de ${user.role} para ${userRole}`);
-          // Aqui você pode implementar lógica para atualizar o role se necessário
+        // Atualizar role se necessário (quando grupos do Cognito mudaram)
+        if (user.role !== authData.role) {
+          console.log(`🔄 Atualizando role de ${user.role} para ${authData.role}`);
+          // Implementar lógica de atualização se necessário
+          user.role = authData.role;
         }
       }
 
@@ -644,21 +652,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...userWithoutPassword } = user;
       req.session.user = userWithoutPassword;
 
-      console.log('Usuário logado:', req.session.user);
+      console.log('✅ Usuário autenticado:', {
+        id: req.session.user.id,
+        email: req.session.user.email,
+        role: req.session.user.role,
+        groups: authData.groups
+      });
 
-      // Redirecionar baseado no tipo de usuário
-      const redirectPaths = {
-        admin: '/admin/master',
-        municipal_manager: '/municipal',
-        school_director: '/school',
-        teacher: '/professor',
-        student: '/student/dashboard'
-      };
-
-      const redirectPath = redirectPaths[userRole as keyof typeof redirectPaths] || '/student/dashboard';
-      
-      console.log('Redirecionando para:', redirectPath);
-      res.redirect(redirectPath);
+      // Usar sistema de redirecionamento aprimorado
+      console.log(`🚀 Redirecionando para: ${authData.redirectUrl}`);
+      res.redirect(authData.redirectUrl);
 
     } catch (error) {
       console.error('Erro no callback do Cognito:', error);

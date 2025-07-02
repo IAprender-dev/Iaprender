@@ -140,20 +140,74 @@ export class CognitoService {
    * Determina o tipo de usuário baseado nos grupos do Cognito
    */
   getUserRoleFromGroups(groups: string[] = []): 'admin' | 'teacher' | 'student' | 'municipal_manager' | 'school_director' {
-    if (groups.includes('Administrador') || groups.includes('AdminMaster')) {
+    console.log('🔍 Analisando grupos do Cognito:', groups);
+    
+    // Prioridade para administradores
+    if (groups.includes('Administrador') || groups.includes('AdminMaster') || groups.includes('Admin')) {
+      console.log('✅ Usuário identificado como: ADMIN');
       return 'admin';
     }
-    if (groups.includes('SecretariaAdm') || groups.includes('MunicipalManager')) {
+    
+    // Gestores Municipais (Secretários de Educação)
+    if (groups.includes('GestorMunicipal') || groups.includes('SecretariaAdm') || groups.includes('MunicipalManager')) {
+      console.log('✅ Usuário identificado como: GESTOR MUNICIPAL');
       return 'municipal_manager';
     }
-    if (groups.includes('EscolaAdm') || groups.includes('SchoolDirector')) {
+    
+    // Diretores de Escola
+    if (groups.includes('Diretor') || groups.includes('EscolaAdm') || groups.includes('SchoolDirector')) {
+      console.log('✅ Usuário identificado como: DIRETOR');
       return 'school_director';
     }
-    if (groups.includes('Professores') || groups.includes('Teachers')) {
+    
+    // Professores
+    if (groups.includes('Professor') || groups.includes('Professores') || groups.includes('Teachers')) {
+      console.log('✅ Usuário identificado como: PROFESSOR');
       return 'teacher';
     }
     
-    return 'student'; // Padrão
+    // Alunos (padrão)
+    console.log('✅ Usuário identificado como: ALUNO (padrão)');
+    return 'student';
+  }
+
+  /**
+   * Mapeia role para URL de dashboard específica baseado nas páginas existentes
+   */
+  getRoleRedirectUrl(role: 'admin' | 'teacher' | 'student' | 'municipal_manager' | 'school_director'): string {
+    const urlMap = {
+      admin: '/admin/master',
+      municipal_manager: '/municipal/dashboard', 
+      school_director: '/school/dashboard',
+      teacher: '/professor',
+      student: '/student/dashboard'
+    };
+
+    const redirectUrl = urlMap[role];
+    console.log(`🎯 Redirecionamento definido: ${role} → ${redirectUrl}`);
+    return redirectUrl;
+  }
+
+  /**
+   * Processa grupos do Cognito e retorna dados completos para redirecionamento
+   */
+  processUserAuthentication(userInfo: CognitoUserInfo) {
+    const groups = userInfo['cognito:groups'] || [];
+    const role = this.getUserRoleFromGroups(groups);
+    const redirectUrl = this.getRoleRedirectUrl(role);
+
+    console.log('📋 Processamento de autenticação:');
+    console.log(`   Email: ${userInfo.email}`);
+    console.log(`   Grupos: ${groups.join(', ') || 'Nenhum'}`);
+    console.log(`   Role: ${role}`);
+    console.log(`   Redirect: ${redirectUrl}`);
+
+    return {
+      userInfo,
+      role,
+      redirectUrl,
+      groups
+    };
   }
 
   /**
