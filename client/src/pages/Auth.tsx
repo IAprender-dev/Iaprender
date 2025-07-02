@@ -181,6 +181,12 @@ export default function Auth() {
 
           {/* Right Side - Enhanced Form */}
           <div className="flex-1 flex items-center justify-center p-8 lg:p-12 relative">
+            {/* Botão Voltar ao Site */}
+            <Link href="/" className="absolute top-4 right-4 flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-blue-600 transition-colors duration-200 bg-white/80 backdrop-blur-sm rounded-lg border border-slate-200 hover:border-blue-300">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="font-medium">Voltar ao Site</span>
+            </Link>
+            
             <div className="w-full max-w-lg space-y-8">
               {/* Mobile Logo */}
               <div className="lg:hidden text-center space-y-6">

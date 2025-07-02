@@ -430,14 +430,12 @@ export class CognitoService {
     } catch (error: any) {
       console.error('❌ Erro ao criar usuário no Cognito:', error);
       
-      // Se erro de permissões, criar um fallback simulado
+      // Se erro de permissões, retornar erro específico
       if (error.code === 'AccessDeniedException') {
-        console.log('⚠️ Permissões limitadas AWS - simulando criação bem-sucedida');
-        const fallbackPassword = this.generateTempPassword();
+        console.log('❌ Permissões AWS insuficientes para criar usuário no Cognito');
         return {
-          success: true,
-          userId: `sim_${Date.now()}`,
-          tempPassword: fallbackPassword
+          success: false,
+          error: 'Permissões AWS insuficientes. Configure as permissões corretas para cognito-idp:AdminCreateUser, cognito-idp:AdminAddUserToGroup e cognito-idp:AdminSetUserPassword.'
         };
       }
       
