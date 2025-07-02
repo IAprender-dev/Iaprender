@@ -123,6 +123,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Load balancing for AI API requests
 
 ## Recent Changes
+- July 2, 2025: Fixed Authentication Page Auto-Redirect Issue and Import Path Corrections
+  - Resolved Auth.tsx automatic redirection problem that sent users back to home page
+  - Modified useEffect to only redirect users who just completed login (via query parameter)
+  - Added informative message when already logged users access auth page directly
+  - Corrected all cognito-service module import paths from dynamic to static imports
+  - Fixed module resolution errors throughout the backend routes system
+  - Enhanced user experience by allowing manual navigation to auth page without forced redirects
 - July 2, 2025: AWS Cognito User Registration System - Database and Groups Setup (Phase 1 Complete)
   - Extended users table with AWS Cognito integration fields: cognito_user_id, cognito_group, cognito_status
   - Created cognito_group enum with hierarchical structure: Admin, Gestores, Diretores, Professores, Alunos

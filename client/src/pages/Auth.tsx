@@ -47,7 +47,11 @@ export default function Auth() {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    // Só redireciona se o usuário acabou de fazer login (via query param)
+    const params = new URLSearchParams(window.location.search);
+    const justLoggedIn = params.get("login") === "success";
+    
+    if (user && justLoggedIn) {
       if (user.role === "admin") {
         navigate("/admin/master");
       } else if (user.role === "municipal_manager") {
@@ -210,6 +214,17 @@ export default function Auth() {
                     ? "Acesse sua conta e explore o universo da IA educacional" 
                     : "Crie sua conta e revolucione sua metodologia de ensino"}
                 </p>
+                
+                {user && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800">
+                    <p className="font-medium">
+                      Você já está logado como {user.firstName} {user.lastName} ({user.role})
+                    </p>
+                    <p className="text-sm text-blue-600 mt-1">
+                      Deseja fazer login com uma conta diferente? Use o formulário abaixo.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Enhanced Form */}
