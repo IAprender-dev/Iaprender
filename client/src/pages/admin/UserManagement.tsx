@@ -340,10 +340,15 @@ export default function UserManagement() {
                                   {contractsData?.contracts ? 
                                     contractsData.contracts.map((contract: Contract) => (
                                       <SelectItem key={contract.id} value={contract.id.toString()}>
-                                        {contract.name} ({contract.status})
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">{contract.name}</span>
+                                          <span className="text-sm text-gray-500">
+                                            ID: {contract.id} • Status: {contract.status}
+                                          </span>
+                                        </div>
                                       </SelectItem>
                                     )) : 
-                                    <SelectItem value="" disabled>Carregando contratos...</SelectItem>
+                                    <SelectItem value="" disabled>Carregando contratos ativos...</SelectItem>
                                   }
                                 </SelectContent>
                               </Select>
@@ -353,17 +358,32 @@ export default function UserManagement() {
                         />
                       )}
 
-                      {/* Informações do contrato selecionado */}
-                      {selectedCompany && contractsData?.contracts && contractsData.contracts.length > 0 && (
-                        <Alert className="border-blue-200 bg-blue-50">
-                          <AlertTriangle className="h-4 w-4 text-blue-600" />
-                          <AlertDescription className="text-blue-700">
-                            <strong>Informações da Empresa:</strong><br />
-                            Empresa: {companiesData?.companies ? 
+                      {/* Informações dos contratos ativos selecionados */}
+                      {selectedCompany && contractsData?.contracts && (
+                        <Alert className={contractsData.contracts.length > 0 ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50"}>
+                          <AlertTriangle className={`h-4 w-4 ${contractsData.contracts.length > 0 ? "text-green-600" : "text-yellow-600"}`} />
+                          <AlertDescription className={contractsData.contracts.length > 0 ? "text-green-700" : "text-yellow-700"}>
+                            <strong>Empresa Selecionada:</strong><br />
+                            {companiesData?.companies ? 
                               companiesData.companies.find((c: Company) => c.id.toString() === selectedCompany)?.name : 
                               'Carregando...'
                             }<br />
-                            Contratos disponíveis: {contractsData.contracts.length}
+                            <strong>Contratos ATIVOS disponíveis:</strong> {contractsData.contracts.length}
+                            {contractsData.contracts.length === 0 && (
+                              <><br /><span className="text-yellow-800 font-medium">⚠️ Nenhum contrato ativo encontrado para esta empresa</span></>
+                            )}
+                            {contractsData.contracts.length > 0 && (
+                              <><br /><div className="text-sm mt-2">
+                                <strong>Contratos disponíveis:</strong>
+                                <ul className="list-disc ml-4 mt-1">
+                                  {contractsData.contracts.map((contract: Contract) => (
+                                    <li key={contract.id} className="text-green-600">
+                                      <strong>{contract.name}</strong> (ID: {contract.id}) - Status: ATIVO
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div></>
+                            )}
                           </AlertDescription>
                         </Alert>
                       )}

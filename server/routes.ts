@@ -2782,15 +2782,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Buscar contratos de uma empresa
+  // Buscar contratos ATIVOS de uma empresa
   app.get('/api/admin/companies/:companyId/contracts', authenticateAdmin, async (req: Request, res: Response) => {
     try {
       const { companyId } = req.params;
-      const contractsData = await db.select().from(contracts).where(eq(contracts.companyId, parseInt(companyId)));
+      const contractsData = await db.select().from(contracts)
+        .where(
+          and(
+            eq(contracts.companyId, parseInt(companyId)),
+            eq(contracts.status, 'active') // APENAS contratos ativos
+          )
+        );
+      
+      console.log(`📋 Contratos ativos encontrados para empresa ${companyId}:`, contractsData.length);
       res.json({ contracts: contractsData });
     } catch (error) {
-      console.error('❌ Erro ao buscar contratos da empresa:', error);
-      res.status(500).json({ error: 'Erro ao buscar contratos da empresa' });
+      console.error('❌ Erro ao buscar contratos ativos da empresa:', error);
+      res.status(500).json({ error: 'Erro ao buscar contratos ativos da empresa' });
+    }
+  });
+
+  // Buscar TODOS os contratos ATIVOS (para visão geral do admin)
+  app.get('/api/admin/contracts/active', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const contractsData = await db.select({
+        id: contracts.id,
+        name: contracts.name,
+        status: contracts.status,
+        companyId: contracts.companyId,
+        maxTeachers: contracts.maxTeachers,
+        maxStudents: contracts.maxStudents,
+        companyName: companies.name
+      })
+      .from(contracts)
+      .leftJoin(companies, eq(contracts.companyId, companies.id))
+      .where(eq(contracts.status, 'active'))
+      .orderBy(contracts.createdAt);
+      
+      console.log(`📋 Total de contratos ativos no sistema:`, contractsData.length);
+      res.json({ contracts: contractsData });
+    } catch (error) {
+      console.error('❌ Erro ao buscar todos os contratos ativos:', error);
+      res.status(500).json({ error: 'Erro ao buscar contratos ativos' });
     }
   });
 
