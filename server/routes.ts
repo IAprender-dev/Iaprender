@@ -3280,12 +3280,12 @@ Estrutura JSON obrigatória:
         });
       }
 
-      // Validar grupos permitidos
-      const allowedGroups = ['GestorMunicipal', 'Diretor', 'Professor', 'Aluno', 'Admin'];
-      if (!allowedGroups.includes(group)) {
+      // Validar grupos permitidos - buscar grupos reais do Cognito
+      const availableGroups = await cognitoService.listGroups();
+      if (!availableGroups.includes(group)) {
         return res.status(400).json({ 
           success: false, 
-          error: 'Grupo inválido. Grupos permitidos: ' + allowedGroups.join(', ') 
+          error: 'Grupo inválido. Grupos disponíveis: ' + availableGroups.join(', ') 
         });
       }
 

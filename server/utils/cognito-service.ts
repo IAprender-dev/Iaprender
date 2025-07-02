@@ -50,7 +50,8 @@ export class CognitoService {
     this.clientId = process.env.COGNITO_CLIENT_ID || '';
     this.clientSecret = process.env.COGNITO_CLIENT_SECRET || '';
     this.redirectUri = process.env.COGNITO_REDIRECT_URI || '';
-    this.userPoolId = process.env.COGNITO_USER_POOL_ID || '';
+    // Priorizar COGNITO_USER_POLL_ID (com dois L's) - User Pool correto
+    this.userPoolId = process.env.COGNITO_USER_POLL_ID || process.env.COGNITO_USER_POOL_ID || '';
     this.region = process.env.AWS_REGION || 'us-east-1';
     
     // Inicializar cliente AWS
@@ -366,6 +367,15 @@ export class CognitoService {
   }
 
   /**
+   * Gera username único baseado no email (não pode usar email diretamente devido ao email alias)
+   */
+  private generateUsername(email: string): string {
+    const localPart = email.split('@')[0];
+    const timestamp = Date.now().toString().slice(-6); // Últimos 6 dígitos do timestamp
+    return `${localPart}_${timestamp}`;
+  }
+
+  /**
    * Gera senha temporária segura
    */
   private generateTempPassword(): string {
@@ -401,10 +411,13 @@ export class CognitoService {
       const firstName = nameParts[0];
       const lastName = nameParts.slice(1).join(' ') || firstName;
 
+      // Gerar username único (não pode ser email devido ao email alias configurado)
+      const username = this.generateUsername(request.email);
+      
       // Criar usuário no Cognito
       const createParams = {
         UserPoolId: this.userPoolId,
-        Username: request.email,
+        Username: username,
         TemporaryPassword: tempPassword,
         MessageAction: 'SUPPRESS', // Não enviar email automático
         UserAttributes: [
@@ -432,7 +445,7 @@ export class CognitoService {
       // Adicionar usuário ao grupo
       const groupParams = {
         UserPoolId: this.userPoolId,
-        Username: request.email,
+        Username: username,
         GroupName: request.group
       };
 
@@ -442,7 +455,7 @@ export class CognitoService {
       // Definir senha como permanente (usuário pode alterá-la no primeiro login)
       const setPasswordParams = {
         UserPoolId: this.userPoolId,
-        Username: request.email,
+        Username: username,
         Password: tempPassword,
         Permanent: false // Força mudança no primeiro login
       };
