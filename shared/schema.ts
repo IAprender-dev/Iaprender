@@ -21,6 +21,7 @@ export const securityAlertTypeEnum = pgEnum('security_alert_type', ['suspicious_
 export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approved', 'rejected']);
 export const invitationStatusEnum = pgEnum('invitation_status', ['pending', 'accepted', 'expired']);
 export const reportTypeEnum = pgEnum('report_type', ['usage', 'pedagogical', 'compliance']);
+export const cognitoGroupEnum = pgEnum('cognito_group', ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos']);
 
 // Platform configurations
 export const platformConfigs = pgTable("platform_configs", {
@@ -95,6 +96,10 @@ export const users = pgTable("users", {
   parentEmail: text("parent_email"), // Email dos responsáveis  
   parentPhone: text("parent_phone"), // Telefone dos responsáveis
   isMinor: boolean("is_minor").default(true), // Se é menor de idade
+  // AWS Cognito integration fields
+  cognitoUserId: text("cognito_user_id").unique(), // UUID do usuário no Cognito
+  cognitoGroup: cognitoGroupEnum("cognito_group"), // Grupo do Cognito: Admin, Gestores, Diretores, Professores, Alunos
+  cognitoStatus: text("cognito_status"), // Status no Cognito: CONFIRMED, UNCONFIRMED, etc.
   createdAt: timestamp("created_at").defaultNow().notNull(),
   lastLoginAt: timestamp("last_login_at"),
 });
