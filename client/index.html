@@ -1,13 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="light" style="color-scheme: light;">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>IAprender - Plataforma de Educação com Inteligência Artificial</title>
     <meta name="description" content="IAprender - A plataforma educacional que revoluciona o aprendizado com Inteligência Artificial. Ferramentas inovadoras para professores e estudantes." />
     <link rel="icon" type="image/png" href="/src/assets/IAprender_1750262377399.png" />
+    <style>
+      /* Force light theme globally */
+      * {
+        color-scheme: light !important;
+      }
+      html, body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      .dark, [data-theme="dark"] {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+    </style>
+    <script>
+      // Force remove dark theme classes on load
+      document.addEventListener('DOMContentLoaded', function() {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        document.documentElement.setAttribute('data-theme', 'light');
+        
+        // Monitor for any dynamic dark theme additions
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+              if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+              }
+            }
+          });
+        });
+        
+        observer.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['class']
+        });
+      });
+    </script>
   </head>
-  <body>
+  <body style="background-color: #ffffff !important; color: #000000 !important;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->

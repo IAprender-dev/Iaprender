@@ -81,6 +81,30 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Force light theme - Override any dark theme */
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Force light theme for all elements */
+  *, *::before, *::after {
+    border-color: #e5e7eb !important;
+  }
+  
+  /* Override dark theme globally */
+  .dark, [data-theme="dark"], [class*="dark"] {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Force light backgrounds for common components */
+  .bg-background, .bg-card, .bg-popover {
+    background-color: #ffffff !important;
+  }
+  
+  /* Ensure text readability */
+  .text-foreground, .text-card-foreground, .text-popover-foreground {
+    color: #000000 !important;
   }
   
   /* Custom scrollbar */
