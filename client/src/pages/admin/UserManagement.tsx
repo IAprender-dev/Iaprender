@@ -47,6 +47,25 @@ interface CreateUserResponse {
   error?: string;
 }
 
+interface Company {
+  id: number;
+  name: string;
+}
+
+interface Contract {
+  id: number;
+  name: string;
+  status: string;
+}
+
+interface CompaniesResponse {
+  companies: Company[];
+}
+
+interface ContractsResponse {
+  contracts: Contract[];
+}
+
 export default function UserManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -72,13 +91,13 @@ export default function UserManagement() {
   });
 
   // Query para listar empresas
-  const { data: companiesData } = useQuery({
+  const { data: companiesData } = useQuery<CompaniesResponse>({
     queryKey: ['/api/admin/companies'],
     enabled: true
   });
 
   // Query para listar contratos da empresa selecionada
-  const { data: contractsData } = useQuery({
+  const { data: contractsData } = useQuery<ContractsResponse>({
     queryKey: ['/api/admin/companies', selectedCompany, 'contracts'],
     enabled: !!selectedCompany
   });
@@ -288,11 +307,14 @@ export default function UserManagement() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {companiesData?.companies?.map((company: any) => (
-                                  <SelectItem key={company.id} value={company.id.toString()}>
-                                    {company.name}
-                                  </SelectItem>
-                                ))}
+                                {companiesData?.companies ? 
+                                  companiesData.companies.map((company: Company) => (
+                                    <SelectItem key={company.id} value={company.id.toString()}>
+                                      {company.name}
+                                    </SelectItem>
+                                  )) : 
+                                  <SelectItem value="" disabled>Carregando empresas...</SelectItem>
+                                }
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -315,11 +337,14 @@ export default function UserManagement() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {contractsData?.contracts?.map((contract: any) => (
-                                    <SelectItem key={contract.id} value={contract.id.toString()}>
-                                      {contract.name} ({contract.status})
-                                    </SelectItem>
-                                  ))}
+                                  {contractsData?.contracts ? 
+                                    contractsData.contracts.map((contract: Contract) => (
+                                      <SelectItem key={contract.id} value={contract.id.toString()}>
+                                        {contract.name} ({contract.status})
+                                      </SelectItem>
+                                    )) : 
+                                    <SelectItem value="" disabled>Carregando contratos...</SelectItem>
+                                  }
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -334,7 +359,10 @@ export default function UserManagement() {
                           <AlertTriangle className="h-4 w-4 text-blue-600" />
                           <AlertDescription className="text-blue-700">
                             <strong>Informações da Empresa:</strong><br />
-                            Empresa: {companiesData?.companies?.find((c: any) => c.id.toString() === selectedCompany)?.name}<br />
+                            Empresa: {companiesData?.companies ? 
+                              companiesData.companies.find((c: Company) => c.id.toString() === selectedCompany)?.name : 
+                              'Carregando...'
+                            }<br />
                             Contratos disponíveis: {contractsData.contracts.length}
                           </AlertDescription>
                         </Alert>
