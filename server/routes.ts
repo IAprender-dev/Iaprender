@@ -622,6 +622,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user = await storage.getUserByEmail(userInfo.email);
       
       if (!user) {
+        // Extrair contractId dos atributos customizados do Cognito para garantir isolamento de dados
+        const contractId = userInfo['custom:contract_id'] ? parseInt(userInfo['custom:contract_id']) : null;
+        
         // Criar novo usuário com role baseado nos grupos do Cognito
         const newUser = {
           firstName: userInfo.given_name || userInfo.name?.split(' ')[0] || 'Usuário',
@@ -630,14 +633,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           username: userInfo.email.split('@')[0],
           password: 'cognito_auth', // Placeholder para autenticação externa
           role: authData.role,
+          contractId: contractId, // CRÍTICO: Garantir isolamento de dados por contrato
           isActive: true
         };
         
         user = await storage.createUser(newUser);
-        console.log('✅ Novo usuário criado:', {
+        console.log('✅ Novo usuário criado com contractId:', {
           id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role,
+          contractId: contractId
         });
       } else {
         // Atualizar role se necessário (quando grupos do Cognito mudaram)
@@ -2629,8 +2634,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.success) {
         console.log(`✅ Usuário criado com sucesso: ${email}`);
         
+        // CRÍTICO: Salvar usuário no banco de dados local com contractId para isolamento de dados
+        try {
+          const nameParts = name.split(' ');
+          const firstName = nameParts[0];
+          const lastName = nameParts.slice(1).join(' ') || firstName;
+          
+          // Mapear grupo para role interno
+          let role: 'admin' | 'teacher' | 'student' | 'municipal_manager' | 'school_director' = 'student';
+          switch (group) {
+            case 'Admin':
+              role = 'admin';
+              break;
+            case 'GestorMunicipal':
+              role = 'municipal_manager';
+              break;
+            case 'Diretor':
+              role = 'school_director';
+              break;
+            case 'Professor':
+              role = 'teacher';
+              break;
+            case 'Aluno':
+              role = 'student';
+              break;
+          }
+
+          const newUser = {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            username: email.split('@')[0],
+            password: 'cognito_auth', // Placeholder para autenticação externa
+            role: role,
+            contractId: contractId ? parseInt(contractId) : null, // CRÍTICO: Associar ao contrato
+            status: 'active' as const
+          };
+          
+          const localUser = await db.insert(users).values(newUser).returning();
+          console.log(`✅ Usuário salvo no banco local com contractId: ${contractId}`, localUser[0]);
+          
+        } catch (dbError: any) {
+          console.error('⚠️ Erro ao salvar usuário no banco local (usuário criado no Cognito):', dbError);
+          // Continue mesmo com erro no banco local, pois usuário já foi criado no Cognito
+        }
+        
         // Log da ação administrativa
-        console.log(`📋 Log de auditoria: Admin criou usuário ${email} no grupo ${group}`);
+        console.log(`📋 Log de auditoria: Admin criou usuário ${email} no grupo ${group} com contractId: ${contractId}`);
 
         return res.status(201).json({
           success: true,
@@ -2638,7 +2688,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId: result.userId,
           tempPassword: result.tempPassword,
           userEmail: email,
-          group: group
+          group: group,
+          contractId: contractId
         });
       } else {
         return res.status(400).json({ 
