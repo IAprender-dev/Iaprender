@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Sparkles, BookOpen, Users, Brain, ChevronDown, User, GraduationCap } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "wouter";
@@ -36,6 +37,7 @@ export default function Auth() {
   const [activeTab, setActiveTab] = useState("login");
   const [location, navigate] = useLocation();
   const { user, loginMutation, registerMutation } = useAuth();
+  const { toast } = useToast();
   
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

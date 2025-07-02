@@ -563,9 +563,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `);
       }
 
-      const loginUrl = cognitoService.getLoginUrl();
-      console.log('Redirecionando para Cognito:', loginUrl);
-      res.redirect(loginUrl);
+      // Cognito temporariamente desabilitado - redirecionar para login padrão
+      console.log('Cognito desabilitado, redirecionando para login padrão');
+      res.redirect('/auth');
     } catch (error) {
       console.error('Erro ao iniciar login:', error);
       res.status(500).send(`
