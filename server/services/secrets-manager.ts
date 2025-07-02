@@ -94,7 +94,8 @@ export class SecretsManager {
   }> {
     const response = await this.getSecrets({
       keys: [
-        'COGNITO_USER_POOL_ID',
+        'COGNITO_USER_POLL_ID',  // Variável correta com dois L's
+        'COGNITO_USER_POOL_ID',  // Fallback para compatibilidade
         'COGNITO_CLIENT_ID', 
         'COGNITO_CLIENT_SECRET',
         'COGNITO_DOMAIN',
@@ -116,15 +117,18 @@ export class SecretsManager {
       };
     }
 
+    // Usar COGNITO_USER_POLL_ID (com dois L's) como prioridade
+    const userPoolId = response.data.COGNITO_USER_POLL_ID || response.data.COGNITO_USER_POOL_ID || '';
+    
     const config = {
-      userPoolId: response.data.COGNITO_USER_POOL_ID || '',
+      userPoolId,
       clientId: response.data.COGNITO_CLIENT_ID || '',
       clientSecret: response.data.COGNITO_CLIENT_SECRET || '',
       domain: response.data.COGNITO_DOMAIN || '',
       region: response.data.AWS_REGION || 'us-east-1',
       redirectUri: response.data.COGNITO_REDIRECT_URI || '',
       isComplete: !!(
-        response.data.COGNITO_USER_POOL_ID && 
+        userPoolId && 
         response.data.COGNITO_CLIENT_ID && 
         response.data.COGNITO_CLIENT_SECRET
       )

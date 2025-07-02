@@ -34,7 +34,8 @@ export class AWSIAMService {
 
   constructor() {
     this.region = process.env.AWS_REGION || 'us-east-1';
-    this.userPoolId = process.env.COGNITO_USER_POOL_ID || '';
+    // Usar COGNITO_USER_POLL_ID (correto) com fallback para compatibilidade
+    this.userPoolId = process.env.COGNITO_USER_POLL_ID || process.env.COGNITO_USER_POOL_ID || '';
     
     // Configurar AWS
     AWS.config.update({
@@ -49,7 +50,8 @@ export class AWSIAMService {
     
     console.log('🔧 AWS IAM Service inicializado para:', {
       region: this.region,
-      userPoolId: this.userPoolId
+      userPoolId: this.userPoolId,
+      source: process.env.COGNITO_USER_POLL_ID ? 'COGNITO_USER_POLL_ID (correto)' : 'COGNITO_USER_POOL_ID (fallback)'
     });
   }
 

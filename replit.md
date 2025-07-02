@@ -130,6 +130,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - Corrected all cognito-service module import paths from dynamic to static imports
   - Fixed module resolution errors throughout the backend routes system
   - Enhanced user experience by allowing manual navigation to auth page without forced redirects
+- July 2, 2025: AWS Cognito User Pool Correction - Phase 2.1.2 Complete (Correct User Pool Identified & Configured)
+  - ✅ Identified correct User Pool ID: us-east-1_4jqF97H2X from COGNITO_USER_POLL_ID secret variable
+  - ✅ Updated AWS IAM Service to prioritize correct User Pool with fallback for compatibility
+  - ✅ Implemented secure Secrets Manager API for accessing Replit environment variables
+  - ✅ System now generates policies with correct User Pool ARN: arn:aws:cognito-idp:us-east-1:*:userpool/us-east-1_4jqF97H2X
+  - ✅ Confirmed diagnostic system working with updated User Pool configuration
+  - ✅ All administrative interfaces updated to use correct User Pool reference
+  - 🔄 Next Phase 2.2: Apply generated IAM policy in AWS Console for UsuarioBedrock user
 - July 2, 2025: AWS Cognito Permissions System - Phase 2.1 Complete (Advanced Diagnostics & Configuration)
   - ✅ Created comprehensive AWS IAM Service with automatic permission diagnostics and policy generation
   - ✅ Implemented 4 new admin API endpoints for AWS permissions management (/api/admin/aws/permissions/*)
@@ -141,7 +149,6 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Added "Configurar Permissões AWS" button to admin dashboard with /admin/aws-permissions route
   - ✅ System provides copy-to-clipboard functionality for policies and URLs
   - ✅ Real-time verification system confirms when permissions are properly configured
-  - 🔄 Next Phase 2.2: Apply generated policy in AWS Console to enable user creation functionality
 - July 2, 2025: AWS Cognito User Registration System - Phase 1.3 Complete (Administrative Interface Ready)
   - ✅ Extended users table with AWS Cognito integration fields: cognito_user_id, cognito_group, cognito_status
   - ✅ Created cognito_group enum with hierarchical structure: Admin, Gestores, Diretores, Professores, Alunos

@@ -3645,13 +3645,27 @@ Estrutura JSON obrigatória:
 
   // FASE 2.1: ROTAS DE DIAGNÓSTICO E CONFIGURAÇÃO DE PERMISSÕES AWS
   
-  // Teste simples de API sem autenticação
-  app.get('/api/test/simple', async (req: Request, res: Response) => {
-    res.json({
-      success: true,
-      message: 'API funcionando',
-      timestamp: new Date().toISOString()
-    });
+  // Teste User Pool correto dos secrets
+  app.get('/api/test/user-pool-correct', async (req: Request, res: Response) => {
+    try {
+      const correctUserPoolId = process.env.COGNITO_USER_POLL_ID;
+      const oldUserPoolId = process.env.COGNITO_USER_POOL_ID;
+      
+      res.json({
+        success: true,
+        userPools: {
+          correct: correctUserPoolId || 'não encontrado',
+          old: oldUserPoolId || 'não encontrado',
+          shouldUpdate: correctUserPoolId !== oldUserPoolId
+        },
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
   });
 
   // API Secrets Manager - Obter configuração AWS Cognito dos secrets
