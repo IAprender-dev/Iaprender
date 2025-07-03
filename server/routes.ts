@@ -4254,41 +4254,53 @@ Estrutura JSON obrigatória:
   // Atualizar vínculos de empresa e contrato para usuário gestor
   app.patch('/api/admin/users/:userId/update-contract', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { userId } = req.params;
-      const { contractId } = req.body;
+      const { userId } = req.params; // Este é o cognitoId do frontend
+      const { cognitoId, email, contractId } = req.body;
 
-      console.log(`🔄 [UPDATE-CONTRACT] Recebido pedido para usuário: "${userId}" com contractId: ${contractId}`);
+      console.log(`🔄 [UPDATE-CONTRACT] Recebido pedido:`, {
+        paramUserId: userId,
+        bodyCognitoId: cognitoId,
+        bodyEmail: email,
+        contractId
+      });
 
       // Validação básica
-      if (!userId) {
+      if (!userId && !cognitoId && !email) {
         return res.status(400).json({
           success: false,
-          error: 'ID do usuário é obrigatório'
+          error: 'Identificação do usuário é obrigatória (cognitoId ou email)'
         });
       }
 
-      // Buscar usuário no banco local pelo cognitoId, username ou email
-      console.log(`🔍 Buscando usuário com cognitoUserId: "${userId}"`);
-      let localUser = await db.select()
-        .from(users)
-        .where(eq(users.cognitoUserId, userId))
-        .limit(1);
-      
-      // Se não encontrou pelo cognitoUserId, tentar pelo username (usuários antigos)
-      if (localUser.length === 0) {
-        console.log(`🔍 Tentando buscar pelo username: "${userId}"`);
+      // ESTRATÉGIA DE BUSCA ROBUSTA: Priorizar cognitoUserId, fallback para email
+      console.log(`🔍 Estratégia de busca: 1) cognitoUserId, 2) email, 3) username`);
+      let localUser = [];
+
+      // 1. Tentar por cognitoUserId primeiro (mais seguro)
+      const searchCognitoId = cognitoId || userId;
+      if (searchCognitoId) {
+        console.log(`🔍 Buscando por cognitoUserId: "${searchCognitoId}"`);
         localUser = await db.select()
           .from(users)
-          .where(eq(users.username, userId))
+          .where(eq(users.cognitoUserId, searchCognitoId))
           .limit(1);
       }
       
-      // Se ainda não encontrou, tentar pelo email (para usuários sem cognitoUserId)
-      if (localUser.length === 0) {
-        console.log(`🔍 Tentando buscar pelo email: "${userId}"`);
+      // 2. Se não encontrou e temos email, buscar por email (fallback confiável)
+      if (localUser.length === 0 && email) {
+        console.log(`🔍 Fallback: buscando por email: "${email}"`);
         localUser = await db.select()
           .from(users)
-          .where(eq(users.email, userId))
+          .where(eq(users.email, email))
+          .limit(1);
+      }
+      
+      // 3. Último recurso: buscar por username (usuários muito antigos)
+      if (localUser.length === 0) {
+        console.log(`🔍 Último recurso: buscando por username: "${userId}"`);
+        localUser = await db.select()
+          .from(users)
+          .where(eq(users.username, userId))
           .limit(1);
       }
       

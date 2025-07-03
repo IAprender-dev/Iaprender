@@ -214,16 +214,16 @@ export default function UserManagement() {
 
   // Mutation para atualizar vínculos
   const updateContractMutation = useMutation({
-    mutationFn: async ({ userId, contractId }: { userId: string; contractId: string | null }) => {
-      console.log('🚀 [FRONTEND] Executando mutation com:', { userId, contractId });
+    mutationFn: async ({ cognitoId, email, contractId }: { cognitoId: string; email: string; contractId: string | null }) => {
+      console.log('🚀 [FRONTEND] Executando mutation com:', { cognitoId, email, contractId });
       
-      const response = await fetch(`/api/admin/users/${userId}/update-contract`, {
+      const response = await fetch(`/api/admin/users/${cognitoId}/update-contract`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ contractId })
+        body: JSON.stringify({ cognitoId, email, contractId })
       });
       
       console.log('📡 [FRONTEND] Response status:', response.status);
@@ -272,14 +272,16 @@ export default function UserManagement() {
       : selectedContractId;
     
     console.log('🎯 [FRONTEND] Dados para envio:', {
-      userId: editingUser.email, // Usar email em vez de cognitoId para busca no banco
+      cognitoId: editingUser.cognitoId,
+      email: editingUser.email,
       contractId,
       selectedCompanyId,
       selectedContractId
     });
     
     updateContractMutation.mutate({
-      userId: editingUser.email, // Usar email para garantir que encontre o usuário no banco
+      cognitoId: editingUser.cognitoId,
+      email: editingUser.email,
       contractId
     });
   };
