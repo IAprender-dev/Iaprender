@@ -225,7 +225,9 @@ export default function FirstAccess() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          userId: userData.userId
+          userId: userData.userId,
+          email: userData.email,
+          group: userData.group
         }),
       });
 

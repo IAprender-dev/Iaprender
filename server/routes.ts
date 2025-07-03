@@ -3337,8 +3337,9 @@ Estrutura JSON obrigatória:
           firstLogin: false,
           forcePasswordChange: false,
           lastLoginAt: new Date(),
-          createdAt: new Date(),
-          updatedAt: new Date()
+          cognitoUserId: userId,
+          cognitoGroup: group as any,
+          cognitoStatus: 'CONFIRMED'
         }).returning();
 
         user = newUser;
@@ -3349,8 +3350,7 @@ Estrutura JSON obrigatória:
           .set({ 
             firstLogin: false,
             forcePasswordChange: false,
-            lastLoginAt: new Date(),
-            updatedAt: new Date()
+            lastLoginAt: new Date()
           })
           .where(eq(users.id, user.id));
 
@@ -3367,15 +3367,6 @@ Estrutura JSON obrigatória:
           username: user.username
         }
       });
-
-    } catch (error: any) {
-      console.error('❌ Erro ao completar onboarding:', error);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Erro interno do servidor' 
-      });
-    }
-  });
 
     } catch (error: any) {
       console.error('❌ Erro ao completar onboarding:', error);
