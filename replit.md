@@ -143,6 +143,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 3, 2025: PASSO 1 - Nova Interface Empresa-Centrada de Gestão de Contratos Implementada
+  - ✅ Criado sistema CompanyContractManagement.tsx com foco na empresa como entidade central
+  - ✅ Interface intuitiva onde contratos aparecem como cards vinculados a cada empresa
+  - ✅ Formulários separados e otimizados: criação de empresa e criação de contrato independentes
+  - ✅ Layout responsivo com busca, filtros e navegação simplificada
+  - ✅ Endpoint backend /api/admin/companies-with-contracts para buscar dados integrados
+  - ✅ Rota /admin/companies-contracts adicionada ao sistema de navegação
+  - ✅ Botão "Empresas & Contratos (Novo)" no AdminMasterDashboard para acesso rápido
+  - ✅ Sistema facilita entendimento visual: 1 empresa pode ter múltiplos contratos
+  - ✅ Preparação para próximas melhorias: templates de planos, criação automática de gestores
 - July 3, 2025: FASE 4.1 - Sistema de Listagem e Consulta de Usuários AWS Cognito Implementado
   - ✅ Criados 3 novos endpoints backend: /api/admin/users/list, /api/admin/users/:userId/details, /api/admin/users/statistics
   - ✅ Implementada interface completa UserManagement.tsx com filtros avançados e paginação
