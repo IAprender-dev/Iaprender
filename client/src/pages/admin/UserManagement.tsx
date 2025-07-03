@@ -25,7 +25,10 @@ import {
   UserPlus,
   AlertTriangle,
   CheckCircle,
-  LogOut
+  LogOut,
+  Building,
+  Save,
+  X
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "wouter";
@@ -86,6 +89,11 @@ export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedUser, setSelectedUser] = useState<CognitoUser | null>(null);
+  const [editingUser, setEditingUser] = useState<CognitoUser | null>(null);
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const [selectedContractId, setSelectedContractId] = useState<string>("");
 
   // Buscar usuários
   const { data: usersData, isLoading, error, refetch } = useQuery({
@@ -103,6 +111,18 @@ export default function UserManagement() {
   const { data: statistics } = useQuery({
     queryKey: ['/api/admin/users/statistics'],
     refetchInterval: 60000, // Atualizar a cada minuto
+  });
+
+  // Buscar empresas para o dropdown de edição
+  const { data: companiesData } = useQuery({
+    queryKey: ['/api/admin/companies'],
+    enabled: !!editingUser, // Só carregar quando estiver editando
+  });
+
+  // Buscar contratos da empresa selecionada
+  const { data: contractsData } = useQuery({
+    queryKey: ['/api/admin/companies', selectedCompanyId, 'contracts'],
+    enabled: !!selectedCompanyId,
   });
 
   const users: CognitoUser[] = usersData?.users || [];
@@ -162,6 +182,69 @@ export default function UserManagement() {
       return <Badge className="bg-blue-100 text-blue-800">Gestor</Badge>;
     }
     return <Badge variant="outline">Sem Grupo</Badge>;
+  };
+
+  // Funções auxiliares para edição
+  const openEditModal = (user: CognitoUser) => {
+    setEditingUser(user);
+    setSelectedCompanyId(user.contractInfo?.companyId?.toString() || "");
+    setSelectedContractId(user.contractInfo?.contractId?.toString() || "");
+  };
+
+  const closeEditModal = () => {
+    setEditingUser(null);
+    setSelectedCompanyId("");
+    setSelectedContractId("");
+  };
+
+  const handleCompanyChange = (companyId: string) => {
+    setSelectedCompanyId(companyId);
+    setSelectedContractId(""); // Reset contract quando empresa muda
+  };
+
+  // Mutation para atualizar vínculos
+  const updateContractMutation = useMutation({
+    mutationFn: async ({ userId, contractId }: { userId: string; contractId: string | null }) => {
+      const response = await fetch(`/api/admin/users/${userId}/update-contract`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ contractId })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Vínculos atualizados",
+        description: "Os vínculos de empresa e contrato foram atualizados com sucesso.",
+      });
+      closeEditModal();
+      // Invalidar cache para recarregar a lista de usuários
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar vínculos",
+        description: error.message || "Ocorreu um erro ao atualizar os vínculos.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleSaveContract = () => {
+    if (!editingUser) return;
+    
+    updateContractMutation.mutate({
+      userId: editingUser.cognitoId,
+      contractId: selectedContractId || null
+    });
   };
 
   return (
@@ -418,18 +501,22 @@ export default function UserManagement() {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedUser(user)}
+                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
                         >
                           <Eye className="h-4 w-4 mr-1" />
-                          Detalhes
+                          👁️ Visualizar
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
+                        {user.groups.includes('Gestores') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(user)}
+                            className="text-green-600 border-green-300 hover:bg-green-50"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            ✏️ Editar
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -473,42 +560,250 @@ export default function UserManagement() {
           </CardContent>
         </Card>
 
-        {/* Modal de Detalhes (placeholder) */}
+        {/* Modal de Detalhes */}
         {selectedUser && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <Card className="max-w-md w-full">
+            <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <CardHeader>
-                <CardTitle>Detalhes do Usuário</CardTitle>
+                <CardTitle className="flex items-center space-x-2">
+                  <Eye className="h-5 w-5 text-blue-600" />
+                  <span>Detalhes do Usuário</span>
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Nome Completo</label>
-                    <p className="text-sm text-gray-900">{selectedUser.firstName} {selectedUser.lastName}</p>
+                <div className="space-y-4">
+                  {/* Informações Básicas */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Nome Completo</label>
+                      <p className="text-sm text-gray-900">{selectedUser.firstName} {selectedUser.lastName}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Email</label>
+                      <p className="text-sm text-gray-900">{selectedUser.email}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">ID Cognito</label>
+                      <p className="text-sm text-gray-900 font-mono text-xs">{selectedUser.cognitoId}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Data de Criação</label>
+                      <p className="text-sm text-gray-900">{new Date(selectedUser.createdDate).toLocaleDateString('pt-BR')}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Email</label>
-                    <p className="text-sm text-gray-900">{selectedUser.email}</p>
+
+                  {/* Status e Grupos */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Status</label>
+                      <div className="mt-1">{getStatusBadge(selectedUser.status, selectedUser.enabled)}</div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Grupos</label>
+                      <div className="mt-1">{getGroupBadge(selectedUser.groups)}</div>
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">ID Cognito</label>
-                    <p className="text-sm text-gray-900 font-mono">{selectedUser.cognitoId}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Status</label>
-                    <div className="mt-1">{getStatusBadge(selectedUser.status, selectedUser.enabled)}</div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-700">Grupos</label>
-                    <div className="mt-1">{getGroupBadge(selectedUser.groups)}</div>
-                  </div>
+
+                  {/* Informações de Empresa e Contrato - apenas para Gestores */}
+                  {selectedUser.groups.includes('Gestores') && (
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
+                        <Building className="h-4 w-4 mr-2" />
+                        Informações de Empresa e Contrato
+                      </h3>
+                      {selectedUser.contractInfo ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-xs font-medium text-blue-800">Empresa</label>
+                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.companyName}</p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-blue-800">Contrato</label>
+                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.contractNumber}</p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-blue-800">Email da Empresa</label>
+                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.companyEmail}</p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-blue-800">Telefone</label>
+                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.companyPhone || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-blue-800">Nome do Contrato</label>
+                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.contractName}</p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-blue-800">ID do Contrato</label>
+                            <p className="text-sm text-blue-900 font-mono">{selectedUser.contractInfo.contractId}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2 text-yellow-800">
+                          <AlertTriangle className="h-4 w-4" />
+                          <span className="text-sm">Gestor sem empresa/contrato vinculado</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Informações Locais */}
+                  {selectedUser.localData && (
+                    <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                      <h3 className="text-sm font-medium text-gray-900 mb-3">Informações Locais</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-medium text-gray-700">ID Local</label>
+                          <p className="text-sm text-gray-900">{selectedUser.localData.id}</p>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-700">Role</label>
+                          <p className="text-sm text-gray-900">{selectedUser.localData.role}</p>
+                        </div>
+                        {selectedUser.localData.lastLoginAt && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-700">Último Login</label>
+                            <p className="text-sm text-gray-900">{new Date(selectedUser.localData.lastLoginAt).toLocaleString('pt-BR')}</p>
+                          </div>
+                        )}
+                        <div>
+                          <label className="text-xs font-medium text-gray-700">Primeiro Login</label>
+                          <p className="text-sm text-gray-900">{selectedUser.localData.firstLogin ? 'Sim' : 'Não'}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
+
                 <div className="flex justify-end space-x-2 mt-6">
+                  {selectedUser.groups.includes('Gestores') && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedUser(null);
+                        openEditModal(selectedUser);
+                      }}
+                      className="text-green-600 border-green-300 hover:bg-green-50"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      ✏️ Editar Vínculos
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => setSelectedUser(null)}
                   >
                     Fechar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Modal de Edição de Vínculos */}
+        {editingUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <Card className="max-w-lg w-full">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Edit className="h-5 w-5 text-green-600" />
+                  <span>Editar Vínculos de Empresa e Contrato</span>
+                </CardTitle>
+                <CardDescription>
+                  {editingUser.firstName} {editingUser.lastName} - {editingUser.email}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Informações atuais */}
+                  {editingUser.contractInfo && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h4 className="text-sm font-medium text-blue-900 mb-2">Vínculos Atuais:</h4>
+                      <div className="text-xs text-blue-800">
+                        <p><strong>Empresa:</strong> {editingUser.contractInfo.companyName}</p>
+                        <p><strong>Contrato:</strong> {editingUser.contractInfo.contractNumber}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Seleção de Empresa */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Selecionar Empresa:
+                    </label>
+                    <Select value={selectedCompanyId} onValueChange={handleCompanyChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Escolha uma empresa..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Nenhuma empresa</SelectItem>
+                        {companiesData?.companies?.map((company: any) => (
+                          <SelectItem key={company.id} value={company.id.toString()}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Seleção de Contrato */}
+                  {selectedCompanyId && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-2 block">
+                        Selecionar Contrato:
+                      </label>
+                      <Select value={selectedContractId} onValueChange={setSelectedContractId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Escolha um contrato..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Nenhum contrato</SelectItem>
+                          {contractsData?.contracts?.map((contract: any) => (
+                            <SelectItem key={contract.id} value={contract.id.toString()}>
+                              {contract.contractNumber} - {contract.contractName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Informações do contrato selecionado */}
+                  {selectedContractId && contractsData?.contracts && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <h4 className="text-sm font-medium text-green-900 mb-2">Novo Vínculo:</h4>
+                      {(() => {
+                        const selectedContract = contractsData.contracts.find(
+                          (c: any) => c.id.toString() === selectedContractId
+                        );
+                        return selectedContract ? (
+                          <div className="text-xs text-green-800">
+                            <p><strong>Empresa:</strong> {selectedContract.companyName}</p>
+                            <p><strong>Contrato:</strong> {selectedContract.contractNumber}</p>
+                            <p><strong>Nome:</strong> {selectedContract.contractName}</p>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end space-x-2 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={closeEditModal}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSaveContract}
+                    disabled={updateContractMutation.isPending}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    {updateContractMutation.isPending ? 'Salvando...' : 'Salvar Vínculos'}
                   </Button>
                 </div>
               </CardContent>

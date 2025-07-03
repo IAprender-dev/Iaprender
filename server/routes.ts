@@ -4185,6 +4185,86 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // Atualizar vínculos de empresa e contrato para usuário gestor
+  app.patch('/api/admin/users/:userId/update-contract', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { contractId } = req.body;
+
+      // Validação básica
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID do usuário é obrigatório'
+        });
+      }
+
+      // Buscar usuário no banco local pelo cognitoId
+      const localUser = await db.select()
+        .from(users)
+        .where(eq(users.cognitoUserId, userId))
+        .limit(1);
+
+      if (localUser.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Usuário não encontrado no banco local'
+        });
+      }
+
+      const user = localUser[0];
+
+      // Verificar se o usuário é um gestor
+      if (user.role !== 'municipal_manager') {
+        return res.status(400).json({
+          success: false,
+          error: 'Apenas usuários gestores podem ter vínculos de contrato atualizados'
+        });
+      }
+
+      // Verificar se o contrato existe (se contractId foi fornecido)
+      if (contractId) {
+        const contract = await db.select()
+          .from(contracts)
+          .where(eq(contracts.id, Number(contractId)))
+          .limit(1);
+
+        if (contract.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: 'Contrato não encontrado'
+          });
+        }
+      }
+
+      // Atualizar o contractId do usuário
+      await db.update(users)
+        .set({ 
+          contractId: contractId ? Number(contractId) : null,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, user.id));
+
+      console.log(`✅ Vínculos atualizados para usuário ${userId}: contractId=${contractId}`);
+
+      res.json({
+        success: true,
+        message: 'Vínculos de empresa e contrato atualizados com sucesso',
+        data: {
+          userId: userId,
+          contractId: contractId ? Number(contractId) : null
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao atualizar vínculos:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno ao atualizar vínculos'
+      });
+    }
+  });
+
   // Criar novo usuário no AWS Cognito
   app.post('/api/admin/users/create', authenticateAdmin, async (req: Request, res: Response) => {
     try {
