@@ -3292,45 +3292,90 @@ Estrutura JSON obrigatória:
   // Completar onboarding
   app.post('/api/auth/complete-onboarding', async (req: Request, res: Response) => {
     try {
-      const { userId } = req.body;
+      const { userId, email, group } = req.body;
 
-      if (!userId) {
+      if (!userId || !email) {
         return res.status(400).json({ 
           success: false, 
-          error: 'ID do usuário é obrigatório' 
+          error: 'ID do usuário e email são obrigatórios' 
         });
       }
 
-      console.log(`🔄 Completando onboarding para usuário: ${userId}`);
+      console.log(`🔄 Completando onboarding para usuário: ${userId} (${email})`);
 
-      // Atualizar status no banco local
-      const [user] = await db.select().from(users).where(eq(users.username, userId));
-      if (user) {
+      // Primeiro tentar buscar por email
+      let [user] = await db.select().from(users).where(eq(users.email, email));
+      
+      // Se não encontrar por email, tentar por username
+      if (!user) {
+        [user] = await db.select().from(users).where(eq(users.username, userId));
+      }
+
+      // Se ainda não encontrar, criar o usuário localmente baseado nos dados do Cognito
+      if (!user) {
+        console.log(`📝 Criando usuário local para: ${email}`);
+        
+        // Mapear grupo Cognito para role local
+        const roleMapping: Record<string, string> = {
+          'Admin': 'admin',
+          'Gestores': 'municipal_manager', 
+          'Diretores': 'school_director',
+          'Professores': 'teacher',
+          'Alunos': 'student'
+        };
+
+        const role = roleMapping[group] || 'student';
+
+        const [newUser] = await db.insert(users).values({
+          username: userId,
+          email: email,
+          password: 'cognito_managed', // Senha gerenciada pelo Cognito
+          role: role as any,
+          firstName: email.split('@')[0],
+          lastName: '',
+          status: 'active',
+          firstLogin: false,
+          forcePasswordChange: false,
+          lastLoginAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }).returning();
+
+        user = newUser;
+        console.log(`✅ Usuário local criado: ${user.email} (${user.role})`);
+      } else {
+        // Atualizar status do usuário existente
         await db.update(users)
           .set({ 
             firstLogin: false,
             forcePasswordChange: false,
-            lastLoginAt: new Date()
+            lastLoginAt: new Date(),
+            updatedAt: new Date()
           })
           .where(eq(users.id, user.id));
 
-        console.log(`✅ Onboarding completado para: ${user.email}`);
-        
-        return res.status(200).json({
-          success: true,
-          message: 'Onboarding completado com sucesso',
-          user: {
-            id: user.id,
-            email: user.email,
-            role: user.role
-          }
-        });
-      } else {
-        return res.status(404).json({ 
-          success: false, 
-          error: 'Usuário não encontrado' 
-        });
+        console.log(`✅ Onboarding completado para usuário existente: ${user.email}`);
       }
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Onboarding completado com sucesso',
+        user: {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          username: user.username
+        }
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erro ao completar onboarding:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erro interno do servidor' 
+      });
+    }
+  });
 
     } catch (error: any) {
       console.error('❌ Erro ao completar onboarding:', error);
