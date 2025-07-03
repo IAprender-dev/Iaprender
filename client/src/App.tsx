@@ -34,6 +34,7 @@ import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
 
 import UserManagement from "@/pages/admin/UserManagement";
 import ExecutiveDashboard from "@/pages/admin/ExecutiveDashboard";
+import AdvancedToolsDashboard from "@/pages/admin/AdvancedToolsDashboard";
 
 import CognitoUserManagement from "@/pages/admin/CognitoUserManagement";
 import AWSPermissionsManager from "@/pages/admin/AWSPermissionsManager";
@@ -147,6 +148,7 @@ function Router() {
       <Route path="/admin/master" component={AdminMasterDashboard} />
       <Route path="/admin/advanced" component={AdvancedAdminDashboard} />
       <Route path="/admin/executive" component={ExecutiveDashboard} />
+      <Route path="/admin/tools" component={AdvancedToolsDashboard} />
       <Route path="/admin/ai-management" component={AIManagementDashboard} />
       <Route path="/admin/ai/cost-management" component={AWSCostManagement} />
       <Route path="/admin/ai/litellm-management" component={LiteLLMManagement} />

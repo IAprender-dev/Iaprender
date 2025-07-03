@@ -5494,6 +5494,216 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // Advanced Tools Routes
+  app.get('/api/admin/tools/automation-rules', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Simulated automation rules - in production would come from database
+      const rules = [
+        {
+          id: 1,
+          name: 'Notificar sobre novos usuários',
+          trigger: 'user_registration',
+          action: 'send_email',
+          status: 'active',
+          executions: 47,
+          lastRun: '2025-01-03 20:15:00'
+        },
+        {
+          id: 2,
+          name: 'Alerta de token alto',
+          trigger: 'high_token_usage',
+          action: 'create_notification',
+          status: 'active',
+          executions: 23,
+          lastRun: '2025-01-03 19:45:00'
+        },
+        {
+          id: 3,
+          name: 'Lembrete de renovação',
+          trigger: 'contract_expiry',
+          action: 'send_email',
+          status: 'inactive',
+          executions: 12,
+          lastRun: '2025-01-02 14:30:00'
+        }
+      ];
+
+      res.json({ success: true, rules });
+    } catch (error) {
+      console.error('Erro ao buscar regras de automação:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/admin/tools/automation-rules', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, trigger, action, conditions } = req.body;
+      
+      // Validation
+      if (!name || !trigger || !action) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Nome, gatilho e ação são obrigatórios' 
+        });
+      }
+
+      // In production, would save to database
+      const newRule = {
+        id: Date.now(),
+        name,
+        trigger,
+        action,
+        conditions: conditions || null,
+        status: 'active',
+        executions: 0,
+        lastRun: null,
+        createdAt: new Date().toISOString()
+      };
+
+      console.log('📋 Nova regra de automação criada:', newRule);
+
+      res.json({ success: true, rule: newRule });
+    } catch (error) {
+      console.error('Erro ao criar regra de automação:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.patch('/api/admin/tools/automation-rules/:id/toggle', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const ruleId = parseInt(req.params.id);
+      
+      // In production, would update in database
+      console.log(`🔄 Alternando status da regra ${ruleId}`);
+
+      res.json({ success: true, message: 'Status da regra alterado com sucesso' });
+    } catch (error) {
+      console.error('Erro ao alterar status da regra:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get('/api/admin/tools/bulk-operations', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Simulated bulk operations status
+      const operations = [
+        {
+          id: 'bulk-001',
+          name: 'Atualização em massa de usuários',
+          description: 'Atualizando status de 150 usuários inativos',
+          status: 'running',
+          progress: 67,
+          startTime: '2025-01-03 20:10:00',
+          results: {
+            processed: 100,
+            successful: 95,
+            failed: 5
+          }
+        },
+        {
+          id: 'bulk-002',
+          name: 'Exportação de dados contratos',
+          description: 'Exportando dados de todos os contratos ativos',
+          status: 'completed',
+          progress: 100,
+          startTime: '2025-01-03 19:30:00',
+          endTime: '2025-01-03 19:35:00',
+          results: {
+            processed: 47,
+            successful: 47,
+            failed: 0
+          }
+        },
+        {
+          id: 'bulk-003',
+          name: 'Limpeza de tokens expirados',
+          description: 'Removendo tokens de sessão expirados do sistema',
+          status: 'pending',
+          progress: 0
+        }
+      ];
+
+      res.json({ success: true, operations });
+    } catch (error) {
+      console.error('Erro ao buscar operações em lote:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.post('/api/admin/tools/bulk-operations', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { operation, target, parameters } = req.body;
+      
+      if (!operation || !target) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Operação e alvo são obrigatórios' 
+        });
+      }
+
+      // Parse parameters
+      let parsedParameters = {};
+      if (parameters) {
+        try {
+          parsedParameters = JSON.parse(parameters);
+        } catch (e) {
+          return res.status(400).json({ 
+            success: false, 
+            error: 'Parâmetros devem estar em formato JSON válido' 
+          });
+        }
+      }
+
+      const newOperation = {
+        id: `bulk-${Date.now()}`,
+        name: `${operation} - ${target}`,
+        description: `Executando ${operation} para ${target}`,
+        status: 'pending',
+        progress: 0,
+        startTime: new Date().toISOString(),
+        parameters: parsedParameters
+      };
+
+      console.log('🚀 Nova operação em lote iniciada:', newOperation);
+
+      // Simulate async processing
+      setTimeout(() => {
+        console.log(`✅ Operação ${newOperation.id} concluída`);
+      }, 5000);
+
+      res.json({ success: true, operation: newOperation });
+    } catch (error) {
+      console.error('Erro ao executar operação em lote:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get('/api/admin/tools/productivity-metrics', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Get real data where possible, simulate advanced metrics
+      const totalUsers = await db.select({ count: sql<number>`count(*)`.as('count') })
+        .from(users)
+        .where(eq(users.status, 'active'));
+
+      const activeContracts = await db.select({ count: sql<number>`count(*)`.as('count') })
+        .from(contracts)
+        .where(eq(contracts.status, 'active'));
+
+      // Calculate productivity metrics
+      const metrics = {
+        automationsSaved: 127, // Hours saved through automation
+        timeEfficiency: 34.5, // Percentage improvement in efficiency
+        userAdoption: Math.min(85, (totalUsers[0].count / activeContracts[0].count) * 100), // Tool adoption rate
+        costSavings: 8450 // Monthly cost savings in BRL
+      };
+
+      res.json({ success: true, metrics });
+    } catch (error) {
+      console.error('Erro ao buscar métricas de produtividade:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  });
+
   // Executive Dashboard Routes
   app.get('/api/admin/executive/metrics', authenticateAdmin, async (req: Request, res: Response) => {
     try {

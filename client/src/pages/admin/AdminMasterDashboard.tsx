@@ -272,10 +272,10 @@ const AdminMasterDashboard: React.FC = () => {
                     </Button>
                   </Link>
 
-                  <Link href="/admin/executive">
-                    <Button className="w-full justify-start h-12 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white shadow-lg">
-                      <TrendingUp className="h-5 w-5 mr-3" />
-                      Dashboard Executivo
+                  <Link href="/admin/tools">
+                    <Button className="w-full justify-start h-12 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg">
+                      <Settings className="h-5 w-5 mr-3" />
+                      Ferramentas Avançadas
                     </Button>
                   </Link>
 
