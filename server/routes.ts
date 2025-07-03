@@ -143,14 +143,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin authentication middleware  
   const authenticateAdmin = (req: Request, res: Response, next: Function) => {
+    console.log(`🔐 [AUTH-ADMIN] Verificando autenticação para ${req.method} ${req.path}`);
+    console.log(`🔐 [AUTH-ADMIN] Session user:`, req.session?.user ? { id: req.session.user.id, role: req.session.user.role, email: req.session.user.email } : 'undefined');
+    
     if (!req.session.user) {
+      console.log(`❌ [AUTH-ADMIN] Sessão não encontrada`);
       return res.status(401).json({ message: "Unauthorized" });
     }
     
     if (req.session.user.role !== 'admin') {
+      console.log(`❌ [AUTH-ADMIN] Role insuficiente: ${req.session.user.role}`);
       return res.status(403).json({ message: "Admin access required" });
     }
     
+    console.log(`✅ [AUTH-ADMIN] Autorizado: ${req.session.user.email}`);
     next();
   };
 
@@ -4185,13 +4191,22 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // Endpoint de teste para verificar autenticação admin
+  app.get('/api/admin/test-auth', authenticateAdmin, async (req: Request, res: Response) => {
+    res.json({ 
+      success: true, 
+      message: 'Autenticação admin funcionando',
+      user: { id: req.session?.user?.id, email: req.session?.user?.email, role: req.session?.user?.role }
+    });
+  });
+
   // Atualizar vínculos de empresa e contrato para usuário gestor
   app.patch('/api/admin/users/:userId/update-contract', authenticateAdmin, async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       const { contractId } = req.body;
 
-      console.log(`🔄 Atualizando vínculos para usuário ${userId} com contractId: ${contractId}`);
+      console.log(`🔄 [UPDATE-CONTRACT] Recebido pedido para usuário: "${userId}" com contractId: ${contractId}`);
 
       // Validação básica
       if (!userId) {
