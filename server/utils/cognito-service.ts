@@ -24,7 +24,7 @@ interface TokenResponse {
 interface CreateUserRequest {
   email: string;
   name: string;
-  group: 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin';
+  group: 'Admin' | 'Gestores' | 'Diretores' | 'Professores' | 'Alunos';
   tempPassword?: string;
   companyId?: string;
 }

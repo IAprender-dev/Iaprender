@@ -31,6 +31,7 @@ import AWSCostManagement from "@/pages/admin/AWSCostManagement";
 import LiteLLMManagement from "@/pages/admin/LiteLLMManagement";
 import ContractManagement from "@/pages/admin/ContractManagement";
 import UserManagement from "@/pages/admin/UserManagement";
+import CreateUser from "@/pages/admin/CreateUser";
 import CognitoUserManagement from "@/pages/admin/CognitoUserManagement";
 import AWSPermissionsManager from "@/pages/admin/AWSPermissionsManager";
 import MunicipalManagerDashboard from "@/pages/municipal/MunicipalManagerDashboard";
@@ -148,6 +149,7 @@ function Router() {
       <Route path="/admin/contracts" component={ContractManagement} />
       <Route path="/admin/users" component={UserManagement} />
       <Route path="/admin/user-management" component={UserManagement} />
+      <Route path="/admin/create-user" component={CreateUser} />
       <Route path="/admin/cognito-users" component={CognitoUserManagement} />
       <Route path="/admin/aws-permissions" component={AWSPermissionsManager} />
       

@@ -4026,6 +4026,89 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // Criar novo usuário no AWS Cognito
+  app.post('/api/admin/users/create', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { name, email, group, tempPassword, companyId } = req.body;
+
+      // Validação básica
+      if (!name || !email || !group) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome, email e grupo são obrigatórios'
+        });
+      }
+
+      // Validar formato do email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          error: 'Formato de email inválido'
+        });
+      }
+
+      // Verificar se usuário já existe
+      const userExists = await cognitoService.userExists(email);
+      if (userExists) {
+        return res.status(409).json({
+          success: false,
+          error: 'Usuário com este email já existe no sistema'
+        });
+      }
+
+      // Criar usuário no Cognito
+      const createUserRequest = {
+        email,
+        name,
+        group: group as 'Admin' | 'Gestores' | 'Diretores' | 'Professores' | 'Alunos',
+        tempPassword,
+        companyId
+      };
+
+      console.log('🔄 Criando usuário no AWS Cognito:', { email, name, group });
+      
+      const createResult = await cognitoService.createUser(createUserRequest);
+      
+      if (!createResult.success) {
+        return res.status(500).json({
+          success: false,
+          error: createResult.error || 'Erro ao criar usuário no Cognito'
+        });
+      }
+
+      // Gerar URL de primeiro acesso
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost'}`
+        : 'http://localhost:5000';
+      
+      const firstAccessUrl = `${baseUrl}/first-access?email=${encodeURIComponent(email)}&temp=true`;
+
+      console.log('✅ Usuário criado com sucesso:', {
+        userId: createResult.userId,
+        email,
+        group,
+        hasPassword: !!createResult.tempPassword
+      });
+
+      res.json({
+        success: true,
+        userId: createResult.userId,
+        tempPassword: createResult.tempPassword,
+        firstAccessUrl,
+        message: 'Usuário criado com sucesso no AWS Cognito'
+      });
+
+    } catch (error: any) {
+      console.error('❌ Erro ao criar usuário:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor ao criar usuário',
+        details: error.message
+      });
+    }
+  });
+
   // Buscar empresas contratantes com dados detalhados e contratos ativos
   app.get('/api/admin/companies', authenticateAdmin, async (req: Request, res: Response) => {
     try {

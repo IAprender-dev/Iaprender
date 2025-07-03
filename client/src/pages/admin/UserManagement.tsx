@@ -22,6 +22,7 @@ import {
   ChevronRight,
   UserCheck,
   UserX,
+  UserPlus,
   AlertTriangle,
   CheckCircle,
   LogOut
@@ -176,6 +177,12 @@ export default function UserManagement() {
               <span className="text-sm text-gray-600">
                 Bem-vindo, <span className="font-medium">{user?.firstName || 'Admin'}</span>
               </span>
+              <Link href="/admin/create-user">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Criar Usuário
+                </Button>
+              </Link>
               <Button
                 onClick={logout}
                 variant="outline"
