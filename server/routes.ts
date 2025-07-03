@@ -748,12 +748,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isActive: true
         };
         
-        user = await storage.createUser(newUser);
-        console.log('✅ Novo usuário criado:', {
-          id: user.id,
-          email: user.email,
-          role: user.role
-        });
+        try {
+          user = await storage.createUser(newUser);
+          console.log('✅ Novo usuário criado:', {
+            id: user.id,
+            email: user.email,
+            role: user.role
+          });
+        } catch (createError: any) {
+          if (createError.code === '23505') {
+            // Usuário já existe, buscar o usuário existente
+            console.log('👤 Usuário já existe, buscando dados existentes...');
+            const existingUser = await storage.getUserByUsername(newUser.username);
+            if (existingUser) {
+              user = existingUser;
+              console.log('✅ Usuário existente encontrado:', {
+                id: user.id,
+                email: user.email,
+                role: user.role
+              });
+            } else {
+              throw new Error('Usuário não encontrado após erro de duplicação');
+            }
+          } else {
+            throw createError;
+          }
+        }
       } else {
         // Atualizar role se necessário (quando grupos do Cognito mudaram)
         if (user.role !== authData.role) {
