@@ -4261,12 +4261,13 @@ Estrutura JSON obrigatória:
       }
 
       // Atualizar o contractId do usuário
-      await db.update(users)
+      const updateResult = await db.update(users)
         .set({ 
-          contractId: contractId ? Number(contractId) : null,
-          updatedAt: new Date()
+          contractId: contractId ? Number(contractId) : null
         })
         .where(eq(users.id, user.id));
+
+      console.log(`💾 Update result:`, updateResult);
 
       console.log(`✅ Vínculos atualizados para usuário ${userId}: contractId=${contractId}`);
 
