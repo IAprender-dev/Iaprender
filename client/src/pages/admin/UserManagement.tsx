@@ -244,8 +244,13 @@ export default function UserManagement() {
         description: "Os vínculos de empresa e contrato foram atualizados com sucesso.",
       });
       closeEditModal();
-      // Invalidar cache para recarregar a lista de usuários
+      // Forçar recarregamento completo dos dados
+      queryClient.removeQueries({ queryKey: ['/api/admin/users/list'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
+      // Aguardar um pouco e recarregar novamente
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     },
     onError: (error: any) => {
       toast({

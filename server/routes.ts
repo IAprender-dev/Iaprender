@@ -4067,6 +4067,10 @@ Estrutura JSON obrigatória:
 
       console.log(`📋 Listagem de usuários: ${enrichedUsers.length} de ${totalUsers} (página ${page}) - ${new Date().toLocaleTimeString()}`);
 
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       res.json({
         success: true,
         users: enrichedUsers,
