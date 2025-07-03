@@ -445,6 +445,20 @@ export default function AdminMasterDashboard() {
                       </div>
                     </div>
                   </Button>
+
+                  <Link href="/admin/advanced">
+                    <Button variant="outline" className="w-full justify-start text-left h-auto p-4 border-slate-200 hover:bg-slate-50 border-blue-200 bg-blue-50/50">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <BarChart3 className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-900">Dashboard Avançado</p>
+                          <p className="text-xs text-slate-500">Phase 3.2 - Sistema completo</p>
+                        </div>
+                      </div>
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </div>
