@@ -175,14 +175,14 @@ export class CognitoService {
       return 'admin';
     }
     
-    // Gestores Municipais (Secretários de Educação)
-    if (groups.includes('GestorMunicipal') || groups.includes('SecretariaAdm') || groups.includes('MunicipalManager')) {
+    // Gestores Municipais (Secretários de Educação) - CORRIGIDO: Adicionado "Gestores"
+    if (groups.includes('Gestores') || groups.includes('GestorMunicipal') || groups.includes('SecretariaAdm') || groups.includes('MunicipalManager')) {
       console.log('✅ Usuário identificado como: GESTOR MUNICIPAL');
       return 'municipal_manager';
     }
     
-    // Diretores de Escola
-    if (groups.includes('Diretor') || groups.includes('EscolaAdm') || groups.includes('SchoolDirector')) {
+    // Diretores de Escola - CORRIGIDO: Adicionado "Diretores"
+    if (groups.includes('Diretores') || groups.includes('Diretor') || groups.includes('EscolaAdm') || groups.includes('SchoolDirector')) {
       console.log('✅ Usuário identificado como: DIRETOR');
       return 'school_director';
     }
@@ -193,8 +193,14 @@ export class CognitoService {
       return 'teacher';
     }
     
-    // Alunos (padrão)
-    console.log('✅ Usuário identificado como: ALUNO (padrão)');
+    // Alunos - CORRIGIDO: Adicionado "Alunos"
+    if (groups.includes('Alunos') || groups.includes('Aluno') || groups.includes('Student') || groups.includes('Students')) {
+      console.log('✅ Usuário identificado como: ALUNO');
+      return 'student';
+    }
+    
+    // Fallback padrão
+    console.log('⚠️ Nenhum grupo reconhecido, usando ALUNO como padrão');
     return 'student';
   }
 
