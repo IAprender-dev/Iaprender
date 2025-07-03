@@ -1,567 +1,463 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Check, X, AlertTriangle, Eye, EyeOff } from 'lucide-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { 
+  Users, 
+  Search, 
+  Filter, 
+  RefreshCw, 
+  Eye, 
+  Edit,
+  Shield,
+  Clock,
+  Mail,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  UserCheck,
+  UserX,
+  AlertTriangle,
+  CheckCircle,
+  LogOut
+} from "lucide-react";
+import { useAuth } from "@/lib/AuthContext";
+import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
-// Schema de validação para criação de usuário
-const createUserSchema = z.object({
-  email: z.string().email('Formato de email inválido'),
-  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  group: z.enum(['Admin', 'GestorMunicipal'], {
-    required_error: 'Selecione um grupo'
-  }),
-  companyId: z.string().optional()
-}).refine((data) => {
-  // Se for Gestor Municipal, empresa é obrigatória
-  if (data.group === 'GestorMunicipal') {
-    return data.companyId;
-  }
-  return true;
-}, {
-  message: 'Empresa é obrigatória para Gestores Municipais',
-  path: ['companyId']
-});
-
-type CreateUserForm = z.infer<typeof createUserSchema>;
-
-interface CreateUserResponse {
-  success: boolean;
-  message?: string;
-  userId?: string;
-  tempPassword?: string;
-  userEmail?: string;
-  group?: string;
-  error?: string;
-}
-
-interface Company {
-  id: number;
-  name: string;
-}
-
-interface Contract {
-  id: number;
-  name: string;
+interface CognitoUser {
+  cognitoId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
   status: string;
+  enabled: boolean;
+  createdDate: string;
+  lastModifiedDate: string;
+  groups: string[];
+  localData?: {
+    id: number;
+    role: string;
+    lastLoginAt?: string;
+    firstLogin: boolean;
+  } | null;
 }
 
-interface CompaniesResponse {
-  companies: Company[];
+interface UserStatistics {
+  total: number;
+  active: number;
+  pending: number;
+  inactive: number;
 }
 
-interface ContractsResponse {
-  contracts: Contract[];
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalUsers: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
 }
 
 export default function UserManagement() {
+  const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [showPassword, setShowPassword] = useState(false);
-  const [createdUser, setCreatedUser] = useState<CreateUserResponse | null>(null);
-  const [selectedCompany, setSelectedCompany] = useState<string>('');
-  const [selectedGroup, setSelectedGroup] = useState<string>('');
+  
+  // Filtros e paginação
+  const [selectedGroup, setSelectedGroup] = useState<string>("all");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [selectedUser, setSelectedUser] = useState<CognitoUser | null>(null);
 
-  const form = useForm<CreateUserForm>({
-    resolver: zodResolver(createUserSchema),
-    defaultValues: {
-      email: '',
-      name: ''
-    }
+  // Buscar usuários
+  const { data: usersData, isLoading, error, refetch } = useQuery({
+    queryKey: ['/api/admin/users/list', {
+      group: selectedGroup === 'all' ? '' : selectedGroup,
+      page: currentPage,
+      limit: 10,
+      search: searchTerm,
+      status: selectedStatus
+    }],
+    refetchInterval: 30000, // Atualizar a cada 30 segundos
   });
 
-  // Query para listar grupos disponíveis
-  const { data: groupsData } = useQuery({
-    queryKey: ['/api/admin/cognito/groups'],
-    enabled: true
+  // Buscar estatísticas
+  const { data: statistics } = useQuery({
+    queryKey: ['/api/admin/users/statistics'],
+    refetchInterval: 60000, // Atualizar a cada minuto
   });
 
-  // Query para listar empresas
-  const { data: companiesData } = useQuery<CompaniesResponse>({
-    queryKey: ['/api/admin/companies'],
-    enabled: true
-  });
-
-  // Query para listar contratos da empresa selecionada
-  const { data: contractsData } = useQuery<ContractsResponse>({
-    queryKey: ['/api/admin/companies', selectedCompany, 'contracts'],
-    enabled: !!selectedCompany
-  });
-
-  // Mutation para criar usuário
-  const createUserMutation = useMutation({
-    mutationFn: async (data: CreateUserForm): Promise<CreateUserResponse> => {
-      const response = await fetch('/api/admin/users/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao criar usuário');
-      }
-      
-      return result;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "✅ Usuário criado com sucesso!",
-        description: `${data.userEmail} foi adicionado ao grupo ${data.group}`,
-      });
-      
-      setCreatedUser(data);
-      form.reset();
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "❌ Erro ao criar usuário",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  });
-
-  // Mutation para validar domínio de email
-  const validateEmailMutation = useMutation({
-    mutationFn: async (email: string) => {
-      const response = await fetch('/api/admin/validate-email-domain', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      });
-
-      return response.json();
-    }
-  });
-
-  const onSubmit = (data: CreateUserForm) => {
-    console.log('🔄 Criando usuário:', data);
-    createUserMutation.mutate(data);
+  const users: CognitoUser[] = usersData?.users || [];
+  const pagination: PaginationInfo = usersData?.pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalUsers: 0,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false
+  };
+  const userStats: UserStatistics = usersData?.statistics || {
+    total: 0,
+    active: 0,
+    pending: 0,
+    inactive: 0
   };
 
-  const handleEmailChange = (email: string) => {
-    if (email && email.includes('@')) {
-      validateEmailMutation.mutate(email);
+  // Funções de manipulação
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset para primeira página
+  };
+
+  const handleGroupFilter = (value: string) => {
+    setSelectedGroup(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilter = (value: string) => {
+    setSelectedStatus(value);
+    setCurrentPage(1);
+  };
+
+  const getStatusBadge = (status: string, enabled: boolean) => {
+    if (!enabled) {
+      return <Badge variant="destructive">Desabilitado</Badge>;
+    }
+    
+    switch (status) {
+      case 'CONFIRMED':
+        return <Badge className="bg-green-100 text-green-800">Ativo</Badge>;
+      case 'FORCE_CHANGE_PASSWORD':
+        return <Badge className="bg-yellow-100 text-yellow-800">Senha Temporária</Badge>;
+      case 'UNCONFIRMED':
+        return <Badge className="bg-gray-100 text-gray-800">Não Confirmado</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "📋 Copiado!",
-      description: "Texto copiado para a área de transferência"
-    });
-  };
-
-  const groupLabels = {
-    'Admin': 'Administrador Geral',
-    'GestorMunicipal': 'Gestor Municipal'
+  const getGroupBadge = (groups: string[]) => {
+    if (groups.includes('Admin')) {
+      return <Badge className="bg-red-100 text-red-800">Admin</Badge>;
+    }
+    if (groups.includes('Gestores')) {
+      return <Badge className="bg-blue-100 text-blue-800">Gestor</Badge>;
+    }
+    return <Badge variant="outline">Sem Grupo</Badge>;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center space-x-4">
-          <div className="p-3 bg-blue-100 rounded-lg">
-            <Users className="h-6 w-6 text-blue-600" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestão de Usuários</h1>
-            <p className="text-gray-600">Criar e gerenciar usuários no sistema AWS Cognito</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <Link href="/admin/master">
+                <Button variant="ghost" size="sm">
+                  ← Voltar ao Dashboard
+                </Button>
+              </Link>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Gestão de Usuários AWS Cognito
+              </h1>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                Admin e Gestores
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                Bem-vindo, <span className="font-medium">{user?.firstName || 'Admin'}</span>
+              </span>
+              <Button
+                onClick={logout}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Formulário de Criação */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <UserPlus className="h-5 w-5" />
-                <span>Criar Novo Usuário</span>
-              </CardTitle>
-              <CardDescription>
-                Adicione um novo usuário ao sistema com acesso baseado em grupos
-              </CardDescription>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Estatísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-800">Total de Usuários</CardTitle>
+              <Users className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                  {/* Email */}
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Institucional</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="usuario@prefeitura.cidade.gov.br"
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e);
-                              handleEmailChange(e.target.value);
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                        
-                        {/* Validação de domínio */}
-                        {validateEmailMutation.data && (
-                          <Alert className={validateEmailMutation.data.isAuthorized ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
-                            <AlertTriangle className={`h-4 w-4 ${validateEmailMutation.data.isAuthorized ? "text-green-600" : "text-red-600"}`} />
-                            <AlertDescription className={validateEmailMutation.data.isAuthorized ? "text-green-700" : "text-red-700"}>
-                              {validateEmailMutation.data.message}
-                            </AlertDescription>
-                          </Alert>
-                        )}
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Nome */}
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome Completo</FormLabel>
-                        <FormControl>
-                          <Input placeholder="João Silva Santos" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Grupo */}
-                  <FormField
-                    control={form.control}
-                    name="group"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nível de Acesso</FormLabel>
-                        <Select onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedGroup(value);
-                        }} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione o grupo de usuário" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {Object.entries(groupLabels).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Campos específicos para Gestor Municipal */}
-                  {selectedGroup === 'GestorMunicipal' && (
-                    <>
-                      {/* Empresa Contratante - Layout Premium */}
-                      <div className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="companyId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-base font-semibold text-gray-800 flex items-center gap-2">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                Empresa Contratante
-                                <span className="text-red-500">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <div className="relative">
-                                  <Select onValueChange={(value) => {
-                                    field.onChange(value);
-                                    setSelectedCompany(value);
-                                  }} defaultValue={field.value}>
-                                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 bg-white">
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-sm font-bold">
-                                          🏢
-                                        </div>
-                                        <SelectValue placeholder="Selecione a empresa contratante..." />
-                                      </div>
-                                    </SelectTrigger>
-                                    <SelectContent className="max-w-lg">
-                                      {companiesData?.companies ? 
-                                        companiesData.companies.map((company: any) => (
-                                          <SelectItem key={company.id} value={company.id.toString()} className="p-3 hover:bg-blue-50 cursor-pointer">
-                                            <div className="flex items-center gap-3">
-                                              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
-                                                {company.name.substring(0, 2).toUpperCase()}
-                                              </div>
-                                              <div className="flex-1">
-                                                <div className="font-medium text-gray-900">{company.name}</div>
-                                                <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                                                  <span>📧 {company.email}</span>
-                                                  <span className="text-gray-300">•</span>
-                                                  <span>📋 {company.activeContractsCount || 0} contrato(s)</span>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </SelectItem>
-                                        )) : 
-                                        <SelectItem value="loading" disabled>Carregando empresas com contratos ativos...</SelectItem>
-                                      }
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-
-
-                      {/* Card Premium da Empresa Selecionada */}
-                      {selectedCompany && companiesData?.companies && (
-                        (() => {
-                          const selectedCompanyData = companiesData.companies.find((c: any) => c.id.toString() === selectedCompany);
-                          return selectedCompanyData && (
-                            <div className="relative overflow-hidden mt-4">
-                              <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50">
-                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
-                                <CardContent className="p-6">
-                                  <div className="flex items-start gap-4">
-                                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                                      {selectedCompanyData.name.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="flex-1 space-y-3">
-                                      <div>
-                                        <h3 className="text-xl font-bold text-gray-800 mb-1">{selectedCompanyData.name}</h3>
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                                            ✅ Empresa Verificada
-                                          </span>
-                                          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                                            📋 {selectedCompanyData.activeContractsCount || 0} Contrato(s) Ativo(s)
-                                          </span>
-                                        </div>
-                                      </div>
-                                      
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                          <div className="flex items-center gap-2 text-gray-700">
-                                            <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
-                                              <span className="text-xs">📧</span>
-                                            </div>
-                                            <span className="text-sm"><strong>Email:</strong> {selectedCompanyData.email || 'N/A'}</span>
-                                          </div>
-                                          <div className="flex items-center gap-2 text-gray-700">
-                                            <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-                                              <span className="text-xs">👤</span>
-                                            </div>
-                                            <span className="text-sm"><strong>Contato:</strong> {selectedCompanyData.contactPerson || 'N/A'}</span>
-                                          </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <div className="flex items-center gap-2 text-gray-700">
-                                            <div className="w-5 h-5 bg-purple-100 rounded-full flex items-center justify-center">
-                                              <span className="text-xs">📞</span>
-                                            </div>
-                                            <span className="text-sm"><strong>Telefone:</strong> {selectedCompanyData.phone || 'N/A'}</span>
-                                          </div>
-                                          <div className="flex items-center gap-2 text-gray-700">
-                                            <div className="w-5 h-5 bg-orange-100 rounded-full flex items-center justify-center">
-                                              <span className="text-xs">🏢</span>
-                                            </div>
-                                            <span className="text-sm"><strong>ID:</strong> #{selectedCompanyData.id}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                      
-                                      {selectedCompanyData.address && (
-                                        <div className="pt-3 border-t border-gray-200">
-                                          <div className="flex items-start gap-2 text-gray-700">
-                                            <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center mt-0.5">
-                                              <span className="text-xs">📍</span>
-                                            </div>
-                                            <span className="text-sm"><strong>Endereço:</strong> {selectedCompanyData.address}</span>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          );
-                        })()
-                      )}
-                    </>
-                  )}
-
-
-
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={createUserMutation.isPending}
-                  >
-                    {createUserMutation.isPending ? 'Criando usuário...' : 'Criar Usuário'}
-                  </Button>
-                </form>
-              </Form>
+              <div className="text-2xl font-bold text-blue-900">{userStats.total}</div>
+              <p className="text-xs text-blue-700">Admin e Gestores</p>
             </CardContent>
           </Card>
 
-          {/* Resultado da Criação */}
-          {createdUser && (
-            <Card className="border-green-200 bg-green-50">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-green-800">
-                  <Check className="h-5 w-5" />
-                  <span>Usuário Criado com Sucesso!</span>
-                </CardTitle>
-                <CardDescription className="text-green-700">
-                  Credenciais geradas para o novo usuário
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <Label className="text-sm font-medium text-green-800">Email:</Label>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <Input 
-                        value={createdUser.userEmail || ''} 
-                        readOnly 
-                        className="bg-white"
-                      />
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => copyToClipboard(createdUser.userEmail || '')}
-                      >
-                        📋
-                      </Button>
-                    </div>
-                  </div>
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-800">Usuários Ativos</CardTitle>
+              <UserCheck className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-900">{userStats.active}</div>
+              <p className="text-xs text-green-700">Status confirmado</p>
+            </CardContent>
+          </Card>
 
-                  <div>
-                    <Label className="text-sm font-medium text-green-800">Grupo:</Label>
-                    <Input 
-                      value={groupLabels[createdUser.group as keyof typeof groupLabels] || createdUser.group || ''} 
-                      readOnly 
-                      className="bg-white mt-1"
-                    />
-                  </div>
+          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-yellow-800">Senha Temporária</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-900">{userStats.pending}</div>
+              <p className="text-xs text-yellow-700">Aguardando primeiro acesso</p>
+            </CardContent>
+          </Card>
 
-                  <div>
-                    <Label className="text-sm font-medium text-green-800">Senha Temporária:</Label>
-                    <div className="flex items-center space-x-2 mt-1">
-                      <Input 
-                        type={showPassword ? "text" : "password"}
-                        value={createdUser.tempPassword || ''} 
-                        readOnly 
-                        className="bg-white font-mono"
-                      />
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => copyToClipboard(createdUser.tempPassword || '')}
-                      >
-                        📋
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <Alert className="border-blue-200 bg-blue-50">
-                  <AlertTriangle className="h-4 w-4 text-blue-600" />
-                  <AlertDescription className="text-blue-700">
-                    <strong>Importante:</strong> O usuário deve alterar a senha no primeiro login. 
-                    Envie essas credenciais de forma segura para o usuário.
-                  </AlertDescription>
-                </Alert>
-
-                <Alert className="border-green-200 bg-green-50">
-                  <Check className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-700">
-                    <strong>Acesso à Plataforma:</strong>
-                    <div className="mt-2 space-y-1">
-                      <div>• Acessar: <span className="font-mono bg-white px-1 rounded">https://iaverse.com/auth</span></div>
-                      <div>• Entrar com AWS Cognito usando as credenciais acima</div>
-                      {(createdUser.group === 'Admin' || createdUser.group === 'GestorMunicipal') && (
-                        <div>• Será redirecionado automaticamente para: <strong>Dashboard {createdUser.group === 'Admin' ? 'Administrativo' : 'Municipal'}</strong></div>
-                      )}
-                    </div>
-                  </AlertDescription>
-                </Alert>
-
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => setCreatedUser(null)}
-                >
-                  Criar Outro Usuário
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-gray-800">Inativos</CardTitle>
+              <UserX className="h-4 w-4 text-gray-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-gray-900">{userStats.inactive}</div>
+              <p className="text-xs text-gray-700">Desabilitados ou não confirmados</p>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Informações do Sistema */}
-        <Card>
+        {/* Filtros */}
+        <Card className="mb-6">
           <CardHeader>
-            <CardTitle>ℹ️ Informações do Sistema</CardTitle>
+            <CardTitle className="flex items-center">
+              <Filter className="h-5 w-5 mr-2" />
+              Filtros e Busca
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Grupos Disponíveis:</h4>
-                <ul className="space-y-1 text-gray-600">
-                  {Object.entries(groupLabels).map(([key, label]) => (
-                    <li key={key}>• <strong>{key}:</strong> {label}</li>
-                  ))}
-                </ul>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Buscar por email ou nome..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full"
+                />
               </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Domínios Autorizados:</h4>
-                <ul className="space-y-1 text-gray-600">
-                  <li>• @prefeitura.[cidade].gov.br</li>
-                  <li>• @educacao.[cidade].gov.br</li>
-                  <li>• @escola.[cidade].edu.br</li>
-                  <li>• @estudante.[cidade].edu.br</li>
-                </ul>
-              </div>
+              <Select value={selectedGroup} onValueChange={handleGroupFilter}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filtrar por grupo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os grupos</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Gestores">Gestores</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={selectedStatus} onValueChange={handleStatusFilter}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Filtrar por status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os status</SelectItem>
+                  <SelectItem value="CONFIRMED">Ativo</SelectItem>
+                  <SelectItem value="FORCE_CHANGE_PASSWORD">Senha Temporária</SelectItem>
+                  <SelectItem value="UNCONFIRMED">Não Confirmado</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                size="icon"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Lista de Usuários */}
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Usuários Cadastrados</CardTitle>
+                <CardDescription>
+                  {pagination.totalUsers} usuários encontrados
+                </CardDescription>
+              </div>
+              <Badge variant="outline">
+                Página {pagination.currentPage} de {pagination.totalPages}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="text-center py-8">
+                <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-500">Carregando usuários...</p>
+              </div>
+            ) : error ? (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+                <AlertDescription className="text-red-800">
+                  Erro ao carregar usuários. Verifique suas permissões AWS Cognito.
+                </AlertDescription>
+              </Alert>
+            ) : users.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-500">Nenhum usuário encontrado com os filtros aplicados.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {users.map((user) => (
+                  <div
+                    key={user.cognitoId}
+                    className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3">
+                          <div>
+                            <h3 className="font-medium text-gray-900">
+                              {user.firstName} {user.lastName}
+                            </h3>
+                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                              <Mail className="h-3 w-3" />
+                              <span>{user.email}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-4 mt-2">
+                          {getStatusBadge(user.status, user.enabled)}
+                          {getGroupBadge(user.groups)}
+                          <div className="flex items-center text-xs text-gray-500">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Criado: {new Date(user.createdDate).toLocaleDateString('pt-BR')}
+                          </div>
+                          {user.localData?.lastLoginAt && (
+                            <div className="flex items-center text-xs text-gray-500">
+                              <Clock className="h-3 w-3 mr-1" />
+                              Último acesso: {new Date(user.localData.lastLoginAt).toLocaleDateString('pt-BR')}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedUser(user)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Detalhes
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Paginação */}
+            {users.length > 0 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                <div className="text-sm text-gray-500">
+                  Mostrando {((pagination.currentPage - 1) * pagination.limit) + 1} até{' '}
+                  {Math.min(pagination.currentPage * pagination.limit, pagination.totalUsers)} de{' '}
+                  {pagination.totalUsers} usuários
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={!pagination.hasPrevPage}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Anterior
+                  </Button>
+                  <span className="text-sm font-medium px-3 py-1 bg-gray-100 rounded">
+                    {pagination.currentPage}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={!pagination.hasNextPage}
+                  >
+                    Próximo
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Modal de Detalhes (placeholder) */}
+        {selectedUser && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <Card className="max-w-md w-full">
+              <CardHeader>
+                <CardTitle>Detalhes do Usuário</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Nome Completo</label>
+                    <p className="text-sm text-gray-900">{selectedUser.firstName} {selectedUser.lastName}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Email</label>
+                    <p className="text-sm text-gray-900">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">ID Cognito</label>
+                    <p className="text-sm text-gray-900 font-mono">{selectedUser.cognitoId}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Status</label>
+                    <div className="mt-1">{getStatusBadge(selectedUser.status, selectedUser.enabled)}</div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Grupos</label>
+                    <div className="mt-1">{getGroupBadge(selectedUser.groups)}</div>
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2 mt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => setSelectedUser(null)}
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

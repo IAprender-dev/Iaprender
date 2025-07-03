@@ -143,6 +143,20 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 3, 2025: FASE 4.1 - Sistema de Listagem e Consulta de Usuários AWS Cognito Implementado
+  - ✅ Criados 3 novos endpoints backend: /api/admin/users/list, /api/admin/users/:userId/details, /api/admin/users/statistics
+  - ✅ Implementada interface completa UserManagement.tsx com filtros avançados e paginação
+  - ✅ Sistema de busca por nome/email, filtros por grupo (Admin/Gestores) e status Cognito
+  - ✅ Estatísticas em tempo real: total, ativos, pendentes, inativos com análise por período
+  - ✅ Paginação funcional com navegação entre páginas e controle de limite
+  - ✅ Modal de detalhes do usuário com informações completas do Cognito
+  - ✅ Integração com dados locais do banco para informações complementares
+  - ✅ Adicionados métodos ao CognitoService: listUsersInGroup, getUserDetails, getUserGroups
+  - ✅ Interface responsiva com badges de status e grupos coloridos
+  - ✅ Rota /admin/user-management adicionada ao sistema de navegação
+  - ✅ Botão de acesso no AdminMasterDashboard conectado ao novo sistema
+  - ✅ Sistema testado e funcionando com usuário admin.cognito_029282 do grupo Admin
+  - ⚠️ Permissão AWS AdminListGroupsForUser pendente (comportamento esperado até configuração completa)
 - July 3, 2025: FASE 3.2 - Dashboard Administrativo Avançado Implementado
   - ✅ Criado novo Dashboard Administrativo Avançado (/admin/advanced) com interface enterprise-level
   - ✅ Implementadas 5 abas funcionais: Visão Geral, Analytics, Alertas, Configurações, Monitoramento

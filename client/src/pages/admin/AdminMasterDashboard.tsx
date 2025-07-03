@@ -235,10 +235,10 @@ export default function AdminMasterDashboard() {
                           Administração de IAs
                         </Button>
                       </Link>
-                      <Link href="/admin/users">
+                      <Link href="/admin/user-management">
                         <Button className="w-full justify-start bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white">
                           <UserCheck className="h-4 w-4 mr-2" />
-                          Gestão de Usuários
+                          Gestão de Usuários AWS
                         </Button>
                       </Link>
                       <Link href="/admin/cognito-users">

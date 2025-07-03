@@ -663,6 +663,86 @@ export class CognitoService {
   }
 
   /**
+   * Lista usuários de um grupo específico
+   */
+  async listUsersInGroup(groupName: string): Promise<any[]> {
+    try {
+      const params = {
+        UserPoolId: this.userPoolId,
+        GroupName: groupName,
+        Limit: 60
+      };
+
+      console.log(`🔍 Listando usuários do grupo: ${groupName}`);
+      const result = await this.cognitoIdentityServiceProvider.listUsersInGroup(params).promise();
+      
+      const usersWithGroups = await Promise.all(
+        (result.Users || []).map(async (user) => {
+          try {
+            const userGroups = await this.getUserGroups(user.Username || '');
+            return {
+              ...user,
+              Groups: userGroups
+            };
+          } catch (error) {
+            return {
+              ...user,
+              Groups: [groupName]
+            };
+          }
+        })
+      );
+
+      console.log(`✅ Encontrados ${usersWithGroups.length} usuários no grupo ${groupName}`);
+      return usersWithGroups;
+    } catch (error) {
+      console.error(`❌ Erro ao listar usuários do grupo ${groupName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca detalhes específicos de um usuário
+   */
+  async getUserDetails(username: string): Promise<any> {
+    try {
+      const params = {
+        UserPoolId: this.userPoolId,
+        Username: username
+      };
+
+      console.log(`🔍 Buscando detalhes do usuário: ${username}`);
+      const result = await this.cognitoIdentityServiceProvider.adminGetUser(params).promise();
+      
+      console.log(`✅ Detalhes do usuário ${username} encontrados`);
+      return result;
+    } catch (error) {
+      console.error(`❌ Erro ao buscar detalhes do usuário ${username}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Busca grupos de um usuário específico
+   */
+  async getUserGroups(username: string): Promise<string[]> {
+    try {
+      const params = {
+        UserPoolId: this.userPoolId,
+        Username: username
+      };
+
+      const result = await this.cognitoIdentityServiceProvider.adminListGroupsForUser(params).promise();
+      const groups = result.Groups?.map(group => group.GroupName || '') || [];
+      
+      return groups;
+    } catch (error) {
+      console.error(`❌ Erro ao buscar grupos do usuário ${username}:`, error);
+      return [];
+    }
+  }
+
+  /**
    * Atualizar grupo para usar a nova nomenclatura se necessário
    */
   private mapLegacyGroupName(groupName: string): string {

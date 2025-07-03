@@ -3779,6 +3779,233 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // ==============================================
+  // ENDPOINTS PARA GESTÃO DE USUÁRIOS AWS COGNITO
+  // ==============================================
+
+  // Listar usuários por grupo (Admin e Gestores)
+  app.get('/api/admin/users/list', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { group, page = 1, limit = 20, search = '', status = 'all' } = req.query;
+
+      // Validar se o grupo é permitido
+      const allowedGroups = ['Admin', 'Gestores'];
+      if (group && !allowedGroups.includes(group as string)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Grupo não autorizado. Use: Admin ou Gestores' 
+        });
+      }
+
+      // Buscar usuários no Cognito por grupo
+      let cognitoUsers = [];
+      if (group) {
+        cognitoUsers = await cognitoService.listUsersInGroup(group as string);
+      } else {
+        // Buscar em ambos os grupos se não especificado
+        const adminUsers = await cognitoService.listUsersInGroup('Admin');
+        const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+        cognitoUsers = [...adminUsers, ...gestoresUsers];
+      }
+
+      // Filtrar por status se especificado
+      if (status !== 'all') {
+        cognitoUsers = cognitoUsers.filter(user => user.UserStatus === status);
+      }
+
+      // Filtrar por busca (email ou nome)
+      if (search) {
+        const searchLower = (search as string).toLowerCase();
+        cognitoUsers = cognitoUsers.filter(user => {
+          const email = user.Attributes?.find(attr => attr.Name === 'email')?.Value || '';
+          const firstName = user.Attributes?.find(attr => attr.Name === 'given_name')?.Value || '';
+          const lastName = user.Attributes?.find(attr => attr.Name === 'family_name')?.Value || '';
+          
+          return (
+            email.toLowerCase().includes(searchLower) ||
+            firstName.toLowerCase().includes(searchLower) ||
+            lastName.toLowerCase().includes(searchLower)
+          );
+        });
+      }
+
+      // Paginação
+      const startIndex = (Number(page) - 1) * Number(limit);
+      const endIndex = startIndex + Number(limit);
+      const paginatedUsers = cognitoUsers.slice(startIndex, endIndex);
+
+      // Buscar dados complementares do banco local
+      const userEmails = paginatedUsers.map(user => 
+        user.Attributes?.find(attr => attr.Name === 'email')?.Value
+      ).filter(Boolean);
+
+      const localUsers = await db.select().from(users)
+        .where(sql`${users.email} IN (${userEmails.map(email => `'${email}'`).join(',')})`);
+
+      // Combinar dados do Cognito com dados locais
+      const enrichedUsers = paginatedUsers.map(cognitoUser => {
+        const email = cognitoUser.Attributes?.find(attr => attr.Name === 'email')?.Value;
+        const localUser = localUsers.find(user => user.email === email);
+        
+        return {
+          cognitoId: cognitoUser.Username,
+          email: email,
+          firstName: cognitoUser.Attributes?.find(attr => attr.Name === 'given_name')?.Value,
+          lastName: cognitoUser.Attributes?.find(attr => attr.Name === 'family_name')?.Value,
+          status: cognitoUser.UserStatus,
+          enabled: cognitoUser.Enabled,
+          createdDate: cognitoUser.UserCreateDate,
+          lastModifiedDate: cognitoUser.UserLastModifiedDate,
+          groups: cognitoUser.Groups || [],
+          localData: localUser ? {
+            id: localUser.id,
+            role: localUser.role,
+            lastLoginAt: localUser.lastLoginAt,
+            firstLogin: localUser.firstLogin
+          } : null
+        };
+      });
+
+      // Estatísticas gerais
+      const totalUsers = cognitoUsers.length;
+      const totalPages = Math.ceil(totalUsers / Number(limit));
+      const activeUsers = cognitoUsers.filter(user => user.UserStatus === 'CONFIRMED').length;
+      const pendingUsers = cognitoUsers.filter(user => user.UserStatus === 'FORCE_CHANGE_PASSWORD').length;
+
+      console.log(`📋 Listagem de usuários: ${enrichedUsers.length} de ${totalUsers} (página ${page})`);
+
+      res.json({
+        success: true,
+        users: enrichedUsers,
+        pagination: {
+          currentPage: Number(page),
+          totalPages,
+          totalUsers,
+          limit: Number(limit),
+          hasNextPage: Number(page) < totalPages,
+          hasPrevPage: Number(page) > 1
+        },
+        statistics: {
+          total: totalUsers,
+          active: activeUsers,
+          pending: pendingUsers,
+          inactive: totalUsers - activeUsers - pendingUsers
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao listar usuários:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao listar usuários' 
+      });
+    }
+  });
+
+  // Buscar detalhes específicos de um usuário
+  app.get('/api/admin/users/:userId/details', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+
+      // Buscar usuário no Cognito
+      const cognitoUser = await cognitoService.getUserDetails(userId);
+      if (!cognitoUser) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Usuário não encontrado no Cognito' 
+        });
+      }
+
+      // Buscar grupos do usuário
+      const userGroups = await cognitoService.getUserGroups(userId);
+
+      // Buscar dados locais
+      const email = cognitoUser.Attributes?.find(attr => attr.Name === 'email')?.Value;
+      const localUser = email ? await db.select().from(users)
+        .where(eq(users.email, email))
+        .limit(1) : null;
+
+      const userDetails = {
+        cognitoId: cognitoUser.Username,
+        email: email,
+        firstName: cognitoUser.Attributes?.find(attr => attr.Name === 'given_name')?.Value,
+        lastName: cognitoUser.Attributes?.find(attr => attr.Name === 'family_name')?.Value,
+        phone: cognitoUser.Attributes?.find(attr => attr.Name === 'phone_number')?.Value,
+        status: cognitoUser.UserStatus,
+        enabled: cognitoUser.Enabled,
+        createdDate: cognitoUser.UserCreateDate,
+        lastModifiedDate: cognitoUser.UserLastModifiedDate,
+        groups: userGroups,
+        mfaEnabled: cognitoUser.MFAOptions?.length > 0,
+        localData: localUser?.[0] || null
+      };
+
+      console.log(`👤 Detalhes do usuário ${userId} carregados com sucesso`);
+
+      res.json({
+        success: true,
+        user: userDetails
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar detalhes do usuário:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao buscar detalhes do usuário' 
+      });
+    }
+  });
+
+  // Buscar estatísticas gerais dos usuários
+  app.get('/api/admin/users/statistics', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      // Buscar usuários dos grupos permitidos
+      const adminUsers = await cognitoService.listUsersInGroup('Admin');
+      const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      
+      const allUsers = [...adminUsers, ...gestoresUsers];
+      
+      // Calcular estatísticas
+      const statistics = {
+        total: allUsers.length,
+        byGroup: {
+          admin: adminUsers.length,
+          gestores: gestoresUsers.length
+        },
+        byStatus: {
+          confirmed: allUsers.filter(u => u.UserStatus === 'CONFIRMED').length,
+          pending: allUsers.filter(u => u.UserStatus === 'FORCE_CHANGE_PASSWORD').length,
+          unconfirmed: allUsers.filter(u => u.UserStatus === 'UNCONFIRMED').length,
+          disabled: allUsers.filter(u => !u.Enabled).length
+        },
+        recentActivity: {
+          createdLast7Days: allUsers.filter(u => {
+            const daysDiff = (new Date().getTime() - new Date(u.UserCreateDate).getTime()) / (1000 * 3600 * 24);
+            return daysDiff <= 7;
+          }).length,
+          createdLast30Days: allUsers.filter(u => {
+            const daysDiff = (new Date().getTime() - new Date(u.UserCreateDate).getTime()) / (1000 * 3600 * 24);
+            return daysDiff <= 30;
+          }).length
+        }
+      };
+
+      console.log(`📊 Estatísticas dos usuários calculadas: ${statistics.total} usuários total`);
+
+      res.json({
+        success: true,
+        statistics
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao buscar estatísticas dos usuários' 
+      });
+    }
+  });
+
   // Buscar empresas contratantes com dados detalhados e contratos ativos
   app.get('/api/admin/companies', authenticateAdmin, async (req: Request, res: Response) => {
     try {

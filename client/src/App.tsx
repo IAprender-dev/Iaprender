@@ -147,6 +147,7 @@ function Router() {
       <Route path="/admin/ai/litellm-management" component={LiteLLMManagement} />
       <Route path="/admin/contracts" component={ContractManagement} />
       <Route path="/admin/users" component={UserManagement} />
+      <Route path="/admin/user-management" component={UserManagement} />
       <Route path="/admin/cognito-users" component={CognitoUserManagement} />
       <Route path="/admin/aws-permissions" component={AWSPermissionsManager} />
       
