@@ -4267,7 +4267,7 @@ Estrutura JSON obrigatória:
         });
       }
 
-      // Buscar usuário no banco local pelo cognitoId ou username (fallback para usuários antigos)
+      // Buscar usuário no banco local pelo cognitoId, username ou email
       console.log(`🔍 Buscando usuário com cognitoUserId: "${userId}"`);
       let localUser = await db.select()
         .from(users)
@@ -4280,6 +4280,15 @@ Estrutura JSON obrigatória:
         localUser = await db.select()
           .from(users)
           .where(eq(users.username, userId))
+          .limit(1);
+      }
+      
+      // Se ainda não encontrou, tentar pelo email (para usuários sem cognitoUserId)
+      if (localUser.length === 0) {
+        console.log(`🔍 Tentando buscar pelo email: "${userId}"`);
+        localUser = await db.select()
+          .from(users)
+          .where(eq(users.email, userId))
           .limit(1);
       }
       

@@ -272,14 +272,14 @@ export default function UserManagement() {
       : selectedContractId;
     
     console.log('🎯 [FRONTEND] Dados para envio:', {
-      userId: editingUser.cognitoId,
+      userId: editingUser.email, // Usar email em vez de cognitoId para busca no banco
       contractId,
       selectedCompanyId,
       selectedContractId
     });
     
     updateContractMutation.mutate({
-      userId: editingUser.cognitoId,
+      userId: editingUser.email, // Usar email para garantir que encontre o usuário no banco
       contractId
     });
   };
