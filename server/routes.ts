@@ -3918,8 +3918,39 @@ Estrutura JSON obrigatória:
   // ENDPOINTS PARA GESTÃO DE USUÁRIOS AWS COGNITO
   // ==============================================
 
+  // Endpoint especial para dados frescos sem cache
+  app.get('/api/admin/users/fresh', authenticateAdmin, async (req: Request, res: Response) => {
+    console.log(`🔥 [FRESH-DATA] Solicitação de dados frescos: ${new Date().toISOString()}`);
+    try {
+      // Força nova consulta sem usar qualquer cache
+      const timestamp = Date.now();
+      
+      // Buscar usuários diretamente do banco sem cache
+      const allLocalUsers = await db.select().from(users);
+      console.log(`💾 [FRESH-DB] Encontrados ${allLocalUsers.length} usuários no banco:`, 
+        allLocalUsers.map(u => `${u.username}(contract_id:${u.contractId})`));
+      
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      res.set('Last-Modified', new Date().toUTCString());
+      res.set('ETag', `"fresh-${timestamp}"`);
+      
+      res.json({
+        success: true,
+        users: allLocalUsers,
+        timestamp,
+        fresh: true
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar dados frescos:', error);
+      res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    }
+  });
+
   // Listar usuários por grupo (Admin e Gestores)
   app.get('/api/admin/users/list', authenticateAdmin, async (req: Request, res: Response) => {
+    console.log(`🚀 [FRESH-REQUEST] Nova requisição de listagem: ${new Date().toISOString()}`);
     try {
       const { group, page = 1, limit = 20, search = '', status = 'all' } = req.query;
 
@@ -3975,6 +4006,7 @@ Estrutura JSON obrigatória:
       ).filter(Boolean);
 
       console.log(`📧 Emails extraídos do Cognito:`, userEmails);
+      console.log(`🔄 [FORCE-QUERY] Executando consulta direta no banco: ${Date.now()}`);
 
       if (userEmails.length === 0) {
         console.log(`⚠️ Nenhum email encontrado nos usuários do Cognito`);

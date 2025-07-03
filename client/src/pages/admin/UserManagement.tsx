@@ -249,7 +249,10 @@ export default function UserManagement() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
       // Aguardar um pouco e recarregar novamente
       setTimeout(() => {
-        window.location.reload();
+        // Adicionar timestamp para forçar nova requisição
+        const url = new URL(window.location.href);
+        url.searchParams.set('_t', Date.now().toString());
+        window.location.href = url.toString();
       }, 500);
     },
     onError: (error: any) => {
