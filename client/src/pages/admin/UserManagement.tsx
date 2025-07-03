@@ -119,9 +119,20 @@ export default function UserManagement() {
   });
 
   // Buscar contratos da empresa selecionada
-  const { data: contractsData } = useQuery({
+  const { data: contractsData, isLoading: contractsLoading } = useQuery({
     queryKey: ['/api/admin/companies', selectedCompanyId, 'contracts'],
-    enabled: !!selectedCompanyId,
+    queryFn: async () => {
+      if (!selectedCompanyId || selectedCompanyId === "none") return { contracts: [] };
+      console.log('🔍 Buscando contratos para empresa:', selectedCompanyId);
+      const response = await fetch(`/api/admin/companies/${selectedCompanyId}/contracts`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch contracts');
+      const data = await response.json();
+      console.log('📋 Contratos recebidos:', data);
+      return data;
+    },
+    enabled: !!selectedCompanyId && selectedCompanyId !== "none",
   });
 
   const users: CognitoUser[] = usersData?.users || [];
@@ -751,24 +762,33 @@ export default function UserManagement() {
                   </div>
 
                   {/* Seleção de Contrato */}
-                  {selectedCompanyId && (
+                  {selectedCompanyId && selectedCompanyId !== "none" && (
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-2 block">
                         Selecionar Contrato:
                       </label>
-                      <Select value={selectedContractId} onValueChange={setSelectedContractId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Escolha um contrato..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Nenhum contrato</SelectItem>
-                          {contractsData?.contracts?.map((contract: any) => (
-                            <SelectItem key={contract.id} value={contract.id.toString()}>
-                              {contract.contractNumber} - {contract.contractName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      {contractsLoading ? (
+                        <div className="text-sm text-gray-500">Carregando contratos...</div>
+                      ) : (
+                        <Select value={selectedContractId} onValueChange={setSelectedContractId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Escolha um contrato..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Nenhum contrato</SelectItem>
+                            {contractsData?.contracts?.map((contract: any) => (
+                              <SelectItem key={contract.id} value={contract.id.toString()}>
+                                {contract.contract_number} - {contract.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {contractsData?.contracts && contractsData.contracts.length === 0 && !contractsLoading && (
+                        <div className="text-sm text-amber-600 mt-2">
+                          ⚠️ Nenhum contrato ativo encontrado para esta empresa
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -782,9 +802,8 @@ export default function UserManagement() {
                         );
                         return selectedContract ? (
                           <div className="text-xs text-green-800">
-                            <p><strong>Empresa:</strong> {selectedContract.companyName}</p>
-                            <p><strong>Contrato:</strong> {selectedContract.contractNumber}</p>
-                            <p><strong>Nome:</strong> {selectedContract.contractName}</p>
+                            <p><strong>Contrato:</strong> {selectedContract.contract_number}</p>
+                            <p><strong>Nome:</strong> {selectedContract.name}</p>
                           </div>
                         ) : null;
                       })()}
