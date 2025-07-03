@@ -244,16 +244,11 @@ export default function UserManagement() {
         description: "Os vínculos de empresa e contrato foram atualizados com sucesso.",
       });
       closeEditModal();
-      // Forçar recarregamento completo dos dados
-      queryClient.removeQueries({ queryKey: ['/api/admin/users/list'] });
+      // Invalidar cache para buscar dados frescos SEM refresh da página
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
-      // Aguardar um pouco e recarregar novamente
-      setTimeout(() => {
-        // Adicionar timestamp para forçar nova requisição
-        const url = new URL(window.location.href);
-        url.searchParams.set('_t', Date.now().toString());
-        window.location.href = url.toString();
-      }, 500);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/statistics'] });
+      // Forçar refetch imediato
+      refetch();
     },
     onError: (error: any) => {
       toast({
