@@ -91,8 +91,8 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState<CognitoUser | null>(null);
   const [companies, setCompanies] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
-  const [selectedContractId, setSelectedContractId] = useState<string>("");
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("none");
+  const [selectedContractId, setSelectedContractId] = useState<string>("none");
 
   // Buscar usuários
   const { data: usersData, isLoading, error, refetch } = useQuery({
@@ -186,19 +186,19 @@ export default function UserManagement() {
   // Funções auxiliares para edição
   const openEditModal = (user: CognitoUser) => {
     setEditingUser(user);
-    setSelectedCompanyId(user.contractInfo?.companyId?.toString() || "");
-    setSelectedContractId(user.contractInfo?.contractId?.toString() || "");
+    setSelectedCompanyId(user.contractInfo?.companyId?.toString() || "none");
+    setSelectedContractId(user.contractInfo?.contractId?.toString() || "none");
   };
 
   const closeEditModal = () => {
     setEditingUser(null);
-    setSelectedCompanyId("");
-    setSelectedContractId("");
+    setSelectedCompanyId("none");
+    setSelectedContractId("none");
   };
 
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompanyId(companyId);
-    setSelectedContractId(""); // Reset contract quando empresa muda
+    setSelectedContractId("none"); // Reset contract quando empresa muda
   };
 
   // Mutation para atualizar vínculos
@@ -240,9 +240,14 @@ export default function UserManagement() {
   const handleSaveContract = () => {
     if (!editingUser) return;
     
+    // Se empresa é "none" ou contrato é "none", então contractId é null
+    const contractId = (selectedCompanyId === "none" || selectedContractId === "none") 
+      ? null 
+      : selectedContractId;
+    
     updateContractMutation.mutate({
       userId: editingUser.cognitoId,
-      contractId: selectedContractId === "none" ? null : selectedContractId || null
+      contractId
     });
   };
 
@@ -735,7 +740,7 @@ export default function UserManagement() {
                         <SelectValue placeholder="Escolha uma empresa..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Nenhuma empresa</SelectItem>
+                        <SelectItem value="none">Nenhuma empresa</SelectItem>
                         {companiesData?.companies?.map((company: any) => (
                           <SelectItem key={company.id} value={company.id.toString()}>
                             {company.name}
