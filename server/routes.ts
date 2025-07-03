@@ -4012,15 +4012,22 @@ Estrutura JSON obrigatória:
         console.log(`⚠️ Nenhum email encontrado nos usuários do Cognito`);
       }
 
-      const localUsers = await db.select({
+      // BUSCAR TODOS os usuários do banco primeiro para garantir dados frescos
+      const allLocalUsers = await db.select({
         id: users.id,
         email: users.email,
         role: users.role,
         lastLoginAt: users.lastLoginAt,
         firstLogin: users.firstLogin,
         contractId: users.contractId
-      }).from(users)
-        .where(sql`${users.email} IN (${userEmails.map(email => `'${email}'`).join(',')})`);
+      }).from(users);
+      
+      console.log(`💾 [ALL-DB] Todos usuários no banco:`, allLocalUsers.map(u => `${u.email}(contract:${u.contractId})`));
+      
+      // Filtrar apenas os que estão no Cognito
+      const localUsers = allLocalUsers.filter(localUser => 
+        userEmails.includes(localUser.email)
+      );
 
       console.log(`📊 Local users encontrados:`, localUsers.map(u => ({ email: u.email, contractId: u.contractId })));
 
