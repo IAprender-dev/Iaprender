@@ -279,6 +279,13 @@ const AdminMasterDashboard: React.FC = () => {
                     </Button>
                   </Link>
 
+                  <Link href="/admin/security">
+                    <Button className="w-full justify-start h-12 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white shadow-lg">
+                      <Shield className="h-5 w-5 mr-3" />
+                      Segurança & Compliance
+                    </Button>
+                  </Link>
+
                   <Link href="/admin/advanced">
                     <Button className="w-full justify-start h-12 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white shadow-lg">
                       <BarChart3 className="h-5 w-5 mr-3" />
