@@ -12,7 +12,6 @@ import {
   Search, 
   Filter, 
   RefreshCw, 
-  Eye, 
   Edit,
   Shield,
   Clock,
@@ -243,7 +242,7 @@ export default function UserManagement() {
     
     updateContractMutation.mutate({
       userId: editingUser.cognitoId,
-      contractId: selectedContractId || null
+      contractId: selectedContractId === "none" ? null : selectedContractId || null
     });
   };
 
@@ -503,8 +502,7 @@ export default function UserManagement() {
                           onClick={() => setSelectedUser(user)}
                           className="text-blue-600 border-blue-300 hover:bg-blue-50"
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          👁️ Visualizar
+                          Visualizar
                         </Button>
                         {user.groups.includes('Gestores') && (
                           <Button
@@ -566,7 +564,7 @@ export default function UserManagement() {
             <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Eye className="h-5 w-5 text-blue-600" />
+                  <Users className="h-5 w-5 text-blue-600" />
                   <span>Detalhes do Usuário</span>
                 </CardTitle>
               </CardHeader>
@@ -758,7 +756,7 @@ export default function UserManagement() {
                           <SelectValue placeholder="Escolha um contrato..." />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Nenhum contrato</SelectItem>
+                          <SelectItem value="none">Nenhum contrato</SelectItem>
                           {contractsData?.contracts?.map((contract: any) => (
                             <SelectItem key={contract.id} value={contract.id.toString()}>
                               {contract.contractNumber} - {contract.contractName}

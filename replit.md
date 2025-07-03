@@ -143,6 +143,17 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 3, 2025: PASSO 3 - Sistema Completo de Visualização e Edição de Vínculos Empresa-Contrato para Usuários Gestores
+  - ✅ Implementado sistema completo de mutation para atualizar vínculos de empresa e contrato
+  - ✅ Corrigido erro do Select.Item usando value="none" em vez de string vazia
+  - ✅ Removido ícone de olho dos botões "Visualizar" nos cards dos usuários
+  - ✅ Implementada função handleSaveContract com tratamento adequado para valores null
+  - ✅ Adicionado endpoint PATCH /api/admin/users/:userId/update-contract funcional
+  - ✅ Sistema de loading states, notificações de sucesso/erro e invalidação de cache
+  - ✅ Validação completa: selectedContractId="none" é convertido para null antes do envio
+  - ✅ Interface limpa com botões "Visualizar" (sem ícone) e "Editar Vínculos" (verde)
+  - ✅ Modal de edição com dropdowns dinâmicos e preview dos vínculos atuais/novos
+  - ✅ Sistema totalmente funcional para gestão de vínculos empresa-contrato de gestores
 - July 3, 2025: PASSO 2 - Sistema Completo de Visualização e Edição de Empresas e Contratos
   - ✅ Funcionalidades de visualização e edição totalmente implementadas
   - ✅ Botões "Visualizar" (👁️) e "Editar" (✏️) para empresas e contratos individuais
