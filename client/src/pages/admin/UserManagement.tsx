@@ -46,6 +46,16 @@ interface CognitoUser {
     role: string;
     lastLoginAt?: string;
     firstLogin: boolean;
+    contractId?: number;
+  } | null;
+  contractInfo?: {
+    contractId: number;
+    contractNumber: string;
+    contractName: string;
+    companyId: number;
+    companyName: string;
+    companyEmail: string;
+    companyPhone: string;
   } | null;
 }
 
@@ -362,6 +372,46 @@ export default function UserManagement() {
                             </div>
                           )}
                         </div>
+
+                        {/* Informações de Empresa e Contrato - apenas para Gestores */}
+                        {user.groups.includes('Gestores') && user.contractInfo && (
+                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-start space-x-4">
+                              <div className="flex-1">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                                  <div>
+                                    <span className="font-medium text-blue-800">Empresa:</span>
+                                    <p className="text-blue-700">{user.contractInfo.companyName}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-blue-800">Contrato:</span>
+                                    <p className="text-blue-700">{user.contractInfo.contractNumber}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-blue-800">Email da Empresa:</span>
+                                    <p className="text-blue-700">{user.contractInfo.companyEmail}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-blue-800">Telefone:</span>
+                                    <p className="text-blue-700">{user.contractInfo.companyPhone || 'N/A'}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Aviso para Gestores sem empresa/contrato vinculado */}
+                        {user.groups.includes('Gestores') && !user.contractInfo && (
+                          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs text-yellow-800 font-medium">
+                                Gestor sem empresa/contrato vinculado
+                              </span>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="flex items-center space-x-2">
                         <Button

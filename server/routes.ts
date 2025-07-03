@@ -3968,13 +3968,61 @@ Estrutura JSON obrigatória:
         user.Attributes?.find(attr => attr.Name === 'email')?.Value
       ).filter(Boolean);
 
-      const localUsers = await db.select().from(users)
+      const localUsers = await db.select({
+        id: users.id,
+        email: users.email,
+        role: users.role,
+        lastLoginAt: users.lastLoginAt,
+        firstLogin: users.firstLogin,
+        contractId: users.contractId
+      }).from(users)
         .where(sql`${users.email} IN (${userEmails.map(email => `'${email}'`).join(',')})`);
 
-      // Combinar dados do Cognito com dados locais
+      // Buscar informações de contratos e empresas para usuários com contractId
+      const contractIds = localUsers
+        .filter(user => user.contractId)
+        .map(user => user.contractId);
+      
+      let contractsWithCompanies = [];
+      if (contractIds.length > 0) {
+        contractsWithCompanies = await db.select({
+          contractId: contracts.id,
+          contractNumber: contracts.contractNumber,
+          contractName: contracts.name,
+          companyId: companies.id,
+          companyName: companies.name,
+          companyEmail: companies.email,
+          companyPhone: companies.phone
+        })
+        .from(contracts)
+        .leftJoin(companies, eq(contracts.companyId, companies.id))
+        .where(sql`${contracts.id} IN (${contractIds.join(',')})`);
+      }
+
+      // Combinar dados do Cognito com dados locais e informações de empresa/contrato
       const enrichedUsers = paginatedUsers.map(cognitoUser => {
         const email = cognitoUser.Attributes?.find(attr => attr.Name === 'email')?.Value;
         const localUser = localUsers.find(user => user.email === email);
+        const isGestor = cognitoUser.Groups?.includes('Gestores');
+        
+        // Buscar informações de contrato/empresa se for gestor e tiver contractId
+        let contractInfo = null;
+        if (isGestor && localUser?.contractId) {
+          const contractData = contractsWithCompanies.find(contract => 
+            contract.contractId === localUser.contractId
+          );
+          if (contractData) {
+            contractInfo = {
+              contractId: contractData.contractId,
+              contractNumber: contractData.contractNumber,
+              contractName: contractData.contractName,
+              companyId: contractData.companyId,
+              companyName: contractData.companyName,
+              companyEmail: contractData.companyEmail,
+              companyPhone: contractData.companyPhone
+            };
+          }
+        }
         
         return {
           cognitoId: cognitoUser.Username,
@@ -3990,8 +4038,10 @@ Estrutura JSON obrigatória:
             id: localUser.id,
             role: localUser.role,
             lastLoginAt: localUser.lastLoginAt,
-            firstLogin: localUser.firstLogin
-          } : null
+            firstLogin: localUser.firstLogin,
+            contractId: localUser.contractId
+          } : null,
+          contractInfo: contractInfo // Informações de empresa e contrato para gestores
         };
       });
 
