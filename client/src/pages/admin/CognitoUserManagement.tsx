@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, AlertCircle, CheckCircle, Clock, Settings } from 'lucide-react';
+import { Users, UserPlus, Shield, AlertCircle, CheckCircle, Clock, Settings, Check, Copy, ExternalLink, AlertTriangle, Info } from 'lucide-react';
 
 interface Company {
   id: number;
@@ -65,6 +65,7 @@ export default function CognitoUserManagement() {
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [createdUser, setCreatedUser] = useState<any>(null);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -216,6 +217,9 @@ export default function CognitoUserManagement() {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        // Capturar informações do usuário criado
+        setCreatedUser(data);
+        
         toast({
           title: "Usuário Criado",
           description: `Usuário ${userForm.email} criado com sucesso no grupo ${userForm.group}`,
@@ -339,6 +343,128 @@ export default function CognitoUserManagement() {
                 </AlertDescription>
               </Alert>
             )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resultado da Criação */}
+      {createdUser && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2 text-green-800">
+              <Check className="h-5 w-5" />
+              <span>Usuário Criado com Sucesso!</span>
+            </CardTitle>
+            <CardDescription className="text-green-700">
+              Credenciais geradas e URL de primeiro acesso criada
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <Label className="text-sm font-medium text-green-800">Email:</Label>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Input 
+                    value={createdUser.userEmail || ''} 
+                    readOnly 
+                    className="bg-white"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigator.clipboard.writeText(createdUser.userEmail || '')}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium text-green-800">Senha Temporária:</Label>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Input 
+                    value={createdUser.tempPassword || ''} 
+                    readOnly 
+                    className="bg-white font-mono"
+                    type="password"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigator.clipboard.writeText(createdUser.tempPassword || '')}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-green-800">ID do Usuário:</Label>
+                <div className="flex items-center space-x-2 mt-1">
+                  <Input 
+                    value={createdUser.userId || ''} 
+                    readOnly 
+                    className="bg-white font-mono"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => navigator.clipboard.writeText(createdUser.userId || '')}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {createdUser.firstAccessUrl && (
+                <div>
+                  <Label className="text-sm font-medium text-green-800">URL de Primeiro Acesso:</Label>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <Input 
+                      value={window.location.origin + createdUser.firstAccessUrl} 
+                      readOnly 
+                      className="bg-white font-mono text-xs"
+                    />
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => navigator.clipboard.writeText(window.location.origin + createdUser.firstAccessUrl)}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="default"
+                      onClick={() => window.open(window.location.origin + createdUser.firstAccessUrl, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Alert className="border-blue-200 bg-blue-50">
+              <AlertTriangle className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-700">
+                <strong>Importante:</strong> O usuário deve usar a URL de primeiro acesso para alterar a senha temporária e concluir o onboarding personalizado.
+              </AlertDescription>
+            </Alert>
+
+            <Alert className="border-purple-200 bg-purple-50">
+              <Info className="h-4 w-4 text-purple-600" />
+              <AlertDescription className="text-purple-700">
+                <strong>Sistema de Onboarding:</strong> A URL inclui tutorial personalizado para {createdUser.group} e redirecionamento automático para o dashboard apropriado.
+              </AlertDescription>
+            </Alert>
+
+            <Button 
+              onClick={() => setCreatedUser(null)} 
+              variant="outline" 
+              className="w-full"
+            >
+              Criar Outro Usuário
+            </Button>
           </CardContent>
         </Card>
       )}
