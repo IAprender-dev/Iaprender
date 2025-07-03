@@ -1970,6 +1970,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const contractsData = await db
         .select({
           id: contracts.id,
+          contractNumber: contracts.contractNumber,
           companyName: companies.name,
           clientName: companies.contactPerson,
           email: companies.email,
@@ -2071,18 +2072,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         company = newCompany[0];
       }
 
+      // Gerar número único do contrato
+      const contractYear = new Date().getFullYear();
+      const contractCount = await db.select().from(contracts).execute();
+      const contractNumber = `CTR-${String(contractCount.length + 1).padStart(4, '0')}-${contractYear}`;
+
       // Criar contrato
       const newContract = await db.insert(contracts).values({
+        contractNumber: contractNumber,
         companyId: company.id,
-        name: `Contrato ${companyName} - ${new Date().getFullYear()}`,
+        name: `Contrato ${companyName} - ${contractYear}`,
         description: `Contrato ${planType} para ${companyName}`,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
+        startDate: startDate,
+        endDate: endDate,
         maxUsers: totalLicenses,
         maxTokens: (tokenLimits?.teacher || 10000) + (tokenLimits?.student || 5000),
         status: status || 'active',
         planType: planType || 'basic',
-        costUsd: totalLicenses * pricePerLicense,
         maxTeachers: Math.floor(totalLicenses * 0.1), // 10% professores
         maxStudents: Math.floor(totalLicenses * 0.9), // 90% alunos
         pricePerLicense: pricePerLicense,
@@ -2185,25 +2191,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pricePerLicense
       } = req.body;
 
-      // Validar dados obrigatórios
-      if (!name || !totalLicenses || !pricePerLicense) {
-        return res.status(400).json({ error: 'Nome, licenças e preço são obrigatórios' });
+      console.log('📝 Dados recebidos para edição do contrato:', req.body);
+
+      // Validar dados obrigatórios com verificação mais específica
+      if (!name || name.trim() === '') {
+        return res.status(400).json({ error: 'Nome do contrato é obrigatório' });
+      }
+      if (!totalLicenses || totalLicenses <= 0) {
+        return res.status(400).json({ error: 'Total de licenças deve ser maior que zero' });
+      }
+      if (!pricePerLicense || pricePerLicense <= 0) {
+        return res.status(400).json({ error: 'Preço por licença deve ser maior que zero' });
       }
 
       const updatedContract = await db
         .update(contracts)
         .set({
-          name,
+          name: name.trim(),
           description: description || null,
           planType: planType || 'basic',
-          startDate: new Date(startDate),
-          endDate: new Date(endDate),
-          totalLicenses,
-          maxTeachers: maxTeachers || Math.floor(totalLicenses * 0.1),
-          maxStudents: maxStudents || Math.floor(totalLicenses * 0.9),
-          pricePerLicense,
-          costUsd: totalLicenses * pricePerLicense,
-          updatedAt: new Date()
+          startDate: startDate,
+          endDate: endDate,
+          totalLicenses: parseInt(String(totalLicenses)),
+          maxUsers: parseInt(String(totalLicenses)),
+          maxTeachers: maxTeachers ? parseInt(String(maxTeachers)) : Math.floor(parseInt(String(totalLicenses)) * 0.1),
+          maxStudents: maxStudents ? parseInt(String(maxStudents)) : Math.floor(parseInt(String(totalLicenses)) * 0.9),
+          pricePerLicense: parseFloat(String(pricePerLicense)),
+          availableLicenses: parseInt(String(totalLicenses))
         })
         .where(eq(contracts.id, parseInt(id)))
         .returning();
@@ -4223,6 +4237,7 @@ Estrutura JSON obrigatória:
           companyCreatedAt: companies.createdAt,
           // Dados do contrato (podem ser null se não houver contratos)
           contractId: contracts.id,
+          contractNumber: contracts.contractNumber,
           contractName: contracts.name,
           contractDescription: contracts.description,
           contractPlanType: contracts.planType,
@@ -4267,6 +4282,7 @@ Estrutura JSON obrigatória:
         if (row.contractId) {
           companiesMap.get(companyKey).contracts.push({
             id: row.contractId,
+            contractNumber: row.contractNumber,
             name: row.contractName,
             description: row.contractDescription,
             planType: row.contractPlanType,

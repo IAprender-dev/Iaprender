@@ -52,6 +52,7 @@ interface Company {
 
 interface Contract {
   id: number;
+  contractNumber: string;
   name: string;
   description?: string;
   planType: 'basic' | 'standard' | 'premium' | 'enterprise';
@@ -319,15 +320,15 @@ export default function CompanyContractManagement() {
   const openEditContract = (contract: Contract) => {
     setSelectedContract(contract);
     setEditContract({
-      name: contract.name,
+      name: contract.name || "",
       description: contract.description || "",
-      planType: contract.planType,
-      startDate: contract.startDate.split('T')[0],
-      endDate: contract.endDate.split('T')[0],
-      totalLicenses: contract.totalLicenses,
-      maxTeachers: contract.maxTeachers,
-      maxStudents: contract.maxStudents,
-      pricePerLicense: contract.pricePerLicense
+      planType: contract.planType || "basic",
+      startDate: contract.startDate ? contract.startDate.split('T')[0] : new Date().toISOString().split('T')[0],
+      endDate: contract.endDate ? contract.endDate.split('T')[0] : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      totalLicenses: contract.totalLicenses || 10,
+      maxTeachers: contract.maxTeachers || 5,
+      maxStudents: contract.maxStudents || 50,
+      pricePerLicense: contract.pricePerLicense || 29.90
     });
     setIsEditContractModalOpen(true);
   };
@@ -670,7 +671,12 @@ export default function CompanyContractManagement() {
                             <div key={contract.id} className="border border-gray-200 rounded-lg p-4 bg-white">
                               <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center space-x-2">
-                                  <h5 className="font-medium text-gray-900">{contract.name}</h5>
+                                  <div>
+                                    <h5 className="font-medium text-gray-900">{contract.name}</h5>
+                                    {contract.contractNumber && (
+                                      <span className="text-xs text-gray-500 font-mono">#{contract.contractNumber}</span>
+                                    )}
+                                  </div>
                                   {getPlanBadge(contract.planType)}
                                   {getStatusBadge(contract.status)}
                                 </div>

@@ -226,6 +226,7 @@ export const companies = pgTable("companies", {
 // Contracts
 export const contracts = pgTable("contracts", {
   id: serial("id").primaryKey(),
+  contractNumber: text("contract_number").unique().notNull(), // Identificador único do contrato
   companyId: integer("company_id").references(() => companies.id).notNull(),
   name: text("name").notNull(),
   description: text("description"),
