@@ -4191,6 +4191,8 @@ Estrutura JSON obrigatória:
       const { userId } = req.params;
       const { contractId } = req.body;
 
+      console.log(`🔄 Atualizando vínculos para usuário ${userId} com contractId: ${contractId}`);
+
       // Validação básica
       if (!userId) {
         return res.status(400).json({
@@ -4199,11 +4201,23 @@ Estrutura JSON obrigatória:
         });
       }
 
-      // Buscar usuário no banco local pelo cognitoId
-      const localUser = await db.select()
+      // Buscar usuário no banco local pelo cognitoId ou username (fallback para usuários antigos)
+      console.log(`🔍 Buscando usuário com cognitoUserId: "${userId}"`);
+      let localUser = await db.select()
         .from(users)
         .where(eq(users.cognitoUserId, userId))
         .limit(1);
+      
+      // Se não encontrou pelo cognitoUserId, tentar pelo username (usuários antigos)
+      if (localUser.length === 0) {
+        console.log(`🔍 Tentando buscar pelo username: "${userId}"`);
+        localUser = await db.select()
+          .from(users)
+          .where(eq(users.username, userId))
+          .limit(1);
+      }
+      
+      console.log(`📋 Resultado da busca:`, localUser.length > 0 ? `Encontrado usuário ID ${localUser[0].id} (${localUser[0].email})` : 'Nenhum usuário encontrado');
 
       if (localUser.length === 0) {
         return res.status(404).json({
@@ -4214,13 +4228,7 @@ Estrutura JSON obrigatória:
 
       const user = localUser[0];
 
-      // Verificar se o usuário é um gestor
-      if (user.role !== 'municipal_manager') {
-        return res.status(400).json({
-          success: false,
-          error: 'Apenas usuários gestores podem ter vínculos de contrato atualizados'
-        });
-      }
+      console.log(`👤 Usuário encontrado: ${user.email} (role: ${user.role})`);
 
       // Verificar se o contrato existe (se contractId foi fornecido)
       if (contractId) {
