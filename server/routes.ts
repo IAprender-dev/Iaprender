@@ -3984,6 +3984,8 @@ Estrutura JSON obrigatória:
       }).from(users)
         .where(sql`${users.email} IN (${userEmails.map(email => `'${email}'`).join(',')})`);
 
+      console.log(`📊 Local users encontrados:`, localUsers.map(u => ({ email: u.email, contractId: u.contractId })));
+
       // Buscar informações de contratos e empresas para usuários com contractId
       const contractIds = localUsers
         .filter(user => user.contractId)
