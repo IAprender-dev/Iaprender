@@ -31,7 +31,7 @@ import AWSCostManagement from "@/pages/admin/AWSCostManagement";
 import LiteLLMManagement from "@/pages/admin/LiteLLMManagement";
 import ContractManagement from "@/pages/admin/ContractManagement";
 import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
-import ContractValidationSystem from "@/pages/admin/ContractValidationSystem";
+
 import UserManagement from "@/pages/admin/UserManagement";
 
 import CognitoUserManagement from "@/pages/admin/CognitoUserManagement";
@@ -150,7 +150,7 @@ function Router() {
       <Route path="/admin/ai/litellm-management" component={LiteLLMManagement} />
       <Route path="/admin/contracts" component={ContractManagement} />
       <Route path="/admin/companies-contracts" component={CompanyContractManagement} />
-      <Route path="/admin/validation-system" component={ContractValidationSystem} />
+
       <Route path="/admin/users" component={UserManagement} />
       <Route path="/admin/user-management" component={UserManagement} />
 
