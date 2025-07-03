@@ -122,6 +122,26 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - CDN integration for static assets
 - Load balancing for AI API requests
 
+## Roadmap Futuro (Documentado para Implementação Posterior)
+
+### FASE 4 - Sistema de Gestão Educacional Completo
+- Sistema de Turmas e Disciplinas (criação, gestão, associações)
+- Sistema de Notas e Avaliações (lançamento, cálculos, relatórios)
+- Sistema de Frequência (controle presença, alertas)
+- Portal do Aluno/Responsável (boletim online, comunicação)
+
+### FASE 5 - Ferramentas Pedagógicas Avançadas
+- Sistema de criação de provas automatizadas
+- Banco de questões por disciplina
+- Correção automática com IA
+- Análise de desempenho por questão
+
+### FASE 6 - Integração de IA Educacional
+- Tutor virtual personalizado por aluno
+- Recomendações de conteúdo adaptativo
+- Análise preditiva de desempenho
+- Intervenções pedagógicas automáticas
+
 ## Recent Changes
 - July 3, 2025: FASE 3.2 - Dashboard Administrativo Avançado Implementado
   - ✅ Criado novo Dashboard Administrativo Avançado (/admin/advanced) com interface enterprise-level
