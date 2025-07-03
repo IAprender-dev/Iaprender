@@ -2129,6 +2129,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Editar empresa
+  app.patch('/api/admin/companies/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { name, email, phone, address, contactPerson } = req.body;
+
+      // Validar dados obrigatórios
+      if (!name || !email) {
+        return res.status(400).json({ error: 'Nome e email são obrigatórios' });
+      }
+
+      const updatedCompany = await db
+        .update(companies)
+        .set({
+          name,
+          email,
+          phone: phone || null,
+          address: address || null,
+          contactPerson: contactPerson || null,
+          updatedAt: new Date()
+        })
+        .where(eq(companies.id, parseInt(id)))
+        .returning();
+
+      if (updatedCompany.length === 0) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      console.log(`✅ Empresa ${id} atualizada: ${name}`);
+      res.json({
+        success: true,
+        company: updatedCompany[0],
+        message: 'Empresa atualizada com sucesso'
+      });
+    } catch (error) {
+      console.error('❌ Erro ao atualizar empresa:', error);
+      res.status(500).json({ error: 'Erro ao atualizar empresa' });
+    }
+  });
+
+  // Editar contrato
+  app.patch('/api/admin/contracts/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const {
+        name,
+        description,
+        planType,
+        startDate,
+        endDate,
+        totalLicenses,
+        maxTeachers,
+        maxStudents,
+        pricePerLicense
+      } = req.body;
+
+      // Validar dados obrigatórios
+      if (!name || !totalLicenses || !pricePerLicense) {
+        return res.status(400).json({ error: 'Nome, licenças e preço são obrigatórios' });
+      }
+
+      const updatedContract = await db
+        .update(contracts)
+        .set({
+          name,
+          description: description || null,
+          planType: planType || 'basic',
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          totalLicenses,
+          maxTeachers: maxTeachers || Math.floor(totalLicenses * 0.1),
+          maxStudents: maxStudents || Math.floor(totalLicenses * 0.9),
+          pricePerLicense,
+          costUsd: totalLicenses * pricePerLicense,
+          updatedAt: new Date()
+        })
+        .where(eq(contracts.id, parseInt(id)))
+        .returning();
+
+      if (updatedContract.length === 0) {
+        return res.status(404).json({ error: 'Contrato não encontrado' });
+      }
+
+      console.log(`✅ Contrato ${id} atualizado: ${name}`);
+      res.json({
+        success: true,
+        contract: updatedContract[0],
+        message: 'Contrato atualizado com sucesso'
+      });
+    } catch (error) {
+      console.error('❌ Erro ao atualizar contrato:', error);
+      res.status(500).json({ error: 'Erro ao atualizar contrato' });
+    }
+  });
+
   // Alertas de segurança
   app.get('/api/admin/security-alerts', authenticateAdmin, async (req: Request, res: Response) => {
     try {

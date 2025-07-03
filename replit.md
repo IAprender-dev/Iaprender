@@ -143,6 +143,17 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 3, 2025: PASSO 2 - Sistema Completo de Visualização e Edição de Empresas e Contratos
+  - ✅ Funcionalidades de visualização e edição totalmente implementadas
+  - ✅ Botões "Visualizar" (👁️) e "Editar" (✏️) para empresas e contratos individuais
+  - ✅ Modais detalhados de visualização com todas as informações da empresa/contrato
+  - ✅ Formulários completos de edição com validação e feedback visual
+  - ✅ Endpoints backend PATCH para /api/admin/companies/:id e /api/admin/contracts/:id
+  - ✅ Integração completa frontend-backend com mutations e atualizações automáticas
+  - ✅ Interface intuitiva com cores diferenciadas: azul para visualizar, verde para editar
+  - ✅ Sistema de estados e helpers para gerenciar modais e formulários
+  - ✅ Validações robustas no backend e tratamento de erros adequado
+  - ✅ Transições fluidas entre modais de visualização e edição
 - July 3, 2025: PASSO 1 - Nova Interface Empresa-Centrada de Gestão de Contratos Implementada
   - ✅ Criado sistema CompanyContractManagement.tsx com foco na empresa como entidade central
   - ✅ Interface intuitiva onde contratos aparecem como cards vinculados a cada empresa

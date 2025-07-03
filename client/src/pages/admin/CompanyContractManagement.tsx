@@ -98,6 +98,11 @@ export default function CompanyContractManagement() {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isCreateCompanyModalOpen, setIsCreateCompanyModalOpen] = useState(false);
   const [isCreateContractModalOpen, setIsCreateContractModalOpen] = useState(false);
+  const [isViewCompanyModalOpen, setIsViewCompanyModalOpen] = useState(false);
+  const [isEditCompanyModalOpen, setIsEditCompanyModalOpen] = useState(false);
+  const [isViewContractModalOpen, setIsViewContractModalOpen] = useState(false);
+  const [isEditContractModalOpen, setIsEditContractModalOpen] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
   const [newCompany, setNewCompany] = useState<NewCompanyForm>({
     name: "",
     email: "",
@@ -106,6 +111,26 @@ export default function CompanyContractManagement() {
     contactPerson: ""
   });
   const [newContract, setNewContract] = useState<NewContractForm>({
+    name: "",
+    description: "",
+    planType: "basic",
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    totalLicenses: 10,
+    maxTeachers: 5,
+    maxStudents: 50,
+    pricePerLicense: 29.90
+  });
+  
+  // Edit forms state
+  const [editCompany, setEditCompany] = useState<NewCompanyForm>({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    contactPerson: ""
+  });
+  const [editContract, setEditContract] = useState<NewContractForm>({
     name: "",
     description: "",
     planType: "basic",
@@ -205,6 +230,107 @@ export default function CompanyContractManagement() {
       });
     }
   });
+
+  // Edit company mutation
+  const editCompanyMutation = useMutation({
+    mutationFn: async (companyData: { id: number } & NewCompanyForm) => {
+      const response = await fetch(`/api/admin/companies/${companyData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(companyData)
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar empresa');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Empresa atualizada com sucesso!",
+        description: "Os dados da empresa foram atualizados.",
+      });
+      setIsEditCompanyModalOpen(false);
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar empresa",
+        description: error.message || "Ocorreu um erro ao atualizar a empresa.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Edit contract mutation
+  const editContractMutation = useMutation({
+    mutationFn: async (contractData: { id: number } & NewContractForm) => {
+      const response = await fetch(`/api/admin/contracts/${contractData.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(contractData)
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar contrato');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Contrato atualizado com sucesso!",
+        description: "Os dados do contrato foram atualizados.",
+      });
+      setIsEditContractModalOpen(false);
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar contrato",
+        description: error.message || "Ocorreu um erro ao atualizar o contrato.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Helper functions for opening modals
+  const openViewCompany = (company: Company) => {
+    setSelectedCompany(company);
+    setIsViewCompanyModalOpen(true);
+  };
+
+  const openEditCompany = (company: Company) => {
+    setSelectedCompany(company);
+    setEditCompany({
+      name: company.name,
+      email: company.email,
+      phone: company.phone || "",
+      address: company.address || "",
+      contactPerson: company.contactPerson || ""
+    });
+    setIsEditCompanyModalOpen(true);
+  };
+
+  const openViewContract = (contract: Contract) => {
+    setSelectedContract(contract);
+    setIsViewContractModalOpen(true);
+  };
+
+  const openEditContract = (contract: Contract) => {
+    setSelectedContract(contract);
+    setEditContract({
+      name: contract.name,
+      description: contract.description || "",
+      planType: contract.planType,
+      startDate: contract.startDate.split('T')[0],
+      endDate: contract.endDate.split('T')[0],
+      totalLicenses: contract.totalLicenses,
+      maxTeachers: contract.maxTeachers,
+      maxStudents: contract.maxStudents,
+      pricePerLicense: contract.pricePerLicense
+    });
+    setIsEditContractModalOpen(true);
+  };
 
   const filteredCompanies = companies.filter((company: Company) =>
     company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -460,9 +586,29 @@ export default function CompanyContractManagement() {
                         </div>
                       </div>
                     </div>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                      {company.contracts.length} {company.contracts.length === 1 ? 'Contrato' : 'Contratos'}
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        {company.contracts.length} {company.contracts.length === 1 ? 'Contrato' : 'Contratos'}
+                      </Badge>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => openViewCompany(company)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        title="Visualizar empresa"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => openEditCompany(company)}
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        title="Editar empresa"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 
@@ -529,10 +675,22 @@ export default function CompanyContractManagement() {
                                   {getStatusBadge(contract.status)}
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <Button size="sm" variant="ghost">
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => openViewContract(contract)}
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    title="Visualizar contrato"
+                                  >
                                     <Eye className="h-4 w-4" />
                                   </Button>
-                                  <Button size="sm" variant="ghost">
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => openEditContract(contract)}
+                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    title="Editar contrato"
+                                  >
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                 </div>
@@ -700,6 +858,359 @@ export default function CompanyContractManagement() {
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {createContractMutation.isPending ? "Criando..." : "Criar Contrato"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Company Modal */}
+        <Dialog open={isViewCompanyModalOpen} onOpenChange={setIsViewCompanyModalOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Detalhes da Empresa</DialogTitle>
+              <DialogDescription>
+                Informações completas da empresa
+              </DialogDescription>
+            </DialogHeader>
+            {selectedCompany && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Nome da Empresa</Label>
+                    <p className="text-gray-900 font-medium">{selectedCompany.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Email</Label>
+                    <p className="text-gray-900">{selectedCompany.email}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Telefone</Label>
+                    <p className="text-gray-900">{selectedCompany.phone || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Responsável</Label>
+                    <p className="text-gray-900">{selectedCompany.contactPerson || 'Não informado'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-sm font-medium text-gray-500">Endereço</Label>
+                    <p className="text-gray-900">{selectedCompany.address || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Data de Cadastro</Label>
+                    <p className="text-gray-900">{new Date(selectedCompany.createdAt).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Total de Contratos</Label>
+                    <p className="text-gray-900">{selectedCompany.contracts.length}</p>
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsViewCompanyModalOpen(false)}>
+                    Fechar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsViewCompanyModalOpen(false);
+                      openEditCompany(selectedCompany);
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Company Modal */}
+        <Dialog open={isEditCompanyModalOpen} onOpenChange={setIsEditCompanyModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Editar Empresa</DialogTitle>
+              <DialogDescription>
+                Atualize os dados da empresa
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="editCompanyName">Nome da Empresa *</Label>
+                <Input
+                  id="editCompanyName"
+                  value={editCompany.name}
+                  onChange={(e) => setEditCompany(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Ex: Prefeitura Municipal de São Paulo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCompanyEmail">Email Institucional *</Label>
+                <Input
+                  id="editCompanyEmail"
+                  type="email"
+                  value={editCompany.email}
+                  onChange={(e) => setEditCompany(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="contato@prefeitura.sp.gov.br"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editContactPerson">Responsável</Label>
+                <Input
+                  id="editContactPerson"
+                  value={editCompany.contactPerson}
+                  onChange={(e) => setEditCompany(prev => ({ ...prev, contactPerson: e.target.value }))}
+                  placeholder="Nome do responsável"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCompanyPhone">Telefone</Label>
+                <Input
+                  id="editCompanyPhone"
+                  value={editCompany.phone}
+                  onChange={(e) => setEditCompany(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="(11) 9999-9999"
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCompanyAddress">Endereço</Label>
+                <Textarea
+                  id="editCompanyAddress"
+                  value={editCompany.address}
+                  onChange={(e) => setEditCompany(prev => ({ ...prev, address: e.target.value }))}
+                  placeholder="Endereço completo da empresa"
+                  rows={3}
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setIsEditCompanyModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedCompany) {
+                    editCompanyMutation.mutate({ id: selectedCompany.id, ...editCompany });
+                  }
+                }}
+                disabled={editCompanyMutation.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {editCompanyMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Contract Modal */}
+        <Dialog open={isViewContractModalOpen} onOpenChange={setIsViewContractModalOpen}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Detalhes do Contrato</DialogTitle>
+              <DialogDescription>
+                Informações completas do contrato
+              </DialogDescription>
+            </DialogHeader>
+            {selectedContract && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Nome do Contrato</Label>
+                    <p className="text-gray-900 font-medium">{selectedContract.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Tipo de Plano</Label>
+                    <div className="mt-1">{getPlanBadge(selectedContract.planType)}</div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Status</Label>
+                    <div className="mt-1">{getStatusBadge(selectedContract.status)}</div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Período</Label>
+                    <p className="text-gray-900">{new Date(selectedContract.startDate).toLocaleDateString('pt-BR')} - {new Date(selectedContract.endDate).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Total de Licenças</Label>
+                    <p className="text-gray-900">{selectedContract.totalLicenses}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Licenças Disponíveis</Label>
+                    <p className="text-gray-900">{selectedContract.availableLicenses}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Máx. Professores</Label>
+                    <p className="text-gray-900">{selectedContract.maxTeachers}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Máx. Estudantes</Label>
+                    <p className="text-gray-900">{selectedContract.maxStudents}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Preço por Licença</Label>
+                    <p className="text-gray-900">R$ {selectedContract.pricePerLicense.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Tokens Professor/mês</Label>
+                    <p className="text-gray-900">{selectedContract.monthlyTokenLimitTeacher.toLocaleString()}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Tokens Estudante/mês</Label>
+                    <p className="text-gray-900">{selectedContract.monthlyTokenLimitStudent.toLocaleString()}</p>
+                  </div>
+                  {selectedContract.description && (
+                    <div className="col-span-2">
+                      <Label className="text-sm font-medium text-gray-500">Descrição</Label>
+                      <p className="text-gray-900">{selectedContract.description}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <Button variant="outline" onClick={() => setIsViewContractModalOpen(false)}>
+                    Fechar
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setIsViewContractModalOpen(false);
+                      openEditContract(selectedContract);
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Editar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Contract Modal */}
+        <Dialog open={isEditContractModalOpen} onOpenChange={setIsEditContractModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Editar Contrato</DialogTitle>
+              <DialogDescription>
+                Atualize os dados do contrato
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-4 pr-4">
+                <div>
+                  <Label htmlFor="editContractName">Nome do Contrato *</Label>
+                  <Input
+                    id="editContractName"
+                    value={editContract.name}
+                    onChange={(e) => setEditContract(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Ex: Contrato Anual 2025"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editContractDescription">Descrição</Label>
+                  <Textarea
+                    id="editContractDescription"
+                    value={editContract.description}
+                    onChange={(e) => setEditContract(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Descrição do contrato"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editPlanType">Tipo de Plano *</Label>
+                  <Select value={editContract.planType} onValueChange={(value: any) => setEditContract(prev => ({ ...prev, planType: value }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">Básico</SelectItem>
+                      <SelectItem value="standard">Padrão</SelectItem>
+                      <SelectItem value="premium">Premium</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="editStartDate">Data de Início *</Label>
+                    <Input
+                      id="editStartDate"
+                      type="date"
+                      value={editContract.startDate}
+                      onChange={(e) => setEditContract(prev => ({ ...prev, startDate: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editEndDate">Data de Término *</Label>
+                    <Input
+                      id="editEndDate"
+                      type="date"
+                      value={editContract.endDate}
+                      onChange={(e) => setEditContract(prev => ({ ...prev, endDate: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="editTotalLicenses">Total de Licenças *</Label>
+                    <Input
+                      id="editTotalLicenses"
+                      type="number"
+                      min="1"
+                      value={editContract.totalLicenses}
+                      onChange={(e) => setEditContract(prev => ({ ...prev, totalLicenses: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editPricePerLicense">Preço por Licença (R$) *</Label>
+                    <Input
+                      id="editPricePerLicense"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={editContract.pricePerLicense}
+                      onChange={(e) => setEditContract(prev => ({ ...prev, pricePerLicense: parseFloat(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="editMaxTeachers">Máximo de Professores *</Label>
+                    <Input
+                      id="editMaxTeachers"
+                      type="number"
+                      min="1"
+                      value={editContract.maxTeachers}
+                      onChange={(e) => setEditContract(prev => ({ ...prev, maxTeachers: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editMaxStudents">Máximo de Estudantes *</Label>
+                    <Input
+                      id="editMaxStudents"
+                      type="number"
+                      min="1"
+                      value={editContract.maxStudents}
+                      onChange={(e) => setEditContract(prev => ({ ...prev, maxStudents: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+            
+            <div className="flex justify-end space-x-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setIsEditContractModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (selectedContract) {
+                    editContractMutation.mutate({ id: selectedContract.id, ...editContract });
+                  }
+                }}
+                disabled={editContractMutation.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {editContractMutation.isPending ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </div>
           </DialogContent>
