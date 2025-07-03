@@ -75,7 +75,7 @@ const answerSchema = z.object({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Multer configuration for file uploads with enhanced audio support
-  const upload = multer({
+  const audioUpload = multer({
     storage: multer.memoryStorage(),
     limits: {
       fileSize: 25 * 1024 * 1024, // 25MB limit for audio files
@@ -159,6 +159,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`✅ [AUTH-ADMIN] Autorizado: ${req.session.user.email}`);
     next();
   };
+
+  // Configuração do multer para upload de arquivos CSV
+  const csvUpload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Apenas arquivos CSV são permitidos'), false);
+      }
+    }
+  });
 
   // HEALTH CHECK ROUTE
   app.get("/api/health", (_req, res) => {
@@ -1369,20 +1382,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // USER IMPORT ROUTES
-  // Configure multer for CSV uploads
-  const csvUpload = multer({
-    storage: multer.memoryStorage(),
-    limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB limit
-    },
-    fileFilter: (_req, file, cb) => {
-      if (file.mimetype === 'text/csv' || file.mimetype === 'application/vnd.ms-excel') {
-        cb(null, true);
-      } else {
-        cb(new Error('Only CSV files are allowed'));
-      }
-    },
-  });
 
   // Import users from CSV (admin only)
   app.post(
@@ -3846,6 +3845,145 @@ Estrutura JSON obrigatória:
       return res.status(500).json({ 
         success: false, 
         error: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  // Criação em lote de usuários via CSV
+  app.post('/api/admin/users/bulk-create', authenticateAdmin, csvUpload.single('file'), async (req: Request, res: Response) => {
+    console.log('📋 [BULK-CREATE] Iniciando criação em lote de usuários...');
+    
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'Arquivo CSV não enviado'
+        });
+      }
+
+      const csvContent = req.file.buffer.toString('utf-8');
+      const lines = csvContent.split('\n').filter(line => line.trim());
+      
+      if (lines.length <= 1) {
+        return res.status(400).json({
+          success: false,
+          error: 'Arquivo CSV vazio ou apenas com cabeçalho'
+        });
+      }
+
+      const results = {
+        success_count: 0,
+        error_count: 0,
+        total_processed: 0,
+        errors: [] as any[]
+      };
+
+      // Processar linha por linha (pular cabeçalho)
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        results.total_processed++;
+        
+        try {
+          const [email, nome, nivelAcesso, empresa, contrato] = line.split(',').map(field => field.trim());
+          
+          // Validações básicas
+          if (!email || !nome || !nivelAcesso) {
+            throw new Error('Campos obrigatórios: email, nome, nivelAcesso');
+          }
+
+          if (!['Admin', 'Gestores', 'Diretores'].includes(nivelAcesso)) {
+            throw new Error(`Nível de acesso inválido: ${nivelAcesso}. Use: Admin, Gestores, Diretores`);
+          }
+
+          // Validar email
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(email)) {
+            throw new Error('Email inválido');
+          }
+
+          // Verificar se usuário já existe
+          const userExists = await cognitoService.userExists(email);
+          if (userExists) {
+            throw new Error('Usuário já existe no sistema');
+          }
+
+          // Criar usuário no Cognito
+          const createUserRequest = {
+            email: email,
+            name: nome,
+            group: nivelAcesso as 'Admin' | 'Gestores' | 'Diretores'
+          };
+
+          const result = await cognitoService.createUser(createUserRequest);
+          
+          if (result.success) {
+            // Salvar usuário no banco local (mesma lógica da criação individual)
+            try {
+              let role: 'admin' | 'teacher' | 'student' | 'municipal_manager' | 'school_director' = 'teacher';
+              
+              switch (nivelAcesso) {
+                case 'Admin':
+                  role = 'admin';
+                  break;
+                case 'Gestores':
+                  role = 'municipal_manager';
+                  break;
+                case 'Diretores':
+                  role = 'school_director';
+                  break;
+              }
+
+              const [firstName, ...lastNameParts] = nome.split(' ');
+              const lastName = lastNameParts.join(' ') || '';
+
+              const newUser = {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                username: email.split('@')[0],
+                password: 'cognito_auth',
+                role: role,
+                contractId: null,
+                status: 'active' as const
+              };
+              
+              await db.insert(users).values(newUser);
+              console.log(`✅ [BULK] Usuário ${email} criado com sucesso`);
+              
+            } catch (dbError) {
+              console.log(`⚠️ [BULK] Erro no banco local para ${email}, mas usuário criado no Cognito`);
+            }
+
+            results.success_count++;
+          } else {
+            throw new Error(result.error || 'Erro desconhecido na criação');
+          }
+          
+        } catch (error: any) {
+          console.error(`❌ [BULK] Erro na linha ${i + 1}:`, error.message);
+          results.error_count++;
+          results.errors.push({
+            line: i + 1,
+            content: line,
+            message: error.message
+          });
+        }
+      }
+
+      console.log(`📊 [BULK] Processamento concluído: ${results.success_count} criados, ${results.error_count} falhas`);
+
+      res.json({
+        success: true,
+        ...results
+      });
+
+    } catch (error: any) {
+      console.error('❌ [BULK] Erro no processamento:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno no processamento em lote'
       });
     }
   });

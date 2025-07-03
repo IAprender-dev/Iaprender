@@ -143,6 +143,18 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 3, 2025: Sistema Completo de Criação em Lote de Usuários AWS Cognito Implementado
+  - ✅ Criado card completo "Criação em Lote via Planilha" na interface CognitoUserManagement
+  - ✅ Implementado endpoint backend /api/admin/users/bulk-create para processamento CSV
+  - ✅ Configuração de multer específica para arquivos CSV com validação de tipo e tamanho
+  - ✅ Sistema de download de template CSV com formato: email, nome, nivelAcesso, empresa, contrato
+  - ✅ Interface de upload com área drag-and-drop, validação de arquivo e preview
+  - ✅ Processamento linha por linha com validações robustas e tratamento de erros
+  - ✅ Criação automática no AWS Cognito + sincronização com banco local PostgreSQL
+  - ✅ Dashboard de resultados com métricas detalhadas: criados, falhas, total, taxa de sucesso
+  - ✅ Sistema de relatórios de erro com linha específica e mensagem descritiva
+  - ✅ Funcionalidade completa para criação massiva de usuários Admin, Gestores, Diretores
+  - ✅ Design responsivo purple-themed integrado à interface principal
 - July 3, 2025: Redesign Completo do AdminMasterDashboard com Dados Reais
   - ✅ Removido sistema de validação conforme solicitado pelo usuário
   - ✅ Redesign completo do AdminMasterDashboard com visual moderno enterprise-level

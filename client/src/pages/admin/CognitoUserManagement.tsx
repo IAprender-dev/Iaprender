@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, AlertCircle, CheckCircle, Clock, Settings, Check, Copy, ExternalLink, AlertTriangle, Info } from 'lucide-react';
+import { Users, UserPlus, Shield, AlertCircle, CheckCircle, Clock, Settings, Check, Copy, ExternalLink, AlertTriangle, Info, Upload, FileSpreadsheet, Download } from 'lucide-react';
 
 interface Company {
   id: number;
@@ -52,7 +52,7 @@ export default function CognitoUserManagement() {
   const [userForm, setUserForm] = useState<UserCreationRequest>({
     email: '',
     name: '',
-    group: 'Alunos'
+    group: 'Gestores'
   });
   
   // Estados para dados do sistema
@@ -66,6 +66,12 @@ export default function CognitoUserManagement() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [createdUser, setCreatedUser] = useState<any>(null);
+  
+  // Estados para criação em lote
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessingBulk, setIsProcessingBulk] = useState(false);
+  const [bulkResults, setBulkResults] = useState<any>(null);
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -230,7 +236,7 @@ export default function CognitoUserManagement() {
         setUserForm({
           email: '',
           name: '',
-          group: 'Alunos'
+          group: 'Gestores'
         });
         setAvailableContracts([]);
 
@@ -247,6 +253,79 @@ export default function CognitoUserManagement() {
       });
     } finally {
       setIsCreatingUser(false);
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const generateSampleTemplate = () => {
+    const csvContent = `email,nome,nivelAcesso,empresa,contrato
+admin@escola.gov.br,João Silva,Admin,,
+gestor@secretaria.gov.br,Maria Santos,Gestores,Prefeitura Municipal,Contrato Educação 2025
+diretor@escola.edu.br,Carlos Oliveira,Diretores,,`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'template_usuarios_cognito.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const processBulkUpload = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "Erro",
+        description: "Selecione um arquivo CSV primeiro",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsProcessingBulk(true);
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch('/api/admin/users/bulk-create', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setBulkResults(data);
+        
+        toast({
+          title: "Upload Processado",
+          description: `${data.success_count} usuários criados, ${data.error_count} falhas`,
+          variant: "default"
+        });
+
+        setSelectedFile(null);
+        
+      } else {
+        throw new Error(data.error || 'Erro no processamento em lote');
+      }
+
+    } catch (error: any) {
+      console.error('Erro no upload em lote:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Falha no processamento em lote",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessingBulk(false);
     }
   };
 
@@ -505,12 +584,12 @@ export default function CognitoUserManagement() {
             </div>
           </div>
 
-          {/* Seleção de Grupo */}
+          {/* Seleção de Nível de Acesso */}
           <div className="space-y-2">
-            <Label htmlFor="group">Grupo / Role *</Label>
+            <Label htmlFor="group">Nível de Acesso *</Label>
             <Select value={userForm.group} onValueChange={(value) => handleFormChange('group', value as any)}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o grupo" />
+                <SelectValue placeholder="Selecione o nível de acesso" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Admin">
@@ -529,18 +608,6 @@ export default function CognitoUserManagement() {
                   <div className="flex items-center space-x-2">
                     <Badge variant={getGroupBadgeVariant('Diretores')}>Diretores</Badge>
                     <span>Diretor de Escola</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Professores">
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={getGroupBadgeVariant('Professores')}>Professores</Badge>
-                    <span>Professor</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="Alunos">
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={getGroupBadgeVariant('Alunos')}>Alunos</Badge>
-                    <span>Estudante</span>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -629,6 +696,148 @@ export default function CognitoUserManagement() {
               )}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Criação em Lote via Planilha */}
+      <Card className="border-purple-200">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2 text-purple-700">
+            <FileSpreadsheet className="h-5 w-5" />
+            <span>Criação em Lote via Planilha</span>
+          </CardTitle>
+          <CardDescription>
+            Crie múltiplos usuários AWS Cognito usando arquivo CSV
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Instruções e Template */}
+          <div className="bg-purple-50 p-4 rounded-lg space-y-3">
+            <h4 className="font-medium text-purple-800">Como usar:</h4>
+            <ol className="text-sm text-purple-700 space-y-1 list-decimal list-inside">
+              <li>Baixe o template CSV clicando no botão abaixo</li>
+              <li>Preencha o arquivo com os dados dos usuários</li>
+              <li>Faça upload do arquivo preenchido</li>
+              <li>Aguarde o processamento automático</li>
+            </ol>
+            
+            <div className="flex items-center space-x-2 mt-3">
+              <Button 
+                onClick={generateSampleTemplate}
+                variant="outline" 
+                size="sm"
+                className="border-purple-300 text-purple-700 hover:bg-purple-100"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Baixar Template CSV
+              </Button>
+              <Badge variant="outline" className="border-purple-300 text-purple-700">
+                Formato: email, nome, nivelAcesso, empresa, contrato
+              </Badge>
+            </div>
+          </div>
+
+          {/* Upload de Arquivo */}
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-purple-300 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="csv-upload"
+              />
+              <label htmlFor="csv-upload" className="cursor-pointer">
+                <Upload className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+                <p className="text-purple-700 font-medium">
+                  {selectedFile ? selectedFile.name : 'Clique para selecionar arquivo CSV'}
+                </p>
+                <p className="text-sm text-purple-600 mt-2">
+                  Apenas arquivos .csv são aceitos
+                </p>
+              </label>
+            </div>
+
+            {selectedFile && (
+              <Alert className="border-purple-200 bg-purple-50">
+                <Info className="h-4 w-4 text-purple-600" />
+                <AlertDescription className="text-purple-700">
+                  <strong>Arquivo selecionado:</strong> {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          {/* Botão de Processamento */}
+          <div className="flex justify-end">
+            <Button 
+              onClick={processBulkUpload}
+              disabled={!selectedFile || isProcessingBulk}
+              size="lg"
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {isProcessingBulk ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Processar Planilha
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Resultados do Processamento */}
+          {bulkResults && (
+            <div className="border-t pt-6 space-y-4">
+              <h4 className="font-medium text-purple-800">Resultados do Processamento:</h4>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-green-50 p-3 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-green-600">{bulkResults.success_count}</p>
+                  <p className="text-sm text-green-700">Criados</p>
+                </div>
+                <div className="bg-red-50 p-3 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-red-600">{bulkResults.error_count}</p>
+                  <p className="text-sm text-red-700">Falhas</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-blue-600">{bulkResults.total_processed}</p>
+                  <p className="text-sm text-blue-700">Total</p>
+                </div>
+                <div className="bg-purple-50 p-3 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-purple-600">
+                    {bulkResults.success_count > 0 ? Math.round((bulkResults.success_count / bulkResults.total_processed) * 100) : 0}%
+                  </p>
+                  <p className="text-sm text-purple-700">Sucesso</p>
+                </div>
+              </div>
+
+              {bulkResults.errors && bulkResults.errors.length > 0 && (
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <h5 className="font-medium text-red-800 mb-2">Erros encontrados:</h5>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {bulkResults.errors.map((error: any, index: number) => (
+                      <p key={index} className="text-sm text-red-700">
+                        Linha {error.line}: {error.message}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Button 
+                onClick={() => setBulkResults(null)} 
+                variant="outline" 
+                className="w-full border-purple-300 text-purple-700 hover:bg-purple-100"
+              >
+                Processar Nova Planilha
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
