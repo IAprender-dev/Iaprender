@@ -3974,6 +3974,12 @@ Estrutura JSON obrigatória:
         user.Attributes?.find(attr => attr.Name === 'email')?.Value
       ).filter(Boolean);
 
+      console.log(`📧 Emails extraídos do Cognito:`, userEmails);
+
+      if (userEmails.length === 0) {
+        console.log(`⚠️ Nenhum email encontrado nos usuários do Cognito`);
+      }
+
       const localUsers = await db.select({
         id: users.id,
         email: users.email,
@@ -4059,7 +4065,7 @@ Estrutura JSON obrigatória:
       const activeUsers = cognitoUsers.filter(user => user.UserStatus === 'CONFIRMED').length;
       const pendingUsers = cognitoUsers.filter(user => user.UserStatus === 'FORCE_CHANGE_PASSWORD').length;
 
-      console.log(`📋 Listagem de usuários: ${enrichedUsers.length} de ${totalUsers} (página ${page})`);
+      console.log(`📋 Listagem de usuários: ${enrichedUsers.length} de ${totalUsers} (página ${page}) - ${new Date().toLocaleTimeString()}`);
 
       res.json({
         success: true,
