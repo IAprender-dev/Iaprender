@@ -622,6 +622,47 @@ export class CognitoService {
   }
 
   /**
+   * Alterar senha de usuário no primeiro acesso
+   */
+  async changePassword(email: string, tempPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log(`🔄 Alterando senha no Cognito para: ${email}`);
+
+      try {
+        // Definir a nova senha permanentemente (substituindo a temporária)
+        const newPasswordParams = {
+          UserPoolId: this.userPoolId,
+          Username: email,
+          Password: newPassword,
+          Permanent: true
+        };
+
+        await this.cognitoIdentityServiceProvider.adminSetUserPassword(newPasswordParams).promise();
+        console.log(`✅ Nova senha definida para: ${email}`);
+
+        return { success: true };
+
+      } catch (authError: any) {
+        console.error(`❌ Erro na validação/alteração de senha para ${email}:`, authError);
+        
+        if (authError.code === 'NotAuthorizedException') {
+          return { success: false, error: 'Senha temporária inválida' };
+        } else if (authError.code === 'InvalidPasswordException') {
+          return { success: false, error: 'Nova senha não atende aos critérios de segurança' };
+        } else if (authError.code === 'UserNotFoundException') {
+          return { success: false, error: 'Usuário não encontrado' };
+        } else {
+          return { success: false, error: 'Erro ao alterar senha no Cognito' };
+        }
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erro geral ao alterar senha:', error);
+      return { success: false, error: 'Erro interno do serviço de autenticação' };
+    }
+  }
+
+  /**
    * Atualizar grupo para usar a nova nomenclatura se necessário
    */
   private mapLegacyGroupName(groupName: string): string {

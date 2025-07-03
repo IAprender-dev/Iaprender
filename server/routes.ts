@@ -3226,6 +3226,121 @@ Estrutura JSON obrigatória:
   registerMunicipalRoutes(app);
   registerSchoolRoutes(app);
 
+  // ============= SISTEMA DE ONBOARDING =============
+
+  // Alterar senha no primeiro acesso
+  app.post('/api/auth/change-password', async (req: Request, res: Response) => {
+    try {
+      const { email, tempPassword, newPassword } = req.body;
+
+      if (!email || !tempPassword || !newPassword) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Email, senha temporária e nova senha são obrigatórios' 
+        });
+      }
+
+      // Validar força da senha
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+      if (!passwordRegex.test(newPassword)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Senha deve conter mínimo 8 caracteres, letra maiúscula, minúscula, número e caractere especial' 
+        });
+      }
+
+      console.log(`🔄 Alterando senha para usuário: ${email}`);
+
+      // Alterar senha no Cognito
+      const result = await cognitoService.changePassword(email, tempPassword, newPassword);
+
+      if (result.success) {
+        console.log(`✅ Senha alterada com sucesso para: ${email}`);
+        
+        // Atualizar status no banco local
+        const [user] = await db.select().from(users).where(eq(users.email, email));
+        if (user) {
+          await db.update(users)
+            .set({ 
+              forcePasswordChange: false,
+              firstLogin: false,
+              lastLoginAt: new Date()
+            })
+            .where(eq(users.id, user.id));
+        }
+
+        return res.status(200).json({
+          success: true,
+          message: 'Senha alterada com sucesso'
+        });
+      } else {
+        return res.status(400).json({ 
+          success: false, 
+          error: result.error || 'Erro ao alterar senha' 
+        });
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erro ao alterar senha:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erro interno do servidor' 
+      });
+    }
+  });
+
+  // Completar onboarding
+  app.post('/api/auth/complete-onboarding', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'ID do usuário é obrigatório' 
+        });
+      }
+
+      console.log(`🔄 Completando onboarding para usuário: ${userId}`);
+
+      // Atualizar status no banco local
+      const [user] = await db.select().from(users).where(eq(users.username, userId));
+      if (user) {
+        await db.update(users)
+          .set({ 
+            firstLogin: false,
+            forcePasswordChange: false,
+            lastLoginAt: new Date()
+          })
+          .where(eq(users.id, user.id));
+
+        console.log(`✅ Onboarding completado para: ${user.email}`);
+        
+        return res.status(200).json({
+          success: true,
+          message: 'Onboarding completado com sucesso',
+          user: {
+            id: user.id,
+            email: user.email,
+            role: user.role
+          }
+        });
+      } else {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Usuário não encontrado' 
+        });
+      }
+
+    } catch (error: any) {
+      console.error('❌ Erro ao completar onboarding:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Erro interno do servidor' 
+      });
+    }
+  });
+
   // ============= GESTÃO DE USUÁRIOS COGNITO =============
 
   // Middleware para verificar se usuário pode criar outro usuário
@@ -3366,7 +3481,8 @@ Estrutura JSON obrigatória:
           tempPassword: result.tempPassword,
           userEmail: email,
           group: group,
-          companyId: companyId
+          companyId: companyId,
+          firstAccessUrl: `/first-access?email=${encodeURIComponent(email)}&tempPassword=${encodeURIComponent(result.tempPassword)}&group=${encodeURIComponent(group)}&userId=${encodeURIComponent(result.userId)}`
         });
       } else {
         return res.status(400).json({ 
