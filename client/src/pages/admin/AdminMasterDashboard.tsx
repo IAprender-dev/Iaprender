@@ -223,10 +223,10 @@ export default function AdminMasterDashboard() {
                   <div className="space-y-3">
                     <h4 className="font-semibold text-slate-800">Ações Rápidas</h4>
                     <div className="space-y-2">
-                      <Link href="/admin/contracts">
+                      <Link href="/admin/companies-contracts">
                         <Button className="w-full justify-start bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white">
-                          <FileText className="h-4 w-4 mr-2" />
-                          Controle de Contratos
+                          <Building2 className="h-4 w-4 mr-2" />
+                          Empresas & Contratos (Novo)
                         </Button>
                       </Link>
                       <Link href="/admin/ai-management">

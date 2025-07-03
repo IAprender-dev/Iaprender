@@ -4109,6 +4109,107 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // Buscar empresas com seus contratos (novo sistema integrado)
+  app.get('/api/admin/companies-with-contracts', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('🏢 Buscando empresas com contratos integrados...');
+
+      // Buscar empresas com seus contratos via JOIN
+      const companiesWithContracts = await db
+        .select({
+          // Dados da empresa
+          companyId: companies.id,
+          companyName: companies.name,
+          companyEmail: companies.email,
+          companyPhone: companies.phone,
+          companyAddress: companies.address,
+          companyContactPerson: companies.contactPerson,
+          companyLogo: companies.logo,
+          companyCreatedAt: companies.createdAt,
+          // Dados do contrato (podem ser null se não houver contratos)
+          contractId: contracts.id,
+          contractName: contracts.name,
+          contractDescription: contracts.description,
+          contractPlanType: contracts.planType,
+          contractStatus: contracts.status,
+          contractStartDate: contracts.startDate,
+          contractEndDate: contracts.endDate,
+          contractTotalLicenses: contracts.totalLicenses,
+          contractAvailableLicenses: contracts.availableLicenses,
+          contractMaxTeachers: contracts.maxTeachers,
+          contractMaxStudents: contracts.maxStudents,
+          contractPricePerLicense: contracts.pricePerLicense,
+          contractMonthlyTokenLimitTeacher: contracts.monthlyTokenLimitTeacher,
+          contractMonthlyTokenLimitStudent: contracts.monthlyTokenLimitStudent,
+          contractEnabledAIModels: contracts.enabledAIModels,
+          contractCreatedAt: contracts.createdAt
+        })
+        .from(companies)
+        .leftJoin(contracts, eq(companies.id, contracts.companyId))
+        .orderBy(desc(companies.createdAt), desc(contracts.createdAt));
+
+      // Agrupar contratos por empresa
+      const companiesMap = new Map();
+      
+      companiesWithContracts.forEach(row => {
+        const companyKey = row.companyId;
+        
+        if (!companiesMap.has(companyKey)) {
+          companiesMap.set(companyKey, {
+            id: row.companyId,
+            name: row.companyName,
+            email: row.companyEmail,
+            phone: row.companyPhone,
+            address: row.companyAddress,
+            contactPerson: row.companyContactPerson,
+            logo: row.companyLogo,
+            createdAt: row.companyCreatedAt,
+            contracts: []
+          });
+        }
+        
+        // Adicionar contrato se existir
+        if (row.contractId) {
+          companiesMap.get(companyKey).contracts.push({
+            id: row.contractId,
+            name: row.contractName,
+            description: row.contractDescription,
+            planType: row.contractPlanType,
+            status: row.contractStatus,
+            startDate: row.contractStartDate,
+            endDate: row.contractEndDate,
+            totalLicenses: row.contractTotalLicenses,
+            availableLicenses: row.contractAvailableLicenses,
+            maxTeachers: row.contractMaxTeachers,
+            maxStudents: row.contractMaxStudents,
+            pricePerLicense: row.contractPricePerLicense,
+            monthlyTokenLimitTeacher: row.contractMonthlyTokenLimitTeacher,
+            monthlyTokenLimitStudent: row.contractMonthlyTokenLimitStudent,
+            enabledAIModels: row.contractEnabledAIModels,
+            createdAt: row.contractCreatedAt
+          });
+        }
+      });
+      
+      const companiesArray = Array.from(companiesMap.values());
+      
+      console.log(`✅ Encontradas ${companiesArray.length} empresas com contratos`);
+      
+      res.json({
+        success: true,
+        companies: companiesArray,
+        total: companiesArray.length
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar empresas com contratos:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao buscar empresas com contratos' 
+      });
+    }
+  });
+
   // Buscar empresas contratantes com dados detalhados e contratos ativos
   app.get('/api/admin/companies', authenticateAdmin, async (req: Request, res: Response) => {
     try {
