@@ -215,6 +215,8 @@ export default function UserManagement() {
   // Mutation para atualizar vínculos
   const updateContractMutation = useMutation({
     mutationFn: async ({ userId, contractId }: { userId: string; contractId: string | null }) => {
+      console.log('🚀 [FRONTEND] Executando mutation com:', { userId, contractId });
+      
       const response = await fetch(`/api/admin/users/${userId}/update-contract`, {
         method: 'PATCH',
         headers: {
@@ -224,11 +226,17 @@ export default function UserManagement() {
         body: JSON.stringify({ contractId })
       });
       
+      console.log('📡 [FRONTEND] Response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.log('❌ [FRONTEND] Error response:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ [FRONTEND] Success response:', result);
+      return result;
     },
     onSuccess: () => {
       toast({
@@ -249,12 +257,23 @@ export default function UserManagement() {
   });
 
   const handleSaveContract = () => {
-    if (!editingUser) return;
+    console.log('🎯 [FRONTEND] handleSaveContract chamado');
+    if (!editingUser) {
+      console.log('❌ [FRONTEND] editingUser não encontrado');
+      return;
+    }
     
     // Se empresa é "none" ou contrato é "none", então contractId é null
     const contractId = (selectedCompanyId === "none" || selectedContractId === "none") 
       ? null 
       : selectedContractId;
+    
+    console.log('🎯 [FRONTEND] Dados para envio:', {
+      userId: editingUser.cognitoId,
+      contractId,
+      selectedCompanyId,
+      selectedContractId
+    });
     
     updateContractMutation.mutate({
       userId: editingUser.cognitoId,
