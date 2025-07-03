@@ -4192,11 +4192,56 @@ Estrutura JSON obrigatória:
     }
   });
 
-  // Endpoint para estatísticas gerais do sistema
+  // Endpoint para sincronizar base local com Cognito e obter estatísticas
   app.get('/api/admin/system-stats', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      // Buscar dados reais do banco
-      const totalUsers = await db.select().from(users);
+      console.log('🔄 Iniciando sincronização de dados com AWS Cognito...');
+      
+      // 1. Buscar todos os usuários do Cognito
+      const cognitoUsers = await cognitoService.listAllUsers();
+      console.log(`📋 Encontrados ${cognitoUsers.length} usuários no Cognito`);
+      
+      // 2. Buscar usuários locais
+      const localUsers = await db.select().from(users);
+      console.log(`💾 Encontrados ${localUsers.length} usuários no banco local`);
+      
+      // 3. Sincronizar - remover usuários locais que não existem no Cognito
+      const cognitoEmails = new Set(cognitoUsers.map(u => u.email).filter(Boolean));
+      const localUsersToKeep = localUsers.filter(user => cognitoEmails.has(user.email));
+      const usersToRemove = localUsers.filter(user => !cognitoEmails.has(user.email));
+      
+      if (usersToRemove.length > 0) {
+        console.log(`🗑️ Removendo ${usersToRemove.length} usuários órfãos do banco local:`);
+        for (const user of usersToRemove) {
+          console.log(`   - ${user.email} (não existe no Cognito)`);
+          await db.delete(users).where(eq(users.id, user.id));
+        }
+      }
+      
+      // 4. Adicionar usuários do Cognito que não existem localmente
+      const localEmails = new Set(localUsersToKeep.map(u => u.email));
+      const usersToAdd = cognitoUsers.filter(u => u.email && !localEmails.has(u.email));
+      
+      if (usersToAdd.length > 0) {
+        console.log(`➕ Adicionando ${usersToAdd.length} novos usuários do Cognito:`);
+        for (const cognitoUser of usersToAdd) {
+          if (cognitoUser.email) {
+            console.log(`   + ${cognitoUser.email}`);
+            await db.insert(users).values({
+              email: cognitoUser.email,
+              firstName: cognitoUser.firstName || '',
+              lastName: cognitoUser.lastName || '',
+              role: 'teacher', // role padrão, será atualizado depois conforme grupos
+              username: cognitoUser.username || cognitoUser.email.split('@')[0],
+              password: 'cognito-managed', // senha gerenciada pelo Cognito
+              status: 'active'
+            });
+          }
+        }
+      }
+      
+      // 5. Buscar dados finais sincronizados
+      const syncedUsers = await db.select().from(users);
       const totalCompanies = await db.select().from(companies);
       const totalContracts = await db.select().from(contracts);
       
@@ -4205,14 +4250,18 @@ Estrutura JSON obrigatória:
         return sum + (contract.monthlyValue || 0);
       }, 0);
 
+      console.log(`✅ Sincronização concluída: ${syncedUsers.length} usuários sincronizados`);
+
       const stats = {
-        totalUsers: totalUsers.length,
+        totalUsers: syncedUsers.length,
+        cognitoUsers: cognitoUsers.length,
         totalCompanies: totalCompanies.length,
         totalContracts: totalContracts.length,
         activeContracts: activeContracts.length,
         monthlyRevenue,
         systemUptime: '99.9%',
-        lastUpdate: new Date().toISOString()
+        lastSync: new Date().toISOString(),
+        syncStatus: 'synchronized'
       };
 
       res.json({
@@ -4221,10 +4270,10 @@ Estrutura JSON obrigatória:
       });
 
     } catch (error) {
-      console.error('❌ Erro ao buscar estatísticas do sistema:', error);
+      console.error('❌ Erro ao sincronizar dados e buscar estatísticas:', error);
       res.status(500).json({ 
         success: false, 
-        error: 'Erro ao buscar estatísticas do sistema' 
+        error: 'Erro ao sincronizar dados e buscar estatísticas' 
       });
     }
   });

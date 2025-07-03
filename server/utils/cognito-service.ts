@@ -669,6 +669,55 @@ export class CognitoService {
   }
 
   /**
+   * Lista todos os usuários do User Pool
+   */
+  async listAllUsers(): Promise<any[]> {
+    try {
+      console.log('🔍 Listando todos os usuários do Cognito...');
+      
+      const allGroups = ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos'];
+      const allUsers: any[] = [];
+      const seenUsernames = new Set<string>();
+
+      // Buscar usuários de todos os grupos para evitar duplicatas
+      for (const group of allGroups) {
+        try {
+          const groupUsers = await this.listUsersInGroup(group);
+          
+          for (const user of groupUsers) {
+            if (user.Username && !seenUsernames.has(user.Username)) {
+              seenUsernames.add(user.Username);
+              
+              // Extrair informações básicas do usuário
+              const email = user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value;
+              const firstName = user.Attributes?.find((attr: any) => attr.Name === 'given_name')?.Value;
+              const lastName = user.Attributes?.find((attr: any) => attr.Name === 'family_name')?.Value;
+              
+              allUsers.push({
+                username: user.Username,
+                email: email,
+                firstName: firstName || '',
+                lastName: lastName || '',
+                status: user.UserStatus,
+                enabled: user.Enabled,
+                groups: user.Groups || [group]
+              });
+            }
+          }
+        } catch (error) {
+          console.log(`⚠️ Não foi possível acessar grupo ${group}, continuando...`);
+        }
+      }
+
+      console.log(`✅ Total de usuários únicos encontrados: ${allUsers.length}`);
+      return allUsers;
+    } catch (error) {
+      console.error('❌ Erro ao listar todos os usuários:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Lista usuários de um grupo específico
    */
   async listUsersInGroup(groupName: string): Promise<any[]> {
