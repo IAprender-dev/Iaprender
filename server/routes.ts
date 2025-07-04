@@ -4734,93 +4734,56 @@ Estrutura JSON obrigatória:
     try {
       console.log('🏢 Buscando empresas com contratos integrados...');
 
-      // Buscar empresas com seus contratos via JOIN
-      const companiesWithContracts = await db
-        .select({
-          // Dados da empresa
-          companyId: companies.id,
-          companyName: companies.name,
-          companyEmail: companies.email,
-          companyPhone: companies.phone,
-          companyAddress: companies.address,
-          companyContactPerson: companies.contactPerson,
-          companyLogo: companies.logo,
-          companyCreatedAt: companies.createdAt,
-          // Dados do contrato (podem ser null se não houver contratos)
-          contractId: contracts.id,
-          contractNumber: contracts.contractNumber,
-          contractName: contracts.name,
-          contractDescription: contracts.description,
-          contractPlanType: contracts.planType,
-          contractStatus: contracts.status,
-          contractStartDate: contracts.startDate,
-          contractEndDate: contracts.endDate,
-          contractTotalLicenses: contracts.totalLicenses,
-          contractAvailableLicenses: contracts.availableLicenses,
-          contractMaxTeachers: contracts.maxTeachers,
-          contractMaxStudents: contracts.maxStudents,
-          contractPricePerLicense: contracts.pricePerLicense,
-          contractMonthlyTokenLimitTeacher: contracts.monthlyTokenLimitTeacher,
-          contractMonthlyTokenLimitStudent: contracts.monthlyTokenLimitStudent,
-          contractEnabledAIModels: contracts.enabledAIModels,
-          contractCreatedAt: contracts.createdAt
-        })
-        .from(companies)
-        .leftJoin(contracts, eq(companies.id, contracts.companyId))
-        .orderBy(desc(companies.createdAt), desc(contracts.createdAt));
+      // Usar SQL raw para evitar problemas do Drizzle ORM
+      const companiesResult = await db.execute(sql`SELECT * FROM companies ORDER BY created_at DESC`);
+      const contractsResult = await db.execute(sql`SELECT * FROM contracts ORDER BY created_at DESC`);
+      
+      console.log('🔍 Resultado empresas:', companiesResult);
+      console.log('🔍 Resultado contratos:', contractsResult);
+      
+      const allCompanies = companiesResult;
+      const allContracts = contractsResult;
 
       // Agrupar contratos por empresa
-      const companiesMap = new Map();
-      
-      companiesWithContracts.forEach(row => {
-        const companyKey = row.companyId;
+      const companiesWithContracts = allCompanies.map((company: any) => {
+        const companyContracts = allContracts.filter((contract: any) => contract.company_id === company.id);
         
-        if (!companiesMap.has(companyKey)) {
-          companiesMap.set(companyKey, {
-            id: row.companyId,
-            name: row.companyName,
-            email: row.companyEmail,
-            phone: row.companyPhone,
-            address: row.companyAddress,
-            contactPerson: row.companyContactPerson,
-            logo: row.companyLogo,
-            createdAt: row.companyCreatedAt,
-            contracts: []
-          });
-        }
-        
-        // Adicionar contrato se existir
-        if (row.contractId) {
-          companiesMap.get(companyKey).contracts.push({
-            id: row.contractId,
-            contractNumber: row.contractNumber,
-            name: row.contractName,
-            description: row.contractDescription,
-            planType: row.contractPlanType,
-            status: row.contractStatus,
-            startDate: row.contractStartDate,
-            endDate: row.contractEndDate,
-            totalLicenses: row.contractTotalLicenses,
-            availableLicenses: row.contractAvailableLicenses,
-            maxTeachers: row.contractMaxTeachers,
-            maxStudents: row.contractMaxStudents,
-            pricePerLicense: row.contractPricePerLicense,
-            monthlyTokenLimitTeacher: row.contractMonthlyTokenLimitTeacher,
-            monthlyTokenLimitStudent: row.contractMonthlyTokenLimitStudent,
-            enabledAIModels: row.contractEnabledAIModels,
-            createdAt: row.contractCreatedAt
-          });
-        }
+        return {
+          id: company.id,
+          name: company.name,
+          email: company.email,
+          phone: company.phone,
+          address: company.address,
+          contactPerson: company.contact_person,
+          logo: company.logo,
+          createdAt: company.created_at,
+          contracts: companyContracts.map((contract: any) => ({
+            id: contract.id,
+            name: contract.name,
+            description: contract.description,
+            planType: contract.plan_type,
+            status: contract.status,
+            startDate: contract.start_date,
+            endDate: contract.end_date,
+            totalLicenses: contract.total_licenses,
+            availableLicenses: contract.available_licenses,
+            maxTeachers: contract.max_teachers,
+            maxStudents: contract.max_students,
+            pricePerLicense: contract.price_per_license,
+            monthlyTokenLimitTeacher: contract.monthly_token_limit_teacher,
+            monthlyTokenLimitStudent: contract.monthly_token_limit_student,
+            enabledAIModels: contract.enabled_ai_models,
+            createdAt: contract.created_at
+          }))
+        };
       });
       
-      const companiesArray = Array.from(companiesMap.values());
-      
-      console.log(`✅ Encontradas ${companiesArray.length} empresas com contratos`);
+      console.log(`✅ Encontradas ${companiesWithContracts.length} empresas, ${allContracts.length} contratos`);
       
       res.json({
         success: true,
-        companies: companiesArray,
-        total: companiesArray.length
+        companies: companiesWithContracts,
+        total: companiesWithContracts.length
       });
 
     } catch (error) {
