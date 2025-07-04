@@ -4764,7 +4764,11 @@ Estrutura JSON obrigatória:
             totalLicenses: contract.totalLicenses || 0,
             availableLicenses: contract.availableLicenses || 0,
             maxTeachers: contract.maxTeachers || 0,
-            maxStudents: contract.maxStudents || 0
+            maxStudents: contract.maxStudents || 0,
+            monthlyTokenLimitTeacher: contract.monthlyTokenLimitTeacher || 10000,
+            monthlyTokenLimitStudent: contract.monthlyTokenLimitStudent || 5000,
+            enabledAIModels: contract.enabledAIModels || [],
+            contractNumber: contract.contractNumber || `CONT-${contract.id}`
           }))
         });
       }

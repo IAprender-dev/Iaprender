@@ -1038,31 +1038,31 @@ export default function CompanyContractManagement() {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Total de Licenças</Label>
-                    <p className="text-gray-900">{selectedContract.totalLicenses}</p>
+                    <p className="text-gray-900">{selectedContract.totalLicenses || 0}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Licenças Disponíveis</Label>
-                    <p className="text-gray-900">{selectedContract.availableLicenses}</p>
+                    <p className="text-gray-900">{selectedContract.availableLicenses || 0}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Máx. Professores</Label>
-                    <p className="text-gray-900">{selectedContract.maxTeachers}</p>
+                    <p className="text-gray-900">{selectedContract.maxTeachers || 0}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Máx. Estudantes</Label>
-                    <p className="text-gray-900">{selectedContract.maxStudents}</p>
+                    <p className="text-gray-900">{selectedContract.maxStudents || 0}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Preço por Licença</Label>
-                    <p className="text-gray-900">R$ {selectedContract.pricePerLicense.toFixed(2)}</p>
+                    <p className="text-gray-900">R$ {(selectedContract.pricePerLicense || 0).toFixed(2)}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Tokens Professor/mês</Label>
-                    <p className="text-gray-900">{selectedContract.monthlyTokenLimitTeacher.toLocaleString()}</p>
+                    <p className="text-gray-900">{(selectedContract.monthlyTokenLimitTeacher || 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Tokens Estudante/mês</Label>
-                    <p className="text-gray-900">{selectedContract.monthlyTokenLimitStudent.toLocaleString()}</p>
+                    <p className="text-gray-900">{(selectedContract.monthlyTokenLimitStudent || 0).toLocaleString()}</p>
                   </div>
                   {selectedContract.description && (
                     <div className="col-span-2">
