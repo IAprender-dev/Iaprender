@@ -1787,16 +1787,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Endpoint para calcular receita recorrente real baseada em contratos
+  app.get('/api/admin/revenue-stats', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('💰 Calculando estatísticas de receita recorrente...');
+      
+      // Buscar todos os contratos ativos
+      const activeContracts = await db.select().from(contracts).where(eq(contracts.status, 'active'));
+      
+      // Calcular métricas
+      const totalContracts = activeContracts.length;
+      const totalLicenses = activeContracts.reduce((sum, contract) => sum + contract.totalLicenses, 0);
+      const licensesInUse = activeContracts.reduce((sum, contract) => sum + (contract.totalLicenses - contract.availableLicenses), 0);
+      const monthlyRecurringRevenue = activeContracts.reduce((sum, contract) => sum + contract.monthlyValue, 0);
+      const averageRevenuePerContract = totalContracts > 0 ? monthlyRecurringRevenue / totalContracts : 0;
+      
+      // Calcular taxa de utilização
+      const utilizationRate = totalLicenses > 0 ? (licensesInUse / totalLicenses) * 100 : 0;
+      
+      console.log(`💰 Receita mensal recorrente: R$ ${monthlyRecurringRevenue.toFixed(2)}`);
+      console.log(`📊 Licenças totais: ${totalLicenses}, Em uso: ${licensesInUse}`);
+      
+      res.json({
+        success: true,
+        data: {
+          totalContracts,
+          totalLicenses,
+          licensesInUse,
+          availableLicenses: totalLicenses - licensesInUse,
+          monthlyRecurringRevenue,
+          averageRevenuePerContract,
+          utilizationRate: Math.round(utilizationRate * 100) / 100,
+          contractsByPlan: activeContracts.reduce((acc, contract) => {
+            acc[contract.planType] = (acc[contract.planType] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>)
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao calcular estatísticas de receita:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao calcular estatísticas de receita' 
+      });
+    }
+  });
+
   // Admin Master Routes - Sistema de métricas (Enhanced for Phase 3.2)
   app.get('/api/admin/system-metrics', authenticateAdmin, async (req: Request, res: Response) => {
     try {
+      // Calcular métricas reais de contratos
+      const activeContracts = await db.select().from(contracts).where(eq(contracts.status, 'active'));
+      const allContracts = await db.select().from(contracts);
+      const monthlyRevenue = activeContracts.reduce((sum, contract) => sum + contract.monthlyValue, 0);
+      
       // Dados expandidos para Phase 3.2 Dashboard Administrativo Completo
       const systemMetrics = {
-        totalContracts: 45,
-        activeContracts: 38,
+        totalContracts: allContracts.length,
+        activeContracts: activeContracts.length,
         totalUsers: 2847,
         activeUsers: 1923,
-        monthlyRevenue: 125000,
+        monthlyRevenue: monthlyRevenue,
         systemUptime: "99.8%",
         databaseSize: "2.4 GB",
         apiCalls: 15420,
@@ -1806,8 +1858,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         diskUsage: 38,
         // Dados legados mantidos para compatibilidade
         contracts: {
-          total: 1247,
-          active: 1128,
+          total: allContracts.length + 1247,
+          active: activeContracts.length + 1128,
           pending: 23,
           expired: 96
         },

@@ -35,6 +35,12 @@ const AdminMasterDashboard: React.FC = () => {
     retry: false
   });
 
+  // Query para buscar dados de receita recorrente
+  const { data: revenueStatsResponse, isLoading: revenueLoading } = useQuery({
+    queryKey: ['/api/admin/revenue-stats'],
+    retry: false
+  });
+
   // Query para buscar contratos ativos
   const { data: contractsResponse, isLoading: contractsLoading } = useQuery({
     queryKey: ['/api/admin/contracts/active'],
@@ -59,18 +65,22 @@ const AdminMasterDashboard: React.FC = () => {
   const companiesData = companiesResponse?.companies || [];
   const usersData = usersResponse?.users || [];
 
+  // Dados de receita recorrente real
+  const revenueData = revenueStatsResponse?.data || {};
+  
   const stats = {
     totalContracts: systemStats.totalContracts || contractsData.length || 0,
     activeContracts: systemStats.activeContracts || contractsData.filter((c: any) => c.status === 'active').length || 0,
     totalCompanies: systemStats.totalCompanies || companiesData.length || 0,
     totalUsers: systemStats.totalUsers || usersData.length || 0,
-    monthlyRevenue: systemStats.monthlyRevenue || contractsData.reduce((sum: number, contract: any) => {
-      return sum + (contract.monthlyValue || 0);
-    }, 0) || 0,
+    monthlyRevenue: revenueData.monthlyRecurringRevenue || 0,
+    totalLicenses: revenueData.totalLicenses || 0,
+    licensesInUse: revenueData.licensesInUse || 0,
+    utilizationRate: revenueData.utilizationRate || 0,
     systemUptime: systemStats.systemUptime || '99.9%'
   };
 
-  if (statsLoading || contractsLoading || companiesLoading || usersLoading) {
+  if (statsLoading || revenueLoading || contractsLoading || companiesLoading || usersLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -166,12 +176,27 @@ const AdminMasterDashboard: React.FC = () => {
           <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-600">Receita Mensal</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-slate-600">Receita Recorrente</p>
                   <p className="text-2xl font-bold text-green-600">
                     R$ {stats.monthlyRevenue.toLocaleString('pt-BR')}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">receita recorrente</p>
+                  <div className="mt-2 space-y-1">
+                    <p className="text-xs text-slate-500">
+                      {stats.licensesInUse.toLocaleString('pt-BR')} / {stats.totalLicenses.toLocaleString('pt-BR')} licenças em uso
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-1 bg-slate-200 rounded-full h-1.5">
+                        <div 
+                          className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(stats.utilizationRate, 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-500 font-medium">
+                        {stats.utilizationRate.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <div className="p-3 bg-green-100 rounded-lg">
                   <DollarSign className="w-6 h-6 text-green-600" />
