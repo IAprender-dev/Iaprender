@@ -238,6 +238,7 @@ export const contracts = pgTable("contracts", {
   maxTeachers: integer("max_teachers").default(0).notNull(),
   maxStudents: integer("max_students").default(0).notNull(),
   pricePerLicense: doublePrecision("price_per_license").default(0).notNull(),
+  monthlyValue: doublePrecision("monthly_value").default(0).notNull(),
   totalLicenses: integer("total_licenses").notNull(),
   availableLicenses: integer("available_licenses").notNull(),
   monthlyTokenLimitTeacher: integer("monthly_token_limit_teacher").default(10000).notNull(),
