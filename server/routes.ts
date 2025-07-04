@@ -4734,56 +4734,41 @@ Estrutura JSON obrigatória:
     try {
       console.log('🏢 Buscando empresas com contratos integrados...');
 
-      // Usar SQL raw para evitar problemas do Drizzle ORM
-      const companiesResult = await db.execute(sql`SELECT * FROM companies ORDER BY created_at DESC`);
-      const contractsResult = await db.execute(sql`SELECT * FROM contracts ORDER BY created_at DESC`);
-      
-      console.log('🔍 Resultado empresas:', companiesResult);
-      console.log('🔍 Resultado contratos:', contractsResult);
-      
-      const allCompanies = companiesResult;
-      const allContracts = contractsResult;
+      // Buscar empresas e contratos de forma simples
+      const companiesData = await db.select().from(companies);
+      const contractsData = await db.select().from(contracts);
 
-      // Agrupar contratos por empresa
-      const companiesWithContracts = allCompanies.map((company: any) => {
-        const companyContracts = allContracts.filter((contract: any) => contract.company_id === company.id);
-        
-        return {
+      console.log(`✅ Encontradas ${companiesData.length} empresas, ${contractsData.length} contratos`);
+
+      // Criar resultado usando loop for-of para evitar problemas do map
+      const result = [];
+      for (const company of companiesData) {
+        const companyContracts = contractsData.filter((c: any) => c.companyId === company.id);
+        result.push({
           id: company.id,
           name: company.name,
           email: company.email,
           phone: company.phone,
           address: company.address,
-          contactPerson: company.contact_person,
           logo: company.logo,
-          createdAt: company.created_at,
           contracts: companyContracts.map((contract: any) => ({
             id: contract.id,
             name: contract.name,
             description: contract.description,
-            planType: contract.plan_type,
             status: contract.status,
-            startDate: contract.start_date,
-            endDate: contract.end_date,
-            totalLicenses: contract.total_licenses,
-            availableLicenses: contract.available_licenses,
-            maxTeachers: contract.max_teachers,
-            maxStudents: contract.max_students,
-            pricePerLicense: contract.price_per_license,
-            monthlyTokenLimitTeacher: contract.monthly_token_limit_teacher,
-            monthlyTokenLimitStudent: contract.monthly_token_limit_student,
-            enabledAIModels: contract.enabled_ai_models,
-            createdAt: contract.created_at
+            planType: contract.planType,
+            startDate: contract.startDate,
+            endDate: contract.endDate
           }))
-        };
-      });
+        });
+      }
       
-      console.log(`✅ Encontradas ${companiesWithContracts.length} empresas, ${allContracts.length} contratos`);
+      console.log(`✅ Resultado final: ${result.length} empresas processadas`);
       
       res.json({
         success: true,
-        companies: companiesWithContracts,
-        total: companiesWithContracts.length
+        companies: result,
+        total: result.length
       });
 
     } catch (error) {
