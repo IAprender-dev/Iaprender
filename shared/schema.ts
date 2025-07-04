@@ -22,6 +22,8 @@ export const approvalStatusEnum = pgEnum('approval_status', ['pending', 'approve
 export const invitationStatusEnum = pgEnum('invitation_status', ['pending', 'accepted', 'expired']);
 export const reportTypeEnum = pgEnum('report_type', ['usage', 'pedagogical', 'compliance']);
 export const cognitoGroupEnum = pgEnum('cognito_group', ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos']);
+export const schoolStatusEnum = pgEnum('school_status', ['active', 'inactive', 'suspended']);
+export const schoolTypeEnum = pgEnum('school_type', ['municipal', 'estadual', 'federal', 'particular']);
 
 // Platform configurations
 export const platformConfigs = pgTable("platform_configs", {
@@ -219,16 +221,55 @@ export const companies = pgTable("companies", {
   phone: text("phone"),
   address: text("address"),
   contactPerson: text("contact_person"),
+  cnpj: text("cnpj").unique(),
+  status: text("status").default('active').notNull(), // active, inactive, suspended
   logo: text("logo"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Schools - Each school represents a different contract for admin (Token Access Liberation)
+export const schools = pgTable("schools", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  inep: text("inep").unique(), // Código INEP da escola
+  cnpj: text("cnpj").unique(),
+  
+  // Vinculação ao sistema
+  companyId: integer("company_id").references(() => companies.id).notNull(), // Empresa responsável (Secretaria)
+  contractId: integer("contract_id").references(() => contracts.id).notNull(), // Cada escola = 1 contrato específico
+  directorId: integer("director_id").references(() => users.id), // Diretor responsável pela escola
+  
+  // Informações básicas
+  type: schoolTypeEnum("type").default('municipal').notNull(),
+  address: text("address").notNull(),
+  neighborhood: text("neighborhood"),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  zipCode: text("zip_code"),
+  phone: text("phone"),
+  email: text("email"),
+  
+  // Informações pedagógicas
+  foundationDate: date("foundation_date"),
+  numberOfClassrooms: integer("number_of_classrooms").default(0),
+  numberOfStudents: integer("number_of_students").default(0),
+  numberOfTeachers: integer("number_of_teachers").default(0),
+  zone: text("zone"), // urbana, rural
+  
+  // Status e controle
+  status: schoolStatusEnum("status").default('active').notNull(),
+  isActive: boolean("is_active").default(true).notNull(), // Controle rápido de ativação
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Contracts
 export const contracts = pgTable("contracts", {
   id: serial("id").primaryKey(),
-  contractNumber: text("contract_number").unique().notNull(), // Identificador único do contrato
-  companyId: integer("company_id").references(() => companies.id).notNull(),
   name: text("name").notNull(),
+  companyId: integer("company_id").references(() => companies.id).notNull(),
   description: text("description"),
   planType: planTypeEnum("plan_type").default('basic').notNull(),
   startDate: date("start_date").notNull(),
@@ -240,6 +281,7 @@ export const contracts = pgTable("contracts", {
   pricePerLicense: doublePrecision("price_per_license").default(0).notNull(),
   monthlyValue: doublePrecision("monthly_value").default(0).notNull(),
   totalLicenses: integer("total_licenses").notNull(),
+  licenseCount: integer("license_count").notNull(), // Campo para contatos municipais
   availableLicenses: integer("available_licenses").notNull(),
   monthlyTokenLimitTeacher: integer("monthly_token_limit_teacher").default(10000).notNull(),
   monthlyTokenLimitStudent: integer("monthly_token_limit_student").default(5000).notNull(),
@@ -454,6 +496,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
   lastLoginAt: true,
+});
+
+export const insertSchoolSchema = createInsertSchema(schools).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertCourseSchema = createInsertSchema(courses).omit({
@@ -887,6 +935,10 @@ export type InsertSchoolReport = z.infer<typeof insertSchoolReportSchema>;
 
 export type SchoolConfig = typeof schoolConfigs.$inferSelect;
 export type InsertSchoolConfig = z.infer<typeof insertSchoolConfigSchema>;
+
+// Types for School table
+export type School = typeof schools.$inferSelect;
+export type InsertSchool = z.infer<typeof insertSchoolSchema>;
 
 export type InsertStudyPlan = z.infer<typeof insertStudyPlanSchema>;
 export type StudyPlan = typeof studyPlans.$inferSelect;

@@ -7261,6 +7261,321 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // ===============================================================================
+  // MUNICIPAL SCHOOLS MANAGEMENT SYSTEM - PASSO 1: SISTEMA DE CRIAÇÃO DE ESCOLAS
+  // ===============================================================================
+  
+  // Endpoint: Listar escolas do gestor municipal
+  app.get('/api/municipal/schools', authenticate, async (req, res) => {
+    try {
+      const user = req.session!.user!;
+      
+      // Verificar se o usuário é gestor municipal e buscar suas escolas vinculadas aos seus contratos
+      const userSchools = await db
+        .select({
+          id: schools.id,
+          name: schools.name,
+          inep: schools.inep,
+          cnpj: schools.cnpj,
+          address: schools.address,
+          city: schools.city,
+          state: schools.state,
+          numberOfStudents: schools.numberOfStudents,
+          numberOfTeachers: schools.numberOfTeachers,
+          status: schools.status,
+          isActive: schools.isActive,
+          createdAt: schools.createdAt,
+          // Dados do contrato vinculado
+          contractName: contracts.name,
+          contractStatus: contracts.status,
+          // Dados da empresa
+          companyName: companies.name,
+          // Dados do diretor
+          directorName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+          directorEmail: users.email,
+        })
+        .from(schools)
+        .leftJoin(contracts, eq(schools.contractId, contracts.id))
+        .leftJoin(companies, eq(schools.companyId, companies.id))
+        .leftJoin(users, eq(schools.directorId, users.id))
+        .where(
+          and(
+            eq(companies.id, user.companyId), // Escolas da empresa do gestor
+            eq(contracts.status, 'active') // Apenas contratos ativos
+          )
+        );
+
+      res.json({ 
+        success: true, 
+        schools: userSchools,
+        total: userSchools.length
+      });
+    } catch (error) {
+      console.error('Error fetching municipal schools:', error);
+      res.status(500).json({ error: 'Erro ao buscar escolas municipais' });
+    }
+  });
+
+  // Endpoint: Criar nova escola (cada escola = 1 contrato específico)
+  app.post('/api/municipal/schools', authenticate, async (req, res) => {
+    try {
+      const user = req.session!.user!;
+      const schoolData = req.body;
+
+      // Validar dados obrigatórios
+      if (!schoolData.name || !schoolData.contractId || !schoolData.address || !schoolData.city || !schoolData.state) {
+        return res.status(400).json({ error: 'Dados obrigatórios faltando: nome, contrato, endereço, cidade, estado' });
+      }
+
+      // Verificar se o contrato pertence à empresa do gestor
+      const contract = await db
+        .select()
+        .from(contracts)
+        .where(
+          and(
+            eq(contracts.id, schoolData.contractId),
+            eq(contracts.companyId, user.companyId),
+            eq(contracts.status, 'active')
+          )
+        );
+
+      if (contract.length === 0) {
+        return res.status(403).json({ error: 'Contrato não encontrado ou não pertence à sua empresa' });
+      }
+
+      // Verificar se já existe uma escola para este contrato
+      const existingSchool = await db
+        .select()
+        .from(schools)
+        .where(eq(schools.contractId, schoolData.contractId));
+
+      if (existingSchool.length > 0) {
+        return res.status(400).json({ error: 'Já existe uma escola vinculada a este contrato' });
+      }
+
+      // Criar a escola
+      const newSchool = await db
+        .insert(schools)
+        .values({
+          name: schoolData.name,
+          inep: schoolData.inep || null,
+          cnpj: schoolData.cnpj || null,
+          companyId: user.companyId,
+          contractId: schoolData.contractId,
+          type: schoolData.type || 'municipal',
+          address: schoolData.address,
+          neighborhood: schoolData.neighborhood || null,
+          city: schoolData.city,
+          state: schoolData.state,
+          zipCode: schoolData.zipCode || null,
+          phone: schoolData.phone || null,
+          email: schoolData.email || null,
+          foundationDate: schoolData.foundationDate || null,
+          numberOfClassrooms: schoolData.numberOfClassrooms || 0,
+          numberOfStudents: schoolData.numberOfStudents || 0,
+          numberOfTeachers: schoolData.numberOfTeachers || 0,
+          zone: schoolData.zone || null,
+          status: 'active',
+          isActive: true
+        })
+        .returning();
+
+      // REGRA DE NEGÓCIO: Criação automática do diretor quando a escola é criada
+      if (schoolData.directorData && schoolData.directorData.email) {
+        try {
+          // Criar diretor no AWS Cognito
+          const directorCognitoUser = await cognitoService.createUser({
+            email: schoolData.directorData.email,
+            temporaryPassword: `Escola${newSchool[0].id}@2025`,
+            firstName: schoolData.directorData.firstName,
+            lastName: schoolData.directorData.lastName,
+            group: 'Diretores'
+          });
+
+          // Criar usuário local do diretor
+          const newDirector = await db
+            .insert(users)
+            .values({
+              username: directorCognitoUser.username,
+              email: schoolData.directorData.email,
+              firstName: schoolData.directorData.firstName,
+              lastName: schoolData.directorData.lastName,
+              role: 'school_director',
+              cognitoUserId: directorCognitoUser.cognitoUserId,
+              cognitoGroup: 'Diretores',
+              cognitoStatus: 'FORCE_CHANGE_PASSWORD',
+              companyId: user.companyId,
+              contractId: schoolData.contractId,
+              password: '', // Senha será gerenciada pelo Cognito
+              status: 'active',
+              firstLogin: true,
+              forcePasswordChange: true
+            })
+            .returning();
+
+          // Vincular diretor à escola
+          await db
+            .update(schools)
+            .set({ directorId: newDirector[0].id })
+            .where(eq(schools.id, newSchool[0].id));
+
+          res.json({ 
+            success: true, 
+            school: newSchool[0], 
+            director: newDirector[0],
+            directorCognito: directorCognitoUser,
+            message: 'Escola criada com sucesso e diretor automaticamente criado'
+          });
+        } catch (directorError) {
+          console.error('Error creating director:', directorError);
+          // Escola foi criada, mas diretor falhou
+          res.json({ 
+            success: true, 
+            school: newSchool[0],
+            warning: 'Escola criada, mas houve erro na criação do diretor. Crie o diretor manualmente.',
+            directorError: directorError
+          });
+        }
+      } else {
+        res.json({ 
+          success: true, 
+          school: newSchool[0],
+          message: 'Escola criada com sucesso. Lembre-se de criar um diretor para a escola.'
+        });
+      }
+
+    } catch (error) {
+      console.error('Error creating municipal school:', error);
+      res.status(500).json({ error: 'Erro ao criar escola municipal' });
+    }
+  });
+
+  // Endpoint: Atualizar escola
+  app.patch('/api/municipal/schools/:id', authenticate, async (req, res) => {
+    try {
+      const user = req.session!.user!;
+      const schoolId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      // Verificar se a escola pertence à empresa do gestor
+      const school = await db
+        .select()
+        .from(schools)
+        .where(
+          and(
+            eq(schools.id, schoolId),
+            eq(schools.companyId, user.companyId)
+          )
+        );
+
+      if (school.length === 0) {
+        return res.status(403).json({ error: 'Escola não encontrada ou não pertence à sua empresa' });
+      }
+
+      // Atualizar escola
+      const updatedSchool = await db
+        .update(schools)
+        .set({
+          ...updateData,
+          updatedAt: new Date()
+        })
+        .where(eq(schools.id, schoolId))
+        .returning();
+
+      res.json({ success: true, school: updatedSchool[0] });
+    } catch (error) {
+      console.error('Error updating municipal school:', error);
+      res.status(500).json({ error: 'Erro ao atualizar escola municipal' });
+    }
+  });
+
+  // Endpoint: Desativar escola (quando contrato é desativado)
+  app.post('/api/municipal/schools/:id/deactivate', authenticate, async (req, res) => {
+    try {
+      const user = req.session!.user!;
+      const schoolId = parseInt(req.params.id);
+
+      // Verificar se a escola pertence à empresa do gestor
+      const school = await db
+        .select()
+        .from(schools)
+        .where(
+          and(
+            eq(schools.id, schoolId),
+            eq(schools.companyId, user.companyId)
+          )
+        );
+
+      if (school.length === 0) {
+        return res.status(403).json({ error: 'Escola não encontrada ou não pertence à sua empresa' });
+      }
+
+      // REGRA DE NEGÓCIO: Desativação de contrato torna dados inacessíveis
+      // 1. Desativar escola
+      await db
+        .update(schools)
+        .set({
+          status: 'inactive',
+          isActive: false,
+          updatedAt: new Date()
+        })
+        .where(eq(schools.id, schoolId));
+
+      // 2. Desativar usuários (diretor, professores, alunos) vinculados à escola
+      if (school[0].directorId) {
+        await db
+          .update(users)
+          .set({
+            status: 'inactive',
+            updatedAt: new Date()
+          })
+          .where(eq(users.id, school[0].directorId));
+      }
+
+      // 3. Desativar contrato associado
+      await db
+        .update(contracts)
+        .set({
+          status: 'cancelled',
+          updatedAt: new Date()
+        })
+        .where(eq(contracts.id, school[0].contractId));
+
+      res.json({ 
+        success: true, 
+        message: 'Escola, usuários e contrato desativados com sucesso'
+      });
+    } catch (error) {
+      console.error('Error deactivating school:', error);
+      res.status(500).json({ error: 'Erro ao desativar escola' });
+    }
+  });
+
+  // Endpoint: Estatísticas das escolas municipais
+  app.get('/api/municipal/schools/stats', authenticate, async (req, res) => {
+    try {
+      const user = req.session!.user!;
+
+      // Buscar estatísticas das escolas da empresa do gestor
+      const stats = await db
+        .select({
+          totalSchools: sql<number>`COUNT(${schools.id})`,
+          activeSchools: sql<number>`COUNT(CASE WHEN ${schools.status} = 'active' THEN 1 END)`,
+          inactiveSchools: sql<number>`COUNT(CASE WHEN ${schools.status} = 'inactive' THEN 1 END)`,
+          totalStudents: sql<number>`COALESCE(SUM(${schools.numberOfStudents}), 0)`,
+          totalTeachers: sql<number>`COALESCE(SUM(${schools.numberOfTeachers}), 0)`,
+          totalClassrooms: sql<number>`COALESCE(SUM(${schools.numberOfClassrooms}), 0)`,
+        })
+        .from(schools)
+        .where(eq(schools.companyId, user.companyId));
+
+      res.json({ success: true, stats: stats[0] });
+    } catch (error) {
+      console.error('Error fetching school stats:', error);
+      res.status(500).json({ error: 'Erro ao buscar estatísticas das escolas' });
+    }
+  });
+
   // Create and return HTTP server
   const httpServer = createServer(app);
   

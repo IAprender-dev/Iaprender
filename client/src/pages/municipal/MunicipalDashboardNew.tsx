@@ -18,6 +18,7 @@ import {
   Clock,
   Shield,
   LogOut,
+  School,
   Eye,
   Edit,
   Plus
@@ -311,6 +312,12 @@ const MunicipalDashboardNew: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/municipal/schools">
+                <Button variant="outline" className="bg-emerald-50 border-emerald-600 text-emerald-700 hover:bg-emerald-100">
+                  <School className="h-4 w-4 mr-2" />
+                  Gestão de Escolas
+                </Button>
+              </Link>
               <Link href="/municipal/data-management">
                 <Button variant="outline">
                   <Database className="h-4 w-4 mr-2" />
