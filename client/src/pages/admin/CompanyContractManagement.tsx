@@ -711,15 +711,15 @@ export default function CompanyContractManagement() {
                                 </div>
                                 <div>
                                   <span className="text-gray-500">Licenças:</span>
-                                  <p className="font-medium">{contract.availableLicenses}/{contract.totalLicenses}</p>
+                                  <p className="font-medium">{contract.availableLicenses || 0}/{contract.totalLicenses || 0}</p>
                                 </div>
                                 <div>
                                   <span className="text-gray-500">Professores:</span>
-                                  <p className="font-medium">Até {contract.maxTeachers}</p>
+                                  <p className="font-medium">Até {contract.maxTeachers || 0}</p>
                                 </div>
                                 <div>
                                   <span className="text-gray-500">Valor:</span>
-                                  <p className="font-medium">R$ {contract.pricePerLicense.toFixed(2)}/licença</p>
+                                  <p className="font-medium">R$ {(contract.pricePerLicense || 0).toFixed(2)}/licença</p>
                                 </div>
                               </div>
                             </div>

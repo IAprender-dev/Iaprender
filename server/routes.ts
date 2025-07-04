@@ -4756,9 +4756,15 @@ Estrutura JSON obrigatória:
             name: contract.name,
             description: contract.description,
             status: contract.status,
-            planType: contract.planType,
+            planType: contract.planType || 'basic',
             startDate: contract.startDate,
-            endDate: contract.endDate
+            endDate: contract.endDate,
+            pricePerLicense: contract.pricePerLicense || 0,
+            monthlyValue: contract.monthlyValue || 0,
+            totalLicenses: contract.totalLicenses || 0,
+            availableLicenses: contract.availableLicenses || 0,
+            maxTeachers: contract.maxTeachers || 0,
+            maxStudents: contract.maxStudents || 0
           }))
         });
       }
