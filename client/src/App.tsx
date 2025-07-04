@@ -41,6 +41,8 @@ import PaymentCenter from "@/pages/admin/PaymentCenter";
 import CognitoUserManagement from "@/pages/admin/CognitoUserManagement";
 import AWSPermissionsManager from "@/pages/admin/AWSPermissionsManager";
 import MunicipalManagerDashboard from "@/pages/municipal/MunicipalManagerDashboard";
+import MunicipalDashboardNew from "@/pages/municipal/MunicipalDashboardNew";
+import MunicipalDataManagement from "@/pages/municipal/MunicipalDataManagement";
 import SchoolDirectorDashboard from "@/pages/school/SchoolDirectorDashboard";
 
 import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
@@ -166,7 +168,8 @@ function Router() {
       <Route path="/admin/aws-permissions" component={AWSPermissionsManager} />
       
       {/* Municipal Manager Dashboard */}
-      <Route path="/municipal/dashboard" component={MunicipalManagerDashboard} />
+      <Route path="/municipal/dashboard" component={MunicipalDashboardNew} />
+      <Route path="/municipal/data-management" component={MunicipalDataManagement} />
       
       {/* School Director Dashboard */}
       <Route path="/school/dashboard" component={SchoolDirectorDashboard} />

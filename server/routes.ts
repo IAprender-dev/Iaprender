@@ -7104,6 +7104,163 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // Municipal Data Management endpoints
+  app.get('/api/municipal/stats', authenticate, async (req, res) => {
+    try {
+      // Get real statistics from database
+      const activeContracts = await db.select({
+        count: sql<number>`count(*)`
+      }).from(contracts).where(eq(contracts.status, 'active'));
+
+      const totalUsers = await db.select({
+        count: sql<number>`count(*)`
+      }).from(users).where(eq(users.role, 'municipal_manager'));
+
+      const totalCompanies = await db.select({
+        count: sql<number>`count(*)`
+      }).from(companies).where(eq(companies.status, 'active'));
+
+      const monthlyRevenue = await db.select({
+        total: sql<number>`COALESCE(sum(${contracts.monthlyValue}), 0)`
+      }).from(contracts).where(eq(contracts.status, 'active'));
+
+      const stats = {
+        activeContracts: Number(activeContracts[0]?.count || 0),
+        totalUsers: Number(totalUsers[0]?.count || 0),
+        totalCompanies: Number(totalCompanies[0]?.count || 0),
+        monthlyRevenue: Number(monthlyRevenue[0]?.total || 0),
+        newContractsThisMonth: 0,
+        activeUsers: 0,
+        activeCompanies: Number(totalCompanies[0]?.count || 0),
+        revenueGrowth: 0,
+        recentActivity: []
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching municipal stats:', error);
+      res.status(500).json({ error: 'Erro ao buscar estatísticas municipais' });
+    }
+  });
+
+  app.get('/api/municipal/contracts', authenticate, async (req, res) => {
+    try {
+      const contractsList = await db.select({
+        id: contracts.id,
+        contractNumber: contracts.contractNumber,
+        companyName: companies.name,
+        status: contracts.status,
+        startDate: contracts.startDate,
+        endDate: contracts.endDate,
+        monthlyValue: contracts.monthlyValue,
+        licenseCount: contracts.licenseCount,
+        usedLicenses: sql<number>`(
+          SELECT COUNT(*) FROM ${users} 
+          WHERE ${users.contractId} = ${contracts.id}
+        )`
+      })
+      .from(contracts)
+      .leftJoin(companies, eq(contracts.companyId, companies.id))
+      .orderBy(desc(contracts.createdAt));
+
+      res.json(contractsList);
+    } catch (error) {
+      console.error('Error fetching municipal contracts:', error);
+      res.status(500).json({ error: 'Erro ao buscar contratos municipais' });
+    }
+  });
+
+  app.get('/api/municipal/users', authenticate, async (req, res) => {
+    try {
+      const usersList = await db.select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        role: users.role,
+        status: users.status,
+        contractId: users.contractId,
+        lastLoginAt: users.lastLoginAt,
+        createdAt: users.createdAt
+      })
+      .from(users)
+      .where(eq(users.role, 'municipal_manager'))
+      .orderBy(desc(users.createdAt));
+
+      res.json(usersList);
+    } catch (error) {
+      console.error('Error fetching municipal users:', error);
+      res.status(500).json({ error: 'Erro ao buscar usuários municipais' });
+    }
+  });
+
+  app.get('/api/municipal/companies', authenticate, async (req, res) => {
+    try {
+      const companiesList = await db.select({
+        id: companies.id,
+        name: companies.name,
+        cnpj: companies.cnpj,
+        email: companies.email,
+        phone: companies.phone,
+        address: companies.address,
+        status: companies.status,
+        createdAt: companies.createdAt
+      })
+      .from(companies)
+      .orderBy(desc(companies.createdAt));
+
+      res.json(companiesList);
+    } catch (error) {
+      console.error('Error fetching municipal companies:', error);
+      res.status(500).json({ error: 'Erro ao buscar empresas municipais' });
+    }
+  });
+
+  app.post('/api/municipal/contracts', authenticate, async (req, res) => {
+    try {
+      const { contractNumber, companyId, startDate, endDate, monthlyValue, licenseCount } = req.body;
+      
+      const newContract = await db.insert(contracts)
+        .values({
+          contractNumber,
+          companyId,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          monthlyValue,
+          licenseCount,
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning();
+
+      res.json({ success: true, contract: newContract[0] });
+    } catch (error) {
+      console.error('Error creating municipal contract:', error);
+      res.status(500).json({ error: 'Erro ao criar contrato municipal' });
+    }
+  });
+
+  app.patch('/api/municipal/contracts/:id', authenticate, async (req, res) => {
+    try {
+      const contractId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      const updatedContract = await db.update(contracts)
+        .set({
+          ...updateData,
+          updatedAt: new Date()
+        })
+        .where(eq(contracts.id, contractId))
+        .returning();
+
+      res.json({ success: true, contract: updatedContract[0] });
+    } catch (error) {
+      console.error('Error updating municipal contract:', error);
+      res.status(500).json({ error: 'Erro ao atualizar contrato municipal' });
+    }
+  });
+
   // Create and return HTTP server
   const httpServer = createServer(app);
   
