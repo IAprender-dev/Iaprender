@@ -143,6 +143,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 4, 2025: CORREÇÃO CRÍTICA - Sistema de Listagem AWS Cognito Totalmente Funcional
+  - ✅ Corrigidos erros de schema Drizzle (campo contractNumber inexistente removido)
+  - ✅ Substituídas consultas SQL complexas por queries separadas mais robustas
+  - ✅ Adicionada importação inArray do drizzle-orm para operações de banco
+  - ✅ Criado endpoint /api/debug-cognito para teste de conectividade sem autenticação
+  - ✅ Confirmado AWS Cognito funcionando: 2 usuários Admin + 1 Gestores encontrados
+  - ✅ Sistema /api/admin/users/list retornando dados reais com autenticação admin
+  - ✅ Integração completa: dados Cognito + PostgreSQL local + informações de contrato
+  - ✅ Paginação, estatísticas e filtros funcionando corretamente
+  - ✅ Interface AdminUserManagement pronta para acesso com dados reais
 - July 4, 2025: PASSO 1 - Sistema Completo de Gestão de Escolas Municipais Implementado
   - ✅ Criado sistema completo de gestão de escolas com foco em contratos como entidade central
   - ✅ Implementados 5 endpoints backend funcionais: GET, POST, PATCH, DELETE e estatísticas para escolas

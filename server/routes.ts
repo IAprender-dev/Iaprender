@@ -31,7 +31,7 @@ import {
   tokenUsageLogs,
 
 } from "@shared/schema";
-import { eq, sql, gte, desc, and, isNull, isNotNull, lte, or } from "drizzle-orm";
+import { eq, sql, gte, desc, and, isNull, isNotNull, lte, or, inArray } from "drizzle-orm";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import session from "express-session";
@@ -44,7 +44,6 @@ import aiRouter from "./routes/ai-routes";
 import translateRoutes from "./routes/translate-routes";
 import tokenRouter from "./routes/token-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
-import { cognitoService } from "./utils/cognito-service";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse-new";
 import OpenAI from "openai";
@@ -181,6 +180,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       service: "IAverse API",
       version: "1.0.0"
     });
+  });
+
+  // TESTE COGNITO - ENDPOINT SEM AUTENTICAÇÃO
+  app.get('/api/debug-cognito', async (req: Request, res: Response) => {
+    try {
+      console.log(`🧪 [TEST] Testando conexão com AWS Cognito...`);
+      
+      const adminUsers = await cognitoService.listUsersInGroup('Admin');
+      const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      
+      console.log(`📊 [TEST] Admin users encontrados: ${adminUsers.length}`);
+      console.log(`📊 [TEST] Gestores users encontrados: ${gestoresUsers.length}`);
+      
+      res.json({
+        success: true,
+        cognitoWorking: true,
+        adminUsers: adminUsers.length,
+        gestoresUsers: gestoresUsers.length,
+        totalUsers: adminUsers.length + gestoresUsers.length,
+        sampleAdminEmails: adminUsers.slice(0, 3).map((user: any) => 
+          user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value || 'sem-email'
+        )
+      });
+    } catch (error) {
+      console.error(`❌ [TEST] Erro no teste Cognito:`, error);
+      res.status(500).json({
+        success: false,
+        cognitoWorking: false,
+        error: error.message,
+        message: 'Erro ao conectar com AWS Cognito'
+      });
+    }
   });
 
   // DOWNLOAD ROUTE
@@ -4086,6 +4117,8 @@ Estrutura JSON obrigatória:
     }
   });
 
+
+
   // Listar usuários por grupo (Admin e Gestores)
   app.get('/api/admin/users/list', authenticateAdmin, async (req: Request, res: Response) => {
     console.log(`🚀 [FRESH-REQUEST] Nova requisição de listagem: ${new Date().toISOString()}`);
@@ -4176,18 +4209,47 @@ Estrutura JSON obrigatória:
       
       let contractsWithCompanies = [];
       if (contractIds.length > 0) {
-        contractsWithCompanies = await db.select({
-          contractId: contracts.id,
-          contractNumber: contracts.contractNumber,
-          contractName: contracts.name,
-          companyId: companies.id,
-          companyName: companies.name,
-          companyEmail: companies.email,
-          companyPhone: companies.phone
-        })
-        .from(contracts)
-        .leftJoin(companies, eq(contracts.companyId, companies.id))
-        .where(sql`${contracts.id} IN (${contractIds.join(',')})`);
+        try {
+          console.log(`🔍 Buscando contratos para IDs: [${contractIds.join(', ')}]`);
+          
+          // Fazer consultas separadas para evitar problemas com joins complexos
+          const contractPromises = contractIds.map(async (contractId) => {
+            const [contract] = await db.select({
+              contractId: contracts.id,
+              contractName: contracts.name,
+              companyId: contracts.companyId
+            })
+            .from(contracts)
+            .where(eq(contracts.id, contractId))
+            .limit(1);
+            
+            if (contract && contract.companyId) {
+              const [company] = await db.select({
+                companyName: companies.name,
+                companyEmail: companies.email,
+                companyPhone: companies.phone
+              })
+              .from(companies)
+              .where(eq(companies.id, contract.companyId))
+              .limit(1);
+              
+              return {
+                ...contract,
+                ...company
+              };
+            }
+            
+            return contract;
+          });
+          
+          contractsWithCompanies = await Promise.all(contractPromises);
+          contractsWithCompanies = contractsWithCompanies.filter(Boolean);
+          
+          console.log(`✅ Contratos encontrados: ${contractsWithCompanies.length}`);
+        } catch (contractError) {
+          console.error(`❌ Erro ao buscar contratos:`, contractError);
+          contractsWithCompanies = [];
+        }
       }
 
       // Combinar dados do Cognito com dados locais e informações de empresa/contrato
@@ -4205,7 +4267,6 @@ Estrutura JSON obrigatória:
           if (contractData) {
             contractInfo = {
               contractId: contractData.contractId,
-              contractNumber: contractData.contractNumber,
               contractName: contractData.contractName,
               companyId: contractData.companyId,
               companyName: contractData.companyName,
