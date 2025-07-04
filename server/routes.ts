@@ -1260,7 +1260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // COMPANY ROUTES
   // Create company (admin only)
-  app.post("/api/companies", authenticate, authorize(["admin"]), async (req, res) => {
+  app.post("/api/companies", authenticateAdmin, async (req, res) => {
     try {
       const validatedData = insertCompanySchema.parse(req.body);
       
@@ -2115,7 +2115,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Criar contrato
       const newContract = await db.insert(contracts).values({
-        contractNumber: contractNumber,
         companyId: company.id,
         name: `Contrato ${companyName} - ${contractYear}`,
         description: `Contrato ${planType} para ${companyName}`,

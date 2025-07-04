@@ -161,14 +161,15 @@ export default function CompanyContractManagement() {
   // Create company mutation
   const createCompanyMutation = useMutation({
     mutationFn: async (companyData: NewCompanyForm) => {
-      const response = await fetch('/api/admin/companies', {
+      const response = await fetch('/api/companies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(companyData)
       });
       if (!response.ok) {
-        throw new Error('Erro ao criar empresa');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Erro ao criar empresa');
       }
       return await response.json();
     },
