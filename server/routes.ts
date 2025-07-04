@@ -2070,72 +2070,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const {
         companyId,
-        companyName,
-        clientName,
-        email,
-        phone,
+        name,
+        description,
         planType,
-        status,
         startDate,
         endDate,
         totalLicenses,
-        pricePerLicense,
-        tokenLimits,
-        enabledModels,
-        autoRenewal
+        maxTeachers,
+        maxStudents,
+        pricePerLicense
       } = req.body;
 
       // Validar dados obrigatórios
-      if (!companyName || !clientName || !email || !totalLicenses || !pricePerLicense) {
-        return res.status(400).json({ error: 'Dados obrigatórios não fornecidos' });
+      if (!companyId || !name || !totalLicenses || !pricePerLicense) {
+        return res.status(400).json({ error: 'Dados obrigatórios não fornecidos: companyId, name, totalLicenses, pricePerLicense' });
       }
 
-      // Buscar ou criar empresa
-      let company;
-      if (companyId) {
-        const existingCompany = await db.select().from(companies).where(eq(companies.id, companyId)).limit(1);
-        company = existingCompany[0];
-      } else {
-        // Criar nova empresa se não existir
-        const newCompany = await db.insert(companies).values({
-          name: companyName,
-          email: email,
-          phone: phone || '',
-          contactPerson: clientName,
-          address: '',
-          createdAt: new Date()
-        }).returning();
-        company = newCompany[0];
+      // Buscar empresa
+      const existingCompany = await db.select().from(companies).where(eq(companies.id, companyId)).limit(1);
+      const company = existingCompany[0];
+      
+      if (!company) {
+        return res.status(400).json({ error: 'Empresa não encontrada' });
       }
 
-      // Gerar número único do contrato
-      const contractYear = new Date().getFullYear();
-      const contractCount = await db.select().from(contracts).execute();
-      const contractNumber = `CTR-${String(contractCount.length + 1).padStart(4, '0')}-${contractYear}`;
-
-      // Criar contrato
+      // Criar contrato com campos corretos do schema
       const newContract = await db.insert(contracts).values({
-        companyId: company.id,
-        name: `Contrato ${companyName} - ${contractYear}`,
-        description: `Contrato ${planType} para ${companyName}`,
+        name: name,
+        companyId: companyId,
+        description: description || `Contrato ${planType} para ${company.name}`,
         startDate: startDate,
         endDate: endDate,
+        planType: planType as 'basic' | 'standard' | 'premium' | 'enterprise',
         maxUsers: totalLicenses,
-        maxTokens: (tokenLimits?.teacher || 10000) + (tokenLimits?.student || 5000),
-        status: status || 'active',
-        planType: planType || 'basic',
-        maxTeachers: Math.floor(totalLicenses * 0.1), // 10% professores
-        maxStudents: Math.floor(totalLicenses * 0.9), // 90% alunos
-        pricePerLicense: pricePerLicense,
+        maxTokens: 50000,
         totalLicenses: totalLicenses,
+        licenseCount: totalLicenses,
         availableLicenses: totalLicenses,
-        monthlyTokenLimitTeacher: tokenLimits?.teacher || 10000,
-        monthlyTokenLimitStudent: tokenLimits?.student || 5000,
-        enabledAIModels: enabledModels || ['openai-gpt-4'],
-        settings: {
-          autoRenewal: autoRenewal ?? true,
-          notificationsEnabled: true
-        }
+        maxTeachers: maxTeachers || Math.floor(totalLicenses * 0.1),
+        maxStudents: maxStudents || Math.floor(totalLicenses * 0.9),
+        pricePerLicense: pricePerLicense,
+        monthlyValue: totalLicenses * pricePerLicense,
+        monthlyTokenLimitTeacher: 10000,
+        monthlyTokenLimitStudent: 5000,
+        enabledAIModels: ['openai-gpt-4', 'claude-3.5-sonnet'],
+        status: 'active'
       }).returning();
 
       res.status(201).json({
