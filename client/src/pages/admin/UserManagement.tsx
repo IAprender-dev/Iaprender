@@ -511,8 +511,8 @@ export default function UserManagement() {
                           )}
                         </div>
 
-                        {/* Informações de Empresa e Contrato - apenas para Gestores */}
-                        {user.groups.includes('Gestores') && user.contractInfo && (
+                        {/* Informações de Empresa e Contrato - apenas para Diretores */}
+                        {user.groups.includes('Diretores') && user.contractInfo && (
                           <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <div className="flex items-start space-x-4">
                               <div className="flex-1">
@@ -539,13 +539,13 @@ export default function UserManagement() {
                           </div>
                         )}
 
-                        {/* Aviso para Gestores sem empresa/contrato vinculado */}
-                        {user.groups.includes('Gestores') && !user.contractInfo && (
+                        {/* Aviso para Diretores sem empresa/contrato vinculado */}
+                        {user.groups.includes('Diretores') && !user.contractInfo && (
                           <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                             <div className="flex items-center space-x-2">
                               <AlertTriangle className="h-4 w-4 text-yellow-600" />
                               <span className="text-xs text-yellow-800 font-medium">
-                                Gestor sem empresa/contrato vinculado
+                                Diretor sem empresa/contrato vinculado
                               </span>
                             </div>
                           </div>
@@ -730,7 +730,7 @@ export default function UserManagement() {
                 </div>
 
                 <div className="flex justify-end space-x-2 mt-6">
-                  {selectedUser.groups.includes('Gestores') && (
+                  {selectedUser.groups.includes('Diretores') && (
                     <Button
                       variant="outline"
                       onClick={() => {

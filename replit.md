@@ -143,6 +143,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 5, 2025: ✅ CONCLUÍDO - Diferenciação Gestores vs Diretores na Interface de Listagem
+  - ✅ Removidas informações de contrato dos cards para Gestores no UserManagement
+  - ✅ Mantidas informações de contrato apenas para Diretores (empresa + contrato específico)
+  - ✅ Botão "Editar Vínculos" removido para Gestores, mantido apenas para Diretores
+  - ✅ Avisos de vínculos faltantes adaptados: apenas Diretores precisam de empresa+contrato
+  - ✅ Hierarquia clara: Gestores gerenciam empresa completa, Diretores apenas um contrato
+  - ✅ Interface limpa para diferentes tipos de usuário conforme suas responsabilidades
 - July 5, 2025: ✅ CONCLUÍDO - Sistema Hierárquico de Criação de Usuários Implementado
   - ✅ Reformulado formulário CognitoUserManagement para hierarquia clara de permissões
   - ✅ Admin: acesso total ao sistema, sem restrições de empresa/contrato
