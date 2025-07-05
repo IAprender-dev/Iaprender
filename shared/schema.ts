@@ -90,6 +90,7 @@ export const users = pgTable("users", {
   forcePasswordChange: boolean("force_password_change").default(false),
   profileImage: text("profile_image"),
   contractId: integer("contract_id").references(() => contracts.id),
+  companyId: integer("company_id").references(() => companies.id), // Empresa vinculada para gestores municipais
   schoolYear: text("school_year"), // Ano escolar para estudantes (1º ano, 2º ano, etc.)
   phone: text("phone"),
   address: text("address"),
