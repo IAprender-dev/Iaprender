@@ -306,7 +306,7 @@ export default function UserManagement() {
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
                 </div>
                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  IAverse
+                  IAprender
                 </span>
               </div>
               <div className="h-6 w-px bg-gray-300"></div>

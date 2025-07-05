@@ -143,18 +143,19 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 5, 2025: Logo IAverse unificado aplicado em TODOS os formulários administrativos
-  - ✅ Atualizado design do logo para "IAverse" em todos os dashboards administrativos
-  - ✅ CompanyContractManagement.tsx - logo atualizado para IAverse
-  - ✅ AIManagementDashboard.tsx - logo atualizado para IAverse
-  - ✅ UserManagement.tsx - logo atualizado para IAverse
-  - ✅ CognitoUserManagement.tsx - logo atualizado para IAverse
-  - ✅ AdvancedToolsDashboard.tsx - logo atualizado para IAverse
-  - ✅ SecurityComplianceDashboard.tsx - logo atualizado para IAverse
-  - ✅ AdvancedAdminDashboard.tsx - logo atualizado para IAverse
-  - ✅ AdminMasterDashboard.tsx - logo atualizado para IAverse
-  - ✅ Design unificado: logo com gradiente azul-roxo e nome "IAverse" em gradiente
-  - ✅ Padrão consistente aplicado em toda interface administrativa
+- July 5, 2025: CORREÇÃO CRÍTICA - Marca oficial "IAprender" aplicada em TODOS os formulários administrativos
+  - ✅ Corrigido de "IAverse" para marca oficial "IAprender" em todos os dashboards administrativos
+  - ✅ CompanyContractManagement.tsx - logo atualizado para IAprender
+  - ✅ AIManagementDashboard.tsx - logo atualizado para IAprender
+  - ✅ UserManagement.tsx - logo atualizado para IAprender
+  - ✅ CognitoUserManagement.tsx - logo atualizado para IAprender
+  - ✅ AdvancedToolsDashboard.tsx - logo atualizado para IAprender
+  - ✅ SecurityComplianceDashboard.tsx - logo atualizado para IAprender
+  - ✅ AdvancedAdminDashboard.tsx - logo atualizado para IAprender
+  - ✅ AdminMasterDashboard.tsx - logo atualizado para IAprender
+  - ✅ Marca oficial: "IAprender" com símbolo azul orgânico conforme attached_assets/IAprender_1750262377399.png
+  - ✅ Design unificado: logo com gradiente azul-roxo e nome "IAprender" em gradiente
+  - ✅ Padrão consistente aplicado em toda interface administrativa com marca oficial
 - July 5, 2025: Sistema de permissões AWS completamente removido conforme solicitado
   - ✅ Arquivo AWSPermissionsManager.tsx deletado da interface administrativa
   - ✅ Import e rota do AWSPermissionsManager removidos do App.tsx
