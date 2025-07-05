@@ -286,14 +286,7 @@ const AdminMasterDashboard: React.FC = () => {
                   <Link href="/admin/cognito-users">
                     <Button className="w-full justify-start h-12 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white shadow-lg">
                       <Shield className="h-5 w-5 mr-3" />
-                      Gestão de Usuários Cognito
-                    </Button>
-                  </Link>
-
-                  <Link href="/admin/aws-permissions">
-                    <Button className="w-full justify-start h-12 bg-gradient-to-r from-slate-600 to-gray-600 hover:from-slate-700 hover:to-gray-700 text-white shadow-lg">
-                      <Database className="h-5 w-5 mr-3" />
-                      Configurar Permissões AWS
+                      Criar novo Usuário
                     </Button>
                   </Link>
 

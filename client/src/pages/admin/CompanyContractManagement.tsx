@@ -531,9 +531,16 @@ export default function CompanyContractManagement() {
               <Link href="/admin/master">
                 <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar ao Dashboard
+                  Voltar
                 </Button>
               </Link>
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">IA</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900">IAprender</span>
+              </div>
+              <div className="h-6 w-px bg-gray-300"></div>
               <h1 className="text-2xl font-bold text-gray-900">
                 Gestão de Empresas e Contratos
               </h1>

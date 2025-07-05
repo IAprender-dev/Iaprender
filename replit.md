@@ -143,6 +143,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 5, 2025: Sistema de permissões AWS completamente removido conforme solicitado
+  - ✅ Arquivo AWSPermissionsManager.tsx deletado da interface administrativa
+  - ✅ Import e rota do AWSPermissionsManager removidos do App.tsx
+  - ✅ Botão "Permissões AWS" removido do AdvancedAdminDashboard
+  - ✅ Botão "Configurar Permissões AWS" removido do AdminMasterDashboard
+  - ✅ IAprender branding aplicado nos últimos 2 dashboards (SecurityComplianceDashboard e AdvancedAdminDashboard)
+  - ✅ Título "Criar novo Usuário" aplicado ao CognitoUserManagement e AdminMasterDashboard
 - July 5, 2025: Central de Pagamentos completamente removida do sistema
   - ✅ Arquivo PaymentCenter.tsx deletado da interface administrativa
   - ✅ Import e rota do PaymentCenter removidos do App.tsx

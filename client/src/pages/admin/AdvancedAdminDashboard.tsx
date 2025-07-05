@@ -182,6 +182,13 @@ export default function AdvancedAdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">IA</span>
+                </div>
+                <span className="text-xl font-bold text-gray-900">IAprender</span>
+              </div>
+              <div className="h-6 w-px bg-gray-300"></div>
               <h1 className="text-2xl font-bold text-gray-900">
                 Dashboard Administrativo Avançado
               </h1>
@@ -423,13 +430,6 @@ export default function AdvancedAdminDashboard() {
                     <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center space-y-2">
                       <FileText className="h-6 w-6 text-green-600" />
                       <span className="text-sm">Contratos</span>
-                    </Button>
-                  </Link>
-                  
-                  <Link href="/admin/aws-permissions">
-                    <Button variant="outline" className="w-full h-auto p-4 flex flex-col items-center space-y-2">
-                      <Shield className="h-6 w-6 text-orange-600" />
-                      <span className="text-sm">Permissões AWS</span>
                     </Button>
                   </Link>
                 </div>

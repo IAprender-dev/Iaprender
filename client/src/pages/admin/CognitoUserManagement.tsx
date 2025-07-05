@@ -365,10 +365,17 @@ diretor@escola.edu.br,Carlos Oliveira,Diretores,,`;
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">IA</span>
+          </div>
+          <span className="text-xl font-bold text-gray-900">IAprender</span>
+        </div>
+        <div className="h-6 w-px bg-gray-300"></div>
         <Users className="h-8 w-8 text-blue-600" />
         <div>
-          <h1 className="text-3xl font-bold">Gerenciamento de Usuários AWS Cognito</h1>
+          <h1 className="text-3xl font-bold">Criar novo Usuário</h1>
           <p className="text-gray-600">Criar usuários com atribuição automática de grupos e roles</p>
         </div>
       </div>

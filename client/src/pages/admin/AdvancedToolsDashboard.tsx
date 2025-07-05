@@ -209,9 +209,18 @@ const AdvancedToolsDashboard: React.FC = () => {
       {/* Header */}
       <div className="bg-white border-b border-slate-200 px-8 py-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Ferramentas Avançadas</h1>
-            <p className="text-slate-600 mt-1">Automação e produtividade para maximizar eficiência</p>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">IA</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">IAprender</span>
+            </div>
+            <div className="h-6 w-px bg-gray-300"></div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Ferramentas Avançadas</h1>
+              <p className="text-slate-600 mt-1">Automação e produtividade para maximizar eficiência</p>
+            </div>
           </div>
           
           <div className="flex items-center space-x-4">

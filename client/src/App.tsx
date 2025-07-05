@@ -39,7 +39,6 @@ import SecurityComplianceDashboard from "@/pages/admin/SecurityComplianceDashboa
 
 
 import CognitoUserManagement from "@/pages/admin/CognitoUserManagement";
-import AWSPermissionsManager from "@/pages/admin/AWSPermissionsManager";
 import MunicipalManagerDashboard from "@/pages/municipal/MunicipalManagerDashboard";
 import MunicipalDashboardNew from "@/pages/municipal/MunicipalDashboardNew";
 import MunicipalDataManagement from "@/pages/municipal/MunicipalDataManagement";
@@ -166,7 +165,6 @@ function Router() {
       <Route path="/admin/user-management" component={UserManagement} />
 
       <Route path="/admin/cognito-users" component={CognitoUserManagement} />
-      <Route path="/admin/aws-permissions" component={AWSPermissionsManager} />
       
       {/* Municipal Manager Dashboard */}
       <Route path="/municipal/dashboard" component={MunicipalDashboardNew} />
