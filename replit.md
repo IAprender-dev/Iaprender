@@ -143,6 +143,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 5, 2025: ✅ CONCLUÍDO - Sistema Hierárquico de Criação de Usuários Implementado
+  - ✅ Reformulado formulário CognitoUserManagement para hierarquia clara de permissões
+  - ✅ Admin: acesso total ao sistema, sem restrições de empresa/contrato
+  - ✅ Gestores: devem selecionar empresa ao serem criados, gerenciam toda empresa e podem criar contratos
+  - ✅ Diretores: devem selecionar empresa + contrato específico, acessam apenas dados daquele contrato
+  - ✅ Professores/Alunos: criação simples sem requisitos de vínculo empresarial
+  - ✅ Validação automática: campos empresa/contrato aparecem conforme tipo de usuário selecionado
+  - ✅ Lógica de reset: limpa seleções automaticamente quando tipo de usuário muda
+  - ✅ Explicações claras: cada tipo tem descrição da hierarquia e permissões no formulário
+  - ✅ Sistema pronto para implementação de controle de acesso baseado em dados municipais
 - July 5, 2025: ✅ CONCLUÍDO - Logo oficial IAprender aplicada no AdminMasterDashboard
   - ✅ Substituído ícone "IA" por logo oficial IAprender_1750262377399.png no dashboard principal
   - ✅ Aplicado padrão visual consistente: logo em fundo branco com shadow
