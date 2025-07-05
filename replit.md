@@ -155,6 +155,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ AdminMasterDashboard.tsx - logo atualizado para IAprender
   - ✅ ContractManagement.tsx - padrão oficial aplicado (botão "Voltar" + logo IAprender)
   - ✅ LiteLLMManagement.tsx - padrão oficial aplicado (botão "Voltar" + logo IAprender)
+  - ✅ CompanyContractManagement.tsx - ícone IA substituído pela logo oficial IAprender_1750262377399.png
   - ✅ Marca oficial: "IAprender" com símbolo azul orgânico conforme attached_assets/IAprender Logo_1751743080748.png
   - ✅ Padrão oficial: Botão "Voltar" + Logo oficial "IAprender" em todos os formulários administrativos
   - ✅ Design unificado: logo com gradiente azul-roxo e nome "IAprender" em gradiente
