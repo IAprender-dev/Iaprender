@@ -156,6 +156,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Integração com dados reais via API municipal (/api/municipal/stats)
   - ✅ Rota /gestor/dashboard adicionada ao App.tsx para acesso direto
   - ✅ Design responsivo otimizado para desktop, tablet e mobile
+  - ✅ CORREÇÃO: Redirecionamento pós-login Cognito corrigido de /municipal/dashboard para /gestor/dashboard
 - July 5, 2025: ✅ CONCLUÍDO - Diferenciação Gestores vs Diretores na Interface de Listagem
   - ✅ Removidas informações de contrato dos cards para Gestores no UserManagement
   - ✅ Mantidas informações de contrato apenas para Diretores (empresa + contrato específico)

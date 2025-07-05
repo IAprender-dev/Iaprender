@@ -210,7 +210,7 @@ export class CognitoService {
   getRoleRedirectUrl(role: 'admin' | 'teacher' | 'student' | 'municipal_manager' | 'school_director'): string {
     const urlMap = {
       admin: '/admin/master',
-      municipal_manager: '/municipal/dashboard', 
+      municipal_manager: '/gestor/dashboard', 
       school_director: '/school/dashboard',
       teacher: '/professor',
       student: '/student/dashboard'
