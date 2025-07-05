@@ -143,6 +143,12 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 5, 2025: Central de Pagamentos completamente removida do sistema
+  - ✅ Arquivo PaymentCenter.tsx deletado da interface administrativa
+  - ✅ Import e rota do PaymentCenter removidos do App.tsx
+  - ✅ Botão "Central de Pagamentos" removido do AdminMasterDashboard
+  - ✅ Todas as rotas de API relacionadas a pagamentos removidas (/api/admin/payment/*)
+  - ✅ Sistema agora mais limpo sem funcionalidades de pagamento desnecessárias
 - July 5, 2025: Removidas abas "Provedores" e "Analytics" do formulário admin/ai-management
   - ✅ Abas desnecessárias removidas do AIManagementDashboard conforme solicitado
   - ✅ TabsList reduzida de 5 para 3 colunas (Visão Geral, Aplicações, Chaves Virtuais)

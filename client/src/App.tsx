@@ -36,7 +36,7 @@ import UserManagement from "@/pages/admin/UserManagement";
 import ExecutiveDashboard from "@/pages/admin/ExecutiveDashboard";
 import AdvancedToolsDashboard from "@/pages/admin/AdvancedToolsDashboard";
 import SecurityComplianceDashboard from "@/pages/admin/SecurityComplianceDashboard";
-import PaymentCenter from "@/pages/admin/PaymentCenter";
+
 
 import CognitoUserManagement from "@/pages/admin/CognitoUserManagement";
 import AWSPermissionsManager from "@/pages/admin/AWSPermissionsManager";
@@ -155,7 +155,7 @@ function Router() {
       <Route path="/admin/executive" component={ExecutiveDashboard} />
       <Route path="/admin/tools" component={AdvancedToolsDashboard} />
       <Route path="/admin/security" component={SecurityComplianceDashboard} />
-      <Route path="/admin/payment-center" component={PaymentCenter} />
+
       <Route path="/admin/ai-management" component={AIManagementDashboard} />
       <Route path="/admin/ai/cost-management" component={AWSCostManagement} />
       <Route path="/admin/ai/litellm-management" component={LiteLLMManagement} />
