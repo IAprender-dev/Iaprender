@@ -40,6 +40,7 @@ import SecurityComplianceDashboard from "@/pages/admin/SecurityComplianceDashboa
 
 import CognitoUserManagement from "@/pages/admin/CognitoUserManagement";
 import MunicipalManagerDashboard from "@/pages/municipal/MunicipalManagerDashboard";
+import GestorDashboard from "@/pages/municipal/GestorDashboard";
 import MunicipalDashboardNew from "@/pages/municipal/MunicipalDashboardNew";
 import MunicipalDataManagement from "@/pages/municipal/MunicipalDataManagement";
 import SchoolManagement from "@/pages/municipal/SchoolManagement";
@@ -168,6 +169,7 @@ function Router() {
       
       {/* Municipal Manager Dashboard */}
       <Route path="/municipal/dashboard" component={MunicipalDashboardNew} />
+      <Route path="/gestor/dashboard" component={GestorDashboard} />
       <Route path="/municipal/data-management" component={MunicipalDataManagement} />
       <Route path="/municipal/schools" component={SchoolManagement} />
       
