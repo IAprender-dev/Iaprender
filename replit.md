@@ -143,13 +143,23 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 5, 2025: Logo IAverse unificado aplicado em TODOS os formulários administrativos
+  - ✅ Atualizado design do logo para "IAverse" em todos os dashboards administrativos
+  - ✅ CompanyContractManagement.tsx - logo atualizado para IAverse
+  - ✅ AIManagementDashboard.tsx - logo atualizado para IAverse
+  - ✅ UserManagement.tsx - logo atualizado para IAverse
+  - ✅ CognitoUserManagement.tsx - logo atualizado para IAverse
+  - ✅ AdvancedToolsDashboard.tsx - logo atualizado para IAverse
+  - ✅ SecurityComplianceDashboard.tsx - logo atualizado para IAverse
+  - ✅ AdvancedAdminDashboard.tsx - logo atualizado para IAverse
+  - ✅ AdminMasterDashboard.tsx - logo atualizado para IAverse
+  - ✅ Design unificado: logo com gradiente azul-roxo e nome "IAverse" em gradiente
+  - ✅ Padrão consistente aplicado em toda interface administrativa
 - July 5, 2025: Sistema de permissões AWS completamente removido conforme solicitado
   - ✅ Arquivo AWSPermissionsManager.tsx deletado da interface administrativa
   - ✅ Import e rota do AWSPermissionsManager removidos do App.tsx
   - ✅ Botão "Permissões AWS" removido do AdvancedAdminDashboard
   - ✅ Botão "Configurar Permissões AWS" removido do AdminMasterDashboard
-  - ✅ IAprender branding aplicado nos últimos 2 dashboards (SecurityComplianceDashboard e AdvancedAdminDashboard)
-  - ✅ Título "Criar novo Usuário" aplicado ao CognitoUserManagement e AdminMasterDashboard
 - July 5, 2025: Central de Pagamentos completamente removida do sistema
   - ✅ Arquivo PaymentCenter.tsx deletado da interface administrativa
   - ✅ Import e rota do PaymentCenter removidos do App.tsx
