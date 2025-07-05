@@ -16,6 +16,7 @@ import {
   Rocket, Brain, Search, Filter, Eye, Star
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
 
 interface AutomationRule {
   id: number;
@@ -212,10 +213,13 @@ const AdvancedToolsDashboard: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">IA</span>
+                <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">
+                  <img 
+                    src={IAprender_Logo} 
+                    alt="IAprender Logo" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 IAprender
