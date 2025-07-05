@@ -652,7 +652,7 @@ export default function CompanyContractManagement() {
           </div>
         </div>
 
-        {/* Companies Grid */}
+        {/* Companies Grid - Layout Otimizado */}
         {filteredCompanies.length === 0 ? (
           <div className="text-center py-12">
             <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -668,192 +668,201 @@ export default function CompanyContractManagement() {
             )}
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-4">
             {filteredCompanies.map((company: Company) => (
               <Card key={company.id} className="bg-white shadow-sm border border-slate-200/60 hover:shadow-md transition-shadow">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
+                
+                {/* Company Header - Compacto */}
+                <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <Building2 className="h-6 w-6 text-blue-600" />
+                      <div className="p-1.5 bg-blue-100 rounded-lg">
+                        <Building2 className="h-5 w-5 text-blue-600" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl text-gray-900">{company.name}</CardTitle>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
+                        <h3 className="text-lg font-semibold text-gray-900">{company.name}</h3>
+                        <div className="flex items-center space-x-3 text-sm text-gray-600">
                           {company.email && (
-                            <div className="flex items-center">
-                              <Mail className="h-4 w-4 mr-1" />
+                            <span className="flex items-center">
+                              <Mail className="h-3 w-3 mr-1" />
                               {company.email}
-                            </div>
+                            </span>
                           )}
                           {company.contactPerson && (
-                            <div className="flex items-center">
-                              <Users className="h-4 w-4 mr-1" />
+                            <span className="flex items-center">
+                              <Users className="h-3 w-3 mr-1" />
                               {company.contactPerson}
-                            </div>
+                            </span>
                           )}
                         </div>
                       </div>
                     </div>
+                    
                     <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
                         {company.contracts.length} {company.contracts.length === 1 ? 'Contrato' : 'Contratos'}
                       </Badge>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => openViewCompany(company)}
-                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                        title="Visualizar empresa"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => openEditCompany(company)}
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                        title="Editar empresa"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="ghost"
-                        onClick={() => openDeleteCompany(company)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        title="Excluir empresa"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="space-y-4">
-                    {/* Company Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                      {company.phone && (
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                          {company.phone}
-                        </div>
-                      )}
-                      {company.address && (
-                        <div className="flex items-center text-sm text-gray-600 md:col-span-2">
-                          <MapPin className="h-4 w-4 mr-2 text-gray-400" />
-                          {company.address}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Contracts */}
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-medium text-gray-900">Contratos Ativos</h4>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedCompany(company);
-                            setIsCreateContractModalOpen(true);
-                          }}
-                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                      <div className="flex items-center space-x-1">
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => openViewCompany(company)}
+                          className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          title="Visualizar empresa"
                         >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Novo Contrato
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => openEditCompany(company)}
+                          className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                          title="Editar empresa"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => openDeleteCompany(company)}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          title="Excluir empresa"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                      
-                      {company.contracts.length === 0 ? (
-                        <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-                          <FileText className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-500">Nenhum contrato ativo</p>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setSelectedCompany(company);
-                              setIsCreateContractModalOpen(true);
-                            }}
-                            className="mt-2 text-blue-600 hover:text-blue-700"
-                          >
-                            Criar primeiro contrato
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="grid gap-3">
-                          {company.contracts.map((contract: Contract) => (
-                            <div key={contract.id} className="border border-gray-200 rounded-lg p-4 bg-white">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center space-x-2">
-                                  <div>
-                                    <h5 className="font-medium text-gray-900">{contract.name}</h5>
-                                    {contract.contractNumber && (
-                                      <span className="text-xs text-gray-500 font-mono">#{contract.contractNumber}</span>
-                                    )}
-                                  </div>
-                                  {getPlanBadge(contract.planType)}
-                                  {getStatusBadge(contract.status)}
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost"
-                                    onClick={() => openViewContract(contract)}
-                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                    title="Visualizar contrato"
-                                  >
-                                    <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost"
-                                    onClick={() => openEditContract(contract)}
-                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                    title="Editar contrato"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="ghost"
-                                    onClick={() => openDeleteContract(contract)}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                    title="Excluir contrato"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div>
-                                  <span className="text-gray-500">Período:</span>
-                                  <p className="font-medium">
-                                    {new Date(contract.startDate).toLocaleDateString('pt-BR')} - {new Date(contract.endDate).toLocaleDateString('pt-BR')}
-                                  </p>
-                                </div>
-                                <div>
-                                  <span className="text-gray-500">Licenças:</span>
-                                  <p className="font-medium">{contract.availableLicenses || 0}/{contract.totalLicenses || 0}</p>
-                                </div>
-                                <div>
-                                  <span className="text-gray-500">Professores:</span>
-                                  <p className="font-medium">Até {contract.maxTeachers || 0}</p>
-                                </div>
-                                <div>
-                                  <span className="text-gray-500">Valor:</span>
-                                  <p className="font-medium">R$ {(contract.pricePerLicense || 0).toFixed(2)}/licença</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
+                  
+                  {/* Company Info Compacta */}
+                  {(company.phone || company.address) && (
+                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-600">
+                      {company.phone && (
+                        <span className="flex items-center">
+                          <Phone className="h-3 w-3 mr-1" />
+                          {company.phone}
+                        </span>
+                      )}
+                      {company.address && (
+                        <span className="flex items-center">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {company.address.length > 50 ? `${company.address.substring(0, 47)}...` : company.address}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Contracts Section - Otimizada */}
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-medium text-gray-900">Contratos</h4>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCompany(company);
+                        setIsCreateContractModalOpen(true);
+                      }}
+                      className="h-7 text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Novo
+                    </Button>
+                  </div>
+                  
+                  {company.contracts.length === 0 ? (
+                    <div className="text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                      <FileText className="h-6 w-6 text-gray-400 mx-auto mb-1" />
+                      <p className="text-xs text-gray-500 mb-2">Nenhum contrato ativo</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setSelectedCompany(company);
+                          setIsCreateContractModalOpen(true);
+                        }}
+                        className="h-7 text-xs text-blue-600 hover:text-blue-700"
+                      >
+                        Criar primeiro contrato
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {company.contracts.map((contract: Contract) => (
+                        <div key={contract.id} className="border border-gray-200 rounded-lg p-3 bg-white hover:bg-gray-50 transition-colors">
+                          
+                          {/* Contract Header */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <div>
+                                <h5 className="text-sm font-medium text-gray-900">{contract.name}</h5>
+                                {contract.contractNumber && (
+                                  <span className="text-xs text-gray-500 font-mono">#{contract.contractNumber}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                {getPlanBadge(contract.planType)}
+                                {getStatusBadge(contract.status)}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center space-x-1">
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => openViewContract(contract)}
+                                className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                title="Visualizar contrato"
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => openEditContract(contract)}
+                                className="h-7 w-7 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                title="Editar contrato"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => openDeleteContract(contract)}
+                                className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Excluir contrato"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {/* Contract Info Grid Compacta */}
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                            <div className="bg-gray-50 p-2 rounded">
+                              <span className="text-gray-500 block">Período</span>
+                              <p className="font-medium text-gray-900">
+                                {new Date(contract.startDate).toLocaleDateString('pt-BR', { month: '2-digit', year: '2-digit' })} - {new Date(contract.endDate).toLocaleDateString('pt-BR', { month: '2-digit', year: '2-digit' })}
+                              </p>
+                            </div>
+                            <div className="bg-gray-50 p-2 rounded">
+                              <span className="text-gray-500 block">Licenças</span>
+                              <p className="font-medium text-gray-900">{contract.availableLicenses || 0}/{contract.totalLicenses || 0}</p>
+                            </div>
+                            <div className="bg-gray-50 p-2 rounded">
+                              <span className="text-gray-500 block">Professores</span>
+                              <p className="font-medium text-gray-900">Até {contract.maxTeachers || 0}</p>
+                            </div>
+                            <div className="bg-gray-50 p-2 rounded">
+                              <span className="text-gray-500 block">Valor</span>
+                              <p className="font-medium text-gray-900">R$ {(contract.pricePerLicense || 0).toFixed(2)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
