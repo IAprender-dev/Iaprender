@@ -13,9 +13,10 @@ import {
   BarChart3, PieChart, Target, Workflow, Lightbulb,
   Clock, CheckCircle, AlertCircle, TrendingUp, ArrowRight,
   Settings, Cpu, Database, Cloud, Shield, RefreshCw,
-  Rocket, Brain, Search, Filter, Eye, Star
+  Rocket, Brain, Search, Filter, Eye, Star, ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Link } from 'wouter';
 import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
 
 interface AutomationRule {
@@ -211,6 +212,12 @@ const AdvancedToolsDashboard: React.FC = () => {
       <div className="bg-white border-b border-slate-200 px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
+            <Link to="/admin/master">
+              <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+            </Link>
             <div className="flex items-center space-x-3">
               <div className="relative">
                 <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">

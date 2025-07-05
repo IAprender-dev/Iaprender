@@ -8,7 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Users, UserPlus, Shield, AlertCircle, CheckCircle, Clock, Settings, Check, Copy, ExternalLink, AlertTriangle, Info, Upload, FileSpreadsheet, Download } from 'lucide-react';
+import { Users, UserPlus, Shield, AlertCircle, CheckCircle, Clock, Settings, Check, Copy, ExternalLink, AlertTriangle, Info, Upload, FileSpreadsheet, Download, ArrowLeft } from 'lucide-react';
+import { Link } from 'wouter';
 import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
 
 interface Company {
@@ -366,26 +367,34 @@ diretor@escola.edu.br,Carlos Oliveira,Diretores,,`;
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">
-              <img 
-                src={IAprender_Logo} 
-                alt="IAprender Logo" 
-                className="w-full h-full object-contain"
-              />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link to="/admin/master">
+            <Button variant="outline" size="sm" className="flex items-center space-x-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span>Voltar</span>
+            </Button>
+          </Link>
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">
+                <img 
+                  src={IAprender_Logo} 
+                  alt="IAprender Logo" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
             </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              IAprender
+            </span>
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            IAprender
-          </span>
-        </div>
-        <div className="h-6 w-px bg-gray-300"></div>
-        <Users className="h-8 w-8 text-blue-600" />
-        <div>
-          <h1 className="text-3xl font-bold">Criar novo Usuário</h1>
-          <p className="text-gray-600">Criar usuários com atribuição automática de grupos e roles</p>
+          <div className="h-6 w-px bg-gray-300"></div>
+          <Users className="h-8 w-8 text-blue-600" />
+          <div>
+            <h1 className="text-3xl font-bold">Criar novo Usuário</h1>
+            <p className="text-gray-600">Criar usuários com atribuição automática de grupos e roles</p>
+          </div>
         </div>
       </div>
 

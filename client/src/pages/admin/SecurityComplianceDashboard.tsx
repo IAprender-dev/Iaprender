@@ -26,8 +26,10 @@ import {
   TrendingDown,
   Minus,
   Search,
-  Filter
+  Filter,
+  ArrowLeft
 } from "lucide-react";
+import { Link } from 'wouter';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
@@ -150,6 +152,12 @@ export default function SecurityComplianceDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
+              <Link to="/admin/master">
+                <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Voltar</span>
+                </Button>
+              </Link>
               <div className="flex items-center space-x-3">
                 <div className="relative">
                   <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">

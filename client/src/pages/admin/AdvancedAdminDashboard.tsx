@@ -43,7 +43,8 @@ import {
   Trash2,
   Search,
   Filter,
-  MonitorSpeaker
+  MonitorSpeaker,
+  ArrowLeft
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "wouter";
@@ -183,6 +184,12 @@ export default function AdvancedAdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
+              <Link to="/admin/master">
+                <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Voltar</span>
+                </Button>
+              </Link>
               <div className="flex items-center space-x-3">
                 <div className="relative">
                   <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">
