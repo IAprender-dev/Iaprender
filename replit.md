@@ -143,6 +143,11 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 5, 2025: Removidas abas "Provedores" e "Analytics" do formulário admin/ai-management
+  - ✅ Abas desnecessárias removidas do AIManagementDashboard conforme solicitado
+  - ✅ TabsList reduzida de 5 para 3 colunas (Visão Geral, Aplicações, Chaves Virtuais)
+  - ✅ Descrição do cabeçalho atualizada para "Controle de Aplicações e Chaves Virtuais"
+  - ✅ Interface simplificada mantendo apenas funcionalidades essenciais
 - July 4, 2025: CORREÇÃO CRÍTICA - Sistema de Listagem AWS Cognito Totalmente Funcional
   - ✅ Corrigidos erros de schema Drizzle (campo contractNumber inexistente removido)
   - ✅ Substituídas consultas SQL complexas por queries separadas mais robustas
