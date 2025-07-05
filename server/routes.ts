@@ -2305,6 +2305,171 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verificar dependências antes de excluir contrato
+  app.get('/api/admin/contracts/:id/dependencies', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const contractId = parseInt(id);
+
+      // Buscar usuários vinculados ao contrato
+      const usersWithContract = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role
+        })
+        .from(users)
+        .where(eq(users.contractId, contractId));
+
+      // Buscar escolas vinculadas ao contrato (se existir tabela)
+      let schoolsWithContract = [];
+      try {
+        // Se a tabela schools existir, buscar escolas vinculadas
+        // schoolsWithContract = await db.select().from(schools).where(eq(schools.contractId, contractId));
+      } catch (error) {
+        // Tabela schools pode não existir ainda
+      }
+
+      const dependencies = {
+        users: usersWithContract,
+        schools: schoolsWithContract,
+        totalDependencies: usersWithContract.length + schoolsWithContract.length
+      };
+
+      res.json(dependencies);
+    } catch (error) {
+      console.error('❌ Erro ao verificar dependências do contrato:', error);
+      res.status(500).json({ error: 'Erro ao verificar dependências' });
+    }
+  });
+
+  // Excluir contrato
+  app.delete('/api/admin/contracts/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const contractId = parseInt(id);
+
+      // Verificar se o contrato existe
+      const [contract] = await db
+        .select()
+        .from(contracts)
+        .where(eq(contracts.id, contractId));
+
+      if (!contract) {
+        return res.status(404).json({ error: 'Contrato não encontrado' });
+      }
+
+      // Primeiro, remover as referências dos usuários ao contrato
+      await db
+        .update(users)
+        .set({ contractId: null })
+        .where(eq(users.contractId, contractId));
+
+      // Remover referências de escolas se existir
+      try {
+        // await db.update(schools).set({ contractId: null }).where(eq(schools.contractId, contractId));
+      } catch (error) {
+        // Tabela schools pode não existir
+      }
+
+      // Excluir o contrato
+      await db
+        .delete(contracts)
+        .where(eq(contracts.id, contractId));
+
+      console.log(`✅ Contrato ${contractId} excluído com sucesso`);
+      res.json({
+        success: true,
+        message: 'Contrato excluído com sucesso. Usuários vinculados foram desvinculados.'
+      });
+    } catch (error) {
+      console.error('❌ Erro ao excluir contrato:', error);
+      res.status(500).json({ error: 'Erro ao excluir contrato' });
+    }
+  });
+
+  // Verificar dependências antes de excluir empresa
+  app.get('/api/admin/companies/:id/dependencies', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const companyId = parseInt(id);
+
+      // Buscar contratos da empresa
+      const companyContracts = await db
+        .select()
+        .from(contracts)
+        .where(eq(contracts.companyId, companyId));
+
+      // Buscar usuários vinculados à empresa
+      const usersWithCompany = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role
+        })
+        .from(users)
+        .where(eq(users.companyId, companyId));
+
+      const dependencies = {
+        contracts: companyContracts,
+        users: usersWithCompany,
+        totalDependencies: companyContracts.length + usersWithCompany.length
+      };
+
+      res.json(dependencies);
+    } catch (error) {
+      console.error('❌ Erro ao verificar dependências da empresa:', error);
+      res.status(500).json({ error: 'Erro ao verificar dependências' });
+    }
+  });
+
+  // Excluir empresa
+  app.delete('/api/admin/companies/:id', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const companyId = parseInt(id);
+
+      // Verificar se a empresa existe
+      const [company] = await db
+        .select()
+        .from(companies)
+        .where(eq(companies.id, companyId));
+
+      if (!company) {
+        return res.status(404).json({ error: 'Empresa não encontrada' });
+      }
+
+      // Primeiro, remover referências dos usuários à empresa
+      await db
+        .update(users)
+        .set({ companyId: null, contractId: null })
+        .where(eq(users.companyId, companyId));
+
+      // Excluir todos os contratos da empresa
+      await db
+        .delete(contracts)
+        .where(eq(contracts.companyId, companyId));
+
+      // Excluir a empresa
+      await db
+        .delete(companies)
+        .where(eq(companies.id, companyId));
+
+      console.log(`✅ Empresa ${companyId} excluída com sucesso`);
+      res.json({
+        success: true,
+        message: 'Empresa excluída com sucesso. Todos os contratos e usuários vinculados foram removidos/desvinculados.'
+      });
+    } catch (error) {
+      console.error('❌ Erro ao excluir empresa:', error);
+      res.status(500).json({ error: 'Erro ao excluir empresa' });
+    }
+  });
+
   // Alertas de segurança
   app.get('/api/admin/security-alerts', authenticateAdmin, async (req: Request, res: Response) => {
     try {

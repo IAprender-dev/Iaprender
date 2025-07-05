@@ -32,7 +32,8 @@ import {
   Pause,
   Activity,
   CreditCard,
-  Settings
+  Settings,
+  AlertTriangle
 } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/lib/AuthContext";
@@ -104,6 +105,13 @@ export default function CompanyContractManagement() {
   const [isViewContractModalOpen, setIsViewContractModalOpen] = useState(false);
   const [isEditContractModalOpen, setIsEditContractModalOpen] = useState(false);
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
+  
+  // Delete confirmation states
+  const [isDeleteCompanyModalOpen, setIsDeleteCompanyModalOpen] = useState(false);
+  const [isDeleteContractModalOpen, setIsDeleteContractModalOpen] = useState(false);
+  const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null);
+  const [contractToDelete, setContractToDelete] = useState<Contract | null>(null);
+  const [dependenciesToDelete, setDependenciesToDelete] = useState<any>(null);
   const [newCompany, setNewCompany] = useState<NewCompanyForm>({
     name: "",
     email: "",
@@ -332,6 +340,105 @@ export default function CompanyContractManagement() {
       pricePerLicense: contract.pricePerLicense || 29.90
     });
     setIsEditContractModalOpen(true);
+  };
+
+  // Delete company mutation
+  const deleteCompanyMutation = useMutation({
+    mutationFn: async (companyId: number) => {
+      const response = await fetch(`/api/admin/companies/${companyId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao excluir empresa');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Empresa excluída com sucesso!",
+        description: "A empresa e todos os seus contratos e usuários vinculados foram removidos.",
+      });
+      setIsDeleteCompanyModalOpen(false);
+      setCompanyToDelete(null);
+      setDependenciesToDelete(null);
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao excluir empresa",
+        description: error.message || "Ocorreu um erro ao excluir a empresa.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Delete contract mutation
+  const deleteContractMutation = useMutation({
+    mutationFn: async (contractId: number) => {
+      const response = await fetch(`/api/admin/contracts/${contractId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Erro ao excluir contrato');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Contrato excluído com sucesso!",
+        description: "O contrato foi removido e os usuários vinculados foram desvinculados.",
+      });
+      setIsDeleteContractModalOpen(false);
+      setContractToDelete(null);
+      setDependenciesToDelete(null);
+      refetch();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao excluir contrato",
+        description: error.message || "Ocorreu um erro ao excluir o contrato.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Functions to open delete confirmation modals
+  const openDeleteCompany = async (company: Company) => {
+    try {
+      const response = await fetch(`/api/admin/companies/${company.id}/dependencies`, {
+        credentials: 'include'
+      });
+      const dependencies = await response.json();
+      setCompanyToDelete(company);
+      setDependenciesToDelete(dependencies);
+      setIsDeleteCompanyModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Erro ao verificar dependências",
+        description: "Não foi possível verificar os dados vinculados à empresa.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openDeleteContract = async (contract: Contract) => {
+    try {
+      const response = await fetch(`/api/admin/contracts/${contract.id}/dependencies`, {
+        credentials: 'include'
+      });
+      const dependencies = await response.json();
+      setContractToDelete(contract);
+      setDependenciesToDelete(dependencies);
+      setIsDeleteContractModalOpen(true);
+    } catch (error) {
+      toast({
+        title: "Erro ao verificar dependências",
+        description: "Não foi possível verificar os dados vinculados ao contrato.",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredCompanies = companies.filter((company: Company) =>
@@ -610,6 +717,15 @@ export default function CompanyContractManagement() {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => openDeleteCompany(company)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        title="Excluir empresa"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </CardHeader>
@@ -699,6 +815,15 @@ export default function CompanyContractManagement() {
                                     title="Editar contrato"
                                   >
                                     <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost"
+                                    onClick={() => openDeleteContract(contract)}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    title="Excluir contrato"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
                                   </Button>
                                 </div>
                               </div>
@@ -1218,6 +1343,162 @@ export default function CompanyContractManagement() {
                 className="bg-green-600 hover:bg-green-700"
               >
                 {editContractMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Company Confirmation Modal */}
+        <Dialog open={isDeleteCompanyModalOpen} onOpenChange={setIsDeleteCompanyModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+                <DialogTitle className="text-red-900">Excluir Empresa</DialogTitle>
+              </div>
+              <DialogDescription className="text-red-700">
+                Esta ação é irreversível e afetará todos os dados vinculados.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {companyToDelete && (
+              <div className="space-y-4">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h4 className="font-medium text-red-900 mb-2">Empresa a ser excluída:</h4>
+                  <p className="text-red-800 font-medium">{companyToDelete.name}</p>
+                  <p className="text-red-600 text-sm">{companyToDelete.email}</p>
+                </div>
+                
+                {dependenciesToDelete && dependenciesToDelete.totalDependencies > 0 && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h4 className="font-medium text-yellow-900 mb-2 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Dados que serão afetados:
+                    </h4>
+                    
+                    {dependenciesToDelete.contracts?.length > 0 && (
+                      <div className="mb-2">
+                        <p className="text-yellow-800 text-sm">
+                          • <strong>{dependenciesToDelete.contracts.length}</strong> contrato(s) será(ão) excluído(s)
+                        </p>
+                      </div>
+                    )}
+                    
+                    {dependenciesToDelete.users?.length > 0 && (
+                      <div className="mb-2">
+                        <p className="text-yellow-800 text-sm">
+                          • <strong>{dependenciesToDelete.users.length}</strong> usuário(s) será(ão) desvinculado(s)
+                        </p>
+                        <div className="ml-4 mt-1">
+                          {dependenciesToDelete.users.slice(0, 3).map((user: any) => (
+                            <p key={user.id} className="text-yellow-700 text-xs">
+                              - {user.firstName} {user.lastName} ({user.email})
+                            </p>
+                          ))}
+                          {dependenciesToDelete.users.length > 3 && (
+                            <p className="text-yellow-700 text-xs">
+                              ... e mais {dependenciesToDelete.users.length - 3} usuário(s)
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="p-4 bg-red-100 border border-red-300 rounded-lg">
+                  <p className="text-red-900 text-sm font-medium">
+                    ⚠️ Esta ação irá excluir permanentemente a empresa, todos os seus contratos e desvinculará todos os usuários associados.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button variant="outline" onClick={() => setIsDeleteCompanyModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => companyToDelete && deleteCompanyMutation.mutate(companyToDelete.id)}
+                disabled={deleteCompanyMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteCompanyMutation.isPending ? "Excluindo..." : "Confirmar Exclusão"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Contract Confirmation Modal */}
+        <Dialog open={isDeleteContractModalOpen} onOpenChange={setIsDeleteContractModalOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+                <DialogTitle className="text-red-900">Excluir Contrato</DialogTitle>
+              </div>
+              <DialogDescription className="text-red-700">
+                Esta ação é irreversível e afetará todos os usuários vinculados.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {contractToDelete && (
+              <div className="space-y-4">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <h4 className="font-medium text-red-900 mb-2">Contrato a ser excluído:</h4>
+                  <p className="text-red-800 font-medium">{contractToDelete.name}</p>
+                  <p className="text-red-600 text-sm">
+                    Período: {new Date(contractToDelete.startDate).toLocaleDateString('pt-BR')} - {new Date(contractToDelete.endDate).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                
+                {dependenciesToDelete && dependenciesToDelete.totalDependencies > 0 && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h4 className="font-medium text-yellow-900 mb-2 flex items-center">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Dados que serão afetados:
+                    </h4>
+                    
+                    {dependenciesToDelete.users?.length > 0 && (
+                      <div className="mb-2">
+                        <p className="text-yellow-800 text-sm">
+                          • <strong>{dependenciesToDelete.users.length}</strong> usuário(s) será(ão) desvinculado(s)
+                        </p>
+                        <div className="ml-4 mt-1">
+                          {dependenciesToDelete.users.slice(0, 3).map((user: any) => (
+                            <p key={user.id} className="text-yellow-700 text-xs">
+                              - {user.firstName} {user.lastName} ({user.email})
+                            </p>
+                          ))}
+                          {dependenciesToDelete.users.length > 3 && (
+                            <p className="text-yellow-700 text-xs">
+                              ... e mais {dependenciesToDelete.users.length - 3} usuário(s)
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="p-4 bg-red-100 border border-red-300 rounded-lg">
+                  <p className="text-red-900 text-sm font-medium">
+                    ⚠️ Esta ação irá excluir permanentemente o contrato e desvinculará todos os usuários associados.
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex justify-end space-x-2 pt-4">
+              <Button variant="outline" onClick={() => setIsDeleteContractModalOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={() => contractToDelete && deleteContractMutation.mutate(contractToDelete.id)}
+                disabled={deleteContractMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {deleteContractMutation.isPending ? "Excluindo..." : "Confirmar Exclusão"}
               </Button>
             </div>
           </DialogContent>
