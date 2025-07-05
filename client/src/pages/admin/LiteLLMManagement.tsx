@@ -169,8 +169,19 @@ const LiteLLMManagement = () => {
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Voltar ao Dashboard
+              Voltar
             </Button>
+            <div className="flex items-center space-x-4">
+              <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                <div className="relative z-10">
+                  <span className="text-white font-bold text-sm">IA</span>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                IAprender
+              </span>
+            </div>
           </div>
           
           <div className="text-center">
