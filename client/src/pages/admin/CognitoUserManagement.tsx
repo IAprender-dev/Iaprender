@@ -180,7 +180,7 @@ export default function CognitoUserManagement() {
       return false;
     }
 
-    // Validar campos específicos por tipo de usuário
+    // Validar email institucional para Gestores
     if (userForm.group === 'Gestores') {
       const allowedDomains = ['.gov.br', '.edu.br'];
       const hasValidDomain = allowedDomains.some(domain => userForm.email.includes(domain));
@@ -189,26 +189,6 @@ export default function CognitoUserManagement() {
         toast({
           title: "Erro de Validação",
           description: "Gestores Municipais devem usar email institucional (.gov.br ou .edu.br)",
-          variant: "destructive"
-        });
-        return false;
-      }
-
-      if (!userForm.companyId) {
-        toast({
-          title: "Erro de Validação",
-          description: "Gestores Municipais precisam ter empresa associada",
-          variant: "destructive"
-        });
-        return false;
-      }
-    }
-
-    if (userForm.group === 'Diretores') {
-      if (!userForm.companyId || !userForm.contractId) {
-        toast({
-          title: "Erro de Validação",
-          description: "Diretores de Escola precisam ter empresa e contrato específico associados",
           variant: "destructive"
         });
         return false;
@@ -251,7 +231,6 @@ export default function CognitoUserManagement() {
           name: '',
           group: 'Gestores'
         });
-        setAvailableContracts([]);
 
       } else {
         throw new Error(data.error || 'Erro desconhecido ao criar usuário');
@@ -656,97 +635,16 @@ diretor@escola.edu.br,Carlos Oliveira,Diretores,,`;
             )}
           </div>
 
-          {/* Campos Específicos para Gestores Municipais */}
-          {userForm.group === 'Gestores' && (
+          {/* Informação sobre vínculos empresa/contrato */}
+          {(userForm.group === 'Gestores' || userForm.group === 'Diretores') && (
             <>
               <Separator />
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Configuração para Gestor Municipal</h3>
-                
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Hierarquia:</strong> Gestor Municipal gerencia toda empresa onde foi cadastrado e pode criar novos contratos para essa empresa.
-                  </AlertDescription>
-                </Alert>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company">Empresa/Secretaria *</Label>
-                  <Select value={userForm.companyId || ''} onValueChange={(value) => handleFormChange('companyId', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione a empresa que o gestor irá administrar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {companies.map(company => (
-                        <SelectItem key={company.id} value={company.id.toString()}>
-                          {company.name} ({company.cnpj})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-gray-600">
-                    O gestor terá acesso completo aos dados desta empresa e poderá criar contratos para ela
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Campos Específicos para Diretores de Escola */}
-          {userForm.group === 'Diretores' && (
-            <>
-              <Separator />
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Configuração para Diretor de Escola</h3>
-                
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <strong>Hierarquia:</strong> Diretor de Escola gerencia apenas os dados do contrato específico onde foi cadastrado.
-                  </AlertDescription>
-                </Alert>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="company">Empresa/Secretaria *</Label>
-                    <Select value={userForm.companyId || ''} onValueChange={(value) => handleFormChange('companyId', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a empresa" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {companies.map(company => (
-                          <SelectItem key={company.id} value={company.id.toString()}>
-                            {company.name} ({company.cnpj})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="contract">Contrato/Escola *</Label>
-                    <Select 
-                      value={userForm.contractId || ''} 
-                      onValueChange={(value) => handleFormChange('contractId', value)}
-                      disabled={!userForm.companyId}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione o contrato específico" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableContracts.map(contract => (
-                          <SelectItem key={contract.id} value={contract.id.toString()}>
-                            {contract.name} ({contract.status})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  O diretor terá acesso exclusivo aos dados deste contrato/escola específico
-                </p>
-              </div>
+              <Alert className="border-yellow-200 bg-yellow-50">
+                <Info className="h-4 w-4 text-yellow-600" />
+                <AlertDescription className="text-yellow-700">
+                  <strong>Vínculo Empresa/Contrato:</strong> {userForm.group === 'Gestores' ? 'Gestores' : 'Diretores'} podem ter vínculos configurados posteriormente na interface de Gestão de Usuários (/admin/user-management).
+                </AlertDescription>
+              </Alert>
             </>
           )}
 

@@ -3933,7 +3933,7 @@ Estrutura JSON obrigatória:
   // Criar usuário no Cognito - rota para administradores
   app.post('/api/admin/users/create', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const { email, name, group, companyId } = req.body;
+      const { email, name, group } = req.body;
 
       // Validação básica
       if (!email || !name || !group) {
@@ -3943,24 +3943,7 @@ Estrutura JSON obrigatória:
         });
       }
 
-      // Validação específica para Gestor Municipal
-      if (group === 'GestorMunicipal') {
-        if (!companyId) {
-          return res.status(400).json({ 
-            success: false, 
-            error: 'Empresa é obrigatória para Gestores Municipais' 
-          });
-        }
-
-        // Verificar se empresa existe
-        const companyExists = await db.select().from(companies).where(eq(companies.id, parseInt(companyId)));
-        if (companyExists.length === 0) {
-          return res.status(400).json({ 
-            success: false, 
-            error: 'Empresa não encontrada' 
-          });
-        }
-      }
+      // Nota: Validação de empresa removida - vínculos configurados posteriormente na gestão de usuários
 
       // Validar formato de email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -3995,8 +3978,7 @@ Estrutura JSON obrigatória:
       const result = await cognitoService.createUser({
         email,
         name,
-        group: group as 'GestorMunicipal' | 'Diretor' | 'Professor' | 'Aluno' | 'Admin',
-        companyId
+        group: group as 'Admin' | 'Gestores' | 'Diretores' | 'Professores' | 'Alunos'
       });
 
       if (result.success) {
@@ -4014,16 +3996,16 @@ Estrutura JSON obrigatória:
             case 'Admin':
               role = 'admin';
               break;
-            case 'GestorMunicipal':
+            case 'Gestores':
               role = 'municipal_manager';
               break;
-            case 'Diretor':
+            case 'Diretores':
               role = 'school_director';
               break;
-            case 'Professor':
+            case 'Professores':
               role = 'teacher';
               break;
-            case 'Aluno':
+            case 'Alunos':
               role = 'student';
               break;
           }
@@ -4048,7 +4030,7 @@ Estrutura JSON obrigatória:
         }
         
         // Log da ação administrativa
-        console.log(`📋 Log de auditoria: Admin criou usuário ${email} no grupo ${group} para empresa ${companyId}`);
+        console.log(`📋 Log de auditoria: Admin criou usuário ${email} no grupo ${group}`);
 
         return res.status(201).json({
           success: true,
@@ -4057,7 +4039,6 @@ Estrutura JSON obrigatória:
           tempPassword: result.tempPassword,
           userEmail: email,
           group: group,
-          companyId: companyId,
           firstAccessUrl: `/first-access?email=${encodeURIComponent(email)}&tempPassword=${encodeURIComponent(result.tempPassword)}&group=${encodeURIComponent(group)}&userId=${encodeURIComponent(result.userId)}`
         });
       } else {

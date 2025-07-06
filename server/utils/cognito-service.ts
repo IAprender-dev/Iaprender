@@ -435,10 +435,8 @@ export class CognitoService {
         ]
       };
 
-      // Adicionar atributos customizados se fornecidos
-      if (request.companyId) {
-        createParams.UserAttributes.push({ Name: 'custom:company_id', Value: request.companyId });
-      }
+      // Nota: Atributos customizados removidos pois não estão configurados no User Pool
+      // Se necessário, configurar custom:company_id no AWS Cognito Console primeiro
 
       const createResult = await this.cognitoIdentityServiceProvider.adminCreateUser(createParams).promise();
       
