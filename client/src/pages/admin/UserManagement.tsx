@@ -263,12 +263,14 @@ export default function UserManagement() {
       console.log('✅ [FRONTEND] Success response:', result);
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('✅ [FRONTEND] Mutation success response:', data);
       toast({
         title: "Vínculos atualizados",
         description: "Os vínculos de empresa e contrato foram atualizados com sucesso.",
       });
       closeEditModal();
+      console.log('🔄 [FRONTEND] Invalidando cache e fazendo refetch...');
       // Invalidar cache para buscar dados frescos SEM refresh da página
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users/statistics'] });
@@ -276,6 +278,12 @@ export default function UserManagement() {
       refetch();
     },
     onError: (error: any) => {
+      console.error('❌ [FRONTEND] Mutation error:', error);
+      console.error('❌ [FRONTEND] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       toast({
         title: "Erro ao atualizar vínculos",
         description: error.message || "Ocorreu um erro ao atualizar os vínculos.",
@@ -286,14 +294,26 @@ export default function UserManagement() {
 
   const handleSaveContract = () => {
     console.log('🎯 [FRONTEND] handleSaveContract chamado');
+    console.log('🔍 [FRONTEND] Estado atual:', {
+      editingUser: editingUser,
+      selectedCompanyId,
+      selectedContractId,
+      hasEditingUser: !!editingUser
+    });
+    
     if (!editingUser) {
       console.log('❌ [FRONTEND] editingUser não encontrado');
+      toast({
+        title: "Erro",
+        description: "Nenhum usuário selecionado para edição.",
+        variant: "destructive",
+      });
       return;
     }
     
     // Verificar se é Gestor ou Diretor
     if (!editingUser.groups.includes('Gestores') && !editingUser.groups.includes('Diretores')) {
-      console.log('❌ [FRONTEND] Usuário não é Gestor nem Diretor');
+      console.log('❌ [FRONTEND] Usuário não é Gestor nem Diretor, grupos:', editingUser.groups);
       toast({
         title: "Erro",
         description: "Apenas Gestores e Diretores podem ter vínculos editados.",
@@ -308,13 +328,19 @@ export default function UserManagement() {
     
     if (editingUser.groups.includes('Diretores')) {
       // Diretores precisam de empresa E contrato
-      contractId = (selectedCompanyId === "none" || selectedContractId === "none") 
-        ? null 
-        : selectedContractId;
+      if (selectedCompanyId === "none" || selectedContractId === "none") {
+        contractId = null;
+      } else {
+        contractId = selectedContractId;
+      }
+      console.log('📝 [FRONTEND] Processando Diretor - empresa:', selectedCompanyId, 'contrato:', selectedContractId);
+    } else if (editingUser.groups.includes('Gestores')) {
+      // Para Gestores, contractId permanece null mas pode ter empresa
+      contractId = null;
+      console.log('📝 [FRONTEND] Processando Gestor - empresa:', selectedCompanyId, 'contractId sempre null');
     }
-    // Para Gestores, contractId permanece null (gerenciam empresa toda)
     
-    console.log('🎯 [FRONTEND] Dados para envio:', {
+    console.log('🎯 [FRONTEND] Dados finais para envio:', {
       cognitoId: editingUser.cognitoId,
       email: editingUser.email,
       contractId,
@@ -323,6 +349,7 @@ export default function UserManagement() {
       userType: editingUser.groups.includes('Diretores') ? 'Diretor' : 'Gestor'
     });
     
+    console.log('🚀 [FRONTEND] Iniciando mutation...');
     updateContractMutation.mutate({
       cognitoId: editingUser.cognitoId,
       email: editingUser.email,
