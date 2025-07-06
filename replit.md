@@ -143,18 +143,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 6, 2025: ✅ CONCLUÍDO - AWS Cognito UI Customization - Layout Idêntico à Página /auth
+- July 6, 2025: ✅ CONCLUÍDO - AWS Cognito UI Customization - CSS Simplificado Compatível
   - ✅ Criada página de autenticação personalizada /cognito-auth com design idêntico à página /auth
-  - ✅ Implementado CSS personalizado (server/cognito-custom-ui.css) que replica todos os elementos visuais
-  - ✅ Criado roteador personalizado (server/routes/cognito-custom-ui.ts) para servir assets customizados
-  - ✅ Adicionado endpoint /api/auth/cognito-validate para validação de credenciais antes do redirecionamento
-  - ✅ Atualizado CognitoService com método getCustomLoginUrl() para URLs personalizadas
-  - ✅ Configurado redirecionamento inteligente: /start-login → página personalizada ou Cognito direto
-  - ✅ Implementado tratamento de erros robusto com redirecionamentos para página personalizada
-  - ✅ Aplicados todos os elementos visuais da página /auth: gradientes, backdrop-blur, animações, logo IAprender
-  - ✅ Criada documentação completa (AWS_COGNITO_HOSTED_UI_SETUP.md e COGNITO_UI_CUSTOMIZATION_GUIDE.md)
-  - ✅ Interface responsiva com design enterprise-level matching página /auth
-  - ✅ Sistema pronto para configuração no AWS Console com CSS e JavaScript personalizados
+  - ✅ Desenvolvido CSS personalizado compatível com restrições do AWS Cognito (sem pseudo-elementos)
+  - ✅ Implementado roteador para servir CSS customizado em /cognito-ui/cognito-custom-ui.css
+  - ✅ CSS otimizado usando apenas classes permitidas pelo Cognito: .background-customizable, .banner-customizable, etc.
+  - ✅ Removidos pseudo-elementos ::before/::after que causavam erro InvalidParameterException
+  - ✅ Aplicado design glassmorphism com gradientes, bordas arredondadas e efeitos hover
+  - ✅ Layout responsivo com tema IAprender: azul/roxo, campos estilizados, botões gradiente
+  - ✅ Sistema pronto para colar diretamente no AWS Console sem erros de validação
+  - ✅ Fornecidas instruções completas para configuração no User Pool us-east-1_4jqF97H2X
 - July 6, 2025: ✅ CONCLUÍDO - Interface de Gestão de Usuários Refinada por Tipo de Usuário
   - ✅ Removidas referências de contrato dos cards para usuários Admin e Gestor no UserManagement
   - ✅ Mantidas informações de contrato apenas para usuários Diretores conforme hierarquia
