@@ -239,8 +239,8 @@ export default function UserManagement() {
 
   // Mutation para atualizar vínculos
   const updateContractMutation = useMutation({
-    mutationFn: async ({ cognitoId, email, contractId }: { cognitoId: string; email: string; contractId: string | null }) => {
-      console.log('🚀 [FRONTEND] Executando mutation com:', { cognitoId, email, contractId });
+    mutationFn: async ({ cognitoId, email, contractId, companyId }: { cognitoId: string; email: string; contractId: string | null; companyId: string | null }) => {
+      console.log('🚀 [FRONTEND] Executando mutation com:', { cognitoId, email, contractId, companyId });
       
       const response = await fetch(`/api/admin/users/${cognitoId}/update-contract`, {
         method: 'PATCH',
@@ -248,7 +248,7 @@ export default function UserManagement() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ cognitoId, email, contractId })
+        body: JSON.stringify({ cognitoId, email, contractId, companyId })
       });
       
       console.log('📡 [FRONTEND] Response status:', response.status);
@@ -353,7 +353,8 @@ export default function UserManagement() {
     updateContractMutation.mutate({
       cognitoId: editingUser.cognitoId,
       email: editingUser.email,
-      contractId
+      contractId,
+      companyId: selectedCompanyId === "none" ? null : selectedCompanyId
     });
   };
 

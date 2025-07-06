@@ -4720,13 +4720,14 @@ Estrutura JSON obrigatória:
   app.patch('/api/admin/users/:userId/update-contract', authenticateAdmin, async (req: Request, res: Response) => {
     try {
       const { userId } = req.params; // Este é o cognitoId do frontend
-      const { cognitoId, email, contractId } = req.body;
+      const { cognitoId, email, contractId, companyId } = req.body;
 
       console.log(`🔄 [UPDATE-CONTRACT] Recebido pedido:`, {
         paramUserId: userId,
         bodyCognitoId: cognitoId,
         bodyEmail: email,
-        contractId
+        contractId,
+        companyId
       });
 
       // Validação básica
@@ -4797,11 +4798,47 @@ Estrutura JSON obrigatória:
         }
       }
 
-      // Atualizar o contractId do usuário
+      // Preparar dados para atualização baseado no tipo de usuário
+      let updateData: any = {};
+      
+      console.log(`📝 Processando atualização - contractId: ${contractId}, companyId: ${companyId}`);
+      
+      // CASO 1: contractId fornecido (Diretor com contrato específico)
+      if (contractId && contractId !== "none") {
+        const contract = await db.select()
+          .from(contracts)
+          .where(eq(contracts.id, Number(contractId)))
+          .limit(1);
+          
+        if (contract.length > 0) {
+          updateData.contractId = Number(contractId);
+          updateData.companyId = contract[0].companyId; // Atualizar empresa do contrato
+          console.log(`📝 Atualizando Diretor: contractId=${contractId}, companyId=${contract[0].companyId}`);
+        } else {
+          return res.status(404).json({
+            success: false,
+            error: 'Contrato não encontrado'
+          });
+        }
+      } 
+      // CASO 2: companyId fornecido sem contractId (Gestor municipal)  
+      else if (companyId && companyId !== "none") {
+        updateData.contractId = null; // Gestores não têm contrato específico
+        updateData.companyId = Number(companyId);
+        console.log(`📝 Atualizando Gestor: companyId=${companyId}, contractId=null`);
+      }
+      // CASO 3: Limpar todos os vínculos
+      else {
+        updateData.contractId = null;
+        updateData.companyId = null;
+        console.log(`📝 Removendo todos os vínculos: contractId=null, companyId=null`);
+      }
+
+      console.log(`💾 Dados finais para atualização:`, updateData);
+
+      // Executar atualização
       const updateResult = await db.update(users)
-        .set({ 
-          contractId: contractId ? Number(contractId) : null
-        })
+        .set(updateData)
         .where(eq(users.id, user.id));
 
       console.log(`💾 Update result:`, updateResult);
