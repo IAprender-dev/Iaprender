@@ -44,6 +44,7 @@ import { sendWhatsAppCredentials } from "./utils/whatsapp-service";
 import aiRouter from "./routes/ai-routes";
 import translateRoutes from "./routes/translate-routes";
 import tokenRouter from "./routes/token-routes";
+import cognitoUIRouter from "./routes/cognito-custom-ui";
 import * as OpenAIService from "./utils/ai-services/openai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse-new";
@@ -7950,6 +7951,14 @@ Estrutura JSON obrigatória:
       res.status(500).json({ error: 'Erro ao buscar estatísticas das escolas' });
     }
   });
+
+  // Mount API routers
+  app.use('/api/ai', aiRouter);
+  app.use('/api/translate', translateRoutes);
+  app.use('/api/tokens', tokenRouter);
+  
+  // Mount Cognito UI router
+  app.use('/cognito-ui', cognitoUIRouter);
 
   // Create and return HTTP server
   const httpServer = createServer(app);
