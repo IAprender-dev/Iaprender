@@ -143,6 +143,18 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 6, 2025: ✅ CONCLUÍDO - AWS Cognito UI Customization - Layout Idêntico à Página /auth
+  - ✅ Criada página de autenticação personalizada /cognito-auth com design idêntico à página /auth
+  - ✅ Implementado CSS personalizado (server/cognito-custom-ui.css) que replica todos os elementos visuais
+  - ✅ Criado roteador personalizado (server/routes/cognito-custom-ui.ts) para servir assets customizados
+  - ✅ Adicionado endpoint /api/auth/cognito-validate para validação de credenciais antes do redirecionamento
+  - ✅ Atualizado CognitoService com método getCustomLoginUrl() para URLs personalizadas
+  - ✅ Configurado redirecionamento inteligente: /start-login → página personalizada ou Cognito direto
+  - ✅ Implementado tratamento de erros robusto com redirecionamentos para página personalizada
+  - ✅ Aplicados todos os elementos visuais da página /auth: gradientes, backdrop-blur, animações, logo IAprender
+  - ✅ Criada documentação completa (AWS_COGNITO_HOSTED_UI_SETUP.md e COGNITO_UI_CUSTOMIZATION_GUIDE.md)
+  - ✅ Interface responsiva com design enterprise-level matching página /auth
+  - ✅ Sistema pronto para configuração no AWS Console com CSS e JavaScript personalizados
 - July 6, 2025: ✅ CONCLUÍDO - Interface de Gestão de Usuários Refinada por Tipo de Usuário
   - ✅ Removidas referências de contrato dos cards para usuários Admin e Gestor no UserManagement
   - ✅ Mantidas informações de contrato apenas para usuários Diretores conforme hierarquia

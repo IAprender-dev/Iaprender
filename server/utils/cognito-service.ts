@@ -90,6 +90,21 @@ export class CognitoService {
   }
 
   /**
+   * Get login URL with custom styling parameters
+   */
+  getCustomLoginUrl(): string {
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: this.clientId,
+      redirect_uri: this.redirectUri,
+      scope: 'openid email profile',
+      ui_locales: 'pt-BR', // Portuguese localization
+    });
+
+    return `${this.domain}/login?${params.toString()}`;
+  }
+
+  /**
    * Troca o código de autorização por tokens
    */
   async exchangeCodeForTokens(code: string): Promise<TokenResponse> {

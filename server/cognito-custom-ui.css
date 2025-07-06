@@ -1,0 +1,379 @@
+/* Custom CSS for AWS Cognito Hosted UI - IAprender Theme */
+/* This CSS will be applied to the Cognito login page to match the /auth page design */
+
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated background elements */
+body::before {
+  content: '';
+  position: fixed;
+  top: -40px;
+  right: -128px;
+  width: 384px;
+  height: 384px;
+  background: linear-gradient(135deg, rgba(191, 219, 254, 0.3), rgba(199, 210, 254, 0.2));
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s ease-in-out infinite;
+  z-index: -1;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -40px;
+  left: -128px;
+  width: 384px;
+  height: 384px;
+  background: linear-gradient(45deg, rgba(196, 181, 253, 0.3), rgba(191, 219, 254, 0.2));
+  border-radius: 50%;
+  filter: blur(48px);
+  animation: pulse 2s ease-in-out infinite;
+  animation-delay: 1s;
+  z-index: -1;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Main container */
+.modal-content {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px);
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  padding: 32px !important;
+  max-width: 480px !important;
+  margin: 0 auto !important;
+  position: relative !important;
+}
+
+/* Header styling */
+.modal-header {
+  text-align: center !important;
+  margin-bottom: 32px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+}
+
+.modal-header h1, .modal-header h2 {
+  color: #1e293b !important;
+  font-size: 32px !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  background: linear-gradient(135deg, #2563eb, #4f46e5) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* Add IAprender logo */
+.modal-header::before {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 80px;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%232563eb;stop-opacity:1" /><stop offset="100%" style="stop-color:%234f46e5;stop-opacity:1" /></linearGradient></defs><circle cx="50" cy="50" r="40" fill="url(%23grad1)"/><text x="50" y="58" text-anchor="middle" fill="white" font-size="24" font-weight="bold">IA</text></svg>') center/contain no-repeat;
+  margin: 0 auto 16px auto;
+  border-radius: 50%;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
+}
+
+/* Subtitle */
+.modal-header p {
+  color: #64748b !important;
+  font-size: 18px !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+  line-height: 1.6 !important;
+}
+
+/* Form styling */
+.modal-body {
+  padding: 0 !important;
+}
+
+.form-group {
+  margin-bottom: 24px !important;
+}
+
+.form-group label {
+  display: block !important;
+  color: #1e293b !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  margin-bottom: 8px !important;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group select {
+  width: 100% !important;
+  padding: 16px !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #1e293b !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus,
+.form-group select:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.form-group input::placeholder {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+/* Button styling */
+.btn, button, input[type="submit"] {
+  width: 100% !important;
+  padding: 16px 24px !important;
+  background: linear-gradient(135deg, #2563eb, #4338ca, #7c3aed) !important;
+  border: none !important;
+  border-radius: 16px !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4) !important;
+  text-transform: none !important;
+  letter-spacing: 0.5px !important;
+}
+
+.btn:hover, button:hover, input[type="submit"]:hover {
+  background: linear-gradient(135deg, #1d4ed8, #3730a3, #6d28d9) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 20px 40px -10px rgba(37, 99, 235, 0.5) !important;
+}
+
+.btn:active, button:active, input[type="submit"]:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 5px 15px -5px rgba(37, 99, 235, 0.4) !important;
+}
+
+/* Secondary buttons */
+.btn-secondary, .btn-link {
+  background: transparent !important;
+  border: 2px solid #e2e8f0 !important;
+  color: #2563eb !important;
+  box-shadow: none !important;
+}
+
+.btn-secondary:hover, .btn-link:hover {
+  background: rgba(37, 99, 235, 0.1) !important;
+  border-color: #2563eb !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Links */
+a {
+  color: #2563eb !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+a:hover {
+  color: #1d4ed8 !important;
+  text-decoration: underline !important;
+}
+
+/* Error messages */
+.error, .alert-danger {
+  background: linear-gradient(135deg, #fef2f2, #fee2e2) !important;
+  border: 1px solid #fecaca !important;
+  color: #dc2626 !important;
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  margin: 16px 0 !important;
+  font-weight: 500 !important;
+}
+
+/* Success messages */
+.success, .alert-success {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7) !important;
+  border: 1px solid #bbf7d0 !important;
+  color: #16a34a !important;
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  margin: 16px 0 !important;
+  font-weight: 500 !important;
+}
+
+/* Info messages */
+.info, .alert-info {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe) !important;
+  border: 1px solid #bfdbfe !important;
+  color: #2563eb !important;
+  padding: 12px 16px !important;
+  border-radius: 12px !important;
+  margin: 16px 0 !important;
+  font-weight: 500 !important;
+}
+
+/* Footer */
+.modal-footer {
+  text-align: center !important;
+  margin-top: 32px !important;
+  padding: 24px 0 0 0 !important;
+  border-top: 1px solid rgba(226, 232, 240, 0.5) !important;
+}
+
+.modal-footer p {
+  color: #64748b !important;
+  font-size: 14px !important;
+  margin: 0 !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 16px !important;
+    padding: 24px !important;
+    border-radius: 20px !important;
+  }
+  
+  .modal-header h1, .modal-header h2 {
+    font-size: 28px !important;
+  }
+  
+  .modal-header::before {
+    width: 64px !important;
+    height: 64px !important;
+  }
+}
+
+/* Additional branding elements */
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb, #4338ca, #7c3aed);
+  border-radius: 24px 24px 0 0;
+}
+
+/* Loading states */
+.loading, .spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  border-top-color: #2563eb;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Tabs if present */
+.nav-tabs {
+  border: none !important;
+  background: rgba(241, 245, 249, 0.8) !important;
+  border-radius: 16px !important;
+  padding: 4px !important;
+  margin-bottom: 24px !important;
+}
+
+.nav-tabs .nav-item .nav-link {
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  background: transparent !important;
+  transition: all 0.3s ease !important;
+}
+
+.nav-tabs .nav-item .nav-link.active {
+  background: white !important;
+  color: #2563eb !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Custom checkbox and radio styling */
+input[type="checkbox"], input[type="radio"] {
+  width: 18px !important;
+  height: 18px !important;
+  accent-color: #2563eb !important;
+  margin-right: 8px !important;
+}
+
+/* Password strength indicator */
+.password-strength {
+  height: 4px !important;
+  border-radius: 2px !important;
+  background: #e2e8f0 !important;
+  margin-top: 8px !important;
+  overflow: hidden !important;
+}
+
+.password-strength::before {
+  content: '';
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Hide default Cognito branding */
+.cognito-logo, .aws-logo {
+  display: none !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

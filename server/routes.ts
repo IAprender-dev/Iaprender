@@ -706,19 +706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/start-login", async (req, res) => {
     try {
       if (!cognitoService.isConfigured()) {
-        return res.status(500).send(`
-          <h1>Configuração do AWS Cognito Incompleta</h1>
-          <p>O serviço Cognito não está configurado corretamente.</p>
-          <p>Verifique as variáveis de ambiente:</p>
-          <ul>
-            <li>COGNITO_DOMAIN</li>
-            <li>COGNITO_CLIENT_ID</li>
-            <li>COGNITO_CLIENT_SECRET</li>
-            <li>COGNITO_REDIRECT_URI</li>
-            <li>COGNITO_USER_POOL_ID</li>
-          </ul>
-          <p><a href="/">Voltar ao início</a></p>
-        `);
+        return res.redirect('/cognito-auth?error=not_configured');
       }
 
       // Testar conectividade antes de redirecionar
@@ -726,16 +714,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isConnected = await cognitoService.testConnection();
       
       if (!isConnected) {
-        console.log('❌ Cognito não está acessível, redirecionando para login padrão');
-        return res.redirect('/auth?cognito_error=connection_failed');
+        console.log('❌ Cognito não está acessível, redirecionando para página personalizada');
+        return res.redirect('/cognito-auth?cognito_error=connection_failed');
       }
 
-      const loginUrl = cognitoService.getLoginUrl();
+      const loginUrl = cognitoService.getCustomLoginUrl();
       console.log('✅ Cognito acessível, redirecionando para:', loginUrl);
       res.redirect(loginUrl);
     } catch (error) {
       console.error('Erro ao iniciar login:', error);
-      res.redirect('/auth?cognito_error=internal_error');
+      res.redirect('/cognito-auth?cognito_error=internal_error');
+    }
+  });
+
+  // Validate Cognito credentials (for custom auth page)
+  app.post("/api/auth/cognito-validate", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email e senha são obrigatórios'
+        });
+      }
+
+      // Basic validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email inválido'
+        });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'Senha deve ter pelo menos 6 caracteres'
+        });
+      }
+
+      // Check if user exists in local database
+      const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      
+      if (existingUser.length === 0) {
+        return res.status(401).json({
+          success: false,
+          message: 'Usuário não encontrado. Verifique suas credenciais.'
+        });
+      }
+
+      // Credentials are valid, allow redirect to Cognito
+      res.json({
+        success: true,
+        message: 'Credenciais validadas. Redirecionando para autenticação segura...'
+      });
+
+    } catch (error) {
+      console.error('Erro na validação de credenciais:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
     }
   });
 

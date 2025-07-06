@@ -4,6 +4,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
+import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
 // WebSocket import removed - using direct OpenAI Realtime API connection
 
 const app = express();
@@ -48,6 +49,9 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+  
+  // Add custom Cognito UI routes
+  app.use('/cognito-ui', cognitoCustomUIRouter);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

@@ -11,6 +11,7 @@ import { useEffect } from "react";
 // Pages
 import AIverseLanding from "@/pages/AIverseLanding";
 import Auth from "@/pages/Auth";
+import CognitoAuth from "@/pages/CognitoAuth";
 import FirstAccess from "@/pages/FirstAccess";
 import Courses from "@/pages/Courses";
 import CourseDetails from "@/pages/CourseDetails";
@@ -110,6 +111,7 @@ function Router() {
       {/* Public routes - Always serve landing page first */}
       <Route path="/" component={AIverseLanding} />
       <Route path="/auth" component={Auth} />
+      <Route path="/cognito-auth" component={CognitoAuth} />
       <Route path="/first-access" component={FirstAccess} />
       <Route path="/cursos" component={Courses} />
       <Route path="/curso/:id" component={CourseDetails} />
