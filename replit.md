@@ -143,6 +143,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 6, 2025: ✅ CONCLUÍDO - Interface de Gestão de Usuários Refinada por Tipo de Usuário
+  - ✅ Removidas referências de contrato dos cards para usuários Admin e Gestor no UserManagement
+  - ✅ Mantidas informações de contrato apenas para usuários Diretores conforme hierarquia
+  - ✅ Botão "Editar Vínculos" agora aparece apenas para Diretores, removido para Admin/Gestores
+  - ✅ Modal de detalhes do usuário mostra informações de empresa/contrato apenas para Diretores
+  - ✅ Modal de edição de vínculos restrito exclusivamente a usuários do grupo Diretores
+  - ✅ Função openEditModal com validação para permitir edição apenas de Diretores
+  - ✅ Função handleSaveContract com verificação adicional de tipo de usuário Diretor
+  - ✅ Interface limpa diferenciada: Admin/Gestores sem referências contratuais, Diretores com controle completo
+  - ✅ Hierarquia clara implementada: Admin (sem vínculos) > Gestores (sem vínculos) > Diretores (com vínculos empresa/contrato)
 - July 5, 2025: ✅ CONCLUÍDO - Dashboard do Gestor Municipal Completamente Renovado
   - ✅ Criado novo GestorDashboard.tsx com design moderno e premium
   - ✅ Interface com gradientes suaves, backdrop-blur e shadows elegantes

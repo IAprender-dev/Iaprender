@@ -195,8 +195,11 @@ export default function UserManagement() {
     return <Badge variant="outline">Sem Grupo</Badge>;
   };
 
-  // Funções auxiliares para edição
+  // Funções auxiliares para edição - apenas para Diretores
   const openEditModal = (user: CognitoUser) => {
+    if (!user.groups.includes('Diretores')) {
+      return; // Só permite edição para Diretores
+    }
     setEditingUser(user);
     setSelectedCompanyId(user.contractInfo?.companyId?.toString() || "none");
     setSelectedContractId(user.contractInfo?.contractId?.toString() || "none");
@@ -264,6 +267,17 @@ export default function UserManagement() {
     console.log('🎯 [FRONTEND] handleSaveContract chamado');
     if (!editingUser) {
       console.log('❌ [FRONTEND] editingUser não encontrado');
+      return;
+    }
+    
+    // Verificar se é Diretor
+    if (!editingUser.groups.includes('Diretores')) {
+      console.log('❌ [FRONTEND] Usuário não é Diretor');
+      toast({
+        title: "Erro",
+        description: "Apenas Diretores podem ter vínculos de contrato editados.",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -560,7 +574,7 @@ export default function UserManagement() {
                         >
                           Visualizar
                         </Button>
-                        {user.groups.includes('Gestores') && (
+                        {user.groups.includes('Diretores') && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -568,7 +582,7 @@ export default function UserManagement() {
                             className="text-green-600 border-green-300 hover:bg-green-50"
                           >
                             <Edit className="h-4 w-4 mr-1" />
-                            ✏️ Editar
+                            Editar Vínculos
                           </Button>
                         )}
                       </div>
@@ -658,8 +672,8 @@ export default function UserManagement() {
                     </div>
                   </div>
 
-                  {/* Informações de Empresa e Contrato - apenas para Gestores */}
-                  {selectedUser.groups.includes('Gestores') && (
+                  {/* Informações de Empresa e Contrato - apenas para Diretores */}
+                  {selectedUser.groups.includes('Diretores') && (
                     <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
                         <Building className="h-4 w-4 mr-2" />
@@ -695,7 +709,7 @@ export default function UserManagement() {
                       ) : (
                         <div className="flex items-center space-x-2 text-yellow-800">
                           <AlertTriangle className="h-4 w-4" />
-                          <span className="text-sm">Gestor sem empresa/contrato vinculado</span>
+                          <span className="text-sm">Diretor sem empresa/contrato vinculado</span>
                         </div>
                       )}
                     </div>
@@ -755,8 +769,8 @@ export default function UserManagement() {
           </div>
         )}
 
-        {/* Modal de Edição de Vínculos */}
-        {editingUser && (
+        {/* Modal de Edição de Vínculos - apenas para Diretores */}
+        {editingUser && editingUser.groups.includes('Diretores') && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <Card className="max-w-lg w-full">
               <CardHeader>
