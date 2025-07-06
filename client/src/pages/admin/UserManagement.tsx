@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, 
   Search, 
@@ -84,6 +85,7 @@ export default function UserManagement() {
   const queryClient = useQueryClient();
   
   // Filtros e paginação
+  const [activeTab, setActiveTab] = useState<string>("todos");
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -95,10 +97,20 @@ export default function UserManagement() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("none");
   const [selectedContractId, setSelectedContractId] = useState<string>("none");
 
+  // Mapear tab para group
+  const getGroupFromTab = (tab: string) => {
+    switch (tab) {
+      case 'admin': return 'Admin';
+      case 'gestores': return 'Gestores';
+      case 'diretores': return 'Diretores';
+      default: return 'all';
+    }
+  };
+
   // Buscar usuários
   const { data: usersData, isLoading, error, refetch } = useQuery({
     queryKey: ['/api/admin/users/list', {
-      group: selectedGroup === 'all' ? '' : selectedGroup,
+      group: getGroupFromTab(activeTab) === 'all' ? '' : getGroupFromTab(activeTab),
       page: currentPage,
       limit: 10,
       search: searchTerm,
@@ -158,6 +170,11 @@ export default function UserManagement() {
     setCurrentPage(1); // Reset para primeira página
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // Reset para primeira página quando mudar de aba
+  };
+
   const handleGroupFilter = (value: string) => {
     setSelectedGroup(value);
     setCurrentPage(1);
@@ -191,6 +208,9 @@ export default function UserManagement() {
     }
     if (groups.includes('Gestores')) {
       return <Badge className="bg-blue-100 text-blue-800">Gestor</Badge>;
+    }
+    if (groups.includes('Diretores')) {
+      return <Badge className="bg-green-100 text-green-800">Diretor</Badge>;
     }
     return <Badge variant="outline">Sem Grupo</Badge>;
   };
@@ -416,6 +436,32 @@ export default function UserManagement() {
           </Card>
         </div>
 
+        {/* Abas de Filtro por Tipo de Usuário */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="todos" className="flex items-center space-x-2">
+                  <Users className="h-4 w-4" />
+                  <span>Todos</span>
+                </TabsTrigger>
+                <TabsTrigger value="admin" className="flex items-center space-x-2">
+                  <Shield className="h-4 w-4" />
+                  <span>Admin</span>
+                </TabsTrigger>
+                <TabsTrigger value="gestores" className="flex items-center space-x-2">
+                  <Building className="h-4 w-4" />
+                  <span>Gestores</span>
+                </TabsTrigger>
+                <TabsTrigger value="diretores" className="flex items-center space-x-2">
+                  <UserCheck className="h-4 w-4" />
+                  <span>Diretores</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardContent>
+        </Card>
+
         {/* Filtros */}
         <Card className="mb-6">
           <CardHeader>
@@ -434,16 +480,7 @@ export default function UserManagement() {
                   className="w-full"
                 />
               </div>
-              <Select value={selectedGroup} onValueChange={handleGroupFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filtrar por grupo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os grupos</SelectItem>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                  <SelectItem value="Gestores">Gestores</SelectItem>
-                </SelectContent>
-              </Select>
+
               <Select value={selectedStatus} onValueChange={handleStatusFilter}>
                 <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="Filtrar por status" />
