@@ -7135,6 +7135,45 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // Endpoint específico para contratos ativos disponíveis para criação de escolas
+  app.get('/api/municipal/contracts/available', authenticate, async (req, res) => {
+    try {
+      const user = req.session!.user!;
+      
+      if (user.role !== 'municipal_manager' || !user.companyId) {
+        return res.status(403).json({ error: 'Acesso restrito a gestores municipais' });
+      }
+
+      // Buscar contratos ativos da empresa do gestor que ainda não estão sendo usados por escolas
+      const availableContracts = await db.select({
+        id: contracts.id,
+        name: contracts.name,
+        status: contracts.status,
+        maxUsers: contracts.totalLicenses,
+        startDate: contracts.startDate,
+        endDate: contracts.endDate,
+        usedBySchools: sql<number>`(
+          SELECT COUNT(*) FROM ${schools} 
+          WHERE ${schools.contractId} = ${contracts.id} AND ${schools.isActive} = true
+        )`
+      })
+      .from(contracts)
+      .where(and(
+        eq(contracts.companyId, user.companyId),
+        eq(contracts.status, 'active')
+      ))
+      .orderBy(contracts.name);
+
+      // Filtrar contratos que ainda não estão sendo usados por escolas ativas
+      const filteredContracts = availableContracts.filter(contract => contract.usedBySchools === 0);
+
+      res.json({ contracts: filteredContracts });
+    } catch (error) {
+      console.error('Error fetching available contracts:', error);
+      res.status(500).json({ error: 'Erro ao buscar contratos disponíveis' });
+    }
+  });
+
   // Criar novo contrato (Gestor Municipal)
   app.post('/api/municipal/contracts', authenticate, async (req, res) => {
     try {

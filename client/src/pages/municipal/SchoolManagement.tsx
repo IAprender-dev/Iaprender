@@ -80,7 +80,7 @@ export default function SchoolManagement() {
   });
 
   const { data: contracts } = useQuery({
-    queryKey: ['/api/municipal/contracts'],
+    queryKey: ['/api/municipal/contracts/available'],
   });
 
   const { data: schoolStats } = useQuery({
@@ -201,10 +201,7 @@ export default function SchoolManagement() {
     return <Badge variant="default">Ativa</Badge>;
   };
 
-  const availableContracts = contracts?.contracts?.filter((contract: Contract) => 
-    contract.status === 'active' && 
-    !schools?.schools?.some((school: School) => school.contractName === contract.name)
-  ) || [];
+  const availableContracts = contracts?.contracts || [];
 
   if (schoolsLoading) {
     return (
