@@ -183,10 +183,6 @@ export default function GestorDashboard() {
               <School className="h-4 w-4" />
               <span>Escolas</span>
             </TabsTrigger>
-            <TabsTrigger value="contracts" className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">
-              <FileText className="h-4 w-4" />
-              <span>Contratos</span>
-            </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center space-x-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white">
               <TrendingUp className="h-4 w-4" />
               <span>Analytics</span>
@@ -336,12 +332,6 @@ export default function GestorDashboard() {
                         <span className="text-sm">Nova Escola</span>
                       </Button>
                     </Link>
-                    <Link href="/admin/companies-contracts">
-                      <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all duration-200">
-                        <FileText className="h-6 w-6" />
-                        <span className="text-sm">Novo Contrato</span>
-                      </Button>
-                    </Link>
                     <Link href="/admin/user-management">
                       <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
                         <Eye className="h-6 w-6" />
@@ -461,35 +451,7 @@ export default function GestorDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Contracts Tab */}
-          <TabsContent value="contracts" className="space-y-6">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-xl">
-                  <FileText className="h-6 w-6 text-purple-600" />
-                  <span>Gestão de Contratos e Empresas</span>
-                </CardTitle>
-                <CardDescription>
-                  Gerencie contratos, empresas parceiras e relacionamentos comerciais
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12">
-                  <FileText className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Central de Contratos</h3>
-                  <p className="text-gray-600 mb-6">
-                    Interface completa para gestão de contratos, criação de empresas e relacionamentos comerciais
-                  </p>
-                  <Link href="/admin/companies-contracts">
-                    <Button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700">
-                      <Building2 className="h-4 w-4 mr-2" />
-                      Acessar Gestão de Contratos
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
