@@ -197,8 +197,9 @@ export default function UserManagement() {
 
   // Funções auxiliares para edição - apenas para Diretores
   const openEditModal = (user: CognitoUser) => {
-    if (!user.groups.includes('Diretores')) {
-      return; // Só permite edição para Diretores
+    // Permite edição para Gestores e Diretores
+    if (!user.groups.includes('Gestores') && !user.groups.includes('Diretores')) {
+      return;
     }
     setEditingUser(user);
     setSelectedCompanyId(user.contractInfo?.companyId?.toString() || "none");
@@ -270,28 +271,36 @@ export default function UserManagement() {
       return;
     }
     
-    // Verificar se é Diretor
-    if (!editingUser.groups.includes('Diretores')) {
-      console.log('❌ [FRONTEND] Usuário não é Diretor');
+    // Verificar se é Gestor ou Diretor
+    if (!editingUser.groups.includes('Gestores') && !editingUser.groups.includes('Diretores')) {
+      console.log('❌ [FRONTEND] Usuário não é Gestor nem Diretor');
       toast({
         title: "Erro",
-        description: "Apenas Diretores podem ter vínculos de contrato editados.",
+        description: "Apenas Gestores e Diretores podem ter vínculos editados.",
         variant: "destructive",
       });
       return;
     }
     
-    // Se empresa é "none" ou contrato é "none", então contractId é null
-    const contractId = (selectedCompanyId === "none" || selectedContractId === "none") 
-      ? null 
-      : selectedContractId;
+    // Para Gestores: apenas empresa (contractId sempre null)
+    // Para Diretores: empresa + contrato específico
+    let contractId = null;
+    
+    if (editingUser.groups.includes('Diretores')) {
+      // Diretores precisam de empresa E contrato
+      contractId = (selectedCompanyId === "none" || selectedContractId === "none") 
+        ? null 
+        : selectedContractId;
+    }
+    // Para Gestores, contractId permanece null (gerenciam empresa toda)
     
     console.log('🎯 [FRONTEND] Dados para envio:', {
       cognitoId: editingUser.cognitoId,
       email: editingUser.email,
       contractId,
       selectedCompanyId,
-      selectedContractId
+      selectedContractId,
+      userType: editingUser.groups.includes('Diretores') ? 'Diretor' : 'Gestor'
     });
     
     updateContractMutation.mutate({
@@ -574,6 +583,17 @@ export default function UserManagement() {
                         >
                           Visualizar
                         </Button>
+                        {user.groups.includes('Gestores') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(user)}
+                            className="text-green-600 border-green-300 hover:bg-green-50"
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Alterar Empresa
+                          </Button>
+                        )}
                         {user.groups.includes('Diretores') && (
                           <Button
                             variant="outline"
@@ -582,7 +602,7 @@ export default function UserManagement() {
                             className="text-green-600 border-green-300 hover:bg-green-50"
                           >
                             <Edit className="h-4 w-4 mr-1" />
-                            Editar Vínculos
+                            Alterar Empresa e Contrato
                           </Button>
                         )}
                       </div>
@@ -769,14 +789,16 @@ export default function UserManagement() {
           </div>
         )}
 
-        {/* Modal de Edição de Vínculos - apenas para Diretores */}
-        {editingUser && editingUser.groups.includes('Diretores') && (
+        {/* Modal de Edição de Vínculos - para Gestores e Diretores */}
+        {editingUser && (editingUser.groups.includes('Gestores') || editingUser.groups.includes('Diretores')) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <Card className="max-w-lg w-full">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Edit className="h-5 w-5 text-green-600" />
-                  <span>Editar Vínculos de Empresa e Contrato</span>
+                  <span>
+                    {editingUser.groups.includes('Gestores') ? 'Alterar Empresa' : 'Alterar Empresa e Contrato'}
+                  </span>
                 </CardTitle>
                 <CardDescription>
                   {editingUser.firstName} {editingUser.lastName} - {editingUser.email}
@@ -784,6 +806,19 @@ export default function UserManagement() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* Explicação baseada no tipo de usuário */}
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                    <h4 className="text-sm font-medium text-slate-900 mb-2">
+                      {editingUser.groups.includes('Gestores') ? 'Gestor Municipal' : 'Diretor de Escola'}
+                    </h4>
+                    <p className="text-xs text-slate-600">
+                      {editingUser.groups.includes('Gestores') 
+                        ? 'Gestores gerenciam uma empresa completa e todos os seus contratos. Selecione apenas a empresa.'
+                        : 'Diretores gerenciam um contrato específico dentro de uma empresa. Selecione empresa e contrato.'
+                      }
+                    </p>
+                  </div>
+                  
                   {/* Informações atuais */}
                   {editingUser.contractInfo && (
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -815,8 +850,8 @@ export default function UserManagement() {
                     </Select>
                   </div>
 
-                  {/* Seleção de Contrato */}
-                  {selectedCompanyId && selectedCompanyId !== "none" && (
+                  {/* Seleção de Contrato - apenas para Diretores */}
+                  {editingUser.groups.includes('Diretores') && selectedCompanyId && selectedCompanyId !== "none" && (
                     <div>
                       <label className="text-sm font-medium text-gray-700 mb-2 block">
                         Selecionar Contrato:
@@ -846,8 +881,8 @@ export default function UserManagement() {
                     </div>
                   )}
 
-                  {/* Informações do contrato selecionado */}
-                  {selectedContractId && contractsData?.contracts && (
+                  {/* Informações do contrato selecionado - apenas para Diretores */}
+                  {editingUser.groups.includes('Diretores') && selectedContractId && contractsData?.contracts && (
                     <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                       <h4 className="text-sm font-medium text-green-900 mb-2">Novo Vínculo:</h4>
                       {(() => {
@@ -879,7 +914,9 @@ export default function UserManagement() {
                     className="bg-green-600 hover:bg-green-700"
                   >
                     <Save className="h-4 w-4 mr-1" />
-                    {updateContractMutation.isPending ? 'Salvando...' : 'Salvar Vínculos'}
+                    {updateContractMutation.isPending ? 'Salvando...' : 
+                      editingUser.groups.includes('Gestores') ? 'Salvar Empresa' : 'Salvar Vínculos'
+                    }
                   </Button>
                 </div>
               </CardContent>
