@@ -361,7 +361,7 @@ export default function UserManagement() {
                 Gestão de Usuários AWS Cognito
               </h1>
               <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                Admin e Gestores
+                Admin, Gestores e Diretores
               </Badge>
             </div>
             <div className="flex items-center space-x-4">
@@ -398,7 +398,7 @@ export default function UserManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-900">{userStats.total}</div>
-              <p className="text-xs text-blue-700">Admin e Gestores</p>
+              <p className="text-xs text-blue-700">Admin, Gestores e Diretores</p>
             </CardContent>
           </Card>
 

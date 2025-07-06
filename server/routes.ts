@@ -4303,11 +4303,11 @@ Estrutura JSON obrigatória:
       const { group, page = 1, limit = 20, search = '', status = 'all' } = req.query;
 
       // Validar se o grupo é permitido
-      const allowedGroups = ['Admin', 'Gestores'];
+      const allowedGroups = ['Admin', 'Gestores', 'Diretores'];
       if (group && !allowedGroups.includes(group as string)) {
         return res.status(400).json({ 
           success: false, 
-          error: 'Grupo não autorizado. Use: Admin ou Gestores' 
+          error: 'Grupo não autorizado. Use: Admin, Gestores ou Diretores' 
         });
       }
 
@@ -4316,10 +4316,11 @@ Estrutura JSON obrigatória:
       if (group) {
         cognitoUsers = await cognitoService.listUsersInGroup(group as string);
       } else {
-        // Buscar em ambos os grupos se não especificado
+        // Buscar em todos os grupos se não especificado
         const adminUsers = await cognitoService.listUsersInGroup('Admin');
         const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
-        cognitoUsers = [...adminUsers, ...gestoresUsers];
+        const diretoresUsers = await cognitoService.listUsersInGroup('Diretores');
+        cognitoUsers = [...adminUsers, ...gestoresUsers, ...diretoresUsers];
       }
 
       // Filtrar por status se especificado
@@ -4660,15 +4661,17 @@ Estrutura JSON obrigatória:
       // Buscar usuários dos grupos permitidos
       const adminUsers = await cognitoService.listUsersInGroup('Admin');
       const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      const diretoresUsers = await cognitoService.listUsersInGroup('Diretores');
       
-      const allUsers = [...adminUsers, ...gestoresUsers];
+      const allUsers = [...adminUsers, ...gestoresUsers, ...diretoresUsers];
       
       // Calcular estatísticas
       const statistics = {
         total: allUsers.length,
         byGroup: {
           admin: adminUsers.length,
-          gestores: gestoresUsers.length
+          gestores: gestoresUsers.length,
+          diretores: diretoresUsers.length
         },
         byStatus: {
           confirmed: allUsers.filter(u => u.UserStatus === 'CONFIRMED').length,
