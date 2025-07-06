@@ -10,7 +10,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { School, Building2, Users, GraduationCap, MapPin, Phone, Mail, Calendar, AlertTriangle, CheckCircle, XCircle, Plus, Edit, Trash2 } from 'lucide-react';
+import { School, Building2, Users, GraduationCap, MapPin, Phone, Mail, Calendar, AlertTriangle, CheckCircle, XCircle, Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
+import { Link } from 'wouter';
+import iAprenderLogo from '@assets/IAprender_1750262377399.png';
 
 interface School {
   id: number;
@@ -220,11 +222,48 @@ export default function SchoolManagement() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+      {/* Header with Back Button, Logo and Brand */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          {/* Left side: Back button and branding */}
+          <div className="flex items-center space-x-4">
+            <Link href="/gestor/dashboard">
+              <Button variant="outline" className="flex items-center space-x-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+            </Link>
+            
+            <div className="flex items-center space-x-3">
+              <div className="bg-white p-2 rounded-lg shadow-sm border">
+                <img 
+                  src={iAprenderLogo} 
+                  alt="IAprender Logo" 
+                  className="h-8 w-auto"
+                />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  IAprender
+                </h1>
+                <p className="text-sm text-gray-600">Gestão de Escolas</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right side: Title and description */}
+          <div className="text-right">
+            <h2 className="text-xl font-semibold text-gray-900">Gestão de Escolas Municipais</h2>
+            <p className="text-gray-600">Gerencie as escolas vinculadas aos seus contratos</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Escolas</h1>
-          <p className="text-gray-600">Gerencie as escolas municipais vinculadas aos seus contratos</p>
+          <h3 className="text-lg font-semibold text-gray-900">Escolas Cadastradas</h3>
+          <p className="text-gray-600">Visualize e gerencie todas as escolas municipais</p>
         </div>
         
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
