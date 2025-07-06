@@ -72,7 +72,16 @@ export default function CognitoAuth() {
 
       if (result.success) {
         // Redirect to Cognito hosted UI for final authentication
-        window.location.href = '/start-login';
+        const params = new URLSearchParams({
+          response_type: 'code',
+          client_id: '1ooqafj1v6bh3ff55t2ha56hn4',
+          redirect_uri: `${window.location.origin}/auth/callback`,
+          scope: 'openid email profile',
+          ui_locales: 'pt-BR'
+        });
+        
+        const cognitoUrl = `https://us-east-14jqf97h2x.auth.us-east-1.amazoncognito.com/login?${params.toString()}`;
+        window.location.href = cognitoUrl;
       } else {
         setError(result.message || 'Credenciais inválidas');
         toast({
@@ -96,7 +105,17 @@ export default function CognitoAuth() {
 
   const handleCognitoRedirect = () => {
     setLoading(true);
-    window.location.href = '/start-login';
+    
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: '1ooqafj1v6bh3ff55t2ha56hn4',
+      redirect_uri: `${window.location.origin}/auth/callback`,
+      scope: 'openid email profile',
+      ui_locales: 'pt-BR'
+    });
+    
+    const cognitoUrl = `https://us-east-14jqf97h2x.auth.us-east-1.amazoncognito.com/login?${params.toString()}`;
+    window.location.href = cognitoUrl;
   };
 
   return (

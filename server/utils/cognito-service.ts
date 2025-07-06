@@ -91,17 +91,28 @@ export class CognitoService {
 
   /**
    * Get login URL with custom styling parameters
+   * Returns custom auth page URL by default, with option for hosted UI
    */
   getCustomLoginUrl(): string {
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: this.clientId,
-      redirect_uri: this.redirectUri,
-      scope: 'openid email profile',
-      ui_locales: 'pt-BR', // Portuguese localization
-    });
+    // Check if should use hosted UI (when configured with custom CSS)
+    const useHostedUI = process.env.COGNITO_USE_HOSTED_UI === 'true';
+    
+    if (useHostedUI) {
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: this.clientId,
+        redirect_uri: this.redirectUri,
+        scope: 'openid email profile',
+        ui_locales: 'pt-BR', // Portuguese localization
+      });
 
-    return `${this.domain}/login?${params.toString()}`;
+      return `${this.domain}/login?${params.toString()}`;
+    } else {
+      // Use custom auth page by default
+      const replitDomain = process.env.REPLIT_DEV_DOMAIN;
+      const baseUrl = replitDomain ? `https://${replitDomain}` : 'http://localhost:5000';
+      return `${baseUrl}/cognito-auth`;
+    }
   }
 
   /**
