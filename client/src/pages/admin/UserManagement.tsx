@@ -49,16 +49,6 @@ interface CognitoUser {
     role: string;
     lastLoginAt?: string;
     firstLogin: boolean;
-    contractId?: number;
-  } | null;
-  contractInfo?: {
-    contractId: number;
-    contractNumber: string;
-    contractName: string;
-    companyId: number;
-    companyName: string;
-    companyEmail: string;
-    companyPhone: string;
   } | null;
 }
 
@@ -91,9 +81,7 @@ export default function UserManagement() {
   const [selectedUser, setSelectedUser] = useState<CognitoUser | null>(null);
   const [editingUser, setEditingUser] = useState<CognitoUser | null>(null);
   const [companies, setCompanies] = useState<any[]>([]);
-  const [contracts, setContracts] = useState<any[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("none");
-  const [selectedContractId, setSelectedContractId] = useState<string>("none");
 
   // Buscar usuários
   const { data: usersData, isLoading, error, refetch } = useQuery({
@@ -119,22 +107,7 @@ export default function UserManagement() {
     enabled: !!editingUser, // Só carregar quando estiver editando
   });
 
-  // Buscar contratos da empresa selecionada
-  const { data: contractsData, isLoading: contractsLoading } = useQuery({
-    queryKey: ['/api/admin/companies', selectedCompanyId, 'contracts'],
-    queryFn: async () => {
-      if (!selectedCompanyId || selectedCompanyId === "none") return { contracts: [] };
-      console.log('🔍 Buscando contratos para empresa:', selectedCompanyId);
-      const response = await fetch(`/api/admin/companies/${selectedCompanyId}/contracts`, {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch contracts');
-      const data = await response.json();
-      console.log('📋 Contratos recebidos:', data);
-      return data;
-    },
-    enabled: !!selectedCompanyId && selectedCompanyId !== "none",
-  });
+  // Remover busca de contratos conforme solicitado
 
   const users: CognitoUser[] = usersData?.users || [];
   const pagination: PaginationInfo = usersData?.pagination || {
@@ -198,94 +171,19 @@ export default function UserManagement() {
   // Funções auxiliares para edição
   const openEditModal = (user: CognitoUser) => {
     setEditingUser(user);
-    setSelectedCompanyId(user.contractInfo?.companyId?.toString() || "none");
-    setSelectedContractId(user.contractInfo?.contractId?.toString() || "none");
+    setSelectedCompanyId("none");
   };
 
   const closeEditModal = () => {
     setEditingUser(null);
     setSelectedCompanyId("none");
-    setSelectedContractId("none");
   };
 
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompanyId(companyId);
-    setSelectedContractId("none"); // Reset contract quando empresa muda
   };
 
-  // Mutation para atualizar vínculos
-  const updateContractMutation = useMutation({
-    mutationFn: async ({ cognitoId, email, contractId }: { cognitoId: string; email: string; contractId: string | null }) => {
-      console.log('🚀 [FRONTEND] Executando mutation com:', { cognitoId, email, contractId });
-      
-      const response = await fetch(`/api/admin/users/${cognitoId}/update-contract`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ cognitoId, email, contractId })
-      });
-      
-      console.log('📡 [FRONTEND] Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('❌ [FRONTEND] Error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('✅ [FRONTEND] Success response:', result);
-      return result;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Vínculos atualizados",
-        description: "Os vínculos de empresa e contrato foram atualizados com sucesso.",
-      });
-      closeEditModal();
-      // Invalidar cache para buscar dados frescos SEM refresh da página
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/statistics'] });
-      // Forçar refetch imediato
-      refetch();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Erro ao atualizar vínculos",
-        description: error.message || "Ocorreu um erro ao atualizar os vínculos.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleSaveContract = () => {
-    console.log('🎯 [FRONTEND] handleSaveContract chamado');
-    if (!editingUser) {
-      console.log('❌ [FRONTEND] editingUser não encontrado');
-      return;
-    }
-    
-    // Se empresa é "none" ou contrato é "none", então contractId é null
-    const contractId = (selectedCompanyId === "none" || selectedContractId === "none") 
-      ? null 
-      : selectedContractId;
-    
-    console.log('🎯 [FRONTEND] Dados para envio:', {
-      cognitoId: editingUser.cognitoId,
-      email: editingUser.email,
-      contractId,
-      selectedCompanyId,
-      selectedContractId
-    });
-    
-    updateContractMutation.mutate({
-      cognitoId: editingUser.cognitoId,
-      email: editingUser.email,
-      contractId
-    });
-  };
+  // Remoção das funções de contrato conforme solicitado
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -511,33 +409,7 @@ export default function UserManagement() {
                           )}
                         </div>
 
-                        {/* Informações de Empresa e Contrato - apenas para Diretores */}
-                        {user.groups.includes('Diretores') && user.contractInfo && (
-                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div className="flex items-start space-x-4">
-                              <div className="flex-1">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                                  <div>
-                                    <span className="font-medium text-blue-800">Empresa:</span>
-                                    <p className="text-blue-700">{user.contractInfo.companyName}</p>
-                                  </div>
-                                  <div>
-                                    <span className="font-medium text-blue-800">Contrato:</span>
-                                    <p className="text-blue-700">{user.contractInfo.contractNumber}</p>
-                                  </div>
-                                  <div>
-                                    <span className="font-medium text-blue-800">Email da Empresa:</span>
-                                    <p className="text-blue-700">{user.contractInfo.companyEmail}</p>
-                                  </div>
-                                  <div>
-                                    <span className="font-medium text-blue-800">Telefone:</span>
-                                    <p className="text-blue-700">{user.contractInfo.companyPhone || 'N/A'}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
+                        {/* Informações de contrato removidas conforme solicitação */}
 
                         {/* Aviso para Diretores sem empresa/contrato vinculado */}
                         {user.groups.includes('Diretores') && !user.contractInfo && (
