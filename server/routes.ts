@@ -216,6 +216,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Endpoint completo para listar usuários AWS Cognito como aparecem no dashboard
+  app.get('/api/debug-cognito-users', async (req: Request, res: Response) => {
+    try {
+      console.log(`🧪 [FULL-LIST] Listando todos os usuários AWS Cognito...`);
+      
+      // Listar usuários dos grupos principais
+      const adminUsers = await cognitoService.listUsersInGroup('Admin');
+      const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      const professoresUsers = await cognitoService.listUsersInGroup('Professores');
+      
+      console.log(`📊 [FULL-LIST] Encontrados: Admin(${adminUsers.length}), Gestores(${gestoresUsers.length}), Professores(${professoresUsers.length})`);
+      
+      // Buscar detalhes completos de cada usuário
+      const allUsers = [...adminUsers, ...gestoresUsers, ...professoresUsers];
+      
+      const detailedUsers = await Promise.all(
+        allUsers.map(async (user: any) => {
+          try {
+            const groups = await cognitoService.getUserGroups(user.Username!);
+            
+            return {
+              username: user.Username,
+              email: user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value || 'sem-email',
+              name: user.Attributes?.find((attr: any) => attr.Name === 'name')?.Value || 'Sem nome',
+              status: user.UserStatus,
+              enabled: user.Enabled,
+              created: user.UserCreateDate,
+              lastModified: user.UserLastModifiedDate,
+              groups: groups,
+              primaryGroup: groups[0] || 'Sem grupo'
+            };
+          } catch (err) {
+            console.warn('⚠️ Erro ao buscar detalhes do usuário:', user.Username, err);
+            return {
+              username: user.Username,
+              email: user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value || 'sem-email',
+              name: 'Erro ao carregar',
+              status: user.UserStatus,
+              groups: ['Erro'],
+              primaryGroup: 'Erro'
+            };
+          }
+        })
+      );
+      
+      const sortedUsers = detailedUsers.sort((a, b) => a.email.localeCompare(b.email));
+      
+      console.log(`✅ [FULL-LIST] Retornando ${sortedUsers.length} usuários detalhados`);
+      
+      res.json({
+        success: true,
+        totalUsers: sortedUsers.length,
+        users: sortedUsers,
+        summary: {
+          admin: sortedUsers.filter(u => u.primaryGroup === 'Admin').length,
+          gestores: sortedUsers.filter(u => u.primaryGroup === 'Gestores').length,
+          professores: sortedUsers.filter(u => u.primaryGroup === 'Professores').length
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('❌ [FULL-LIST] Erro ao listar usuários AWS Cognito:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao conectar com AWS Cognito',
+        details: error.message || 'Erro desconhecido'
+      });
+    }
+  });
+
   // DOWNLOAD ROUTE
   app.get("/download/iaverse-servidor.tar.gz", (_req, res) => {
     const filePath = path.join(process.cwd(), "iaverse-servidor.tar.gz");
