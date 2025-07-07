@@ -126,23 +126,26 @@ export default function UserManagement() {
   });
 
   // Buscar empresas para o dropdown de edição
-  const { data: companiesData } = useQuery({
+  const { data: companiesData, error: companiesError } = useQuery({
     queryKey: ['/api/admin/companies'],
     enabled: !!editingUser, // Só carregar quando estiver editando
   });
 
   // Buscar contratos da empresa selecionada
-  const { data: contractsData, isLoading: contractsLoading } = useQuery({
+  const { data: contractsData, isLoading: contractsLoading, error: contractsError } = useQuery({
     queryKey: ['/api/admin/companies', selectedCompanyId, 'contracts'],
     queryFn: async () => {
       if (!selectedCompanyId || selectedCompanyId === "none") return { contracts: [] };
-      console.log('🔍 Buscando contratos para empresa:', selectedCompanyId);
+      console.log('🔍 [CONTRACTS] Buscando contratos para empresa:', selectedCompanyId);
       const response = await fetch(`/api/admin/companies/${selectedCompanyId}/contracts`, {
         credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to fetch contracts');
+      if (!response.ok) {
+        console.error('❌ [CONTRACTS] Erro ao buscar contratos:', response.status, response.statusText);
+        throw new Error(`Failed to fetch contracts: ${response.status}`);
+      }
       const data = await response.json();
-      console.log('📋 Contratos recebidos:', data);
+      console.log('📋 [CONTRACTS] Contratos recebidos:', data);
       return data;
     },
     enabled: !!selectedCompanyId && selectedCompanyId !== "none",
@@ -163,6 +166,17 @@ export default function UserManagement() {
     pending: 0,
     inactive: 0
   };
+
+  // Log dos dados para debug
+  if (editingUser) {
+    console.log('🔍 [DEBUG] EditingUser:', editingUser);
+    console.log('🔍 [DEBUG] Companies data:', companiesData);
+    console.log('🔍 [DEBUG] Companies error:', companiesError);
+    console.log('🔍 [DEBUG] Contracts data:', contractsData);
+    console.log('🔍 [DEBUG] Contracts error:', contractsError);
+    console.log('🔍 [DEBUG] Selected company ID:', selectedCompanyId);
+    console.log('🔍 [DEBUG] Selected contract ID:', selectedContractId);
+  }
 
   // Funções de manipulação
   const handleSearch = (value: string) => {
