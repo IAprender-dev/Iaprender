@@ -3959,6 +3959,75 @@ Estrutura JSON obrigatória:
     }
   });
 
+  // ============= DEBUG E TESTE =============
+  
+  // Endpoint para testar atualizações de usuário (temporário)
+  app.get('/api/admin/users/:email/debug', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const { email } = req.params;
+      
+      console.log(`🔍 [DEBUG] Buscando dados do usuário: ${email}`);
+      
+      const localUser = await db.select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+        
+      if (localUser.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Usuário não encontrado'
+        });
+      }
+      
+      const user = localUser[0];
+      
+      // Buscar dados da empresa se existir companyId
+      let companyData = null;
+      if (user.companyId) {
+        const company = await db.select()
+          .from(companies)
+          .where(eq(companies.id, user.companyId))
+          .limit(1);
+        companyData = company[0] || null;
+      }
+      
+      // Buscar dados do contrato se existir contractId
+      let contractData = null;
+      if (user.contractId) {
+        const contract = await db.select()
+          .from(contracts)
+          .where(eq(contracts.id, user.contractId))
+          .limit(1);
+        contractData = contract[0] || null;
+      }
+      
+      return res.json({
+        success: true,
+        debug: {
+          user: {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            companyId: user.companyId,
+            contractId: user.contractId,
+            cognitoUserId: user.cognitoUserId
+          },
+          company: companyData,
+          contract: contractData,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro no debug:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Erro interno'
+      });
+    }
+  });
+
   // ============= GESTÃO DE USUÁRIOS COGNITO =============
 
   // Middleware para verificar se usuário pode criar outro usuário
@@ -4829,14 +4898,17 @@ Estrutura JSON obrigatória:
       const userGroups = await cognitoService.getUserGroups(user.cognitoUserId || user.username);
       console.log(`🏷️ Grupos do usuário:`, userGroups);
 
-      // Validação para Gestores - precisam de empresa
+      // Validação para Gestores - precisam de empresa (contractId sempre null)
       if (userGroups.includes('Gestores')) {
         if (!companyId || companyId === "none") {
+          console.log(`⚠️ Gestor sem empresa fornecida: companyId=${companyId}`);
           return res.status(400).json({
             success: false,
             error: 'Gestores precisam ter uma empresa vinculada'
           });
         }
+        // Para Gestores, contractId deve ser sempre null
+        console.log(`👨‍💼 Processando Gestor Municipal: empresa=${companyId}, contractId=null`);
       }
 
       // Validação para Diretores - precisam de empresa E contrato
@@ -4889,9 +4961,23 @@ Estrutura JSON obrigatória:
       } 
       // CASO 2: companyId fornecido sem contractId (Gestor municipal)  
       else if (companyId && companyId !== "none") {
+        // Verificar se a empresa existe
+        const company = await db.select()
+          .from(companies)
+          .where(eq(companies.id, Number(companyId)))
+          .limit(1);
+          
+        if (company.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: 'Empresa não encontrada'
+          });
+        }
+        
         updateData.contractId = null; // Gestores não têm contrato específico
         updateData.companyId = Number(companyId);
         console.log(`📝 Atualizando Gestor: companyId=${companyId}, contractId=null`);
+        console.log(`📝 Empresa encontrada: ${company[0].name}`);
       }
       // CASO 3: Limpar todos os vínculos
       else {
@@ -4901,13 +4987,16 @@ Estrutura JSON obrigatória:
       }
 
       console.log(`💾 Dados finais para atualização:`, updateData);
+      console.log(`🎯 Atualizando usuário ID ${user.id} (${user.email})`);
 
-      // Executar atualização
+      // Executar atualização com returning() para verificar o resultado
       const updateResult = await db.update(users)
         .set(updateData)
-        .where(eq(users.id, user.id));
+        .where(eq(users.id, user.id))
+        .returning();
 
       console.log(`💾 Update result:`, updateResult);
+      console.log(`✅ Linhas afetadas: ${updateResult.length}`);
 
       // Verificar se a atualização foi realmente aplicada
       const updatedUser = await db.select()
@@ -4917,9 +5006,39 @@ Estrutura JSON obrigatória:
 
       if (updatedUser.length > 0) {
         console.log(`🔍 Verificação pós-update:`, {
+          userId: updatedUser[0].id,
           email: updatedUser[0].email,
           companyId: updatedUser[0].companyId,
           contractId: updatedUser[0].contractId
+        });
+        
+        // Verificar se os dados foram salvos corretamente
+        const expectedCompanyId = updateData.companyId;
+        const expectedContractId = updateData.contractId;
+        const actualCompanyId = updatedUser[0].companyId;
+        const actualContractId = updatedUser[0].contractId;
+        
+        if (expectedCompanyId !== actualCompanyId || expectedContractId !== actualContractId) {
+          console.log(`⚠️ INCONSISTÊNCIA DETECTADA!`);
+          console.log(`   Esperado: companyId=${expectedCompanyId}, contractId=${expectedContractId}`);
+          console.log(`   Atual: companyId=${actualCompanyId}, contractId=${actualContractId}`);
+          
+          return res.status(500).json({
+            success: false,
+            error: 'Falha na persistência dos dados. Dados não foram salvos corretamente.',
+            debug: {
+              expected: { companyId: expectedCompanyId, contractId: expectedContractId },
+              actual: { companyId: actualCompanyId, contractId: actualContractId }
+            }
+          });
+        } else {
+          console.log(`✅ Dados persistidos corretamente no banco de dados`);
+        }
+      } else {
+        console.log(`❌ Falha ao verificar dados pós-update - usuário não encontrado`);
+        return res.status(500).json({
+          success: false,
+          error: 'Falha ao verificar atualização'
         });
       }
 

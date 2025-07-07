@@ -277,18 +277,32 @@ export default function UserManagement() {
       console.log('✅ [FRONTEND] Success response:', result);
       return result;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('✅ [FRONTEND] Mutation success response:', data);
+      
+      // Fechar modal primeiro
+      closeEditModal();
+      
+      // Mostrar toast de sucesso
       toast({
         title: "Vínculos atualizados",
         description: "Os vínculos de empresa e contrato foram atualizados com sucesso.",
       });
-      closeEditModal();
-      console.log('🔄 [FRONTEND] Invalidando cache e fazendo refetch...');
-      // Invalidar cache para buscar dados frescos SEM refresh da página
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/statistics'] });
-      // Forçar refetch imediato
+      
+      console.log('🔄 [FRONTEND] Invalidando cache e fazendo refetch completo...');
+      
+      // Invalidar TODOS os caches relacionados
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/users/statistics'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/admin/companies'] });
+      
+      // Aguardar um momento para o backend processar
+      setTimeout(() => {
+        console.log('🔄 [FRONTEND] Fazendo refetch forçado após delay...');
+        refetch();
+      }, 500);
+      
+      // Forçar refetch imediato também
       refetch();
     },
     onError: (error: any) => {
