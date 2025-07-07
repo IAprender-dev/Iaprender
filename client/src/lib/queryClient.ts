@@ -9,34 +9,32 @@ export const apiRequest = async (
   data?: any, 
   options: RequestInit = {}
 ) => {
-  // Limpar completamente as opções para evitar conflitos
-  const cleanOptions: RequestInit = {};
-  cleanOptions.method = method;
-  cleanOptions.credentials = 'include';
-  cleanOptions.headers = {};
+  // Criar URL e opções de forma mais explícita
+  const url = endpoint;
+  const requestOptions = {
+    method,
+    credentials: 'include' as RequestCredentials,
+    headers: {} as Record<string, string>,
+  };
   
+  // Adicionar Content-Type apenas para requests que não são GET
   if (method !== 'GET') {
-    (cleanOptions.headers as Record<string, string>)['Content-Type'] = 'application/json';
+    requestOptions.headers['Content-Type'] = 'application/json';
   }
   
-  if (options.signal) {
-    cleanOptions.signal = options.signal;
-  }
-  
+  // Adicionar body apenas se tiver data e não for GET
   if (data && method !== 'GET') {
-    cleanOptions.body = JSON.stringify(data);
+    (requestOptions as any).body = JSON.stringify(data);
+  }
+  
+  // Adicionar signal se fornecido
+  if (options.signal) {
+    (requestOptions as any).signal = options.signal;
   }
 
-  console.log('🔄 Fazendo fetch:', { url: endpoint, options: cleanOptions });
+  console.log('🚀 Request details:', { url, method, options: requestOptions });
   
-  try {
-    const response = await fetch(endpoint, cleanOptions);
-    console.log('✅ Fetch success:', { status: response.status, url: response.url });
-    return response;
-  } catch (error) {
-    console.error('❌ Fetch error:', error);
-    throw error;
-  }
+  return window.fetch(url, requestOptions);
 };
 
 export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async (context) => {

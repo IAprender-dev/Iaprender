@@ -816,6 +816,14 @@ export function registerMunicipalRoutes(app: Express) {
           eq(users.companyId, userCompany.companyId)
         ));
 
+      console.log('🔍 [DIRECTORS] Query SQL para diretores:', {
+        role: 'school_director',
+        companyId: userCompany.companyId,
+        encontrados: directorsData.length
+      });
+      
+      console.log('🔍 [DIRECTORS] Lista completa de diretores:', directorsData);
+
       console.log('🔍 [DIRECTORS] Diretores encontrados na empresa:', directorsData.length);
 
       // Buscar informações de escola atual para cada diretor
