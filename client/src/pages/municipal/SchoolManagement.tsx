@@ -81,7 +81,7 @@ export default function SchoolManagement() {
     queryKey: ['/api/municipal/schools'],
   });
 
-  const { data: contracts } = useQuery({
+  const { data: contractsResponse } = useQuery({
     queryKey: ['/api/municipal/contracts/available'],
   });
 
@@ -203,7 +203,8 @@ export default function SchoolManagement() {
     return <Badge variant="default">Ativa</Badge>;
   };
 
-  const availableContracts = contracts?.contracts || [];
+  // Contratos já filtrados pela empresa do gestor (ID da empresa não é exposto no frontend)
+  const availableContracts = contractsResponse?.contracts || [];
 
   if (schoolsLoading) {
     return (
@@ -312,6 +313,9 @@ export default function SchoolManagement() {
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Apenas contratos ativos da sua empresa são exibidos
+                    </p>
                   </div>
                   <div>
                     <Label htmlFor="inep">Código INEP</Label>
