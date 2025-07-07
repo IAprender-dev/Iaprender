@@ -729,17 +729,28 @@ export const municipalManagers = pgTable("municipal_managers", {
 // Municipal Schools Table
 export const municipalSchools = pgTable("municipal_schools", {
   id: serial("id").primaryKey(),
-  municipalManagerId: integer("municipal_manager_id").references(() => municipalManagers.id),
-  name: text("name").notNull(),
+  municipalManagerId: integer("municipal_manager_id").references(() => municipalManagers.id).notNull(),
+  schoolName: text("school_name").notNull(), // Campo obrigatório do banco
+  schoolCode: text("school_code"),
+  inepCode: text("inep_code"),
+  address: text("address"),
+  principalName: text("principal_name"),
+  principalEmail: text("principal_email"),
+  phone: text("phone"),
+  allocatedLicenses: integer("allocated_licenses").default(0),
+  usedLicenses: integer("used_licenses").default(0),
+  status: text("status").default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  // Campos adicionais do schema atual
+  name: text("name"),
   inep: text("inep"),
   cnpj: text("cnpj"),
-  contractId: integer("contract_id").references(() => contracts.id).notNull(),
-  address: text("address").notNull(),
+  contractId: integer("contract_id").references(() => contracts.id),
   neighborhood: text("neighborhood"),
-  city: text("city").notNull(),
-  state: text("state").notNull(),
+  city: text("city"),
+  state: text("state"),
   zipCode: text("zip_code"),
-  phone: text("phone"),
   email: text("email"),
   foundationDate: date("foundation_date"),
   numberOfClassrooms: integer("number_of_classrooms").default(0),
@@ -748,9 +759,7 @@ export const municipalSchools = pgTable("municipal_schools", {
   zone: text("zone").default("urban"), // urban, rural
   type: text("type").default("municipal"), // municipal, state, federal, private
   directorUserId: integer("director_user_id").references(() => users.id),
-  status: text("status").default("active"),
   isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

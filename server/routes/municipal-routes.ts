@@ -1069,8 +1069,8 @@ export function registerMunicipalRoutes(app: Express) {
       const schoolsList = await db
         .select({
           id: municipalSchools.id,
-          name: municipalSchools.name,
-          inep: municipalSchools.inep,
+          name: municipalSchools.schoolName,
+          inep: municipalSchools.inepCode,
           cnpj: municipalSchools.cnpj,
           address: municipalSchools.address,
           city: municipalSchools.city,
@@ -1079,11 +1079,12 @@ export function registerMunicipalRoutes(app: Express) {
           numberOfTeachers: municipalSchools.numberOfTeachers,
           status: municipalSchools.status,
           contractId: municipalSchools.contractId,
-          directorId: municipalSchools.directorId,
+          directorUserId: municipalSchools.directorUserId,
           createdAt: municipalSchools.createdAt,
         })
         .from(municipalSchools)
-        .where(eq(municipalSchools.companyId, userCompany.companyId));
+        .leftJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(eq(contracts.companyId, userCompany.companyId));
 
       // Buscar informações dos contratos e diretores
       const contractIds = [...new Set(schoolsList.map(s => s.contractId).filter(id => id !== null))] as number[];
@@ -1218,6 +1219,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [newSchool] = await db
         .insert(municipalSchools)
         .values({
+          schoolName: name,
           name,
           inep: inep || null,
           cnpj: cnpj || null,
