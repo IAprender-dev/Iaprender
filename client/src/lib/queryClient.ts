@@ -3,38 +3,56 @@ import { QueryClient, QueryFunction } from '@tanstack/react-query';
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 type QueryFnOptions = { on401?: 'throw' | 'returnNull' };
 
+// Criar uma função fetch limpa para evitar qualquer interferência
+const safeFetch = (url: string, options: any) => {
+  // Usar fetch nativo do browser de forma explícita
+  const originalFetch = window.fetch;
+  console.log('🔥 SafeFetch chamado:', { url, options });
+  return originalFetch.call(window, url, options);
+};
+
 export const apiRequest = async (
   method: HttpMethod, 
   endpoint: string, 
   data?: any, 
   options: RequestInit = {}
 ) => {
-  // Criar URL e opções de forma mais explícita
-  const url = endpoint;
-  const requestOptions = {
-    method,
-    credentials: 'include' as RequestCredentials,
-    headers: {} as Record<string, string>,
-  };
+  // Construir request de forma muito explícita
+  const requestInit: RequestInit = {};
+  requestInit.method = method;
+  requestInit.credentials = 'include';
+  requestInit.headers = new Headers();
   
-  // Adicionar Content-Type apenas para requests que não são GET
   if (method !== 'GET') {
-    requestOptions.headers['Content-Type'] = 'application/json';
+    (requestInit.headers as Headers).set('Content-Type', 'application/json');
   }
   
-  // Adicionar body apenas se tiver data e não for GET
   if (data && method !== 'GET') {
-    (requestOptions as any).body = JSON.stringify(data);
+    requestInit.body = JSON.stringify(data);
   }
   
-  // Adicionar signal se fornecido
   if (options.signal) {
-    (requestOptions as any).signal = options.signal;
+    requestInit.signal = options.signal;
   }
 
-  console.log('🚀 Request details:', { url, method, options: requestOptions });
+  console.log('🎯 Final request:', { 
+    endpoint, 
+    method,
+    requestInit: {
+      method: requestInit.method,
+      credentials: requestInit.credentials,
+      headers: requestInit.headers,
+      body: requestInit.body,
+      signal: !!requestInit.signal
+    }
+  });
   
-  return window.fetch(url, requestOptions);
+  try {
+    return await safeFetch(endpoint, requestInit);
+  } catch (error) {
+    console.error('🚨 SafeFetch error:', error);
+    throw error;
+  }
 };
 
 export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async (context) => {
