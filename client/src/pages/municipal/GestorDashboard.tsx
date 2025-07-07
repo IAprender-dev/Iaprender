@@ -440,7 +440,7 @@ export default function GestorDashboard() {
                   <p className="text-gray-600 mb-6">
                     Funcionalidade avançada para cadastro, monitoramento e gestão completa das escolas municipais
                   </p>
-                  <Link href="/municipal/schools">
+                  <Link href="/municipal/schools/new">
                     <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Acessar Gestão de Escolas

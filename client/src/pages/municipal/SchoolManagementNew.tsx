@@ -89,19 +89,24 @@ export default function SchoolManagementNew() {
     }
   });
 
-  // Queries para dados filtrados pela empresa 5
+  // Queries para dados filtrados pela empresa do usuário logado
+  const { data: companyData } = useQuery({
+    queryKey: ['/api/municipal/company/info'],
+    enabled: true
+  });
+
   const { data: contractsData, isLoading: contractsLoading } = useQuery({
-    queryKey: ['/api/municipal/contracts/company/5'],
+    queryKey: ['/api/municipal/contracts/filtered'],
     enabled: true
   });
 
   const { data: directorsData, isLoading: directorsLoading } = useQuery({
-    queryKey: ['/api/municipal/directors/company/5'],
+    queryKey: ['/api/municipal/directors/filtered'],
     enabled: true
   });
 
   const { data: schoolsData, isLoading: schoolsLoading } = useQuery({
-    queryKey: ['/api/municipal/schools/company/5'],
+    queryKey: ['/api/municipal/schools/filtered'],
     enabled: true
   });
 
@@ -113,7 +118,7 @@ export default function SchoolManagementNew() {
   // Mutation para criar escola
   const createSchoolMutation = useMutation({
     mutationFn: async (schoolData: any) => {
-      const response = await apiRequest('POST', '/api/municipal/schools', schoolData);
+      const response = await apiRequest('POST', '/api/municipal/schools/create', schoolData);
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error);
@@ -153,7 +158,7 @@ export default function SchoolManagementNew() {
           phone: ''
         }
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools/company/5'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools/filtered'] });
       queryClient.invalidateQueries({ queryKey: ['/api/municipal/stats'] });
     },
     onError: (error: Error) => {
@@ -207,6 +212,8 @@ export default function SchoolManagementNew() {
     }));
   };
 
+  const company = companyData?.company || {};
+  const user = companyData?.user || {};
   const contracts = contractsData?.contracts || [];
   const directors = directorsData?.directors || [];
   const schools = schoolsData?.schools || [];
@@ -232,7 +239,7 @@ export default function SchoolManagementNew() {
               <img src={iAprenderLogo} alt="IAprender" className="w-8 h-8 bg-white p-1 rounded shadow" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Gestão de Escolas</h1>
-                <p className="text-sm text-gray-600">Secretaria Estadual de Educação - Rio Grande do Sul</p>
+                <p className="text-sm text-gray-600">{company.name || 'Carregando empresa...'}</p>
               </div>
             </div>
           </div>
@@ -367,7 +374,7 @@ export default function SchoolManagementNew() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Contratos</h2>
-                <p className="text-gray-600">Contratos da Secretaria Estadual do RS</p>
+                <p className="text-gray-600">Contratos de {company.name || 'sua empresa'}</p>
               </div>
             </div>
 
@@ -415,7 +422,7 @@ export default function SchoolManagementNew() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Diretores</h2>
-                <p className="text-gray-600">Diretores vinculados à Secretaria Estadual do RS</p>
+                <p className="text-gray-600">Diretores vinculados a {company.name || 'sua empresa'}</p>
               </div>
             </div>
 
@@ -464,7 +471,7 @@ export default function SchoolManagementNew() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Escolas</h2>
-                <p className="text-gray-600">Escolas da Secretaria Estadual do RS</p>
+                <p className="text-gray-600">Escolas de {company.name || 'sua empresa'}</p>
               </div>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
@@ -529,7 +536,7 @@ export default function SchoolManagementNew() {
         <DialogHeader>
           <DialogTitle>Nova Escola</DialogTitle>
           <DialogDescription>
-            Cadastre uma nova escola para a Secretaria Estadual do RS
+            Cadastre uma nova escola para {company.name || 'sua empresa'}
           </DialogDescription>
         </DialogHeader>
 

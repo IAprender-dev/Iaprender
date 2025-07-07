@@ -1,7 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts } from '../../shared/schema';
-import { eq, and, count, sum, isNull, or } from 'drizzle-orm';
+import { eq, and, count, sum, isNull, or, inArray } from 'drizzle-orm';
 import { CognitoService } from '../utils/cognito-service';
 
 export function registerMunicipalRoutes(app: Express) {
@@ -27,12 +27,14 @@ export function registerMunicipalRoutes(app: Express) {
         companyId: users.companyId,
         contractId: users.contractId,
         email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
       })
       .from(users)
       .where(eq(users.id, userId));
     
     if (!user || !user.companyId) {
-      throw new Error("User company not found");
+      throw new Error("User company not found or not associated with a company");
     }
     
     return user;
@@ -938,4 +940,304 @@ export function registerMunicipalRoutes(app: Express) {
       res.status(500).json({ error: 'Failed to fetch available contracts' });
     }
   });
+
+  // GET /api/municipal/company/info - Informações da empresa do usuário logado
+  app.get('/api/municipal/company/info', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const userCompany = await getUserCompanyInfo(userId);
+      
+      const [company] = await db
+        .select({
+          id: companies.id,
+          name: companies.name,
+          email: companies.email,
+          phone: companies.phone,
+          address: companies.address,
+          cnpj: companies.cnpj,
+          status: companies.status,
+        })
+        .from(companies)
+        .where(eq(companies.id, userCompany.companyId));
+
+      res.json({ 
+        success: true, 
+        company,
+        user: {
+          id: userCompany.id,
+          email: userCompany.email,
+          firstName: userCompany.firstName,
+          lastName: userCompany.lastName,
+          companyId: userCompany.companyId
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching company info:', error);
+      res.status(500).json({ error: 'Failed to fetch company information' });
+    }
+  });
+
+  // GET /api/municipal/contracts/filtered - Contratos da empresa do usuário logado
+  app.get('/api/municipal/contracts/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const userCompany = await getUserCompanyInfo(userId);
+      
+      const contractsList = await db
+        .select({
+          id: contracts.id,
+          name: contracts.name,
+          description: contracts.description,
+          status: contracts.status,
+          maxUsers: contracts.maxUsers,
+          startDate: contracts.startDate,
+          endDate: contracts.endDate,
+          companyId: contracts.companyId,
+        })
+        .from(contracts)
+        .where(eq(contracts.companyId, userCompany.companyId));
+
+      console.log(`🔍 [CONTRACTS] Empresa ${userCompany.companyId}: ${contractsList.length} contratos encontrados`);
+
+      res.json({ success: true, contracts: contractsList });
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+      res.status(500).json({ error: 'Failed to fetch contracts' });
+    }
+  });
+
+  // GET /api/municipal/directors/filtered - Diretores da empresa do usuário logado
+  app.get('/api/municipal/directors/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const userCompany = await getUserCompanyInfo(userId);
+      
+      const directorsList = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          companyId: users.companyId,
+          contractId: users.contractId,
+          status: users.status,
+        })
+        .from(users)
+        .where(and(
+          eq(users.companyId, userCompany.companyId),
+          eq(users.role, 'school_director')
+        ));
+
+      // Buscar informações dos contratos para cada diretor
+      const contractIds = directorsList
+        .map(d => d.contractId)
+        .filter(id => id !== null) as number[];
+
+      let contractsInfo: any[] = [];
+      if (contractIds.length > 0) {
+        contractsInfo = await db
+          .select({
+            id: contracts.id,
+            name: contracts.name,
+          })
+          .from(contracts)
+          .where(inArray(contracts.id, contractIds));
+      }
+
+      const directorsWithContracts = directorsList.map(director => ({
+        ...director,
+        contractName: director.contractId 
+          ? contractsInfo.find(c => c.id === director.contractId)?.name || null
+          : null,
+      }));
+
+      console.log(`🔍 [DIRECTORS] Empresa ${userCompany.companyId}: ${directorsWithContracts.length} diretores encontrados`);
+
+      res.json({ success: true, directors: directorsWithContracts });
+    } catch (error) {
+      console.error('Error fetching directors:', error);
+      res.status(500).json({ error: 'Failed to fetch directors' });
+    }
+  });
+
+  // GET /api/municipal/schools/filtered - Escolas da empresa do usuário logado
+  app.get('/api/municipal/schools/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const userCompany = await getUserCompanyInfo(userId);
+      
+      const schoolsList = await db
+        .select({
+          id: municipalSchools.id,
+          name: municipalSchools.name,
+          inep: municipalSchools.inep,
+          cnpj: municipalSchools.cnpj,
+          address: municipalSchools.address,
+          city: municipalSchools.city,
+          state: municipalSchools.state,
+          numberOfStudents: municipalSchools.numberOfStudents,
+          numberOfTeachers: municipalSchools.numberOfTeachers,
+          status: municipalSchools.status,
+          contractId: municipalSchools.contractId,
+          directorId: municipalSchools.directorId,
+          createdAt: municipalSchools.createdAt,
+        })
+        .from(municipalSchools)
+        .where(eq(municipalSchools.companyId, userCompany.companyId));
+
+      // Buscar informações dos contratos e diretores
+      const contractIds = [...new Set(schoolsList.map(s => s.contractId).filter(id => id !== null))] as number[];
+      const directorIds = [...new Set(schoolsList.map(s => s.directorId).filter(id => id !== null))] as number[];
+
+      let contractsInfo: any[] = [];
+      let directorsInfo: any[] = [];
+
+      if (contractIds.length > 0) {
+        contractsInfo = await db
+          .select({
+            id: contracts.id,
+            name: contracts.name,
+            status: contracts.status,
+          })
+          .from(contracts)
+          .where(inArray(contracts.id, contractIds));
+      }
+
+      if (directorIds.length > 0) {
+        directorsInfo = await db
+          .select({
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email,
+          })
+          .from(users)
+          .where(inArray(users.id, directorIds));
+      }
+
+      const schoolsWithDetails = schoolsList.map(school => ({
+        ...school,
+        isActive: school.status === 'active',
+        contractName: school.contractId 
+          ? contractsInfo.find(c => c.id === school.contractId)?.name || 'Contrato não encontrado'
+          : 'Sem contrato',
+        contractStatus: school.contractId 
+          ? contractsInfo.find(c => c.id === school.contractId)?.status || 'unknown'
+          : 'none',
+        directorName: school.directorId 
+          ? `${directorsInfo.find(d => d.id === school.directorId)?.firstName || ''} ${directorsInfo.find(d => d.id === school.directorId)?.lastName || ''}`.trim() || 'Diretor não encontrado'
+          : null,
+        directorEmail: school.directorId 
+          ? directorsInfo.find(d => d.id === school.directorId)?.email || null
+          : null,
+      }));
+
+      console.log(`🔍 [SCHOOLS] Empresa ${userCompany.companyId}: ${schoolsWithDetails.length} escolas encontradas`);
+
+      res.json({ success: true, schools: schoolsWithDetails });
+    } catch (error) {
+      console.error('Error fetching schools:', error);
+      res.status(500).json({ error: 'Failed to fetch schools' });
+    }
+  });
+
+  // POST /api/municipal/schools/create - Criar nova escola
+  app.post('/api/municipal/schools/create', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const userCompany = await getUserCompanyInfo(userId);
+      
+      const {
+        name,
+        inep,
+        cnpj,
+        contractId,
+        address,
+        neighborhood,
+        city,
+        state,
+        zipCode,
+        phone,
+        email,
+        foundationDate,
+        numberOfClassrooms,
+        numberOfStudents,
+        numberOfTeachers,
+        zone,
+        type,
+        existingDirectorId,
+      } = req.body;
+
+      console.log('🔧 [CREATE-SCHOOL] Dados recebidos:', { name, contractId, existingDirectorId, companyId: userCompany.companyId });
+
+      // Validar campos obrigatórios
+      if (!name || !contractId || !address) {
+        return res.status(400).json({ error: 'Name, contract, and address are required' });
+      }
+
+      // Verificar se o contrato pertence à empresa do usuário
+      const [contract] = await db
+        .select({ id: contracts.id })
+        .from(contracts)
+        .where(and(
+          eq(contracts.id, contractId),
+          eq(contracts.companyId, userCompany.companyId)
+        ));
+
+      if (!contract) {
+        return res.status(400).json({ error: 'Contract not found or does not belong to your company' });
+      }
+
+      // Se diretor foi especificado, verificar se pertence à empresa
+      if (existingDirectorId) {
+        const [director] = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(and(
+            eq(users.id, existingDirectorId),
+            eq(users.companyId, userCompany.companyId),
+            eq(users.role, 'school_director')
+          ));
+
+        if (!director) {
+          return res.status(400).json({ error: 'Director not found or does not belong to your company' });
+        }
+      }
+
+      // Criar a escola
+      const [newSchool] = await db
+        .insert(municipalSchools)
+        .values({
+          name,
+          inep: inep || null,
+          cnpj: cnpj || null,
+          companyId: userCompany.companyId,
+          contractId,
+          address,
+          neighborhood: neighborhood || null,
+          city: city || null,
+          state: state || null,
+          zipCode: zipCode || null,
+          phone: phone || null,
+          email: email || null,
+          foundationDate: foundationDate ? new Date(foundationDate) : null,
+          numberOfClassrooms: numberOfClassrooms || 0,
+          numberOfStudents: numberOfStudents || 0,
+          numberOfTeachers: numberOfTeachers || 0,
+          zone: zone || 'urbana',
+          type: type || 'municipal',
+          status: 'active',
+          directorId: existingDirectorId || null,
+        })
+        .returning();
+
+      console.log('✅ [CREATE-SCHOOL] Escola criada:', newSchool.id, 'para empresa:', userCompany.companyId);
+
+      res.json({ success: true, school: newSchool });
+    } catch (error) {
+      console.error('❌ [CREATE-SCHOOL] Erro ao criar escola:', error);
+      res.status(500).json({ error: 'Failed to create school' });
+    }
+  });
+
 }
