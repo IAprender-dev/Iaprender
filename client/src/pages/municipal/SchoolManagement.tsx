@@ -69,12 +69,18 @@ export default function SchoolManagement() {
     numberOfTeachers: 0,
     zone: '',
     type: 'municipal',
+    directorOption: 'create', // 'create' ou 'existing'
+    existingDirectorId: '',
     directorData: {
       firstName: '',
       lastName: '',
-      email: ''
+      email: '',
+      phone: ''
     }
   });
+
+  // Estado para diretores existentes
+  const [availableDirectors, setAvailableDirectors] = useState<any[]>([]);
 
   // Queries
   const { data: schools, isLoading: schoolsLoading } = useQuery({
@@ -87,6 +93,11 @@ export default function SchoolManagement() {
 
   const { data: schoolStats } = useQuery({
     queryKey: ['/api/municipal/schools/stats'],
+  });
+
+  // Query para buscar diretores disponíveis
+  const { data: directorsData } = useQuery({
+    queryKey: ['/api/municipal/available-directors'],
   });
 
   // Mutations
@@ -169,10 +180,13 @@ export default function SchoolManagement() {
       numberOfTeachers: 0,
       zone: '',
       type: 'municipal',
+      directorOption: 'create',
+      existingDirectorId: '',
       directorData: {
         firstName: '',
         lastName: '',
-        email: ''
+        email: '',
+        phone: ''
       }
     });
   };
@@ -390,51 +404,133 @@ export default function SchoolManagement() {
                 </div>
               </div>
 
-              {/* Dados do Diretor */}
+              {/* Opções do Diretor */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Dados do Diretor (Criação Automática)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="directorFirstName">Nome</Label>
-                    <Input
-                      id="directorFirstName"
-                      value={formData.directorData.firstName}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        directorData: { ...formData.directorData, firstName: e.target.value }
-                      })}
-                      placeholder="Nome do diretor"
+                <h3 className="text-lg font-semibold text-gray-900">Designação do Diretor</h3>
+                
+                {/* Opção: Criar Novo ou Vincular Existente */}
+                <div className="flex space-x-6">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="directorOption"
+                      value="create"
+                      checked={formData.directorOption === 'create'}
+                      onChange={(e) => setFormData({...formData, directorOption: e.target.value, existingDirectorId: ''})}
+                      className="text-emerald-600"
                     />
-                  </div>
-                  <div>
-                    <Label htmlFor="directorLastName">Sobrenome</Label>
-                    <Input
-                      id="directorLastName"
-                      value={formData.directorData.lastName}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        directorData: { ...formData.directorData, lastName: e.target.value }
-                      })}
-                      placeholder="Sobrenome do diretor"
+                    <span className="text-sm font-medium">Criar Novo Diretor</span>
+                  </label>
+                  
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="directorOption"
+                      value="existing"
+                      checked={formData.directorOption === 'existing'}
+                      onChange={(e) => setFormData({...formData, directorOption: e.target.value})}
+                      className="text-emerald-600"
                     />
-                  </div>
-                  <div>
-                    <Label htmlFor="directorEmail">Email</Label>
-                    <Input
-                      id="directorEmail"
-                      type="email"
-                      value={formData.directorData.email}
-                      onChange={(e) => setFormData({ 
-                        ...formData, 
-                        directorData: { ...formData.directorData, email: e.target.value }
-                      })}
-                      placeholder="diretor@escola.edu.br"
-                    />
-                  </div>
+                    <span className="text-sm font-medium">Vincular Diretor Existente</span>
+                  </label>
                 </div>
-                <p className="text-sm text-gray-600">
-                  Se preenchido, o diretor será automaticamente criado no AWS Cognito com senha temporária.
-                </p>
+
+                {/* Formulário para Novo Diretor */}
+                {formData.directorOption === 'create' && (
+                  <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <h4 className="text-sm font-medium text-emerald-700">Dados do Novo Diretor</h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="directorFirstName">Nome *</Label>
+                        <Input
+                          id="directorFirstName"
+                          value={formData.directorData.firstName}
+                          onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, firstName: e.target.value}})}
+                          placeholder="João"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="directorLastName">Sobrenome *</Label>
+                        <Input
+                          id="directorLastName"
+                          value={formData.directorData.lastName}
+                          onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, lastName: e.target.value}})}
+                          placeholder="Silva"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="directorEmail">Email *</Label>
+                        <Input
+                          id="directorEmail"
+                          type="email"
+                          value={formData.directorData.email}
+                          onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, email: e.target.value}})}
+                          placeholder="diretor@escola.edu.br"
+                          required
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="directorPhone">Telefone</Label>
+                      <Input
+                        id="directorPhone"
+                        value={formData.directorData.phone}
+                        onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, phone: e.target.value}})}
+                        placeholder="(51) 99999-9999"
+                      />
+                    </div>
+                    
+                    <div className="text-xs text-emerald-600 bg-emerald-100 p-2 rounded">
+                      <strong>Nota:</strong> O diretor será criado automaticamente no sistema AWS Cognito com acesso à empresa e ao contrato selecionado.
+                    </div>
+                  </div>
+                )}
+
+                {/* Seleção de Diretor Existente */}
+                {formData.directorOption === 'existing' && (
+                  <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="text-sm font-medium text-blue-700">Selecionar Diretor Existente</h4>
+                    
+                    <div>
+                      <Label htmlFor="existingDirector">Diretor Disponível</Label>
+                      <Select 
+                        value={formData.existingDirectorId} 
+                        onValueChange={(value) => setFormData({...formData, existingDirectorId: value})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione um diretor..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {directorsData?.directors?.map((director: any) => (
+                            <SelectItem key={director.id} value={director.id.toString()}>
+                              {director.firstName} {director.lastName} ({director.email})
+                              {director.currentSchool && (
+                                <span className="text-xs text-gray-500 ml-2">
+                                  - Atualmente em: {director.currentSchool}
+                                </span>
+                              )}
+                            </SelectItem>
+                          ))}
+                          {(!directorsData?.directors || directorsData.directors.length === 0) && (
+                            <SelectItem value="none" disabled>
+                              Nenhum diretor disponível
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="text-xs text-blue-600 bg-blue-100 p-2 rounded">
+                      <strong>Nota:</strong> Diretores já vinculados a outras escolas podem ser transferidos. O acesso será automaticamente atualizado para o novo contrato.
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Informações Adicionais */}
