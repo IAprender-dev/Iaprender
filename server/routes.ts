@@ -4479,65 +4479,69 @@ Estrutura JSON obrigatória:
         role: users.role,
         lastLoginAt: users.lastLoginAt,
         firstLogin: users.firstLogin,
-        contractId: users.contractId
+        contractId: users.contractId,
+        companyId: users.companyId // IMPORTANTE: Incluir companyId para Gestores
       }).from(users);
       
-      console.log(`💾 [ALL-DB] Todos usuários no banco:`, allLocalUsers.map(u => `${u.email}(contract:${u.contractId})`));
+      console.log(`💾 [ALL-DB] Todos usuários no banco:`, allLocalUsers.map(u => `${u.email}(contract:${u.contractId}, company:${u.companyId})`));
       
       // Filtrar apenas os que estão no Cognito
       const localUsers = allLocalUsers.filter(localUser => 
         userEmails.includes(localUser.email)
       );
 
-      console.log(`📊 Local users encontrados:`, localUsers.map(u => ({ email: u.email, contractId: u.contractId })));
+      console.log(`📊 Local users encontrados:`, localUsers.map(u => ({ email: u.email, contractId: u.contractId, companyId: u.companyId })));
 
-      // Buscar informações de contratos e empresas para usuários com contractId
-      const contractIds = localUsers
-        .filter(user => user.contractId)
-        .map(user => user.contractId);
+      // Buscar informações de empresas e contratos para todos os usuários relevantes
+      const companyIds = [...new Set(localUsers
+        .filter(user => user.companyId)
+        .map(user => user.companyId))];
       
-      let contractsWithCompanies = [];
+      const contractIds = [...new Set(localUsers
+        .filter(user => user.contractId)
+        .map(user => user.contractId))];
+      
+      let companiesData = [];
+      let contractsData = [];
+      
+      // Buscar empresas primeiro
+      if (companyIds.length > 0) {
+        try {
+          console.log(`🏢 Buscando empresas para IDs: [${companyIds.join(', ')}]`);
+          
+          companiesData = await db.select({
+            companyId: companies.id,
+            companyName: companies.name,
+            companyEmail: companies.email,
+            companyPhone: companies.phone
+          })
+          .from(companies)
+          .where(inArray(companies.id, companyIds));
+          
+          console.log(`✅ Empresas encontradas: ${companiesData.length}`);
+        } catch (companyError) {
+          console.error(`❌ Erro ao buscar empresas:`, companyError);
+          companiesData = [];
+        }
+      }
+      
+      // Buscar contratos para Diretores
       if (contractIds.length > 0) {
         try {
-          console.log(`🔍 Buscando contratos para IDs: [${contractIds.join(', ')}]`);
+          console.log(`📋 Buscando contratos para IDs: [${contractIds.join(', ')}]`);
           
-          // Fazer consultas separadas para evitar problemas com joins complexos
-          const contractPromises = contractIds.map(async (contractId) => {
-            const [contract] = await db.select({
-              contractId: contracts.id,
-              contractName: contracts.name,
-              companyId: contracts.companyId
-            })
-            .from(contracts)
-            .where(eq(contracts.id, contractId))
-            .limit(1);
-            
-            if (contract && contract.companyId) {
-              const [company] = await db.select({
-                companyName: companies.name,
-                companyEmail: companies.email,
-                companyPhone: companies.phone
-              })
-              .from(companies)
-              .where(eq(companies.id, contract.companyId))
-              .limit(1);
-              
-              return {
-                ...contract,
-                ...company
-              };
-            }
-            
-            return contract;
-          });
+          contractsData = await db.select({
+            contractId: contracts.id,
+            contractName: contracts.name,
+            companyId: contracts.companyId
+          })
+          .from(contracts)
+          .where(inArray(contracts.id, contractIds));
           
-          contractsWithCompanies = await Promise.all(contractPromises);
-          contractsWithCompanies = contractsWithCompanies.filter(Boolean);
-          
-          console.log(`✅ Contratos encontrados: ${contractsWithCompanies.length}`);
+          console.log(`✅ Contratos encontrados: ${contractsData.length}`);
         } catch (contractError) {
           console.error(`❌ Erro ao buscar contratos:`, contractError);
-          contractsWithCompanies = [];
+          contractsData = [];
         }
       }
 
@@ -4546,21 +4550,49 @@ Estrutura JSON obrigatória:
         const email = cognitoUser.Attributes?.find(attr => attr.Name === 'email')?.Value;
         const localUser = localUsers.find(user => user.email === email);
         const isGestor = cognitoUser.Groups?.includes('Gestores');
+        const isDiretor = cognitoUser.Groups?.includes('Diretores');
         
-        // Buscar informações de contrato/empresa se for gestor e tiver contractId
+        // Buscar informações de empresa/contrato baseado no tipo de usuário
         let contractInfo = null;
-        if (isGestor && localUser?.contractId) {
-          const contractData = contractsWithCompanies.find(contract => 
-            contract.contractId === localUser.contractId
-          );
-          if (contractData) {
+        
+        if (localUser && (isGestor || isDiretor)) {
+          let companyInfo = null;
+          let contractData = null;
+          
+          // Buscar empresa (tanto para Gestores quanto Diretores)
+          if (localUser.companyId) {
+            companyInfo = companiesData.find(company => 
+              company.companyId === localUser.companyId
+            );
+          }
+          
+          // Buscar contrato (apenas para Diretores)
+          if (isDiretor && localUser.contractId) {
+            contractData = contractsData.find(contract => 
+              contract.contractId === localUser.contractId
+            );
+          }
+          
+          // Montar informações conforme o tipo de usuário
+          if (isGestor && companyInfo) {
+            // Gestor: apenas empresa, sem contrato
+            contractInfo = {
+              contractId: null,
+              contractName: null,
+              companyId: companyInfo.companyId,
+              companyName: companyInfo.companyName,
+              companyEmail: companyInfo.companyEmail,
+              companyPhone: companyInfo.companyPhone
+            };
+          } else if (isDiretor && contractData && companyInfo) {
+            // Diretor: empresa + contrato específico
             contractInfo = {
               contractId: contractData.contractId,
               contractName: contractData.contractName,
-              companyId: contractData.companyId,
-              companyName: contractData.companyName,
-              companyEmail: contractData.companyEmail,
-              companyPhone: contractData.companyPhone
+              companyId: companyInfo.companyId,
+              companyName: companyInfo.companyName,
+              companyEmail: companyInfo.companyEmail,
+              companyPhone: companyInfo.companyPhone
             };
           }
         }
@@ -4580,9 +4612,10 @@ Estrutura JSON obrigatória:
             role: localUser.role,
             lastLoginAt: localUser.lastLoginAt,
             firstLogin: localUser.firstLogin,
-            contractId: localUser.contractId
+            contractId: localUser.contractId,
+            companyId: localUser.companyId
           } : null,
-          contractInfo: contractInfo // Informações de empresa e contrato para gestores
+          contractInfo: contractInfo // Informações corretas para Gestores e Diretores
         };
       });
 
