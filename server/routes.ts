@@ -4825,8 +4825,32 @@ Estrutura JSON obrigatória:
 
       console.log(`👤 Usuário encontrado: ${user.email} (role: ${user.role})`);
 
+      // Validar dados baseado no grupo do usuário
+      const userGroups = await cognitoService.getUserGroups(user.cognitoUserId || user.username);
+      console.log(`🏷️ Grupos do usuário:`, userGroups);
+
+      // Validação para Gestores - precisam de empresa
+      if (userGroups.includes('Gestores')) {
+        if (!companyId || companyId === "none") {
+          return res.status(400).json({
+            success: false,
+            error: 'Gestores precisam ter uma empresa vinculada'
+          });
+        }
+      }
+
+      // Validação para Diretores - precisam de empresa E contrato
+      if (userGroups.includes('Diretores')) {
+        if (!companyId || companyId === "none" || !contractId || contractId === "none") {
+          return res.status(400).json({
+            success: false,
+            error: 'Diretores precisam ter empresa e contrato vinculados'
+          });
+        }
+      }
+
       // Verificar se o contrato existe (se contractId foi fornecido)
-      if (contractId) {
+      if (contractId && contractId !== "none") {
         const contract = await db.select()
           .from(contracts)
           .where(eq(contracts.id, Number(contractId)))
@@ -4885,6 +4909,20 @@ Estrutura JSON obrigatória:
 
       console.log(`💾 Update result:`, updateResult);
 
+      // Verificar se a atualização foi realmente aplicada
+      const updatedUser = await db.select()
+        .from(users)
+        .where(eq(users.id, user.id))
+        .limit(1);
+
+      if (updatedUser.length > 0) {
+        console.log(`🔍 Verificação pós-update:`, {
+          email: updatedUser[0].email,
+          companyId: updatedUser[0].companyId,
+          contractId: updatedUser[0].contractId
+        });
+      }
+
       console.log(`✅ Vínculos atualizados para usuário ${userId}: contractId=${contractId}`);
 
       res.json({
@@ -4892,7 +4930,12 @@ Estrutura JSON obrigatória:
         message: 'Vínculos de empresa e contrato atualizados com sucesso',
         data: {
           userId: userId,
-          contractId: contractId ? Number(contractId) : null
+          contractId: contractId ? Number(contractId) : null,
+          companyId: updateData.companyId,
+          verification: updatedUser.length > 0 ? {
+            companyId: updatedUser[0].companyId,
+            contractId: updatedUser[0].contractId
+          } : null
         }
       });
 

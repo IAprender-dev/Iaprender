@@ -268,9 +268,9 @@ export default function UserManagement() {
       console.log('📡 [FRONTEND] Response status:', response.status);
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.log('❌ [FRONTEND] Error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+        console.log('❌ [FRONTEND] Error response:', errorData);
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       const result = await response.json();
