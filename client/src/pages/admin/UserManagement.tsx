@@ -28,6 +28,7 @@ import {
   LogOut,
   Building,
   Save,
+  Eye,
   X
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -597,60 +598,162 @@ export default function UserManagement() {
                 {users.map((user) => (
                   <div
                     key={user.cognitoId}
-                    className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                    className="p-6 border rounded-xl hover:shadow-md transition-all duration-200 bg-white"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3">
-                          <div>
-                            <h3 className="font-medium text-gray-900">
-                              {user.firstName} {user.lastName}
-                            </h3>
-                            <div className="flex items-center space-x-2 text-sm text-gray-500">
-                              <Mail className="h-3 w-3" />
-                              <span>{user.email}</span>
+                    <div className="flex flex-col space-y-4">
+                      {/* Header do usuário */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold text-sm">
+                                {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+                              </span>
                             </div>
+                            <div>
+                              <h3 className="font-semibold text-gray-900 text-lg">
+                                {user.firstName} {user.lastName}
+                              </h3>
+                              <div className="flex items-center space-x-2 text-gray-600">
+                                <Mail className="h-4 w-4" />
+                                <span className="text-sm">{user.email}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Badges e informações */}
+                          <div className="flex flex-wrap items-center gap-3 mb-4">
+                            {getStatusBadge(user.status, user.enabled)}
+                            {getGroupBadge(user.groups)}
+                          </div>
+                          
+                          {/* Informações de data */}
+                          <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500">
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>Criado: {new Date(user.createdDate).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            {user.localData?.lastLoginAt && (
+                              <div className="flex items-center space-x-1">
+                                <Clock className="h-4 w-4" />
+                                <span>Último acesso: {new Date(user.localData.lastLoginAt).toLocaleDateString('pt-BR')}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-4 mt-2">
-                          {getStatusBadge(user.status, user.enabled)}
-                          {getGroupBadge(user.groups)}
-                          <div className="flex items-center text-xs text-gray-500">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            Criado: {new Date(user.createdDate).toLocaleDateString('pt-BR')}
-                          </div>
-                          {user.localData?.lastLoginAt && (
-                            <div className="flex items-center text-xs text-gray-500">
-                              <Clock className="h-3 w-3 mr-1" />
-                              Último acesso: {new Date(user.localData.lastLoginAt).toLocaleDateString('pt-BR')}
-                            </div>
+                        
+                        {/* Botões de ação */}
+                        <div className="flex flex-col space-y-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedUser(user)}
+                            className="text-blue-600 border-blue-300 hover:bg-blue-50 whitespace-nowrap"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Visualizar
+                          </Button>
+                          {user.groups.includes('Gestores') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditModal(user)}
+                              className="text-emerald-600 border-emerald-300 hover:bg-emerald-50 whitespace-nowrap"
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Alterar Empresa
+                            </Button>
+                          )}
+                          {user.groups.includes('Diretores') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditModal(user)}
+                              className="text-blue-600 border-blue-300 hover:bg-blue-50 whitespace-nowrap"
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar Vínculos
+                            </Button>
                           )}
                         </div>
+                      </div>
 
-                        {/* Informações de Empresa e Contrato - apenas para Diretores */}
-                        {user.groups.includes('Diretores') && user.contractInfo && (
-                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div className="flex items-start space-x-4">
-                              <div className="flex-1">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                                  <div>
-                                    <span className="font-medium text-blue-800">Empresa:</span>
-                                    <p className="text-blue-700">{user.contractInfo.companyName}</p>
-                                  </div>
-                                  <div>
-                                    <span className="font-medium text-blue-800">Contrato:</span>
-                                    <p className="text-blue-700">{user.contractInfo.contractNumber}</p>
-                                  </div>
-                                  <div>
-                                    <span className="font-medium text-blue-800">Email da Empresa:</span>
-                                    <p className="text-blue-700">{user.contractInfo.companyEmail}</p>
-                                  </div>
-                                  <div>
-                                    <span className="font-medium text-blue-800">Telefone:</span>
-                                    <p className="text-blue-700">{user.contractInfo.companyPhone || 'N/A'}</p>
-                                  </div>
+                        {/* Informações de Empresa - para Gestores */}
+                        {user.groups.includes('Gestores') && user.contractInfo && (
+                          <div className="mt-3 p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <Building className="h-4 w-4 text-emerald-600" />
+                              <span className="font-semibold text-emerald-800 text-sm">Empresa Vinculada</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div>
+                                  <span className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Nome da Empresa</span>
+                                  <p className="text-sm font-medium text-emerald-900">{user.contractInfo.companyName}</p>
+                                </div>
+                                <div>
+                                  <span className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Email</span>
+                                  <p className="text-sm text-emerald-800">{user.contractInfo.companyEmail}</p>
                                 </div>
                               </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <span className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Telefone</span>
+                                  <p className="text-sm text-emerald-800">{user.contractInfo.companyPhone || 'Não informado'}</p>
+                                </div>
+                                <div>
+                                  <span className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Nível de Acesso</span>
+                                  <p className="text-sm font-medium text-emerald-900">Gestão completa da empresa</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Informações de Empresa e Contrato - para Diretores */}
+                        {user.groups.includes('Diretores') && user.contractInfo && (
+                          <div className="mt-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg">
+                            <div className="flex items-center space-x-2 mb-3">
+                              <UserCheck className="h-4 w-4 text-blue-600" />
+                              <span className="font-semibold text-blue-800 text-sm">Empresa e Contrato Específico</span>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div>
+                                  <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Empresa</span>
+                                  <p className="text-sm font-medium text-blue-900">{user.contractInfo.companyName}</p>
+                                </div>
+                                <div>
+                                  <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Contrato</span>
+                                  <p className="text-sm font-medium text-blue-900">{user.contractInfo.contractName || 'N/A'}</p>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Email da Empresa</span>
+                                  <p className="text-sm text-blue-800">{user.contractInfo.companyEmail}</p>
+                                </div>
+                                <div>
+                                  <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Telefone</span>
+                                  <p className="text-sm text-blue-800">{user.contractInfo.companyPhone || 'Não informado'}</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-blue-200">
+                              <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Nível de Acesso</span>
+                              <p className="text-sm text-blue-800">Acesso restrito apenas ao contrato específico</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Aviso para Gestores sem empresa vinculada */}
+                        {user.groups.includes('Gestores') && !user.contractInfo && (
+                          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-center space-x-2">
+                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-sm text-yellow-800 font-medium">
+                                Gestor sem empresa vinculada - Acesso limitado até configuração
+                              </span>
                             </div>
                           </div>
                         )}
@@ -660,45 +763,12 @@ export default function UserManagement() {
                           <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                             <div className="flex items-center space-x-2">
                               <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                              <span className="text-xs text-yellow-800 font-medium">
-                                Diretor sem empresa/contrato vinculado
+                              <span className="text-sm text-yellow-800 font-medium">
+                                Diretor sem empresa/contrato vinculado - Acesso limitado até configuração
                               </span>
                             </div>
                           </div>
                         )}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedUser(user)}
-                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                        >
-                          Visualizar
-                        </Button>
-                        {user.groups.includes('Gestores') && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditModal(user)}
-                            className="text-green-600 border-green-300 hover:bg-green-50"
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Alterar Empresa
-                          </Button>
-                        )}
-                        {user.groups.includes('Diretores') && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditModal(user)}
-                            className="text-green-600 border-green-300 hover:bg-green-50"
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Alterar Empresa e Contrato
-                          </Button>
-                        )}
-                      </div>
                     </div>
                   </div>
                 ))}
