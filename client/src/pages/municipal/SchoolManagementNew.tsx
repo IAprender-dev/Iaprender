@@ -532,7 +532,8 @@ export default function SchoolManagementNew() {
       </div>
 
       {/* Dialog para criar escola */}
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nova Escola</DialogTitle>
           <DialogDescription>
@@ -737,7 +738,8 @@ export default function SchoolManagementNew() {
             </Button>
           </div>
         </form>
-      </DialogContent>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
