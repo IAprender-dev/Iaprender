@@ -11,11 +11,18 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Initialize database connection
-initializeDatabase().catch(error => {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-});
+// Initialize database connection with fallback
+let dbInitialized = false;
+initializeDatabase()
+  .then(() => {
+    dbInitialized = true;
+    console.log('💾 Database initialized successfully');
+  })
+  .catch(error => {
+    console.error('⚠️ Database initialization failed, continuing without database:', error);
+    console.log('🔄 The app will continue running and attempt to reconnect on API calls');
+    dbInitialized = false;
+  });
 
 app.use((req, res, next) => {
   const start = Date.now();
