@@ -3,54 +3,32 @@ import { QueryClient, QueryFunction } from '@tanstack/react-query';
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 type QueryFnOptions = { on401?: 'throw' | 'returnNull' };
 
-// Criar uma função fetch limpa para evitar qualquer interferência
-const safeFetch = (url: string, options: any) => {
-  // Usar fetch nativo do browser de forma explícita
-  const originalFetch = window.fetch;
-  console.log('🔥 SafeFetch chamado:', { url, options });
-  return originalFetch.call(window, url, options);
-};
-
 export const apiRequest = async (
   method: HttpMethod, 
   endpoint: string, 
   data?: any, 
   options: RequestInit = {}
 ) => {
-  // Construir request de forma muito explícita
-  const requestInit: RequestInit = {};
-  requestInit.method = method;
-  requestInit.credentials = 'include';
-  requestInit.headers = new Headers();
-  
-  if (method !== 'GET') {
-    (requestInit.headers as Headers).set('Content-Type', 'application/json');
-  }
+  const requestConfig: RequestInit = {
+    method,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options
+  };
   
   if (data && method !== 'GET') {
-    requestInit.body = JSON.stringify(data);
+    requestConfig.body = JSON.stringify(data);
   }
   
-  if (options.signal) {
-    requestInit.signal = options.signal;
-  }
-
-  console.log('🎯 Final request:', { 
-    endpoint, 
-    method,
-    requestInit: {
-      method: requestInit.method,
-      credentials: requestInit.credentials,
-      headers: requestInit.headers,
-      body: requestInit.body,
-      signal: !!requestInit.signal
-    }
-  });
+  console.log('🎯 API Request:', { method, endpoint, data });
   
   try {
-    return await safeFetch(endpoint, requestInit);
+    const response = await fetch(endpoint, requestConfig);
+    return response;
   } catch (error) {
-    console.error('🚨 SafeFetch error:', error);
+    console.error('🚨 API Request error:', error);
     throw error;
   }
 };
