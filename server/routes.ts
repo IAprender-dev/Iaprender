@@ -191,17 +191,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const adminUsers = await cognitoService.listUsersInGroup('Admin');
       const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      const diretoresUsers = await cognitoService.listUsersInGroup('Diretores');
+      const professoresUsers = await cognitoService.listUsersInGroup('Professores');
       
       console.log(`📊 [TEST] Admin users encontrados: ${adminUsers.length}`);
       console.log(`📊 [TEST] Gestores users encontrados: ${gestoresUsers.length}`);
+      console.log(`📊 [TEST] Diretores users encontrados: ${diretoresUsers.length}`);
+      console.log(`📊 [TEST] Professores users encontrados: ${professoresUsers.length}`);
+      
+      const allUsers = [...adminUsers, ...gestoresUsers, ...diretoresUsers, ...professoresUsers];
       
       res.json({
         success: true,
         cognitoWorking: true,
         adminUsers: adminUsers.length,
         gestoresUsers: gestoresUsers.length,
-        totalUsers: adminUsers.length + gestoresUsers.length,
+        diretoresUsers: diretoresUsers.length,
+        professoresUsers: professoresUsers.length,
+        totalUsers: allUsers.length,
         sampleAdminEmails: adminUsers.slice(0, 3).map((user: any) => 
+          user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value || 'sem-email'
+        ),
+        sampleDiretoresEmails: diretoresUsers.slice(0, 5).map((user: any) => 
           user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value || 'sem-email'
         )
       });
@@ -224,12 +235,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Listar usuários dos grupos principais
       const adminUsers = await cognitoService.listUsersInGroup('Admin');
       const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      const diretoresUsers = await cognitoService.listUsersInGroup('Diretores');
       const professoresUsers = await cognitoService.listUsersInGroup('Professores');
       
-      console.log(`📊 [FULL-LIST] Encontrados: Admin(${adminUsers.length}), Gestores(${gestoresUsers.length}), Professores(${professoresUsers.length})`);
+      console.log(`📊 [FULL-LIST] Encontrados: Admin(${adminUsers.length}), Gestores(${gestoresUsers.length}), Diretores(${diretoresUsers.length}), Professores(${professoresUsers.length})`);
       
       // Buscar detalhes completos de cada usuário
-      const allUsers = [...adminUsers, ...gestoresUsers, ...professoresUsers];
+      const allUsers = [...adminUsers, ...gestoresUsers, ...diretoresUsers, ...professoresUsers];
       
       const detailedUsers = await Promise.all(
         allUsers.map(async (user: any) => {
@@ -272,6 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         summary: {
           admin: sortedUsers.filter(u => u.primaryGroup === 'Admin').length,
           gestores: sortedUsers.filter(u => u.primaryGroup === 'Gestores').length,
+          diretores: sortedUsers.filter(u => u.primaryGroup === 'Diretores').length,
           professores: sortedUsers.filter(u => u.primaryGroup === 'Professores').length
         }
       });
