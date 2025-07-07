@@ -1252,4 +1252,95 @@ export function registerMunicipalRoutes(app: Express) {
     }
   });
 
+  // PATCH /api/municipal/schools/:id - Editar escola
+  app.patch('/api/municipal/schools/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const schoolId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      console.log('🔧 [SCHOOL_EDIT] Iniciando edição de escola:', { schoolId, updateData });
+
+      // Buscar informações da empresa do usuário
+      const userCompany = await getUserCompanyInfo(userId);
+
+      // Verificar se a escola pertence à empresa do gestor
+      const [existingSchool] = await db
+        .select()
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(and(
+          eq(municipalSchools.id, schoolId),
+          eq(contracts.companyId, userCompany.companyId)
+        ));
+
+      if (!existingSchool) {
+        return res.status(404).json({ message: "School not found or not accessible" });
+      }
+
+      // Validar contrato se fornecido
+      if (updateData.contractId) {
+        const [contract] = await db
+          .select()
+          .from(contracts)
+          .where(and(
+            eq(contracts.id, parseInt(updateData.contractId)),
+            eq(contracts.companyId, userCompany.companyId)
+          ));
+
+        if (!contract) {
+          return res.status(400).json({ message: "Invalid contract for this company" });
+        }
+      }
+
+      // Preparar dados para atualização
+      const updateFields: any = {
+        updatedAt: new Date()
+      };
+
+      // Mapear campos recebidos para campos do banco
+      if (updateData.name !== undefined) updateFields.schoolName = updateData.name;
+      if (updateData.inep !== undefined) updateFields.inepCode = updateData.inep;
+      if (updateData.cnpj !== undefined) updateFields.cnpj = updateData.cnpj;
+      if (updateData.contractId !== undefined) updateFields.contractId = parseInt(updateData.contractId);
+      if (updateData.address !== undefined) updateFields.address = updateData.address;
+      if (updateData.neighborhood !== undefined) updateFields.neighborhood = updateData.neighborhood;
+      if (updateData.city !== undefined) updateFields.city = updateData.city;
+      if (updateData.state !== undefined) updateFields.state = updateData.state;
+      if (updateData.zipCode !== undefined) updateFields.zipCode = updateData.zipCode;
+      if (updateData.phone !== undefined) updateFields.phone = updateData.phone;
+      if (updateData.email !== undefined) updateFields.email = updateData.email;
+      if (updateData.foundationDate !== undefined) updateFields.foundationDate = updateData.foundationDate ? new Date(updateData.foundationDate) : null;
+      if (updateData.numberOfClassrooms !== undefined) updateFields.numberOfClassrooms = updateData.numberOfClassrooms;
+      if (updateData.numberOfStudents !== undefined) updateFields.numberOfStudents = updateData.numberOfStudents;
+      if (updateData.numberOfTeachers !== undefined) updateFields.numberOfTeachers = updateData.numberOfTeachers;
+      if (updateData.zone !== undefined) updateFields.zone = updateData.zone;
+      if (updateData.type !== undefined) updateFields.type = updateData.type;
+      if (updateData.existingDirectorId !== undefined) updateFields.directorUserId = updateData.existingDirectorId ? parseInt(updateData.existingDirectorId) : null;
+
+      // Atualizar no banco de dados
+      const [updatedSchool] = await db
+        .update(municipalSchools)
+        .set(updateFields)
+        .where(eq(municipalSchools.id, schoolId))
+        .returning();
+
+      console.log('✅ [SCHOOL_EDIT] Escola atualizada:', updatedSchool.id);
+
+      res.json({ 
+        success: true,
+        message: "School updated successfully",
+        school: updatedSchool
+      });
+
+    } catch (error) {
+      console.error('❌ [SCHOOL_EDIT] Erro ao atualizar escola:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to update school", 
+        error: error.message 
+      });
+    }
+  });
+
 }

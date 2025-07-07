@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { School, Building2, Users, GraduationCap, MapPin, Phone, Mail, Calendar, AlertTriangle, CheckCircle, XCircle, Plus, Edit, Trash2, ArrowLeft, UserPlus } from 'lucide-react';
+import { School, Building2, Users, GraduationCap, MapPin, Phone, Mail, Calendar, AlertTriangle, CheckCircle, XCircle, Plus, Edit, Trash2, ArrowLeft, UserPlus, Eye } from 'lucide-react';
 import { Link } from 'wouter';
 import iAprenderLogo from '@assets/IAprender_1750262377399.png';
 
@@ -56,6 +56,9 @@ interface Director {
 
 export default function SchoolManagementNew() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [selectedTab, setSelectedTab] = useState<'overview' | 'contracts' | 'directors' | 'schools'>('overview');
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -170,6 +173,35 @@ export default function SchoolManagementNew() {
     },
   });
 
+  // Mutation para editar escola
+  const editSchoolMutation = useMutation({
+    mutationFn: async (schoolData: any) => {
+      return apiRequest(`/api/municipal/schools/${selectedSchool?.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(schoolData),
+      });
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Escola atualizada com sucesso!",
+        description: `As informações da escola foram atualizadas.`,
+        variant: "default",
+      });
+      setIsEditDialogOpen(false);
+      setSelectedSchool(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools/filtered'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/stats'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao atualizar escola",
+        description: error.message || "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -191,14 +223,23 @@ export default function SchoolManagementNew() {
       return;
     }
 
-    createSchoolMutation.mutate({
+    // Determinar se é criação ou edição
+    const isEditing = selectedSchool !== null;
+    
+    const schoolData = {
       ...formData,
       numberOfClassrooms: Number(formData.numberOfClassrooms),
       numberOfStudents: Number(formData.numberOfStudents),
       numberOfTeachers: Number(formData.numberOfTeachers),
       contractId: Number(formData.contractId),
       existingDirectorId: formData.existingDirectorId ? Number(formData.existingDirectorId) : null,
-    });
+    };
+
+    if (isEditing) {
+      editSchoolMutation.mutate(schoolData);
+    } else {
+      createSchoolMutation.mutate(schoolData);
+    }
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -210,6 +251,44 @@ export default function SchoolManagementNew() {
       ...prev,
       directorData: { ...prev.directorData, [field]: value }
     }));
+  };
+
+  // Funções para visualizar e editar escolas
+  const handleViewSchool = (school: School) => {
+    setSelectedSchool(school);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleEditSchool = (school: School) => {
+    setSelectedSchool(school);
+    setFormData({
+      name: school.name,
+      inep: school.inep || '',
+      cnpj: school.cnpj || '',
+      contractId: school.contractId?.toString() || '',
+      address: school.address,
+      neighborhood: '',
+      city: school.city,
+      state: school.state,
+      zipCode: '',
+      phone: '',
+      email: '',
+      foundationDate: '',
+      numberOfClassrooms: 0,
+      numberOfStudents: school.numberOfStudents || 0,
+      numberOfTeachers: school.numberOfTeachers || 0,
+      zone: 'urbana',
+      type: 'municipal',
+      directorOption: 'existing',
+      existingDirectorId: school.directorUserId?.toString() || '',
+      directorData: {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: ''
+      }
+    });
+    setIsEditDialogOpen(true);
   };
 
   const company = companyData?.company || {};
@@ -522,6 +601,26 @@ export default function SchoolManagementNew() {
                           <span className="font-medium">{school.numberOfTeachers}</span>
                         </div>
                       </div>
+                      <div className="flex gap-2 mt-4 pt-4 border-t">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewSchool(school)}
+                          className="flex-1"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Visualizar
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditSchool(school)}
+                          className="flex-1"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Editar
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -738,6 +837,300 @@ export default function SchoolManagementNew() {
             </Button>
           </div>
         </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Visualização de Escola */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <School className="w-5 h-5 text-emerald-600" />
+              Detalhes da Escola
+            </DialogTitle>
+            <DialogDescription>
+              Informações completas da escola selecionada
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedSchool && (
+            <div className="space-y-6">
+              {/* Informações Básicas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Nome da Escola</Label>
+                    <p className="text-gray-900 font-medium">{selectedSchool.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">INEP</Label>
+                    <p className="text-gray-900">{selectedSchool.inep || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">CNPJ</Label>
+                    <p className="text-gray-900">{selectedSchool.cnpj || 'Não informado'}</p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Status</Label>
+                    <div>
+                      <Badge variant={selectedSchool.isActive ? 'default' : 'secondary'}>
+                        {selectedSchool.isActive ? 'Ativa' : 'Inativa'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Contrato</Label>
+                    <p className="text-gray-900">{selectedSchool.contractName}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Diretor</Label>
+                    <p className="text-gray-900">{selectedSchool.directorName || 'Não atribuído'}</p>
+                    {selectedSchool.directorEmail && (
+                      <p className="text-sm text-gray-600">{selectedSchool.directorEmail}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Localização */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-gray-900">Localização</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Endereço</Label>
+                    <p className="text-gray-900">{selectedSchool.address}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Cidade / Estado</Label>
+                    <p className="text-gray-900">{selectedSchool.city}, {selectedSchool.state}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Estatísticas */}
+              <div className="space-y-3">
+                <h3 className="font-medium text-gray-900">Números da Escola</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{selectedSchool.numberOfStudents}</div>
+                    <div className="text-sm text-gray-600">Alunos</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{selectedSchool.numberOfTeachers}</div>
+                    <div className="text-sm text-gray-600">Professores</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">-</div>
+                    <div className="text-sm text-gray-600">Salas</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Data de Criação */}
+              <div className="pt-4 border-t">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Calendar className="w-4 h-4" />
+                  Criada em {new Date(selectedSchool.createdAt).toLocaleDateString('pt-BR')}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+              Fechar
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsViewDialogOpen(false);
+                if (selectedSchool) handleEditSchool(selectedSchool);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Editar Escola
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Edição de Escola */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5 text-emerald-600" />
+              Editar Escola
+            </DialogTitle>
+            <DialogDescription>
+              Atualize as informações da escola {selectedSchool?.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Informações Básicas */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Informações Básicas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Nome da Escola *</Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Nome completo da escola"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-contractId">Contrato *</Label>
+                  <Select value={formData.contractId} onValueChange={(value) => handleInputChange('contractId', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um contrato" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {contracts.map((contract: Contract) => (
+                        <SelectItem key={contract.id} value={contract.id.toString()}>
+                          {contract.name} - {contract.status}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-inep">Código INEP</Label>
+                  <Input
+                    id="edit-inep"
+                    value={formData.inep}
+                    onChange={(e) => handleInputChange('inep', e.target.value)}
+                    placeholder="00000000"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-cnpj">CNPJ</Label>
+                  <Input
+                    id="edit-cnpj"
+                    value={formData.cnpj}
+                    onChange={(e) => handleInputChange('cnpj', e.target.value)}
+                    placeholder="00.000.000/0000-00"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Localização */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Localização</h3>
+              <div className="space-y-2">
+                <Label htmlFor="edit-address">Endereço *</Label>
+                <Input
+                  id="edit-address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="Rua, número"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-city">Cidade</Label>
+                  <Input
+                    id="edit-city"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder="Nome da cidade"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-state">Estado</Label>
+                  <Select value={formData.state} onValueChange={(value) => handleInputChange('state', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                      <SelectItem value="SC">Santa Catarina</SelectItem>
+                      <SelectItem value="PR">Paraná</SelectItem>
+                      <SelectItem value="SP">São Paulo</SelectItem>
+                      <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                      <SelectItem value="MG">Minas Gerais</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-zipCode">CEP</Label>
+                  <Input
+                    id="edit-zipCode"
+                    value={formData.zipCode}
+                    onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                    placeholder="00000-000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Números */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Informações Gerais</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-numberOfStudents">Número de Alunos</Label>
+                  <Input
+                    id="edit-numberOfStudents"
+                    type="number"
+                    value={formData.numberOfStudents}
+                    onChange={(e) => handleInputChange('numberOfStudents', Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-numberOfTeachers">Número de Professores</Label>
+                  <Input
+                    id="edit-numberOfTeachers"
+                    type="number"
+                    value={formData.numberOfTeachers}
+                    onChange={(e) => handleInputChange('numberOfTeachers', Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-numberOfClassrooms">Salas de Aula</Label>
+                  <Input
+                    id="edit-numberOfClassrooms"
+                    type="number"
+                    value={formData.numberOfClassrooms}
+                    onChange={(e) => handleInputChange('numberOfClassrooms', Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={editSchoolMutation.isPending}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                {editSchoolMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
