@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
-import { School, Building2, Users, GraduationCap, MapPin, Phone, Mail, Calendar, AlertTriangle, CheckCircle, XCircle, Plus, Edit, Trash2, ArrowLeft, UserPlus, Eye } from 'lucide-react';
+import { School, Building2, Users, GraduationCap, MapPin, Phone, Mail, Calendar, AlertTriangle, CheckCircle, XCircle, Plus, Edit, Trash2, ArrowLeft, UserPlus, Eye, UserCircle } from 'lucide-react';
 import { Link } from 'wouter';
 import iAprenderLogo from '@assets/IAprender_1750262377399.png';
 
@@ -60,6 +60,14 @@ export default function SchoolManagementNew() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [selectedTab, setSelectedTab] = useState<'overview' | 'contracts' | 'directors' | 'schools'>('overview');
+  const [isEditDirectorDialogOpen, setIsEditDirectorDialogOpen] = useState(false);
+  const [selectedDirector, setSelectedDirector] = useState<Director | null>(null);
+  const [directorEditData, setDirectorEditData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    contractId: ''
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -202,6 +210,35 @@ export default function SchoolManagementNew() {
     },
   });
 
+  // Mutation para editar diretor
+  const editDirectorMutation = useMutation({
+    mutationFn: async (directorData: any) => {
+      return apiRequest(`/api/municipal/directors/${selectedDirector?.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(directorData),
+      });
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Diretor atualizado com sucesso!",
+        description: `As informações do diretor foram atualizadas.`,
+        variant: "default",
+      });
+      setIsEditDirectorDialogOpen(false);
+      setSelectedDirector(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/directors/filtered'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools/filtered'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao atualizar diretor",
+        description: error.message || "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -289,6 +326,42 @@ export default function SchoolManagementNew() {
       }
     });
     setIsEditDialogOpen(true);
+  };
+
+  // Funções para editar diretor
+  const handleEditDirector = (director: Director) => {
+    setSelectedDirector(director);
+    setDirectorEditData({
+      firstName: director.firstName,
+      lastName: director.lastName,
+      email: director.email,
+      contractId: director.contractId?.toString() || ''
+    });
+    setIsEditDirectorDialogOpen(true);
+  };
+
+  const handleDirectorEditChange = (field: string, value: string) => {
+    setDirectorEditData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleDirectorSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!directorEditData.firstName || !directorEditData.lastName || !directorEditData.email) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha nome, sobrenome e email do diretor.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    editDirectorMutation.mutate({
+      firstName: directorEditData.firstName,
+      lastName: directorEditData.lastName,
+      email: directorEditData.email,
+      contractId: directorEditData.contractId ? Number(directorEditData.contractId) : null,
+    });
   };
 
   const company = companyData?.company || {};
@@ -1118,6 +1191,66 @@ export default function SchoolManagementNew() {
               </div>
             </div>
 
+            {/* Gestão do Diretor */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Gestão do Diretor</h3>
+              <div className="space-y-2">
+                <Label htmlFor="edit-existingDirectorId">Diretor Atual *</Label>
+                <Select value={formData.existingDirectorId} onValueChange={(value) => handleInputChange('existingDirectorId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um diretor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDirectors.map((director: Director) => (
+                      <SelectItem key={director.id} value={director.id.toString()}>
+                        {director.firstName} {director.lastName} - {director.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Informações do diretor selecionado */}
+              {formData.existingDirectorId && (
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium text-blue-900">Informações do Diretor Selecionado</h4>
+                    {(() => {
+                      const selectedDirector = availableDirectors.find(d => d.id.toString() === formData.existingDirectorId);
+                      if (selectedDirector) {
+                        return (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditDirector(selectedDirector)}
+                            className="text-blue-700 border-blue-300 hover:bg-blue-100"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            Editar Diretor
+                          </Button>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                  {(() => {
+                    const selectedDirector = availableDirectors.find(d => d.id.toString() === formData.existingDirectorId);
+                    if (selectedDirector) {
+                      return (
+                        <div className="text-sm text-blue-800">
+                          <p><strong>Nome:</strong> {selectedDirector.firstName} {selectedDirector.lastName}</p>
+                          <p><strong>Email:</strong> {selectedDirector.email}</p>
+                          <p><strong>Contrato:</strong> {selectedDirector.contractName || 'Não vinculado'}</p>
+                        </div>
+                      );
+                    }
+                    return <p className="text-sm text-blue-800">Diretor não encontrado</p>;
+                  })()}
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 Cancelar
@@ -1128,6 +1261,105 @@ export default function SchoolManagementNew() {
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
                 {editSchoolMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Edição do Diretor */}
+      <Dialog open={isEditDirectorDialogOpen} onOpenChange={setIsEditDirectorDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCircle className="w-5 h-5 text-blue-600" />
+              Editar Informações do Diretor
+            </DialogTitle>
+            <DialogDescription>
+              Atualize as informações pessoais e contratuais do diretor {selectedDirector?.firstName} {selectedDirector?.lastName}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <form onSubmit={handleDirectorSubmit} className="space-y-6">
+            {/* Informações Pessoais */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Informações Pessoais</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="director-firstName">Nome *</Label>
+                  <Input
+                    id="director-firstName"
+                    value={directorEditData.firstName}
+                    onChange={(e) => handleDirectorEditChange('firstName', e.target.value)}
+                    placeholder="Nome do diretor"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="director-lastName">Sobrenome *</Label>
+                  <Input
+                    id="director-lastName"
+                    value={directorEditData.lastName}
+                    onChange={(e) => handleDirectorEditChange('lastName', e.target.value)}
+                    placeholder="Sobrenome do diretor"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="director-email">Email *</Label>
+                <Input
+                  id="director-email"
+                  type="email"
+                  value={directorEditData.email}
+                  onChange={(e) => handleDirectorEditChange('email', e.target.value)}
+                  placeholder="email@diretor.com"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Informações Contratuais */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Informações Contratuais</h3>
+              <div className="space-y-2">
+                <Label htmlFor="director-contractId">Contrato Vinculado</Label>
+                <Select value={directorEditData.contractId} onValueChange={(value) => handleDirectorEditChange('contractId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um contrato" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Sem contrato específico</SelectItem>
+                    {contracts.map((contract: Contract) => (
+                      <SelectItem key={contract.id} value={contract.id.toString()}>
+                        {contract.name} - {contract.status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {directorEditData.contractId && (
+                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-800">
+                    <strong>Informação:</strong> O diretor será vinculado ao contrato selecionado e terá acesso apenas às funcionalidades deste contrato específico.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsEditDirectorDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={editDirectorMutation.isPending}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {editDirectorMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
             </div>
           </form>

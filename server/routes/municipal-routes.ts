@@ -1343,4 +1343,110 @@ export function registerMunicipalRoutes(app: Express) {
     }
   });
 
+  // PATCH /api/municipal/directors/:id - Editar dados do diretor
+  app.patch('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const directorId = parseInt(req.params.id);
+      const { firstName, lastName, email, contractId } = req.body;
+
+      const userId = req.session.user!.id;
+      console.log(`🔍 [EDIT-DIRECTOR] Editando diretor ID: ${directorId} para usuário: ${userId}`);
+
+      // Validação dos dados obrigatórios
+      if (!firstName || !lastName || !email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nome, sobrenome e email são obrigatórios'
+        });
+      }
+
+      // Buscar o gestor municipal para verificar a empresa
+      const [manager] = await db
+        .select()
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Verificar se o diretor existe e pertence à empresa do usuário
+      const [existingDirector] = await db.select()
+        .from(users)
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, manager.companyId),
+          eq(users.role, 'school_director')
+        ));
+
+      if (!existingDirector) {
+        return res.status(404).json({
+          success: false,
+          message: 'Diretor não encontrado ou sem permissão para editar'
+        });
+      }
+
+      // Verificar se o email já está em uso por outro usuário
+      if (email !== existingDirector.email) {
+        const [emailExists] = await db.select()
+          .from(users)
+          .where(and(
+            eq(users.email, email),
+            ne(users.id, directorId)
+          ));
+
+        if (emailExists) {
+          return res.status(400).json({
+            success: false,
+            message: 'Este email já está sendo usado por outro usuário'
+          });
+        }
+      }
+
+      // Verificar se o contrato existe e pertence à empresa (se fornecido)
+      if (contractId) {
+        const [contractExists] = await db.select()
+          .from(contracts)
+          .where(and(
+            eq(contracts.id, contractId),
+            eq(contracts.companyId, manager.companyId)
+          ));
+
+        if (!contractExists) {
+          return res.status(400).json({
+            success: false,
+            message: 'Contrato não encontrado ou não pertence à sua empresa'
+          });
+        }
+      }
+
+      // Atualizar dados do diretor
+      const [updatedDirector] = await db.update(users)
+        .set({
+          firstName,
+          lastName,
+          email,
+          contractId: contractId ? contractId : null,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(users.id, directorId))
+        .returning();
+
+      console.log(`✅ [EDIT-DIRECTOR] Diretor atualizado: ${firstName} ${lastName} (${email})`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Diretor atualizado com sucesso',
+        director: updatedDirector
+      });
+
+    } catch (error) {
+      console.error('❌ [EDIT-DIRECTOR] Erro:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
 }
