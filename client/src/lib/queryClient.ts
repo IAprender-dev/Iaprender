@@ -9,19 +9,22 @@ export const apiRequest = async (
   data?: any, 
   options: RequestInit = {}
 ) => {
-  const url = endpoint;
-  const opts: RequestInit = {
-    method,
+  const fetchOptions: RequestInit = {
+    method: method,
+    credentials: 'include',
     headers: {
       ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
-      ...options.headers,
+      ...(options.headers || {}),
     },
-    credentials: 'include',
-    ...(data && method !== 'GET' ? { body: JSON.stringify(data) } : {}),
-    ...options,
+    signal: options.signal,
   };
 
-  return fetch(url, opts);
+  if (data && method !== 'GET') {
+    fetchOptions.body = JSON.stringify(data);
+  }
+
+  console.log('Fazendo request:', { endpoint, method, fetchOptions });
+  return fetch(endpoint, fetchOptions);
 };
 
 export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async (context) => {
