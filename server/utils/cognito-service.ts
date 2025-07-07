@@ -2,6 +2,18 @@ import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { URLSearchParams } from 'url';
 import AWS from 'aws-sdk';
+import { 
+  CognitoIdentityProviderClient,
+  ListUsersCommand,
+  ListGroupsCommand,
+  AdminListGroupsForUserCommand,
+  AdminGetUserCommand,
+  AdminCreateUserCommand,
+  AdminDeleteUserCommand,
+  AdminAddUserToGroupCommand,
+  AdminRemoveUserFromGroupCommand,
+  ListUsersInGroupCommand
+} from '@aws-sdk/client-cognito-identity-provider';
 
 interface CognitoUserInfo {
   sub: string;
@@ -44,6 +56,7 @@ export class CognitoService {
   private userPoolId: string;
   private region: string;
   private cognitoIdentityServiceProvider: AWS.CognitoIdentityServiceProvider;
+  private cognitoClient: CognitoIdentityProviderClient;
 
   constructor() {
     this.domain = process.env.COGNITO_DOMAIN || '';
@@ -54,7 +67,7 @@ export class CognitoService {
     this.userPoolId = process.env.COGNITO_USER_POLL_ID || process.env.COGNITO_USER_POOL_ID || '';
     this.region = process.env.AWS_REGION || 'us-east-1';
     
-    // Inicializar cliente AWS
+    // Inicializar cliente AWS v2 (legacy)
     AWS.config.update({
       region: this.region,
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -62,6 +75,15 @@ export class CognitoService {
     });
     
     this.cognitoIdentityServiceProvider = new AWS.CognitoIdentityServiceProvider();
+    
+    // Inicializar cliente AWS v3 (moderno)
+    this.cognitoClient = new CognitoIdentityProviderClient({
+      region: this.region,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+      }
+    });
     
     // Garantir que o domínio tenha https://
     if (this.domain && !this.domain.startsWith('http')) {
@@ -818,6 +840,225 @@ export class CognitoService {
     } catch (error) {
       console.error(`❌ Erro ao buscar grupos do usuário ${username}:`, error);
       return [];
+    }
+  }
+
+  /**
+   * 🔥 LISTAR TODOS OS USUÁRIOS - API DIRETA AWS COGNITO
+   */
+  async listAllUsers(): Promise<any[]> {
+    try {
+      console.log(`🔥 [DIRECT-API] Listando TODOS os usuários do User Pool: ${this.userPoolId}`);
+      
+      const command = new ListUsersCommand({
+        UserPoolId: this.userPoolId,
+        Limit: 60  // Máximo permitido por página
+      });
+      
+      let allUsers: any[] = [];
+      let paginationToken: string | undefined;
+      
+      do {
+        if (paginationToken) {
+          command.input.PaginationToken = paginationToken;
+        }
+        
+        const result = await this.cognitoClient.send(command);
+        
+        if (result.Users) {
+          allUsers = allUsers.concat(result.Users);
+        }
+        
+        paginationToken = result.PaginationToken;
+      } while (paginationToken);
+      
+      console.log(`✅ [DIRECT-API] Total de usuários encontrados: ${allUsers.length}`);
+      
+      // Enriquecer com informações de grupos
+      const enrichedUsers = await Promise.all(
+        allUsers.map(async (user) => {
+          try {
+            const groups = await this.getUserGroups(user.Username!);
+            return {
+              ...user,
+              Groups: groups
+            };
+          } catch (error) {
+            console.error(`❌ Erro ao buscar grupos do usuário ${user.Username}:`, error);
+            return {
+              ...user,
+              Groups: []
+            };
+          }
+        })
+      );
+      
+      return enrichedUsers;
+    } catch (error) {
+      console.error(`❌ [DIRECT-API] Erro ao listar todos os usuários:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔥 LISTAR TODOS OS GRUPOS - API DIRETA AWS COGNITO
+   */
+  async listAllGroups(): Promise<any[]> {
+    try {
+      console.log(`🔥 [DIRECT-API] Listando TODOS os grupos do User Pool: ${this.userPoolId}`);
+      
+      const command = new ListGroupsCommand({
+        UserPoolId: this.userPoolId,
+        Limit: 60  // Máximo permitido por página
+      });
+      
+      let allGroups: any[] = [];
+      let nextToken: string | undefined;
+      
+      do {
+        if (nextToken) {
+          command.input.NextToken = nextToken;
+        }
+        
+        const result = await this.cognitoClient.send(command);
+        
+        if (result.Groups) {
+          allGroups = allGroups.concat(result.Groups);
+        }
+        
+        nextToken = result.NextToken;
+      } while (nextToken);
+      
+      console.log(`✅ [DIRECT-API] Total de grupos encontrados: ${allGroups.length}`);
+      
+      // Enriquecer com contagem de usuários por grupo
+      const enrichedGroups = await Promise.all(
+        allGroups.map(async (group) => {
+          try {
+            const usersInGroup = await this.listUsersInGroup(group.GroupName!);
+            return {
+              ...group,
+              UserCount: usersInGroup.length
+            };
+          } catch (error) {
+            console.error(`❌ Erro ao contar usuários do grupo ${group.GroupName}:`, error);
+            return {
+              ...group,
+              UserCount: 0
+            };
+          }
+        })
+      );
+      
+      return enrichedGroups;
+    } catch (error) {
+      console.error(`❌ [DIRECT-API] Erro ao listar todos os grupos:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔥 SINCRONIZAR USUÁRIOS LOCAIS COM AWS COGNITO (SEM LISTUSERS)
+   */
+  async syncLocalUsersWithCognito(): Promise<{
+    cognitoUsers: any[],
+    localUsers: any[],
+    usersToDelete: any[],
+    usersToUpdate: any[],
+    syncSummary: any
+  }> {
+    try {
+      console.log(`🔄 [SYNC] Iniciando sincronização usando ListUsersInGroup...`);
+      
+      // 1. Buscar usuários do Cognito por grupo (usando métodos que funcionam)
+      const adminUsers = await this.listUsersInGroup('Admin');
+      const gestoresUsers = await this.listUsersInGroup('Gestores');
+      const diretoresUsers = await this.listUsersInGroup('Diretores');
+      const professoresUsers = await this.listUsersInGroup('Professores');
+      const alunosUsers = await this.listUsersInGroup('Alunos');
+      
+      const cognitoUsers = [
+        ...adminUsers.map(u => ({ ...u, PrimaryGroup: 'Admin' })),
+        ...gestoresUsers.map(u => ({ ...u, PrimaryGroup: 'Gestores' })),
+        ...diretoresUsers.map(u => ({ ...u, PrimaryGroup: 'Diretores' })),
+        ...professoresUsers.map(u => ({ ...u, PrimaryGroup: 'Professores' })),
+        ...alunosUsers.map(u => ({ ...u, PrimaryGroup: 'Alunos' }))
+      ];
+      
+      console.log(`📊 [SYNC] Cognito - Admin: ${adminUsers.length}, Gestores: ${gestoresUsers.length}, Diretores: ${diretoresUsers.length}, Professores: ${professoresUsers.length}, Alunos: ${alunosUsers.length}`);
+      
+      // 2. Buscar todos os usuários locais
+      const { db } = await import('../db');
+      const { users } = await import('../../shared/schema');
+      
+      const localUsers = await db.select().from(users);
+      
+      // 3. Mapear usuários do Cognito por email
+      const cognitoEmailMap = new Map();
+      cognitoUsers.forEach(user => {
+        const email = user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value;
+        if (email) {
+          cognitoEmailMap.set(email, user);
+        }
+      });
+      
+      // 4. Identificar usuários locais que NÃO existem no Cognito
+      const usersToDelete = localUsers.filter(localUser => 
+        !cognitoEmailMap.has(localUser.email)
+      );
+      
+      // 5. Identificar usuários que precisam ser atualizados
+      const usersToUpdate = localUsers.filter(localUser => {
+        const cognitoUser = cognitoEmailMap.get(localUser.email);
+        if (!cognitoUser) return false;
+        
+        // Comparar cognito_user_id e groups
+        const cognitoGroups = [cognitoUser.PrimaryGroup];
+        return (
+          localUser.cognito_user_id !== cognitoUser.Username ||
+          JSON.stringify(localUser.cognito_groups) !== JSON.stringify(cognitoGroups)
+        );
+      });
+      
+      const syncSummary = {
+        totalCognitoUsers: cognitoUsers.length,
+        totalLocalUsers: localUsers.length,
+        usersToDelete: usersToDelete.length,
+        usersToUpdate: usersToUpdate.length,
+        cognitoGroups: ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos'],
+        cognitoByGroup: {
+          Admin: adminUsers.length,
+          Gestores: gestoresUsers.length,
+          Diretores: diretoresUsers.length,
+          Professores: professoresUsers.length,
+          Alunos: alunosUsers.length
+        },
+        localUsersWithoutCognito: usersToDelete.map(u => ({
+          id: u.id,
+          email: u.email,
+          role: u.role,
+          created_at: u.created_at
+        })),
+        cognitoUsersToSync: cognitoUsers.map(u => ({
+          username: u.Username,
+          email: u.Attributes?.find((attr: any) => attr.Name === 'email')?.Value,
+          group: u.PrimaryGroup,
+          status: u.UserStatus
+        }))
+      };
+      
+      console.log(`📊 [SYNC] Resumo da sincronização:`, syncSummary);
+      
+      return {
+        cognitoUsers,
+        localUsers,
+        usersToDelete,
+        usersToUpdate,
+        syncSummary
+      };
+    } catch (error) {
+      console.error(`❌ [SYNC] Erro durante sincronização:`, error);
+      throw error;
     }
   }
 

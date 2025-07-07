@@ -227,6 +227,344 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🔥 LISTAR TODOS OS USUÁRIOS - API DIRETA AWS COGNITO
+  app.get('/api/cognito/all-users', async (req: Request, res: Response) => {
+    try {
+      console.log(`🔥 [DIRECT-API] Requisição para listar todos os usuários AWS Cognito`);
+      
+      const allUsers = await cognitoService.listAllUsers();
+      const allGroups = await cognitoService.listAllGroups();
+      
+      // Organizar usuários por grupo
+      const usersByGroup = allUsers.reduce((acc: any, user: any) => {
+        const groups = user.Groups || [];
+        const primaryGroup = groups[0] || 'Sem Grupo';
+        
+        if (!acc[primaryGroup]) {
+          acc[primaryGroup] = [];
+        }
+        
+        acc[primaryGroup].push({
+          username: user.Username,
+          email: user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value,
+          name: user.Attributes?.find((attr: any) => attr.Name === 'name')?.Value,
+          status: user.UserStatus,
+          created: user.UserCreateDate,
+          groups: groups,
+          lastModified: user.UserLastModifiedDate
+        });
+        
+        return acc;
+      }, {});
+      
+      const summary = {
+        totalUsers: allUsers.length,
+        totalGroups: allGroups.length,
+        usersByGroup: Object.keys(usersByGroup).map(group => ({
+          group,
+          count: usersByGroup[group].length
+        })),
+        groupDetails: allGroups.map(group => ({
+          name: group.GroupName,
+          description: group.Description,
+          userCount: group.UserCount,
+          created: group.CreationDate,
+          lastModified: group.LastModifiedDate
+        }))
+      };
+      
+      res.json({
+        success: true,
+        summary,
+        allUsers: usersByGroup,
+        allGroups: allGroups
+      });
+    } catch (error) {
+      console.error('❌ [DIRECT-API] Erro ao listar todos os usuários:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao listar usuários do AWS Cognito',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // 🔄 SINCRONIZAR USUÁRIOS LOCAIS COM AWS COGNITO (SEM LISTUSERS)
+  app.post('/api/cognito/sync-users', async (req: Request, res: Response) => {
+    try {
+      console.log(`🔄 [SYNC] Sincronização usando ListUsersInGroup (sem permissões extras)`);
+      
+      // 1. Buscar usuários do Cognito por grupo
+      const adminUsers = await cognitoService.listUsersInGroup('Admin');
+      const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      const diretoresUsers = await cognitoService.listUsersInGroup('Diretores');
+      const professoresUsers = await cognitoService.listUsersInGroup('Professores');
+      const alunosUsers = await cognitoService.listUsersInGroup('Alunos');
+      
+      const cognitoUsers = [
+        ...adminUsers.map(u => ({ ...u, PrimaryGroup: 'Admin' })),
+        ...gestoresUsers.map(u => ({ ...u, PrimaryGroup: 'Gestores' })),
+        ...diretoresUsers.map(u => ({ ...u, PrimaryGroup: 'Diretores' })),
+        ...professoresUsers.map(u => ({ ...u, PrimaryGroup: 'Professores' })),
+        ...alunosUsers.map(u => ({ ...u, PrimaryGroup: 'Alunos' }))
+      ];
+      
+      console.log(`📊 [SYNC] Cognito - Admin: ${adminUsers.length}, Gestores: ${gestoresUsers.length}, Diretores: ${diretoresUsers.length}, Professores: ${professoresUsers.length}, Alunos: ${alunosUsers.length}`);
+      
+      // 2. Buscar usuários locais
+      const { db } = await import('./db');
+      const { users } = await import('../shared/schema');
+      
+      const localUsers = await db.select().from(users);
+      
+      // 3. Mapear usuários do Cognito por email
+      const cognitoEmailMap = new Map();
+      cognitoUsers.forEach(user => {
+        const email = user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value;
+        if (email) {
+          cognitoEmailMap.set(email, user);
+        }
+      });
+      
+      // 4. Identificar usuários locais que NÃO existem no Cognito
+      const usersToDelete = localUsers.filter(localUser => 
+        !cognitoEmailMap.has(localUser.email)
+      );
+      
+      // 5. Identificar usuários que precisam ser atualizados
+      const usersToUpdate = localUsers.filter(localUser => {
+        const cognitoUser = cognitoEmailMap.get(localUser.email);
+        if (!cognitoUser) return false;
+        
+        const cognitoGroups = [cognitoUser.PrimaryGroup];
+        return (
+          localUser.cognito_user_id !== cognitoUser.Username ||
+          JSON.stringify(localUser.cognito_groups) !== JSON.stringify(cognitoGroups)
+        );
+      });
+      
+      const syncSummary = {
+        totalCognitoUsers: cognitoUsers.length,
+        totalLocalUsers: localUsers.length,
+        usersToDelete: usersToDelete.length,
+        usersToUpdate: usersToUpdate.length,
+        cognitoByGroup: {
+          Admin: adminUsers.length,
+          Gestores: gestoresUsers.length,
+          Diretores: diretoresUsers.length,
+          Professores: professoresUsers.length,
+          Alunos: alunosUsers.length
+        },
+        localUsersWithoutCognito: usersToDelete.map(u => ({
+          id: u.id,
+          email: u.email,
+          role: u.role,
+          created_at: u.created_at
+        })),
+        cognitoUsersToSync: cognitoUsers.map(u => ({
+          username: u.Username,
+          email: u.Attributes?.find((attr: any) => attr.Name === 'email')?.Value,
+          group: u.PrimaryGroup,
+          status: u.UserStatus
+        }))
+      };
+      
+      res.json({
+        success: true,
+        syncResult: {
+          cognitoUsers,
+          localUsers,
+          usersToDelete,
+          usersToUpdate,
+          syncSummary
+        }
+      });
+    } catch (error) {
+      console.error('❌ [SYNC] Erro durante sincronização:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro durante sincronização de usuários',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // 🗑️ EXECUTAR LIMPEZA AUTOMÁTICA DE USUÁRIOS LOCAIS
+  app.post('/api/cognito/cleanup-local-users', async (req: Request, res: Response) => {
+    try {
+      console.log(`🗑️ [CLEANUP] Executando limpeza automática de usuários locais não existentes no Cognito`);
+      
+      // 1. Primeiro fazer sincronização para identificar usuários a deletar
+      const adminUsers = await cognitoService.listUsersInGroup('Admin');
+      const gestoresUsers = await cognitoService.listUsersInGroup('Gestores');
+      const diretoresUsers = await cognitoService.listUsersInGroup('Diretores');
+      const professoresUsers = await cognitoService.listUsersInGroup('Professores');
+      const alunosUsers = await cognitoService.listUsersInGroup('Alunos');
+      
+      const cognitoUsers = [
+        ...adminUsers,
+        ...gestoresUsers,
+        ...diretoresUsers,
+        ...professoresUsers,
+        ...alunosUsers
+      ];
+      
+      // 2. Mapear emails do Cognito
+      const cognitoEmails = new Set();
+      cognitoUsers.forEach(user => {
+        const email = user.Attributes?.find((attr: any) => attr.Name === 'email')?.Value;
+        if (email) {
+          cognitoEmails.add(email);
+        }
+      });
+      
+      // 3. Buscar usuários locais
+      const { db } = await import('./db');
+      const { users } = await import('../shared/schema');
+      const { inArray } = await import('drizzle-orm');
+      
+      const localUsers = await db.select().from(users);
+      
+      // 4. Identificar usuários locais que não existem no Cognito
+      const usersToDelete = localUsers.filter(localUser => 
+        !cognitoEmails.has(localUser.email)
+      );
+      
+      console.log(`🗑️ [CLEANUP] Encontrados ${usersToDelete.length} usuários locais para deletar`);
+      
+      if (usersToDelete.length === 0) {
+        return res.json({
+          success: true,
+          message: 'Nenhum usuário local precisa ser deletado',
+          result: {
+            deletedCount: 0,
+            deletedUsers: []
+          }
+        });
+      }
+      
+      // 5. Deletar registros relacionados primeiro (para evitar constraint violations)
+      const userIds = usersToDelete.map(u => u.id);
+      
+      // Importar tabelas relacionadas
+      const { municipal_managers, school_directors, teachers, students } = await import('../shared/schema');
+      
+      // Deletar registros nas tabelas relacionadas primeiro
+      await db.delete(municipal_managers).where(inArray(municipal_managers.user_id, userIds));
+      await db.delete(school_directors).where(inArray(school_directors.user_id, userIds));
+      await db.delete(teachers).where(inArray(teachers.user_id, userIds));
+      await db.delete(students).where(inArray(students.user_id, userIds));
+      
+      // Agora deletar usuários principais
+      const deletedUsers = await db.delete(users).where(inArray(users.id, userIds)).returning();
+      
+      console.log(`🗑️ [CLEANUP] ${deletedUsers.length} usuários locais deletados com sucesso`);
+      
+      res.json({
+        success: true,
+        message: `${deletedUsers.length} usuários locais deletados com sucesso`,
+        result: {
+          deletedCount: deletedUsers.length,
+          deletedUsers: deletedUsers.map(u => ({ 
+            id: u.id, 
+            email: u.email, 
+            role: u.role 
+          }))
+        }
+      });
+    } catch (error) {
+      console.error('❌ [CLEANUP] Erro durante limpeza:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro durante limpeza de usuários locais',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // 🔍 VERIFICAR PERMISSÕES AWS PARA COGNITO
+  app.get('/api/cognito/check-permissions', async (req: Request, res: Response) => {
+    try {
+      console.log(`🔍 [PERMISSIONS] Verificando permissões AWS para usuário Cognito...`);
+      
+      const requiredPermissions = [
+        'cognito-idp:ListUsers',
+        'cognito-idp:ListGroups', 
+        'cognito-idp:ListUsersInGroup',
+        'cognito-idp:AdminGetUser',
+        'cognito-idp:AdminListGroupsForUser',
+        'cognito-idp:AdminCreateUser',
+        'cognito-idp:AdminDeleteUser',
+        'cognito-idp:AdminAddUserToGroup',
+        'cognito-idp:AdminRemoveUserFromGroup'
+      ];
+      
+      // Testar permissões básicas
+      const permissionResults: any = {};
+      
+      try {
+        await cognitoService.listAllUsers();
+        permissionResults['cognito-idp:ListUsers'] = { success: true, message: 'Permissão concedida' };
+      } catch (error: any) {
+        permissionResults['cognito-idp:ListUsers'] = { 
+          success: false, 
+          message: error.message,
+          isAccessDenied: error.message.includes('is not authorized')
+        };
+      }
+      
+      try {
+        await cognitoService.listAllGroups();
+        permissionResults['cognito-idp:ListGroups'] = { success: true, message: 'Permissão concedida' };
+      } catch (error: any) {
+        permissionResults['cognito-idp:ListGroups'] = { 
+          success: false, 
+          message: error.message,
+          isAccessDenied: error.message.includes('is not authorized')
+        };
+      }
+      
+      const awsUser = "arn:aws:iam::762723916379:user/UsuarioBedrock";
+      const userPoolArn = `arn:aws:cognito-idp:us-east-1:762723916379:userpool/${process.env.COGNITO_USER_POLL_ID || process.env.COGNITO_USER_POOL_ID}`;
+      
+      // Gerar política IAM necessária
+      const requiredPolicy = {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": requiredPermissions,
+            "Resource": userPoolArn
+          }
+        ]
+      };
+      
+      res.json({
+        success: true,
+        awsUser,
+        userPoolArn,
+        permissionResults,
+        requiredPermissions,
+        requiredPolicy,
+        instructions: {
+          step1: "Acesse o AWS Console → IAM → Users → UsuarioBedrock",
+          step2: "Clique em 'Add permissions' → 'Attach policies directly'",
+          step3: "Clique em 'Create policy' e cole a política JSON fornecida",
+          step4: "Nomeie a política como 'CognitoFullAccess_IAverse' e crie",
+          step5: "Anexe a política ao usuário UsuarioBedrock",
+          step6: "Teste novamente os endpoints após aplicar as permissões"
+        }
+      });
+    } catch (error) {
+      console.error('❌ [PERMISSIONS] Erro ao verificar permissões:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Erro ao verificar permissões AWS',
+        details: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
   // Endpoint completo para listar usuários AWS Cognito como aparecem no dashboard
   app.get('/api/debug-cognito-users', async (req: Request, res: Response) => {
     try {
