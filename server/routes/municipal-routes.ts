@@ -27,8 +27,8 @@ export function registerMunicipalRoutes(app: Express) {
         companyId: users.companyId,
         contractId: users.contractId,
         email: users.email,
-        firstName: users.firstName,
-        lastName: users.lastName,
+        firstName: users.first_name,
+        lastName: users.last_name,
       })
       .from(users)
       .where(eq(users.id, userId));
@@ -239,8 +239,8 @@ export function registerMunicipalRoutes(app: Express) {
             try {
               const [director] = await db
                 .select({ 
-                  firstName: users.firstName, 
-                  lastName: users.lastName, 
+                  firstName: users.first_name, 
+                  lastName: users.last_name, 
                   email: users.email 
                 })
                 .from(users)
@@ -384,10 +384,10 @@ export function registerMunicipalRoutes(app: Express) {
           const [newDirector] = await db
             .insert(users)
             .values({
-              firstName: directorData.firstName,
-              lastName: directorData.lastName,
+              first_name: directorData.firstName,
+              last_name: directorData.lastName,
               email: directorData.email,
-              role: 'diretor',
+              role: 'school_director',
               cognitoUserId: cognitoResult.username,
               cognitoGroup: 'Diretores',
               cognitoStatus: 'CONFIRMED',
@@ -421,7 +421,7 @@ export function registerMunicipalRoutes(app: Express) {
           .where(and(
             eq(users.id, parseInt(existingDirectorId)),
             eq(users.companyId, manager.companyId),
-            eq(users.role, 'diretor')
+            eq(users.role, 'school_director')
           ));
 
         if (!existingDirector) {
@@ -773,8 +773,8 @@ export function registerMunicipalRoutes(app: Express) {
           phone: municipalManagers.phone,
           totalLicenses: municipalManagers.totalLicenses,
           usedLicenses: municipalManagers.usedLicenses,
-          firstName: users.firstName,
-          lastName: users.lastName,
+          firstName: users.first_name,
+          lastName: users.last_name,
           email: users.email,
         })
         .from(municipalManagers)
@@ -805,8 +805,8 @@ export function registerMunicipalRoutes(app: Express) {
       const directorsData = await db
         .select({
           id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
+          firstName: users.first_name,
+          lastName: users.last_name,
           email: users.email,
           role: users.role,
           companyId: users.companyId,
@@ -1016,8 +1016,8 @@ export function registerMunicipalRoutes(app: Express) {
         .select({
           id: users.id,
           email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
+          firstName: users.first_name,
+          lastName: users.last_name,
           companyId: users.companyId,
           contractId: users.contractId,
           status: users.status,
@@ -1108,8 +1108,8 @@ export function registerMunicipalRoutes(app: Express) {
         directorsInfo = await db
           .select({
             id: users.id,
-            firstName: users.firstName,
-            lastName: users.lastName,
+            firstName: users.first_name,
+            lastName: users.last_name,
             email: users.email,
           })
           .from(users)
@@ -1423,8 +1423,8 @@ export function registerMunicipalRoutes(app: Express) {
       // Atualizar dados do diretor
       const [updatedDirector] = await db.update(users)
         .set({
-          firstName,
-          lastName,
+          first_name: firstName,
+          last_name: lastName,
           email,
           contractId: contractId ? contractId : null,
           updatedAt: new Date().toISOString()
