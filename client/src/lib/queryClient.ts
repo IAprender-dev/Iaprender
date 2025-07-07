@@ -34,6 +34,7 @@ export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async
   }
   
   try {
+    console.log('Making request to:', endpoint, 'with method: GET');
     const response = await apiRequest(
       'GET', 
       endpoint, 
