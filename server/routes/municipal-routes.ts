@@ -1087,7 +1087,7 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Buscar informações dos contratos e diretores
       const contractIds = [...new Set(schoolsList.map(s => s.contractId).filter(id => id !== null))] as number[];
-      const directorIds = [...new Set(schoolsList.map(s => s.directorId).filter(id => id !== null))] as number[];
+      const directorIds = [...new Set(schoolsList.map(s => s.directorUserId).filter(id => id !== null))] as number[];
 
       let contractsInfo: any[] = [];
       let directorsInfo: any[] = [];
@@ -1124,11 +1124,11 @@ export function registerMunicipalRoutes(app: Express) {
         contractStatus: school.contractId 
           ? contractsInfo.find(c => c.id === school.contractId)?.status || 'unknown'
           : 'none',
-        directorName: school.directorId 
-          ? `${directorsInfo.find(d => d.id === school.directorId)?.firstName || ''} ${directorsInfo.find(d => d.id === school.directorId)?.lastName || ''}`.trim() || 'Diretor não encontrado'
+        directorName: school.directorUserId 
+          ? `${directorsInfo.find(d => d.id === school.directorUserId)?.firstName || ''} ${directorsInfo.find(d => d.id === school.directorUserId)?.lastName || ''}`.trim() || 'Diretor não encontrado'
           : null,
-        directorEmail: school.directorId 
-          ? directorsInfo.find(d => d.id === school.directorId)?.email || null
+        directorEmail: school.directorUserId 
+          ? directorsInfo.find(d => d.id === school.directorUserId)?.email || null
           : null,
       }));
 
@@ -1204,6 +1204,16 @@ export function registerMunicipalRoutes(app: Express) {
         }
       }
 
+      // Buscar municipalManagerId do usuário logado
+      const [municipalManager] = await db
+        .select({ id: municipalManagers.id })
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+
+      if (!municipalManager) {
+        return res.status(400).json({ error: 'Municipal manager not found for current user' });
+      }
+
       // Criar a escola
       const [newSchool] = await db
         .insert(municipalSchools)
@@ -1211,7 +1221,7 @@ export function registerMunicipalRoutes(app: Express) {
           name,
           inep: inep || null,
           cnpj: cnpj || null,
-          companyId: userCompany.companyId,
+          municipalManagerId: municipalManager.id,
           contractId,
           address,
           neighborhood: neighborhood || null,
@@ -1227,7 +1237,7 @@ export function registerMunicipalRoutes(app: Express) {
           zone: zone || 'urbana',
           type: type || 'municipal',
           status: 'active',
-          directorId: existingDirectorId || null,
+          directorUserId: existingDirectorId || null,
         })
         .returning();
 
