@@ -326,7 +326,7 @@ export default function GestorDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <Link href="/municipal/schools">
+                    <Link href="/municipal/schools/new">
                       <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-200">
                         <PlusCircle className="h-6 w-6" />
                         <span className="text-sm">Nova Escola</span>
