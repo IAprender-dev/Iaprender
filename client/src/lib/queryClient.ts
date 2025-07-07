@@ -9,6 +9,11 @@ export const apiRequest = async (
   data?: any, 
   options: RequestInit = {}
 ) => {
+  // Garantir que endpoint seja uma string válida
+  if (typeof endpoint !== 'string') {
+    throw new Error('Endpoint deve ser uma string');
+  }
+  
   const url = endpoint.startsWith('http') ? endpoint : endpoint;
   const opts: RequestInit = {
     method,
