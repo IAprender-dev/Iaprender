@@ -9,12 +9,7 @@ export const apiRequest = async (
   data?: any, 
   options: RequestInit = {}
 ) => {
-  // Garantir que endpoint seja uma string válida
-  if (typeof endpoint !== 'string') {
-    throw new Error('Endpoint deve ser uma string');
-  }
-  
-  const url = endpoint.startsWith('http') ? endpoint : endpoint;
+  const url = endpoint;
   const opts: RequestInit = {
     method,
     headers: {
@@ -31,9 +26,10 @@ export const apiRequest = async (
 
 export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async (context) => {
   const { queryKey, signal } = context;
-  const [endpoint] = queryKey;
+  const endpoint = Array.isArray(queryKey) ? queryKey[0] : queryKey;
   
   if (typeof endpoint !== 'string') {
+    console.error('Query key error:', { queryKey, endpoint, type: typeof endpoint });
     throw new Error('Query key must start with a string endpoint');
   }
   
