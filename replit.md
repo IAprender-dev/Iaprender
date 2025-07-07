@@ -143,6 +143,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 7, 2025: 🔧 EM PROGRESSO - Correção de erro JavaScript "fetch method" no queryClient.ts
+  - ✅ Identificado erro: "'/api/municipal/schools' is not a valid HTTP method" no fetch
+  - ✅ Reescrita da função apiRequest com estrutura mais limpa
+  - ✅ Adicionados logs detalhados para debugging do fetch
+  - ⚠️ Ainda investigando origem exata do erro de parâmetros no fetch
+  - 🔄 Sistema de autenticação funcionando normalmente
+  - 🔄 APIs do servidor retornando dados corretamente (contratos, diretores, estatísticas)
 - July 6, 2025: ✅ CONCLUÍDO - AWS Cognito UI Customization - CSS Simplificado Compatível
   - ✅ Criada página de autenticação personalizada /cognito-auth com design idêntico à página /auth
   - ✅ Desenvolvido CSS personalizado compatível com restrições do AWS Cognito (sem pseudo-elementos)

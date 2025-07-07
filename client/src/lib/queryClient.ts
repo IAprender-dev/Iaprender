@@ -9,27 +9,41 @@ export const apiRequest = async (
   data?: any, 
   options: RequestInit = {}
 ) => {
-  const fetchOptions: RequestInit = {
-    method: method,
-    credentials: 'include',
-    headers: {
-      ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
-      ...(options.headers || {}),
-    },
-    signal: options.signal,
-  };
-
+  // Limpar completamente as opções para evitar conflitos
+  const cleanOptions: RequestInit = {};
+  cleanOptions.method = method;
+  cleanOptions.credentials = 'include';
+  cleanOptions.headers = {};
+  
+  if (method !== 'GET') {
+    (cleanOptions.headers as Record<string, string>)['Content-Type'] = 'application/json';
+  }
+  
+  if (options.signal) {
+    cleanOptions.signal = options.signal;
+  }
+  
   if (data && method !== 'GET') {
-    fetchOptions.body = JSON.stringify(data);
+    cleanOptions.body = JSON.stringify(data);
   }
 
-  console.log('Fazendo request:', { endpoint, method, fetchOptions });
-  return fetch(endpoint, fetchOptions);
+  console.log('🔄 Fazendo fetch:', { url: endpoint, options: cleanOptions });
+  
+  try {
+    const response = await fetch(endpoint, cleanOptions);
+    console.log('✅ Fetch success:', { status: response.status, url: response.url });
+    return response;
+  } catch (error) {
+    console.error('❌ Fetch error:', error);
+    throw error;
+  }
 };
 
 export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async (context) => {
   const { queryKey, signal } = context;
   const endpoint = Array.isArray(queryKey) ? queryKey[0] : queryKey;
+  
+  console.log('getQueryFn called with:', { queryKey, endpoint, signal });
   
   if (typeof endpoint !== 'string') {
     console.error('Query key error:', { queryKey, endpoint, type: typeof endpoint });
@@ -37,7 +51,7 @@ export const getQueryFn = (options: QueryFnOptions = {}): QueryFunction => async
   }
   
   try {
-    console.log('Making request to:', endpoint, 'with method: GET');
+    console.log('Calling apiRequest with:', { method: 'GET', endpoint });
     const response = await apiRequest(
       'GET', 
       endpoint, 
