@@ -7207,14 +7207,18 @@ Estrutura JSON obrigatória:
         return res.status(403).json({ error: 'Acesso restrito a gestores municipais' });
       }
 
-      // Buscar contratos ativos da empresa do gestor que ainda não estão sendo usados por escolas
+      console.log(`🔍 [CONTRACTS] Gestor municipal ID: ${user.id}, Company ID: ${user.companyId}`);
+
+      // Buscar contratos ativos da empresa do gestor
       const availableContracts = await db.select({
         id: contracts.id,
         name: contracts.name,
+        description: contracts.description,
         status: contracts.status,
         maxUsers: contracts.totalLicenses,
         startDate: contracts.startDate,
         endDate: contracts.endDate,
+        companyId: contracts.companyId,
         usedBySchools: sql<number>`(
           SELECT COUNT(*) FROM ${schools} 
           WHERE ${schools.contractId} = ${contracts.id} AND ${schools.isActive} = true
@@ -7227,10 +7231,11 @@ Estrutura JSON obrigatória:
       ))
       .orderBy(contracts.name);
 
-      // Filtrar contratos que ainda não estão sendo usados por escolas ativas
-      const filteredContracts = availableContracts.filter(contract => contract.usedBySchools === 0);
+      console.log(`🔍 [CONTRACTS] Contratos encontrados: ${availableContracts.length}`);
+      console.log(`🔍 [CONTRACTS] Contratos detalhes:`, availableContracts);
 
-      res.json({ contracts: filteredContracts });
+      // Retornar todos os contratos ativos da empresa (não filtrar por uso)
+      res.json({ contracts: availableContracts });
     } catch (error) {
       console.error('Error fetching available contracts:', error);
       res.status(500).json({ error: 'Erro ao buscar contratos disponíveis' });
