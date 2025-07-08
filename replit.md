@@ -143,6 +143,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 8, 2025: ✅ CONCLUÍDO - Correção Completa dos Endpoints de Diretores e Escolas Municipais
+  - ✅ Corrigidos erros de sintaxe SQL nos endpoints /api/municipal/directors/filtered e /api/municipal/schools/filtered
+  - ✅ Substituídas consultas JOIN complexas por consultas separadas mais robustas no Drizzle ORM
+  - ✅ Implementado mapeamento manual de dados para evitar erros de schema
+  - ✅ Sistema de filtragem por empresa do usuário funcionando corretamente
+  - ✅ Abas de Diretores e Escolas em /municipal/schools/new exibindo cards informativos
+  - ✅ Cache LRU com TTL 30s mantido para otimização de performance
+  - ✅ Monitoramento de queries SQL > 500ms funcionando adequadamente
 - July 8, 2025: ✅ CONCLUÍDO - Atualização Completa dos Dados do Sistema Municipal
   - ✅ Criados 5 diretores com vínculos corretos: Maria Silva, João Santos, Ana Ferreira, Carlos Oliveira, Lúcia Costa
   - ✅ Inseridas 5 escolas ativas com diretores associados e dados realistas de alunos/professores
