@@ -47,6 +47,7 @@ import MunicipalDataManagement from "@/pages/municipal/MunicipalDataManagement";
 import SchoolManagement from "@/pages/municipal/SchoolManagement";
 import SchoolManagementNew from "@/pages/municipal/SchoolManagementNew";
 import PerformanceDashboard from "@/pages/performance/PerformanceDashboard";
+import MunicipalContractManagement from "@/pages/municipal/ContractManagement";
 import SchoolDirectorDashboard from "@/pages/school/SchoolDirectorDashboard";
 
 import NoticiasPodcasts from "@/pages/teacher/NoticiasPodcasts";
@@ -176,6 +177,7 @@ function Router() {
       <Route path="/gestor/dashboard" component={GestorDashboard} />
       <Route path="/municipal/data-management" component={MunicipalDataManagement} />
       <Route path="/municipal/schools/new" component={SchoolManagementNew} />
+      <Route path="/municipal/contracts" component={MunicipalContractManagement} />
       <Route path="/performance" component={PerformanceDashboard} />
       <Route path="/municipal/schools" component={SchoolManagement} />
       

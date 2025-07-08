@@ -332,6 +332,12 @@ export default function GestorDashboard() {
                         <span className="text-sm">Nova Escola</span>
                       </Button>
                     </Link>
+                    <Link href="/municipal/contracts">
+                      <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition-all duration-200">
+                        <FileText className="h-6 w-6" />
+                        <span className="text-sm">Contratos</span>
+                      </Button>
+                    </Link>
                     <Link href="/admin/user-management">
                       <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
                         <Eye className="h-6 w-6" />

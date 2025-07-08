@@ -1,7 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts } from '../../shared/schema';
-import { eq, and, count, sum, isNull, or, inArray } from 'drizzle-orm';
+import { eq, and, count, sum, isNull, or, inArray, isNotNull } from 'drizzle-orm';
 import { performanceMonitor, performanceMiddleware } from '../utils/performance-monitor';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';
@@ -1059,7 +1059,10 @@ export function registerMunicipalRoutes(app: Express) {
         .leftJoin(contracts, eq(users.contractId, contracts.id))
         .where(and(
           eq(users.companyId, userCompanyId),
-          eq(users.role, 'school_director')
+          eq(users.role, 'school_director'),
+          isNotNull(users.first_name),
+          isNotNull(users.last_name),
+          isNotNull(users.email)
         ))
         .limit(30);
 
@@ -1785,6 +1788,199 @@ export function registerMunicipalRoutes(app: Express) {
     } catch (error) {
       console.error('Error clearing cache:', error);
       res.status(500).json({ error: 'Failed to clear cache' });
+    }
+  });
+
+  // PATCH /api/municipal/contracts/:id - Editar contrato
+  app.patch('/api/municipal/contracts/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const contractId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      console.log('🔧 [CONTRACT_EDIT] Editing contract:', contractId, 'Data:', updateData);
+
+      // Verificar se o usuário tem acesso ao contrato através da empresa
+      const userCompany = await getUserCompany(userId);
+      if (!userCompany) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+
+      // Validar se o contrato pertence à empresa do usuário
+      const [existingContract] = await db
+        .select()
+        .from(contracts)
+        .where(and(
+          eq(contracts.id, contractId),
+          eq(contracts.companyId, userCompany.companyId)
+        ));
+
+      if (!existingContract) {
+        return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
+      }
+
+      // Atualizar o contrato
+      const [updatedContract] = await db
+        .update(contracts)
+        .set({
+          name: updateData.name || existingContract.name,
+          status: updateData.status || existingContract.status,
+          totalLicenses: updateData.totalLicenses || existingContract.totalLicenses,
+          maxTeachers: updateData.maxTeachers || existingContract.maxTeachers,
+          startDate: updateData.startDate || existingContract.startDate,
+          endDate: updateData.endDate || existingContract.endDate,
+          value: updateData.value || existingContract.value,
+          description: updateData.description || existingContract.description,
+        })
+        .where(eq(contracts.id, contractId))
+        .returning();
+
+      // Invalidar caches
+      CacheManager.invalidateUserCache(userId);
+      CacheManager.invalidateCompanyCache(userCompany.companyId);
+
+      console.log('✅ [CONTRACT_EDIT] Contrato atualizado:', updatedContract.id);
+
+      res.json({
+        success: true,
+        message: 'Contrato atualizado com sucesso',
+        contract: updatedContract
+      });
+    } catch (error) {
+      console.error('Error updating contract:', error);
+      res.status(500).json({ success: false, error: 'Erro ao atualizar contrato' });
+    }
+  });
+
+  // PATCH /api/municipal/directors/:id - Editar diretor
+  app.patch('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const directorId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      console.log('🔧 [DIRECTOR_EDIT] Editing director:', directorId, 'Data:', updateData);
+
+      // Verificar acesso através da empresa
+      const userCompany = await getUserCompany(userId);
+      if (!userCompany) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+
+      // Validar se o diretor pertence à mesma empresa
+      const [existingDirector] = await db
+        .select()
+        .from(users)
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, userCompany.companyId),
+          eq(users.role, 'school_director')
+        ));
+
+      if (!existingDirector) {
+        return res.status(404).json({ success: false, message: 'Diretor não encontrado' });
+      }
+
+      // Atualizar dados do diretor
+      const [updatedDirector] = await db
+        .update(users)
+        .set({
+          first_name: updateData.firstName || existingDirector.first_name,
+          last_name: updateData.lastName || existingDirector.last_name,
+          email: updateData.email || existingDirector.email,
+          contractId: updateData.contractId || existingDirector.contractId,
+        })
+        .where(eq(users.id, directorId))
+        .returning();
+
+      // Invalidar caches
+      CacheManager.invalidateUserCache(userId);
+      CacheManager.invalidateCompanyCache(userCompany.companyId);
+
+      console.log('✅ [DIRECTOR_EDIT] Diretor atualizado:', updatedDirector.id);
+
+      res.json({
+        success: true,
+        message: 'Diretor atualizado com sucesso',
+        director: updatedDirector
+      });
+    } catch (error) {
+      console.error('Error updating director:', error);
+      res.status(500).json({ success: false, error: 'Erro ao atualizar diretor' });
+    }
+  });
+
+  // GET /api/municipal/contracts/:id - Buscar contrato específico
+  app.get('/api/municipal/contracts/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const contractId = parseInt(req.params.id);
+
+      const userCompany = await getUserCompany(userId);
+      if (!userCompany) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+
+      const [contract] = await db
+        .select()
+        .from(contracts)
+        .where(and(
+          eq(contracts.id, contractId),
+          eq(contracts.companyId, userCompany.companyId)
+        ));
+
+      if (!contract) {
+        return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
+      }
+
+      res.json({ success: true, contract });
+    } catch (error) {
+      console.error('Error fetching contract:', error);
+      res.status(500).json({ success: false, error: 'Erro ao buscar contrato' });
+    }
+  });
+
+  // GET /api/municipal/directors/:id - Buscar diretor específico
+  app.get('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const directorId = parseInt(req.params.id);
+
+      const userCompany = await getUserCompany(userId);
+      if (!userCompany) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+      }
+
+      const [director] = await db
+        .select({
+          id: users.id,
+          firstName: users.first_name,
+          lastName: users.last_name,
+          email: users.email,
+          role: users.role,
+          companyId: users.companyId,
+          contractId: users.contractId,
+          contractName: contracts.name,
+          contractStatus: contracts.status,
+          cognitoGroup: users.cognitoGroup,
+          createdAt: users.created_at
+        })
+        .from(users)
+        .leftJoin(contracts, eq(users.contractId, contracts.id))
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, userCompany.companyId),
+          eq(users.role, 'school_director')
+        ));
+
+      if (!director) {
+        return res.status(404).json({ success: false, message: 'Diretor não encontrado' });
+      }
+
+      res.json({ success: true, director });
+    } catch (error) {
+      console.error('Error fetching director:', error);
+      res.status(500).json({ success: false, error: 'Erro ao buscar diretor' });
     }
   });
 
