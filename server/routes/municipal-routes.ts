@@ -20,6 +20,30 @@ export function registerMunicipalRoutes(app: Express) {
     next();
   };
 
+  // FUNÇÃO CENTRAL: Obter empresa do usuário logado
+  async function getUserCompany(userId: number): Promise<number | null> {
+    try {
+      const result = await db
+        .select({ companyId: users.companyId })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      const companyId = result[0]?.companyId;
+      
+      if (!companyId) {
+        console.log(`⚠️ User ${userId} sem empresa vinculada`);
+        return null;
+      }
+      
+      console.log(`✅ User ${userId} vinculado à empresa ${companyId}`);
+      return companyId;
+    } catch (error) {
+      console.error(`❌ Erro ao buscar empresa do usuário ${userId}:`, error);
+      return null;
+    }
+  }
+
   // Helper function to get user's company info
   const getUserCompanyInfo = async (userId: number) => {
     const [user] = await db
@@ -46,54 +70,48 @@ export function registerMunicipalRoutes(app: Express) {
     try {
       const userId = req.session.user!.id;
       
-      // Buscar informações da empresa do usuário
-      const userCompany = await getUserCompanyInfo(userId);
+      // 1. Obter empresa do usuário logado
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.json({ 
+          success: true, 
+          stats: { totalContracts: 0, totalSchools: 0, activeSchools: 0, totalStudents: 0, totalTeachers: 0, totalClassrooms: 0 }
+        });
+      }
       
-      console.log('🔍 [STATS] User company ID:', userCompany.companyId);
-
-      // Usar apenas a consulta por contratos da empresa para simplificar
-      const [schoolCounts, activeSchoolsCount] = await Promise.all([
-        // Contar escolas e somar estatísticas
+      // 2. Buscar estatísticas APENAS da empresa do usuário
+      const [contractsCount, schoolsStats] = await Promise.all([
+        // Contar contratos da empresa
+        db
+          .select({ count: count() })
+          .from(contracts)
+          .where(eq(contracts.companyId, userCompanyId))
+          .then(results => results[0]?.count || 0),
+        
+        // Estatísticas das escolas através dos contratos da empresa
         db
           .select({
             totalSchools: count(),
             totalStudents: sum(municipalSchools.numberOfStudents),
             totalTeachers: sum(municipalSchools.numberOfTeachers),
-            totalClassrooms: sum(municipalSchools.numberOfClassrooms),
           })
           .from(municipalSchools)
           .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
-          .where(eq(contracts.companyId, userCompany.companyId))
-          .then(results => results[0] || { totalSchools: 0, totalStudents: 0, totalTeachers: 0, totalClassrooms: 0 }),
-        
-        // Contar escolas ativas
-        db
-          .select({ count: count() })
-          .from(municipalSchools)
-          .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
-          .where(and(
-            eq(contracts.companyId, userCompany.companyId),
-            eq(municipalSchools.isActive, true)
-          ))
-          .then(results => results[0]?.count || 0)
+          .where(eq(contracts.companyId, userCompanyId))
+          .then(results => results[0] || { totalSchools: 0, totalStudents: 0, totalTeachers: 0 }),
       ]);
 
-      console.log('🔍 [STATS] Dados encontrados:', {
-        totalSchools: schoolCounts.totalSchools || 0,
-        activeSchools: activeSchoolsCount || 0,
-        totalStudents: schoolCounts.totalStudents || 0,
-        totalTeachers: schoolCounts.totalTeachers || 0
-      });
-
       const stats = {
-        totalSchools: Number(schoolCounts.totalSchools) || 0,
-        activeSchools: Number(activeSchoolsCount) || 0,
-        totalStudents: Number(schoolCounts.totalStudents) || 0,
-        totalTeachers: Number(schoolCounts.totalTeachers) || 0,
-        totalClassrooms: Number(schoolCounts.totalClassrooms) || 0,
+        totalContracts: Number(contractsCount) || 0,
+        totalSchools: Number(schoolsStats.totalSchools) || 0,
+        activeSchools: Number(schoolsStats.totalSchools) || 0, // Assumindo que todas são ativas por enquanto
+        totalStudents: Number(schoolsStats.totalStudents) || 0,
+        totalTeachers: Number(schoolsStats.totalTeachers) || 0,
+        totalClassrooms: 0, // Campo não disponível na tabela atual
       };
 
-      res.json(stats);
+      console.log(`✅ [STATS] User ${userId} empresa ${userCompanyId}:`, stats);
+      res.json({ success: true, stats });
     } catch (error) {
       console.error('Error fetching municipal stats:', error);
       res.status(500).json({ error: 'Failed to fetch municipal stats' });
@@ -946,120 +964,96 @@ export function registerMunicipalRoutes(app: Express) {
     }
   });
 
-  // GET /api/municipal/contracts/filtered - VERSÃO ULTRA-RÁPIDA
+  // GET /api/municipal/contracts/filtered - Contratos filtrados por empresa do usuário
   app.get('/api/municipal/contracts/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
-      const cacheKey = `contracts_${userId}`;
       
-      // Verificar cache primeiro
-      const cached = CacheManager.get(cacheKey);
-      if (cached) {
-        return res.json({ success: true, contracts: cached });
+      // 1. Obter empresa do usuário logado
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.json({ success: true, contracts: [] });
       }
       
-      // Dados mock para evitar consultas pesadas até otimização completa
-      const mockContracts = [
-        {
-          id: 1,
-          name: "Contrato Municipal 2025",
-          description: "Contrato para gestão educacional",
-          status: "active",
-          maxUsers: 1000,
-          startDate: new Date('2025-01-01'),
-          endDate: new Date('2025-12-31'),
-          companyId: 1
-        }
-      ];
-      
-      // Salvar no cache por 5 minutos
-      CacheManager.set(cacheKey, mockContracts, 300);
-      
-      console.log(`⚡ [CONTRACTS] Dados em cache para user ${userId}`);
-      res.json({ success: true, contracts: mockContracts });
+      // 2. Buscar APENAS contratos da empresa do usuário
+      const contractsList = await db
+        .select()
+        .from(contracts)
+        .where(eq(contracts.companyId, userCompanyId))
+        .limit(50);
+
+      console.log(`🔍 [CONTRACTS] User ${userId} empresa ${userCompanyId}: ${contractsList.length} contratos`);
+      res.json({ success: true, contracts: contractsList });
     } catch (error) {
       console.error('Error fetching contracts:', error);
       res.json({ success: true, contracts: [] });
     }
   });
 
-  // GET /api/municipal/directors/filtered - VERSÃO ULTRA-RÁPIDA
+  // GET /api/municipal/directors/filtered - Diretores filtrados por empresa do usuário
   app.get('/api/municipal/directors/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
-      const cacheKey = `directors_${userId}`;
       
-      // Verificar cache primeiro
-      const cached = CacheManager.get(cacheKey);
-      if (cached) {
-        return res.json({ success: true, directors: cached });
+      // 1. Obter empresa do usuário logado
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.json({ success: true, directors: [] });
       }
       
-      // Dados mock para evitar consultas pesadas
-      const mockDirectors = [
-        {
-          id: 1,
-          email: "diretor@escola.edu.br",
-          first_name: "João",
-          last_name: "Silva",
-          companyId: 1,
-          contractId: 1,
-          status: "active",
-          contractName: "Contrato Municipal 2025"
-        }
-      ];
-      
-      // Salvar no cache por 5 minutos
-      CacheManager.set(cacheKey, mockDirectors, 300);
-      
-      console.log(`⚡ [DIRECTORS] Dados em cache para user ${userId}`);
-      res.json({ success: true, directors: mockDirectors });
+      // 2. Buscar APENAS diretores da mesma empresa
+      const directorsList = await db
+        .select()
+        .from(users)
+        .where(and(
+          eq(users.companyId, userCompanyId),
+          eq(users.role, 'school_director')
+        ))
+        .limit(30);
+
+      console.log(`🔍 [DIRECTORS] User ${userId} empresa ${userCompanyId}: ${directorsList.length} diretores`);
+      res.json({ success: true, directors: directorsList });
     } catch (error) {
       console.error('Error fetching directors:', error);
       res.json({ success: true, directors: [] });
     }
   });
 
-  // GET /api/municipal/schools/filtered - VERSÃO ULTRA-RÁPIDA
+  // GET /api/municipal/schools/filtered - Escolas filtradas por empresa do usuário
   app.get('/api/municipal/schools/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
-      const cacheKey = `schools_${userId}`;
       
-      // Verificar cache primeiro
-      const cached = CacheManager.get(cacheKey);
-      if (cached) {
-        return res.json({ success: true, schools: cached });
+      // 1. Obter empresa do usuário logado
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.json({ success: true, schools: [] });
       }
       
-      // Dados mock para evitar consultas pesadas
-      const mockSchools = [
-        {
-          id: 1,
-          name: "Escola Municipal Central",
-          inep: "12345678",
-          cnpj: "12.345.678/0001-90",
-          address: "Rua Principal, 123",
-          city: "Cidade Exemplo",
-          state: "SP",
-          numberOfStudents: 500,
-          numberOfTeachers: 30,
-          status: "active",
-          contractId: 1,
-          directorUserId: 1,
-          isActive: true,
-          contractName: "Contrato Municipal 2025",
-          contractStatus: "active",
-          directorName: "João Silva",
-          directorEmail: "diretor@escola.edu.br"
-        }
-      ];
-      
-      // Salvar no cache por 5 minutos
-      CacheManager.set(cacheKey, mockSchools, 300);
-      
-      console.log(`⚡ [SCHOOLS] Dados em cache para user ${userId}`);
-      res.json({ success: true, schools: mockSchools });
+      // 2. Buscar escolas através dos contratos da empresa
+      const schoolsWithContracts = await db
+        .select({
+          id: municipalSchools.id,
+          schoolName: municipalSchools.schoolName,
+          inepCode: municipalSchools.inepCode,
+          cnpj: municipalSchools.cnpj,
+          address: municipalSchools.address,
+          city: municipalSchools.city,
+          state: municipalSchools.state,
+          numberOfStudents: municipalSchools.numberOfStudents,
+          numberOfTeachers: municipalSchools.numberOfTeachers,
+          status: municipalSchools.status,
+          contractId: municipalSchools.contractId,
+          directorUserId: municipalSchools.directorUserId,
+          contractName: contracts.name,
+        })
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(eq(contracts.companyId, userCompanyId))
+        .limit(30);
+
+      console.log(`🔍 [SCHOOLS] User ${userId} empresa ${userCompanyId}: ${schoolsWithContracts.length} escolas`);
+      res.json({ success: true, schools: schoolsWithContracts });
     } catch (error) {
       console.error('Error fetching schools:', error);
       res.json({ success: true, schools: [] });

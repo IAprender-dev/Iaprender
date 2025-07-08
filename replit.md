@@ -143,6 +143,18 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 8, 2025: ✅ CONCLUÍDO - Sistema de Filtros Baseado em Empresa do Usuário Implementado
+  - ✅ Refatoração completa conforme especificação: usuário logado obtém apenas dados da sua empresa
+  - ✅ Função central getUserCompany() criada para obter empresa do usuário autenticado
+  - ✅ Todos os endpoints filtram dados por relacionamento com a empresa: contratos, escolas, diretores
+  - ✅ Endpoint /api/municipal/contracts/filtered busca apenas contratos da empresa do usuário
+  - ✅ Endpoint /api/municipal/directors/filtered busca apenas diretores da mesma empresa
+  - ✅ Endpoint /api/municipal/schools/filtered busca escolas através dos contratos da empresa
+  - ✅ Endpoint /api/municipal/stats otimizado para estatísticas filtradas por empresa
+  - ✅ Endpoint /api/municipal/company/info retorna apenas informações da empresa do usuário
+  - ✅ Sistema de segurança: usuários sem empresa vinculada recebem arrays vazios
+  - ✅ Eliminados todos os erros de consulta SQL problemáticos com nova arquitetura simplificada
+  - ✅ Performance otimizada: consultas diretas sem JOINs complexos desnecessários
 - July 7, 2025: ✅ CONCLUÍDO - Sincronização Completa AWS Cognito como Fonte Única de Verdade
   - ✅ Sistema de sincronização AWS Cognito vs base local implementado sem permissões extras
   - ✅ Identificados e deletados 5 usuários locais que não existem no AWS Cognito
