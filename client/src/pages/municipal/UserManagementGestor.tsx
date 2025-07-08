@@ -60,15 +60,15 @@ const UserManagementGestor = () => {
 
   // Queries
   const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/admin/users/list'],
+    queryKey: ['/api/municipal/users/list'],
   });
 
   const { data: companiesData } = useQuery({
-    queryKey: ['/api/admin/companies'],
+    queryKey: ['/api/municipal/users/companies'],
   });
 
   const { data: contractsData } = useQuery({
-    queryKey: ['/api/admin/companies', selectedCompany, 'contracts'],
+    queryKey: ['/api/municipal/users/contracts', selectedCompany],
     enabled: !!selectedCompany,
   });
 
@@ -87,7 +87,7 @@ const UserManagementGestor = () => {
   // Create user mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      const response = await apiRequest('/api/admin/cognito/users', {
+      const response = await apiRequest('/api/municipal/users/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
@@ -105,7 +105,7 @@ const UserManagementGestor = () => {
         title: "Usuário criado com sucesso!",
         description: `${data.user.firstName} foi criado e pode acessar a plataforma.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/users/list'] });
       setIsCreateDialogOpen(false);
       resetForm();
     },
