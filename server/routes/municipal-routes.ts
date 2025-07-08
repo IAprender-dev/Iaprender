@@ -1040,34 +1040,52 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, directors: [] });
       }
       
-      // 2. Buscar APENAS diretores da mesma empresa COM informações do contrato
+      // 2. Buscar APENAS diretores da mesma empresa
       const directorsList = await db
-        .select()
+        .select({
+          id: users.id,
+          firstName: users.first_name,
+          lastName: users.last_name,
+          email: users.email,
+          role: users.role,
+          companyId: users.company_id,
+          contractId: users.contract_id,
+          cognitoGroup: users.cognito_group,
+          createdAt: users.created_at
+        })
         .from(users)
-        .leftJoin(contracts, eq(users.contract_id, contracts.id))
         .where(and(
           eq(users.company_id, userCompanyId),
-          eq(users.cognito_group, 'Diretores'),
-          isNotNull(users.first_name),
-          isNotNull(users.last_name),
-          isNotNull(users.email)
+          eq(users.cognito_group, 'Diretores')
         ))
         .limit(30);
 
-      // Formatear os dados para o frontend
-      const formattedDirectors = directorsList.map(row => ({
-        id: row.users.id,
-        firstName: row.users.first_name,
-        lastName: row.users.last_name,
-        email: row.users.email,
-        role: row.users.role,
-        companyId: row.users.company_id,
-        contractId: row.users.contract_id,
-        contractName: row.contracts?.name || null,
-        contractStatus: row.contracts?.status || null,
-        cognitoGroup: row.users.cognito_group,
-        createdAt: row.users.created_at
-      }));
+      // Buscar informações dos contratos separadamente
+      const contractIds = directorsList
+        .map(director => director.contractId)
+        .filter(id => id !== null);
+
+      let contractsData = [];
+      if (contractIds.length > 0) {
+        contractsData = await db
+          .select({
+            id: contracts.id,
+            name: contracts.name,
+            status: contracts.status
+          })
+          .from(contracts)
+          .where(inArray(contracts.id, contractIds));
+      }
+
+      // Combinar dados
+      const formattedDirectors = directorsList.map(director => {
+        const contract = contractsData.find(c => c.id === director.contractId);
+        return {
+          ...director,
+          contractName: contract?.name || null,
+          contractStatus: contract?.status || null
+        };
+      });
 
       // Cache por 60 segundos
       CacheManager.set(cacheKey, formattedDirectors, 60);
@@ -1098,35 +1116,69 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, schools: cached });
       }
       
-      // 2. Buscar escolas através dos contratos da empresa
-      const schoolsData = await db
-        .select()
-        .from(schools)
-        .innerJoin(contracts, eq(schools.contract_id, contracts.id))
-        .leftJoin(users, eq(schools.director_id, users.id))
-        .where(eq(contracts.company_id, userCompanyId))
-        .limit(30);
+      // 2. Primeiro buscar contratos da empresa
+      const companyContracts = await db
+        .select({ id: contracts.id, name: contracts.name })
+        .from(contracts)
+        .where(eq(contracts.company_id, userCompanyId));
 
-      // Formatear os dados para o frontend
-      const schoolsWithContracts = schoolsData.map(row => ({
-        id: row.schools.id,
-        name: row.schools.name,
-        inep: row.schools.inep,
-        cnpj: row.schools.cnpj,
-        address: row.schools.address,
-        city: row.schools.city,
-        state: row.schools.state,
-        numberOfStudents: row.schools.number_of_students,
-        numberOfTeachers: row.schools.number_of_teachers,
-        numberOfClassrooms: row.schools.number_of_classrooms,
-        status: row.schools.status,
-        contractId: row.schools.contract_id,
-        directorId: row.schools.director_id,
-        contractName: row.contracts.name,
-        directorFirstName: row.users?.first_name || null,
-        directorLastName: row.users?.last_name || null,
-        directorEmail: row.users?.email || null,
-      }));
+      const contractIds = companyContracts.map(c => c.id);
+      
+      let schoolsWithContracts = [];
+      if (contractIds.length > 0) {
+        // 3. Buscar escolas desses contratos
+        const schoolsList = await db
+          .select({
+            id: schools.id,
+            name: schools.name,
+            inep: schools.inep,
+            cnpj: schools.cnpj,
+            address: schools.address,
+            city: schools.city,
+            state: schools.state,
+            numberOfStudents: schools.number_of_students,
+            numberOfTeachers: schools.number_of_teachers,
+            numberOfClassrooms: schools.number_of_classrooms,
+            status: schools.status,
+            contractId: schools.contract_id,
+            directorId: schools.director_id
+          })
+          .from(schools)
+          .where(inArray(schools.contract_id, contractIds))
+          .limit(30);
+
+        // 4. Buscar informações dos diretores
+        const directorIds = schoolsList
+          .map(school => school.directorId)
+          .filter(id => id !== null);
+
+        let directorsData = [];
+        if (directorIds.length > 0) {
+          directorsData = await db
+            .select({
+              id: users.id,
+              firstName: users.first_name,
+              lastName: users.last_name,
+              email: users.email
+            })
+            .from(users)
+            .where(inArray(users.id, directorIds));
+        }
+
+        // 5. Combinar dados
+        schoolsWithContracts = schoolsList.map(school => {
+          const contract = companyContracts.find(c => c.id === school.contractId);
+          const director = directorsData.find(d => d.id === school.directorId);
+          
+          return {
+            ...school,
+            contractName: contract?.name || null,
+            directorFirstName: director?.firstName || null,
+            directorLastName: director?.lastName || null,
+            directorEmail: director?.email || null
+          };
+        });
+      }
 
       // Cache por 60 segundos
       CacheManager.set(cacheKey, schoolsWithContracts, 60);
