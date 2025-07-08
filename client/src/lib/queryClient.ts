@@ -3,19 +3,39 @@ import { QueryClient, QueryFunction } from '@tanstack/react-query';
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 type QueryFnOptions = { on401?: 'throw' | 'returnNull' };
 
+// Função sobregregada para suportar ambos os formatos
 export const apiRequest = async (
-  method: HttpMethod, 
-  endpoint: string, 
-  data?: any, 
+  methodOrEndpoint: HttpMethod | string, 
+  endpointOrOptions?: string | RequestInit, 
+  dataOrOptions?: any, 
   options: RequestInit = {}
-) => {
+): Promise<any> => {
+  let method: HttpMethod;
+  let endpoint: string;
+  let data: any;
+  let requestOptions: RequestInit;
+
+  // Se o primeiro parâmetro é uma string que começa com '/', é um endpoint (formato antigo)
+  if (typeof methodOrEndpoint === 'string' && methodOrEndpoint.startsWith('/')) {
+    method = 'GET';
+    endpoint = methodOrEndpoint;
+    data = undefined;
+    requestOptions = (endpointOrOptions as RequestInit) || {};
+  } else {
+    // Formato novo com method explícito
+    method = methodOrEndpoint as HttpMethod;
+    endpoint = endpointOrOptions as string;
+    data = dataOrOptions;
+    requestOptions = options;
+  }
+  
   const requestConfig: RequestInit = {
     method,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
-    ...options
+    ...requestOptions
   };
   
   if (data && method !== 'GET') {
@@ -26,7 +46,13 @@ export const apiRequest = async (
   
   try {
     const response = await fetch(endpoint, requestConfig);
-    return response;
+    
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`${response.status}: ${errorText}`);
+    }
+    
+    return response.json();
   } catch (error) {
     console.error('🚨 API Request error:', error);
     throw error;
