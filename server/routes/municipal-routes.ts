@@ -2,6 +2,7 @@ import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts } from '../../shared/schema';
 import { eq, and, count, sum, isNull, or, inArray } from 'drizzle-orm';
+import { performanceMonitor, performanceMiddleware } from '../utils/performance-monitor';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';
 
@@ -991,38 +992,47 @@ export function registerMunicipalRoutes(app: Express) {
   });
 
   // GET /api/municipal/directors/filtered - Diretores filtrados por empresa do usuário
-  app.get('/api/municipal/directors/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
+  app.get('/api/municipal/directors/filtered', authenticateMunicipal, performanceMiddleware('directors-filtered'), async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
       
       // 1. Obter empresa do usuário logado
-      const userCompanyId = await getUserCompany(userId);
+      const userCompanyId = await performanceMonitor.monitorQuery(
+        'getUserCompany',
+        () => getUserCompany(userId),
+        '/api/municipal/directors/filtered'
+      );
+      
       if (!userCompanyId) {
         return res.json({ success: true, directors: [] });
       }
       
       // 2. Buscar APENAS diretores da mesma empresa COM informações do contrato
-      const directorsList = await db
-        .select({
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-          role: users.role,
-          companyId: users.companyId,
-          contractId: users.contractId,
-          contractName: contracts.name,
-          contractStatus: contracts.status,
-          cognitoGroup: users.cognitoGroup,
-          createdAt: users.createdAt
-        })
-        .from(users)
-        .leftJoin(contracts, eq(users.contractId, contracts.id))
-        .where(and(
-          eq(users.companyId, userCompanyId),
-          eq(users.role, 'school_director')
-        ))
-        .limit(30);
+      const directorsList = await performanceMonitor.monitorQuery(
+        'select directors with contracts',
+        () => db
+          .select({
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email,
+            role: users.role,
+            companyId: users.companyId,
+            contractId: users.contractId,
+            contractName: contracts.name,
+            contractStatus: contracts.status,
+            cognitoGroup: users.cognitoGroup,
+            createdAt: users.createdAt
+          })
+          .from(users)
+          .leftJoin(contracts, eq(users.contractId, contracts.id))
+          .where(and(
+            eq(users.companyId, userCompanyId),
+            eq(users.role, 'school_director')
+          ))
+          .limit(30),
+        '/api/municipal/directors/filtered'
+      );
 
       console.log(`🔍 [DIRECTORS] User ${userId} empresa ${userCompanyId}: ${directorsList.length} diretores`);
       res.json({ success: true, directors: directorsList });

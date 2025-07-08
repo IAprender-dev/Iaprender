@@ -60,6 +60,7 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 import * as adminRoutes from "./routes/admin-routes";
 import { registerMunicipalRoutes } from "./routes/municipal-routes";
+import { registerPerformanceRoutes } from "./routes/performance-routes";
 import { registerSchoolRoutes } from "./routes/school-routes";
 
 
@@ -4227,6 +4228,7 @@ Estrutura JSON obrigatória:
 
   // Register Municipal Manager Routes
   registerMunicipalRoutes(app);
+  registerPerformanceRoutes(app);
   registerSchoolRoutes(app);
 
   // ============= SISTEMA DE ONBOARDING =============
