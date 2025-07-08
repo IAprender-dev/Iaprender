@@ -1048,18 +1048,18 @@ export function registerMunicipalRoutes(app: Express) {
           lastName: users.last_name,
           email: users.email,
           role: users.role,
-          companyId: users.companyId,
-          contractId: users.contractId,
+          companyId: users.company_id,
+          contractId: users.contract_id,
           contractName: contracts.name,
           contractStatus: contracts.status,
-          cognitoGroup: users.cognitoGroup,
+          cognitoGroup: users.cognito_group,
           createdAt: users.created_at
         })
         .from(users)
-        .leftJoin(contracts, eq(users.contractId, contracts.id))
+        .leftJoin(contracts, eq(users.contract_id, contracts.id))
         .where(and(
-          eq(users.companyId, userCompanyId),
-          eq(users.role, 'school_director'),
+          eq(users.company_id, userCompanyId),
+          eq(users.cognito_group, 'Diretores'),
           isNotNull(users.first_name),
           isNotNull(users.last_name),
           isNotNull(users.email)
@@ -1098,30 +1098,28 @@ export function registerMunicipalRoutes(app: Express) {
       // 2. Buscar escolas através dos contratos da empresa
       const schoolsWithContracts = await db
         .select({
-          id: municipalSchools.id,
-          name: municipalSchools.schoolName,
-          schoolName: municipalSchools.schoolName,
-          inep: municipalSchools.inepCode,
-          inepCode: municipalSchools.inepCode,
-          cnpj: municipalSchools.cnpj,
-          address: municipalSchools.address,
-          neighborhood: municipalSchools.neighborhood,
-          city: municipalSchools.city,
-          state: municipalSchools.state,
-          zipCode: municipalSchools.zipCode,
-          phone: municipalSchools.phone,
-          email: municipalSchools.email,
-          numberOfStudents: municipalSchools.numberOfStudents,
-          numberOfTeachers: municipalSchools.numberOfTeachers,
-          numberOfClassrooms: municipalSchools.numberOfClassrooms,
-          status: municipalSchools.status,
-          contractId: municipalSchools.contractId,
-          directorUserId: municipalSchools.directorUserId,
+          id: schools.id,
+          name: schools.name,
+          inep: schools.inep,
+          cnpj: schools.cnpj,
+          address: schools.address,
+          city: schools.city,
+          state: schools.state,
+          numberOfStudents: schools.number_of_students,
+          numberOfTeachers: schools.number_of_teachers,
+          numberOfClassrooms: schools.number_of_classrooms,
+          status: schools.status,
+          contractId: schools.contract_id,
+          directorId: schools.director_id,
           contractName: contracts.name,
+          directorFirstName: users.first_name,
+          directorLastName: users.last_name,
+          directorEmail: users.email,
         })
-        .from(municipalSchools)
-        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
-        .where(eq(contracts.companyId, userCompanyId))
+        .from(schools)
+        .innerJoin(contracts, eq(schools.contract_id, contracts.id))
+        .leftJoin(users, eq(schools.director_id, users.id))
+        .where(eq(contracts.company_id, userCompanyId))
         .limit(30);
 
       // Cache por 60 segundos
@@ -1172,12 +1170,12 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Verificar se a escola pertence à empresa do usuário
       const schoolCheck = await db
-        .select({ contractId: municipalSchools.contractId })
-        .from(municipalSchools)
-        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .select({ contractId: schools.contract_id })
+        .from(schools)
+        .innerJoin(contracts, eq(schools.contract_id, contracts.id))
         .where(and(
-          eq(municipalSchools.id, schoolId),
-          eq(contracts.companyId, userCompanyId)
+          eq(schools.id, schoolId),
+          eq(contracts.company_id, userCompanyId)
         ))
         .limit(1);
 
@@ -1187,33 +1185,26 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Atualizar dados da escola
       const updateData: any = {
-        schoolName: name,
-        inepCode: inep,
+        name: name,
+        inep: inep,
         cnpj: cnpj,
         address: address,
-        neighborhood: neighborhood,
         city: city,
         state: state,
-        zipCode: zipCode,
-        phone: phone,
-        email: email,
-        numberOfStudents: numberOfStudents,
-        numberOfTeachers: numberOfTeachers,
-        numberOfClassrooms: numberOfClassrooms,
-        zone: zone,
-        type: type,
-        updatedAt: new Date(),
+        number_of_students: numberOfStudents,
+        number_of_teachers: numberOfTeachers,
+        number_of_classrooms: numberOfClassrooms,
+        updated_at: new Date(),
       };
 
       // Adicionar campos opcionais se fornecidos
-      if (contractId && contractId !== 'none') updateData.contractId = parseInt(contractId);
-      if (existingDirectorId && existingDirectorId !== 'none') updateData.directorUserId = parseInt(existingDirectorId);
-      if (foundationDate) updateData.foundationDate = new Date(foundationDate);
+      if (contractId && contractId !== 'none') updateData.contract_id = parseInt(contractId);
+      if (existingDirectorId && existingDirectorId !== 'none') updateData.director_id = parseInt(existingDirectorId);
 
       await db
-        .update(municipalSchools)
+        .update(schools)
         .set(updateData)
-        .where(eq(municipalSchools.id, schoolId));
+        .where(eq(schools.id, schoolId));
 
       console.log('✅ [UPDATE-SCHOOL] Escola atualizada:', schoolId);
       
@@ -1329,7 +1320,7 @@ export function registerMunicipalRoutes(app: Express) {
         .from(contracts)
         .where(and(
           eq(contracts.id, contractId),
-          eq(contracts.companyId, userCompany.companyId)
+          eq(contracts.company_id, userCompany.companyId)
         ));
 
       if (!contract) {
@@ -1343,8 +1334,8 @@ export function registerMunicipalRoutes(app: Express) {
           .from(users)
           .where(and(
             eq(users.id, existingDirectorId),
-            eq(users.companyId, userCompany.companyId),
-            eq(users.role, 'school_director')
+            eq(users.company_id, userCompany.companyId),
+            eq(users.cognito_group, 'Diretores')
           ));
 
         if (!director) {
@@ -1362,31 +1353,24 @@ export function registerMunicipalRoutes(app: Express) {
         return res.status(400).json({ error: 'Municipal manager not found for current user' });
       }
 
-      // Criar a escola
+      // Criar a escola na tabela schools padrão do sistema
       const [newSchool] = await db
-        .insert(municipalSchools)
+        .insert(schools)
         .values({
-          schoolName: name,
           name,
           inep: inep || null,
           cnpj: cnpj || null,
-          municipalManagerId: municipalManager.id,
-          contractId,
+          company_id: userCompany.companyId,
+          contract_id: contractId,
           address,
-          neighborhood: neighborhood || null,
           city: city || null,
           state: state || null,
-          zipCode: zipCode || null,
-          phone: phone || null,
-          email: email || null,
-          foundationDate: foundationDate ? new Date(foundationDate) : null,
-          numberOfClassrooms: numberOfClassrooms || 0,
-          numberOfStudents: numberOfStudents || 0,
-          numberOfTeachers: numberOfTeachers || 0,
-          zone: zone || 'urbana',
-          type: type || 'municipal',
+          number_of_students: numberOfStudents || 0,
+          number_of_teachers: numberOfTeachers || 0,
+          number_of_classrooms: numberOfClassrooms || 0,
           status: 'active',
-          directorUserId: existingDirectorId || null,
+          is_active: true,
+          director_id: existingDirectorId || null,
         })
         .returning();
 
