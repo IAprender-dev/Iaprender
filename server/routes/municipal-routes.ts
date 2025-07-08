@@ -388,26 +388,26 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, contracts: [] });
       }
 
-      // Buscar contratos APENAS da empresa do usuário
+      // Buscar contratos APENAS da empresa do usuário (consulta simplificada)
       const contractsData = await db
-        .select({
-          id: contracts.id,
-          schoolName: contracts.schoolName,
-          contractNumber: contracts.contractNumber,
-          startDate: contracts.startDate,
-          endDate: contracts.endDate,
-          tokensLimit: contracts.tokensLimit,
-          status: contracts.status,
-          companyId: contracts.companyId,
-          companyName: companies.name,
-        })
+        .select()
         .from(contracts)
-        .innerJoin(companies, eq(contracts.companyId, companies.id))
         .where(eq(contracts.companyId, userCompanyId));
+
+      // Buscar nome da empresa separadamente
+      const [companyInfo] = await db
+        .select({ name: companies.name })
+        .from(companies)
+        .where(eq(companies.id, userCompanyId));
+
+      const contractsWithCompany = contractsData.map(contract => ({
+        ...contract,
+        companyName: companyInfo?.name || 'N/A'
+      }));
 
       console.log(`✅ [CONTRACTS] User ${userId} empresa ${userCompanyId}: ${contractsData.length} contratos`);
       
-      res.json({ success: true, contracts: contractsData });
+      res.json({ success: true, contracts: contractsWithCompany });
 
     } catch (error) {
       console.error('❌ [CONTRACTS] Erro ao buscar contratos:', error);
@@ -430,19 +430,10 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, directors: [] });
       }
 
-      // Buscar diretores APENAS da empresa do usuário
+      // Buscar diretores APENAS da empresa do usuário (consulta simplificada)
       const directorsData = await db
-        .select({
-          id: users.id,
-          firstName: users.first_name,
-          lastName: users.last_name,
-          email: users.email,
-          cognitoStatus: users.cognito_status,
-          contractId: users.contractId,
-          contractName: contracts.schoolName,
-        })
+        .select()
         .from(users)
-        .leftJoin(contracts, eq(users.contractId, contracts.id))
         .where(
           and(
             eq(users.companyId, userCompanyId),
@@ -450,9 +441,33 @@ export function registerMunicipalRoutes(app: Express) {
           )
         );
 
+      // Buscar nomes dos contratos separadamente se necessário
+      const directorsWithContracts = await Promise.all(
+        directorsData.map(async (director) => {
+          let contractName = null;
+          if (director.contractId) {
+            const [contract] = await db
+              .select({ schoolName: contracts.schoolName })
+              .from(contracts)
+              .where(eq(contracts.id, director.contractId));
+            contractName = contract?.schoolName || null;
+          }
+          
+          return {
+            id: director.id,
+            firstName: director.first_name,
+            lastName: director.last_name,
+            email: director.email,
+            cognitoStatus: director.cognito_status,
+            contractId: director.contractId,
+            contractName
+          };
+        })
+      );
+
       console.log(`✅ [DIRECTORS] User ${userId} empresa ${userCompanyId}: ${directorsData.length} diretores`);
       
-      res.json({ success: true, directors: directorsData });
+      res.json({ success: true, directors: directorsWithContracts });
 
     } catch (error) {
       console.error('❌ [DIRECTORS] Erro ao buscar diretores:', error);
@@ -475,25 +490,48 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, schools: [] });
       }
 
-      // Buscar escolas APENAS através dos contratos da empresa do usuário
-      const schoolsData = await db
-        .select({
-          id: municipalSchools.id,
-          schoolName: municipalSchools.schoolName,
-          contractId: municipalSchools.contractId,
-          directorName: municipalSchools.directorName,
-          numberOfStudents: municipalSchools.numberOfStudents,
-          numberOfTeachers: municipalSchools.numberOfTeachers,
-          status: municipalSchools.status,
-          contractName: contracts.schoolName,
-        })
-        .from(municipalSchools)
-        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+      // Primeiro, buscar IDs dos contratos da empresa
+      const companyContracts = await db
+        .select({ id: contracts.id })
+        .from(contracts)
         .where(eq(contracts.companyId, userCompanyId));
+
+      const contractIds = companyContracts.map(c => c.id);
+      
+      if (contractIds.length === 0) {
+        return res.json({ success: true, schools: [] });
+      }
+
+      // Buscar escolas usando os IDs dos contratos
+      const schoolsData = await db
+        .select()
+        .from(municipalSchools)
+        .where(inArray(municipalSchools.contractId, contractIds));
+
+      // Buscar nomes dos contratos separadamente
+      const schoolsWithContracts = await Promise.all(
+        schoolsData.map(async (school) => {
+          const [contract] = await db
+            .select({ schoolName: contracts.schoolName })
+            .from(contracts)
+            .where(eq(contracts.id, school.contractId));
+          
+          return {
+            id: school.id,
+            schoolName: school.schoolName,
+            contractId: school.contractId,
+            directorName: school.directorName,
+            numberOfStudents: school.numberOfStudents,
+            numberOfTeachers: school.numberOfTeachers,
+            status: school.status,
+            contractName: contract?.schoolName || 'N/A'
+          };
+        })
+      );
 
       console.log(`✅ [SCHOOLS] User ${userId} empresa ${userCompanyId}: ${schoolsData.length} escolas`);
       
-      res.json({ success: true, schools: schoolsData });
+      res.json({ success: true, schools: schoolsWithContracts });
 
     } catch (error) {
       console.error('❌ [SCHOOLS] Erro ao buscar escolas:', error);
@@ -516,16 +554,9 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, company: null });
       }
 
-      // Buscar informações APENAS da empresa do usuário
+      // Buscar informações APENAS da empresa do usuário (consulta simplificada)
       const [companyInfo] = await db
-        .select({
-          id: companies.id,
-          name: companies.name,
-          cnpj: companies.cnpj,
-          email: companies.email,
-          phone: companies.phone,
-          address: companies.address,
-        })
+        .select()
         .from(companies)
         .where(eq(companies.id, userCompanyId));
 
