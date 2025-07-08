@@ -143,6 +143,15 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 8, 2025: ✅ CONCLUÍDO - Sistema Completo de Gestão Municipal Implementado
+  - ✅ Criadas páginas ContractManagement.tsx e UserManagementGestor.tsx para gestores municipais
+  - ✅ Visualização completa de contratos com estatísticas, filtros e cards detalhados
+  - ✅ Sistema de criação de gestores e diretores com validação hierárquica
+  - ✅ Interface de usuários ativos com abas (Ativos, Gestores, Diretores)
+  - ✅ Dashboard do gestor atualizado com 4 novos botões de ação rápida
+  - ✅ Integração completa com endpoints existentes e filtros por empresa
+  - ✅ Sistema permite: ver contratos, usuários ativos, cadastrar gestores e diretores
+  - ✅ Rotas /municipal/contracts e /municipal/users adicionadas ao sistema
 - July 8, 2025: ✅ CONCLUÍDO - Sistema de Filtros Baseado em Empresa do Usuário Implementado
   - ✅ Refatoração completa conforme especificação: usuário logado obtém apenas dados da sua empresa
   - ✅ Função central getUserCompany() criada para obter empresa do usuário autenticado

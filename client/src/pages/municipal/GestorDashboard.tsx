@@ -27,7 +27,8 @@ import {
   Zap,
   Target,
   Award,
-  Activity
+  Activity,
+  UserPlus
 } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { Link } from 'wouter';
@@ -326,21 +327,36 @@ export default function GestorDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <Link href="/municipal/schools">
-                      <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-200">
-                        <PlusCircle className="h-6 w-6" />
-                        <span className="text-sm">Nova Escola</span>
-                      </Button>
-                    </Link>
-                    <Link href="/admin/user-management">
-                      <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
-                        <Eye className="h-6 w-6" />
-                        <span className="text-sm">Ver Usuários</span>
-                      </Button>
-                    </Link>
-                    <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-200">
-                      <TrendingUp className="h-6 w-6" />
-                      <span className="text-sm">Relatórios</span>
+                    <Button 
+                      onClick={() => setLocation('/municipal/schools')}
+                      className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200"
+                    >
+                      <School className="h-6 w-6" />
+                      <span className="text-sm">Gestão de Escolas</span>
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => setLocation('/municipal/contracts')}
+                      className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
+                    >
+                      <FileText className="h-6 w-6" />
+                      <span className="text-sm">Meus Contratos</span>
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => setLocation('/municipal/users')}
+                      className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 transition-all duration-200"
+                    >
+                      <Users className="h-6 w-6" />
+                      <span className="text-sm">Usuários Ativos</span>
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => setLocation('/municipal/users')}
+                      className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
+                    >
+                      <UserPlus className="h-6 w-6" />
+                      <span className="text-sm">Criar Usuários</span>
                     </Button>
                   </div>
                 </CardContent>
