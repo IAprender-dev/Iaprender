@@ -17,12 +17,16 @@ import {
   DollarSign,
   Users,
   Building,
-  ArrowLeft
+  ArrowLeft,
+  Bell,
+  User
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import { useAuth } from '@/lib/AuthContext';
+import logoIAprender from '@assets/IAprender_1750262377399.png';
 
 interface Contract {
   id: number;
@@ -44,6 +48,7 @@ export default function ContractManagement() {
   const [editFormData, setEditFormData] = useState<Partial<Contract>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, logout } = useAuth();
 
   // Query para buscar contratos
   const { data: contractsData, isLoading, error } = useQuery<{ success: boolean; contracts: Contract[] }>({
@@ -155,71 +160,132 @@ export default function ContractManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation('/gestor/dashboard')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Voltar</span>
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Gestão de Contratos</h1>
-              <p className="text-gray-600 mt-1">Visualize e edite os contratos municipais</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header Principal */}
+      <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-200">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            {/* Botão Voltar e Logo */}
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLocation('/gestor/dashboard')}
+                className="flex items-center space-x-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Voltar</span>
+              </Button>
+              
+              <div className="flex items-center space-x-3">
+                <div className="bg-white rounded-lg p-2 shadow-sm">
+                  <img 
+                    src={logoIAprender} 
+                    alt="IAprender" 
+                    className="h-8 w-8 object-contain"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    IAprender
+                  </h1>
+                  <p className="text-sm text-gray-600">Gestão de Contratos</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Ações do Header */}
+            <div className="flex items-center space-x-2">
+              <Button variant="ghost" size="sm">
+                <Bell className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={logout}
+                className="flex items-center space-x-2"
+              >
+                <User className="h-4 w-4" />
+                <span className="hidden sm:inline">{user?.first_name || 'Usuário'}</span>
+              </Button>
             </div>
           </div>
         </div>
+      </header>
+
+      {/* Breadcrumb */}
+      <div className="bg-white/50 backdrop-blur-sm border-b border-gray-200">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-3">
+            <nav className="flex space-x-2 text-sm">
+              <span className="text-gray-500">Gestor Municipal</span>
+              <span className="text-gray-400">/</span>
+              <span className="text-blue-600 font-medium">Gestão de Contratos</span>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      {/* Conteúdo Principal */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Contratos</CardTitle>
-              <FileText className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-sm font-medium text-gray-700">Total de Contratos</CardTitle>
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <FileText className="h-4 w-4 text-blue-600" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{contractsData?.contracts?.length || 0}</div>
+              <div className="text-2xl font-bold text-gray-900">{contractsData?.contracts?.length || 0}</div>
+              <p className="text-xs text-gray-500 mt-1">Contratos registrados</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Contratos Ativos</CardTitle>
-              <Building className="h-4 w-4 text-green-600" />
+              <CardTitle className="text-sm font-medium text-gray-700">Contratos Ativos</CardTitle>
+              <div className="bg-green-100 p-2 rounded-lg">
+                <Building className="h-4 w-4 text-green-600" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900">
                 {contractsData?.contracts?.filter(c => c.status === 'active').length || 0}
               </div>
+              <p className="text-xs text-gray-500 mt-1">Em operação</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Licenças</CardTitle>
-              <Users className="h-4 w-4 text-purple-600" />
+              <CardTitle className="text-sm font-medium text-gray-700">Total de Licenças</CardTitle>
+              <div className="bg-purple-100 p-2 rounded-lg">
+                <Users className="h-4 w-4 text-purple-600" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900">
                 {contractsData?.contracts?.reduce((sum, c) => sum + (c.totalLicenses || 0), 0) || 0}
               </div>
+              <p className="text-xs text-gray-500 mt-1">Licenças disponíveis</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-sm shadow-lg border-0 hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
-              <DollarSign className="h-4 w-4 text-yellow-600" />
+              <CardTitle className="text-sm font-medium text-gray-700">Valor Total</CardTitle>
+              <div className="bg-emerald-100 p-2 rounded-lg">
+                <DollarSign className="h-4 w-4 text-emerald-600" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-gray-900">
                 {formatCurrency(contractsData?.contracts?.reduce((sum, c) => sum + (c.value || 0), 0) || 0)}
               </div>
+              <p className="text-xs text-gray-500 mt-1">Valor mensal</p>
             </CardContent>
           </Card>
         </div>
