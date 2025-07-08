@@ -18,8 +18,7 @@ import {
   Mail, 
   Calendar,
   ArrowLeft,
-  Bell,
-  User,
+
   Plus,
   Edit,
   Eye,
@@ -265,17 +264,13 @@ export default function SchoolManagementNew() {
 
             {/* Ações do Header */}
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={logout}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
               >
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">{user?.first_name || 'Usuário'}</span>
+                <span>Sair</span>
               </Button>
             </div>
           </div>

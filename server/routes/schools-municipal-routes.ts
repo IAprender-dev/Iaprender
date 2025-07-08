@@ -1,7 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { users, companies, contracts, municipalSchools } from '../../shared/schema';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';
 
@@ -138,7 +138,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
             contractId: school.contractId,
             contractName: contractInfo?.name || 'Sem contrato',
             contractStatus: contractInfo?.status || 'unknown',
-            companyName: 'Empresa Municipal', // Placeholder
+            companyName: 'Empresa Municipal',
             directorName: directorInfo ? `${directorInfo.firstName} ${directorInfo.lastName}` : null,
             directorEmail: directorInfo?.email || null,
           };
@@ -165,20 +165,20 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
         return res.json({ success: true, directors: [] });
       }
 
-      // Buscar diretores da empresa (grupo Diretores)
+      // Buscar diretores da empresa
       const directorsData = await db
         .select()
         .from(users)
-        .where(
-          and(
-            eq(users.companyId, companyId),
-            eq(users.cognitoGroup, 'Diretores')
-          )
-        );
+        .where(eq(users.companyId, companyId));
+
+      // Filtrar apenas diretores
+      const directorsFiltered = directorsData.filter(user => 
+        user.cognitoGroup === 'Diretores' || user.role === 'school_director'
+      );
 
       // Processar diretores com informações adicionais
       const directorsWithDetails = await Promise.all(
-        directorsData.map(async (director) => {
+        directorsFiltered.map(async (director) => {
           let contractInfo = null;
           let companyInfo = null;
 
@@ -275,14 +275,9 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
       const [contract] = await db
         .select()
         .from(contracts)
-        .where(
-          and(
-            eq(contracts.id, contractId),
-            eq(contracts.companyId, companyId)
-          )
-        );
+        .where(eq(contracts.id, contractId));
 
-      if (!contract) {
+      if (!contract || contract.companyId !== companyId) {
         return res.status(403).json({ 
           success: false, 
           error: 'Contrato não encontrado ou não autorizado' 
@@ -350,14 +345,9 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
       const [contract] = await db
         .select()
         .from(contracts)
-        .where(
-          and(
-            eq(contracts.id, contractId),
-            eq(contracts.companyId, companyId)
-          )
-        );
+        .where(eq(contracts.id, contractId));
 
-      if (!contract) {
+      if (!contract || contract.companyId !== companyId) {
         return res.status(403).json({ 
           success: false, 
           error: 'Contrato não encontrado ou não autorizado' 
