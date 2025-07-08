@@ -27,9 +27,6 @@ interface School {
   numberOfClassrooms: number;
   numberOfStudents: number;
   numberOfTeachers: number;
-  foundationDate?: string;
-  zone: string;
-  type: string;
   status: string;
   contractId: number;
   contractName: string;
@@ -66,9 +63,7 @@ interface FormData {
   numberOfClassrooms: number;
   numberOfStudents: number;
   numberOfTeachers: number;
-  foundationDate: string;
-  zone: string;
-  type: string;
+
   contractId: string;
   existingDirectorId: string;
 }
@@ -87,9 +82,7 @@ const initialFormData: FormData = {
   numberOfClassrooms: 0,
   numberOfStudents: 0,
   numberOfTeachers: 0,
-  foundationDate: '',
-  zone: 'urbana',
-  type: 'municipal',
+
   contractId: '',
   existingDirectorId: '',
 };
@@ -218,9 +211,18 @@ export default function SchoolManagement() {
       return;
     }
 
-    // Preparar dados para envio
+    // Preparar dados para envio (removendo campos opcionais vazios)
     const schoolData = {
-      ...formData,
+      name: formData.name,
+      inep: formData.inep || undefined,
+      cnpj: formData.cnpj || undefined,
+      address: formData.address,
+      neighborhood: formData.neighborhood || undefined,
+      city: formData.city || undefined,
+      state: formData.state || undefined,
+      zipCode: formData.zipCode || undefined,
+      phone: formData.phone || undefined,
+      email: formData.email || undefined,
       numberOfClassrooms: Number(formData.numberOfClassrooms),
       numberOfStudents: Number(formData.numberOfStudents),
       numberOfTeachers: Number(formData.numberOfTeachers),
@@ -252,9 +254,6 @@ export default function SchoolManagement() {
       numberOfClassrooms: school.numberOfClassrooms,
       numberOfStudents: school.numberOfStudents,
       numberOfTeachers: school.numberOfTeachers,
-      foundationDate: school.foundationDate || '',
-      zone: school.zone,
-      type: school.type,
       contractId: school.contractId.toString(),
       existingDirectorId: school.directorUserId?.toString() || 'none',
     });
@@ -524,33 +523,7 @@ export default function SchoolManagement() {
                   />
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="type">Tipo de Escola</Label>
-                  <Select value={formData.type} onValueChange={(value) => handleInputChange('type', value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="municipal">Municipal</SelectItem>
-                      <SelectItem value="estadual">Estadual</SelectItem>
-                      <SelectItem value="federal">Federal</SelectItem>
-                      <SelectItem value="particular">Particular</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="zone">Zona</Label>
-                  <Select value={formData.zone} onValueChange={(value) => handleInputChange('zone', value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="urbana">Urbana</SelectItem>
-                      <SelectItem value="rural">Rural</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+
               </div>
             </div>
 
@@ -675,16 +648,7 @@ export default function SchoolManagement() {
                   />
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="foundationDate">Data de Fundação</Label>
-                <Input
-                  id="foundationDate"
-                  type="date"
-                  value={formData.foundationDate}
-                  onChange={(e) => handleInputChange('foundationDate', e.target.value)}
-                />
-              </div>
+
             </div>
 
             {/* Diretor */}
