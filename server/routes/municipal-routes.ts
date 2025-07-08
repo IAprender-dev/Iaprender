@@ -1155,6 +1155,65 @@ export function registerMunicipalRoutes(app: Express) {
     }
   });
 
+  // PATCH /api/municipal/directors/:id - Editar diretor existente
+  app.patch('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const directorId = parseInt(req.params.id);
+      const userId = req.session.user!.id;
+      
+      // Verificar se usuário tem acesso à empresa
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
+      }
+
+      const { firstName, lastName, email, contractId } = req.body;
+
+      console.log('🔧 [UPDATE-DIRECTOR] Dados recebidos:', { directorId, firstName, lastName, email, contractId });
+
+      // Verificar se o diretor pertence à mesma empresa do usuário
+      const directorCheck = await db
+        .select({ companyId: users.companyId })
+        .from(users)
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, userCompanyId),
+          eq(users.role, 'school_director')
+        ))
+        .limit(1);
+
+      if (!directorCheck.length) {
+        return res.status(404).json({ error: 'Diretor não encontrado ou acesso negado' });
+      }
+
+      // Atualizar dados do diretor
+      const updateData: any = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        updatedAt: new Date(),
+      };
+
+      // Adicionar contractId se fornecido
+      if (contractId && contractId !== 'none') {
+        updateData.contractId = parseInt(contractId);
+      } else {
+        updateData.contractId = null;
+      }
+
+      await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, directorId));
+
+      console.log('✅ [UPDATE-DIRECTOR] Diretor atualizado:', directorId);
+      res.json({ success: true, message: 'Diretor atualizado com sucesso' });
+    } catch (error) {
+      console.error('Error updating director:', error);
+      res.status(500).json({ error: 'Erro ao atualizar diretor' });
+    }
+  });
+
   // POST /api/municipal/schools/create - Criar nova escola
   app.post('/api/municipal/schools/create', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
