@@ -48,271 +48,22 @@ export function registerMunicipalRoutes(app: Express) {
   const getUserCompanyInfo = async (userId: number) => {
     const [user] = await db
       .select({
+        id: users.id,
         companyId: users.companyId,
-        role: users.role,
+        contractId: users.contractId,
+        email: users.email,
+        firstName: users.first_name,
+        lastName: users.last_name,
       })
       .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
+      .where(eq(users.id, userId));
+    
     if (!user || !user.companyId) {
-      throw new Error(`User ${userId} não possui empresa vinculada`);
+      throw new Error("User company not found or not associated with a company");
     }
-
+    
     return user;
   };
-
-  // ============= MUNICIPAL USERS ENDPOINTS =============
-  
-  // GET /api/municipal/users/list - Listar usuários da empresa do gestor
-  app.get('/api/municipal/users/list', authenticateMunicipal, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.user!.id;
-      
-      // Buscar informações da empresa do usuário
-      const userCompany = await getUserCompanyInfo(userId);
-      console.log('🔍 [USERS-LIST] User company ID:', userCompany.companyId);
-
-      // Buscar todos os usuários da mesma empresa
-      const usersData = await db
-        .select({
-          id: users.id,
-          firstName: users.first_name,
-          lastName: users.last_name,
-          email: users.email,
-          role: users.role,
-          cognitoGroup: users.cognito_group,
-          cognitoStatus: users.cognito_status,
-          companyId: users.companyId,
-          contractId: users.contractId,
-          companyName: companies.name,
-          contractName: contracts.schoolName,
-        })
-        .from(users)
-        .leftJoin(companies, eq(users.companyId, companies.id))
-        .leftJoin(contracts, eq(users.contractId, contracts.id))
-        .where(eq(users.companyId, userCompany.companyId));
-
-      console.log('✅ [USERS-LIST] Encontrados', usersData.length, 'usuários da empresa', userCompany.companyId);
-
-      // Estatísticas
-      const stats = {
-        total: usersData.length,
-        active: usersData.filter(u => u.cognitoStatus === 'CONFIRMED').length,
-        gestores: usersData.filter(u => u.cognitoGroup === 'Gestores').length,
-        diretores: usersData.filter(u => u.cognitoGroup === 'Diretores').length,
-        professores: usersData.filter(u => u.cognitoGroup === 'Professores').length,
-        alunos: usersData.filter(u => u.cognitoGroup === 'Alunos').length,
-      };
-
-      res.json({
-        success: true,
-        users: usersData,
-        statistics: stats
-      });
-
-    } catch (error) {
-      console.error('❌ [USERS-LIST] Erro ao buscar usuários:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch users', 
-        error: error.message 
-      });
-    }
-  });
-
-  // GET /api/municipal/users/companies - Listar empresas para formulário
-  app.get('/api/municipal/users/companies', authenticateMunicipal, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.user!.id;
-      
-      // Buscar informações da empresa do usuário
-      const userCompany = await getUserCompanyInfo(userId);
-
-      // Retornar apenas a empresa do usuário logado
-      const companiesData = await db
-        .select({
-          id: companies.id,
-          name: companies.name,
-        })
-        .from(companies)
-        .where(eq(companies.id, userCompany.companyId));
-
-      console.log('✅ [COMPANIES] Retornando empresa do usuário:', companiesData);
-
-      res.json({
-        success: true,
-        companies: companiesData
-      });
-
-    } catch (error) {
-      console.error('❌ [COMPANIES] Erro ao buscar empresas:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch companies', 
-        error: error.message 
-      });
-    }
-  });
-
-  // GET /api/municipal/users/contracts/:companyId - Listar contratos de uma empresa
-  app.get('/api/municipal/users/contracts/:companyId', authenticateMunicipal, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.user!.id;
-      const companyId = parseInt(req.params.companyId);
-      
-      // Verificar se o usuário tem acesso a esta empresa
-      const userCompany = await getUserCompanyInfo(userId);
-      if (userCompany.companyId !== companyId) {
-        return res.status(403).json({ 
-          success: false,
-          message: 'Access denied to this company' 
-        });
-      }
-
-      // Buscar contratos da empresa
-      const contractsData = await db
-        .select({
-          id: contracts.id,
-          schoolName: contracts.schoolName,
-          contractNumber: contracts.contractNumber,
-        })
-        .from(contracts)
-        .where(eq(contracts.companyId, companyId));
-
-      console.log('✅ [CONTRACTS] Encontrados', contractsData.length, 'contratos para empresa', companyId);
-
-      res.json({
-        success: true,
-        contracts: contractsData
-      });
-
-    } catch (error) {
-      console.error('❌ [CONTRACTS] Erro ao buscar contratos:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch contracts', 
-        error: error.message 
-      });
-    }
-  });
-
-  // POST /api/municipal/users/create - Criar novo usuário
-  app.post('/api/municipal/users/create', authenticateMunicipal, async (req: Request, res: Response) => {
-    try {
-      const userId = req.session.user!.id;
-      const { firstName, lastName, email, userType, companyId, contractId } = req.body;
-      
-      console.log('🚀 [CREATE-USER] Dados recebidos:', { firstName, lastName, email, userType, companyId, contractId });
-
-      // Validações básicas
-      if (!firstName || !lastName || !email || !userType) {
-        return res.status(400).json({
-          success: false,
-          message: 'Nome, sobrenome, email e tipo de usuário são obrigatórios'
-        });
-      }
-
-      // Verificar se o usuário tem acesso à empresa
-      const userCompany = await getUserCompanyInfo(userId);
-      if (companyId && parseInt(companyId) !== userCompany.companyId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Acesso negado a esta empresa'
-        });
-      }
-
-      // Validações específicas por tipo
-      if (userType === 'Gestores' && !companyId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Gestores devem estar vinculados a uma empresa'
-        });
-      }
-
-      if (userType === 'Diretores' && (!companyId || !contractId)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Diretores devem estar vinculados a uma empresa e contrato específico'
-        });
-      }
-
-      // Criar usuário no AWS Cognito
-      const cognitoService = new CognitoService();
-      const cognitoResult = await cognitoService.createUser({
-        email,
-        firstName,
-        lastName,
-        group: userType,
-        companyId: companyId ? parseInt(companyId) : undefined,
-        contractId: contractId ? parseInt(contractId) : undefined,
-      });
-
-      console.log('✅ [CREATE-USER] Usuário criado no Cognito:', cognitoResult.username);
-
-      // Determinar role local baseado no grupo
-      let localRole = 'student';
-      switch (userType) {
-        case 'Admin':
-          localRole = 'admin';
-          break;
-        case 'Gestores':
-          localRole = 'municipal_manager';
-          break;
-        case 'Diretores':
-          localRole = 'school_director';
-          break;
-        case 'Professores':
-          localRole = 'teacher';
-          break;
-        case 'Alunos':
-          localRole = 'student';
-          break;
-      }
-
-      // Criar usuário na base local
-      const [newUser] = await db
-        .insert(users)
-        .values({
-          username: cognitoResult.username,
-          email: email,
-          first_name: firstName,
-          last_name: lastName,
-          role: localRole,
-          cognito_user_id: cognitoResult.username,
-          cognito_group: userType,
-          cognito_status: 'FORCE_CHANGE_PASSWORD',
-          companyId: companyId ? parseInt(companyId) : null,
-          contractId: contractId ? parseInt(contractId) : null,
-        })
-        .returning();
-
-      console.log('✅ [CREATE-USER] Usuário criado na base local:', newUser.id);
-
-      res.json({
-        success: true,
-        message: 'Usuário criado com sucesso',
-        user: {
-          id: newUser.id,
-          firstName: newUser.first_name,
-          lastName: newUser.last_name,
-          email: newUser.email,
-          cognitoUsername: cognitoResult.username,
-          firstAccessUrl: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/first-access?token=${cognitoResult.username}`
-        }
-      });
-
-    } catch (error) {
-      console.error('❌ [CREATE-USER] Erro ao criar usuário:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao criar usuário',
-        error: error.message
-      });
-    }
-  });
-
-  // ============= OTHER MUNICIPAL ENDPOINTS =============
 
   // GET /api/municipal/stats - Estatísticas do município (OTIMIZADO)
   app.get('/api/municipal/stats', authenticateMunicipal, async (req: Request, res: Response) => {
@@ -347,232 +98,1427 @@ export function registerMunicipalRoutes(app: Express) {
           .from(municipalSchools)
           .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
           .where(eq(contracts.companyId, userCompanyId))
-          .then(results => results[0] || { totalSchools: 0, totalStudents: 0, totalTeachers: 0 })
+          .then(results => results[0] || { totalSchools: 0, totalStudents: 0, totalTeachers: 0 }),
       ]);
 
       const stats = {
-        totalContracts: contractsCount,
-        totalSchools: schoolsStats.totalSchools || 0,
-        activeSchools: schoolsStats.totalSchools || 0, // Assumindo que todas estão ativas
-        totalStudents: schoolsStats.totalStudents || 0,
-        totalTeachers: schoolsStats.totalTeachers || 0,
-        totalClassrooms: 0, // Campo não disponível ainda
-        companyRevenue: contractsCount * 15000, // Estimativa baseada nos contratos
-        monthlyTokenUsage: Math.floor(Math.random() * 50000) + 25000, // Placeholder
-        activeUsers: (schoolsStats.totalStudents || 0) + (schoolsStats.totalTeachers || 0),
-        contractsManaged: contractsCount
+        totalContracts: Number(contractsCount) || 0,
+        totalSchools: Number(schoolsStats.totalSchools) || 0,
+        activeSchools: Number(schoolsStats.totalSchools) || 0, // Assumindo que todas são ativas por enquanto
+        totalStudents: Number(schoolsStats.totalStudents) || 0,
+        totalTeachers: Number(schoolsStats.totalTeachers) || 0,
+        totalClassrooms: 0, // Campo não disponível na tabela atual
       };
 
       console.log(`✅ [STATS] User ${userId} empresa ${userCompanyId}:`, stats);
-      
       res.json({ success: true, stats });
-
     } catch (error) {
-      console.error('❌ [STATS] Erro ao buscar estatísticas:', error);
+      console.error('Error fetching municipal stats:', error);
+      res.status(500).json({ error: 'Failed to fetch municipal stats' });
+    }
+  });
+
+  // GET /api/municipal/schools/stats - Estatísticas específicas de escolas
+  app.get('/api/municipal/schools/stats', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      
+      // Buscar o gestor municipal (usando estrutura atual)
+      const [manager] = await db
+        .select({
+          id: municipalManagers.id,
+          municipalityName: municipalManagers.municipalityName,
+        })
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Estatísticas detalhadas das escolas (usando campos disponíveis)
+      const [schoolStats] = await db
+        .select({
+          totalSchools: count(),
+          totalStudents: sum(municipalSchools.numberOfStudents),
+          totalTeachers: sum(municipalSchools.numberOfTeachers),
+          totalClassrooms: sum(municipalSchools.numberOfClassrooms),
+        })
+        .from(municipalSchools)
+        .where(eq(municipalSchools.municipalManagerId, manager.id));
+
+      const [activeSchools] = await db
+        .select({ count: count() })
+        .from(municipalSchools)
+        .where(and(
+          eq(municipalSchools.municipalManagerId, manager.id),
+          eq(municipalSchools.status, 'active')
+        ));
+
+      const stats = {
+        totalSchools: schoolStats?.totalSchools || 0,
+        activeSchools: activeSchools?.count || 0,
+        totalStudents: schoolStats?.totalStudents || 0,
+        totalTeachers: schoolStats?.totalTeachers || 0,
+        totalClassrooms: schoolStats?.totalClassrooms || 0,
+      };
+
+      res.json({ stats });
+    } catch (error) {
+      console.error('Error fetching school stats:', error);
+      res.status(500).json({ error: 'Failed to fetch school stats' });
+    }
+  });
+
+  // GET /api/municipal/schools - Listar escolas do município
+  app.get('/api/municipal/schools', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      
+      // Buscar o gestor municipal (usando estrutura atual)
+      const [manager] = await db
+        .select({
+          id: municipalManagers.id,
+          municipalityName: municipalManagers.municipalityName,
+        })
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      console.log('🔍 [SCHOOLS] Gestor municipal ID:', manager.id, ', Municipality:', manager.municipalityName);
+
+      // Buscar escolas do gestor usando apenas campos básicos
+      const schoolsData = await db
+        .select()
+        .from(municipalSchools)
+        .where(eq(municipalSchools.municipalManagerId, manager.id));
+
+      console.log('🔍 [SCHOOLS] Escolas encontradas:', schoolsData.length);
+
+      // Para cada escola, buscar informações adicionais (contrato e diretor)
+      const schoolsWithDetails = await Promise.all(
+        schoolsData.map(async (school) => {
+          let contractInfo = null;
+          let directorInfo = null;
+
+          // Buscar contrato se existir contract_id
+          if (school.contractId) {
+            try {
+              const [contract] = await db
+                .select({ 
+                  name: contracts.name, 
+                  description: contracts.description,
+                  status: contracts.status 
+                })
+                .from(contracts)
+                .where(eq(contracts.id, school.contractId));
+              contractInfo = contract;
+            } catch (err) {
+              console.log('Contract not found for school:', school.id);
+            }
+          }
+
+          // Buscar diretor se existir director_user_id
+          if (school.directorUserId) {
+            try {
+              const [director] = await db
+                .select({ 
+                  firstName: users.first_name, 
+                  lastName: users.last_name, 
+                  email: users.email 
+                })
+                .from(users)
+                .where(eq(users.id, school.directorUserId));
+              directorInfo = director;
+            } catch (err) {
+              console.log('Director not found for school:', school.id);
+            }
+          }
+
+          return {
+            id: school.id,
+            // Unificar campos com fallback para campos antigos
+            name: school.name || school.schoolName,
+            inep: school.inep || school.inepCode,
+            cnpj: school.cnpj,
+            address: school.address,
+            neighborhood: school.neighborhood,
+            city: school.city,
+            state: school.state,
+            zipCode: school.zipCode,
+            phone: school.phone,
+            email: school.email || school.principalEmail,
+            foundationDate: school.foundationDate,
+            numberOfClassrooms: school.numberOfClassrooms,
+            numberOfStudents: school.numberOfStudents,
+            numberOfTeachers: school.numberOfTeachers,
+            zone: school.zone,
+            type: school.type,
+            status: school.status,
+            isActive: school.isActive,
+            createdAt: school.createdAt,
+            // Campos antigos como fallback
+            schoolCode: school.schoolCode,
+            principalName: school.principalName,
+            principalEmail: school.principalEmail,
+            allocatedLicenses: school.allocatedLicenses,
+            usedLicenses: school.usedLicenses,
+            // Informações do contrato
+            contractId: school.contractId,
+            contractName: contractInfo?.name,
+            contractDescription: contractInfo?.description,
+            contractStatus: contractInfo?.status,
+            // Informações do diretor
+            directorUserId: school.directorUserId,
+            directorName: directorInfo ? `${directorInfo.firstName} ${directorInfo.lastName}` : school.principalName,
+            directorEmail: directorInfo?.email || school.principalEmail,
+          };
+        })
+      );
+
+      res.json({ schools: schoolsWithDetails });
+    } catch (error) {
+      console.error('Error fetching schools:', error);
+      res.status(500).json({ error: 'Failed to fetch schools' });
+    }
+  });
+
+  // POST /api/municipal/schools - Cadastrar nova escola com designação de diretor
+  app.post('/api/municipal/schools', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const { 
+        name,
+        inep,
+        cnpj,
+        contractId,
+        address,
+        neighborhood,
+        city,
+        state,
+        zipCode,
+        phone,
+        email,
+        foundationDate,
+        numberOfClassrooms,
+        numberOfStudents,
+        numberOfTeachers,
+        zone,
+        type,
+        directorOption,
+        existingDirectorId,
+        directorData
+      } = req.body;
+
+      console.log('🔧 [SCHOOL_CREATE] Iniciando criação de escola:', { name, contractId, directorOption });
+
+      // Buscar o gestor municipal
+      const [manager] = await db
+        .select({
+          id: municipalManagers.id,
+          companyId: municipalManagers.companyId,
+        })
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      console.log('🔧 [SCHOOL_CREATE] Gestor encontrado:', manager);
+
+      // Validar contrato
+      const [contract] = await db
+        .select()
+        .from(contracts)
+        .where(and(
+          eq(contracts.id, parseInt(contractId)),
+          eq(contracts.companyId, manager.companyId)
+        ));
+
+      if (!contract) {
+        return res.status(400).json({ message: "Invalid contract for this company" });
+      }
+
+      console.log('🔧 [SCHOOL_CREATE] Contrato validado:', contract.name);
+
+      let directorUserId = null;
+      let directorResult = null;
+
+      // Processar designação do diretor
+      if (directorOption === 'create' && directorData?.firstName && directorData?.lastName && directorData?.email) {
+        console.log('🔧 [SCHOOL_CREATE] Criando novo diretor:', directorData);
+        
+        try {
+          // Criar diretor no AWS Cognito
+          const cognitoService = new CognitoService();
+          const cognitoResult = await cognitoService.createUser({
+            email: directorData.email,
+            temporaryPassword: 'TempPass123!',
+            group: 'Diretores',
+            firstName: directorData.firstName,
+            lastName: directorData.lastName,
+            companyId: manager.companyId.toString(),
+            contractId: contractId.toString()
+          });
+
+          console.log('🔧 [SCHOOL_CREATE] Diretor criado no Cognito:', cognitoResult.username);
+
+          // Criar usuário local
+          const [newDirector] = await db
+            .insert(users)
+            .values({
+              first_name: directorData.firstName,
+              last_name: directorData.lastName,
+              email: directorData.email,
+              role: 'school_director',
+              cognitoUserId: cognitoResult.username,
+              cognitoGroup: 'Diretores',
+              cognitoStatus: 'CONFIRMED',
+              companyId: manager.companyId,
+              contractId: parseInt(contractId),
+            })
+            .returning();
+
+          directorUserId = newDirector.id;
+          directorResult = {
+            type: 'created',
+            director: newDirector,
+            cognitoUsername: cognitoResult.username
+          };
+
+          console.log('🔧 [SCHOOL_CREATE] Diretor criado localmente:', newDirector.id);
+        } catch (error) {
+          console.error('❌ [SCHOOL_CREATE] Erro ao criar diretor:', error);
+          return res.status(500).json({ 
+            message: "Failed to create director", 
+            error: error.message 
+          });
+        }
+      } else if (directorOption === 'existing' && existingDirectorId) {
+        console.log('🔧 [SCHOOL_CREATE] Vinculando diretor existente:', existingDirectorId);
+        
+        // Verificar se diretor existe e pertence à empresa
+        const [existingDirector] = await db
+          .select()
+          .from(users)
+          .where(and(
+            eq(users.id, parseInt(existingDirectorId)),
+            eq(users.companyId, manager.companyId),
+            eq(users.role, 'school_director')
+          ));
+
+        if (!existingDirector) {
+          return res.status(400).json({ message: "Invalid director selection" });
+        }
+
+        // Atualizar contrato do diretor se necessário
+        if (existingDirector.contractId !== parseInt(contractId)) {
+          await db
+            .update(users)
+            .set({ 
+              contractId: parseInt(contractId),
+              updatedAt: new Date()
+            })
+            .where(eq(users.id, parseInt(existingDirectorId)));
+
+          console.log('🔧 [SCHOOL_CREATE] Contrato do diretor atualizado para:', contractId);
+        }
+
+        directorUserId = parseInt(existingDirectorId);
+        directorResult = {
+          type: 'linked',
+          director: existingDirector
+        };
+
+        console.log('🔧 [SCHOOL_CREATE] Diretor existente vinculado:', directorUserId);
+      }
+
+      // Criar nova escola
+      const [newSchool] = await db
+        .insert(municipalSchools)
+        .values({
+          name,
+          inep: inep || null,
+          cnpj: cnpj || null,
+          contractId: parseInt(contractId),
+          address,
+          neighborhood: neighborhood || null,
+          city,
+          state,
+          zipCode: zipCode || null,
+          phone: phone || null,
+          email: email || null,
+          foundationDate: foundationDate ? new Date(foundationDate) : null,
+          numberOfClassrooms: parseInt(numberOfClassrooms) || 0,
+          numberOfStudents: parseInt(numberOfStudents) || 0,
+          numberOfTeachers: parseInt(numberOfTeachers) || 0,
+          zone: zone || 'urban',
+          type: type || 'municipal',
+          directorUserId,
+          status: 'active',
+          isActive: true,
+        })
+        .returning();
+
+      console.log('🔧 [SCHOOL_CREATE] Escola criada com sucesso:', newSchool.id);
+
+      res.status(201).json({
+        school: newSchool,
+        director: directorResult,
+        message: `Escola "${newSchool.name}" criada com sucesso!`
+      });
+    } catch (error) {
+      console.error('❌ [SCHOOL_CREATE] Erro geral:', error);
       res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch stats', 
-        error: error.message 
+        error: 'Failed to create school',
+        details: error.message 
       });
     }
   });
 
-  // GET /api/municipal/contracts/filtered - Buscar contratos da empresa do usuário
+  // PATCH /api/municipal/schools/:id - Atualizar escola
+  app.patch('/api/municipal/schools/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const schoolId = parseInt(req.params.id);
+      const updates = req.body;
+
+      // Buscar o gestor municipal
+      const [manager] = await db
+        .select()
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Verificar se a escola pertence ao gestor
+      const [school] = await db
+        .select()
+        .from(municipalSchools)
+        .where(and(
+          eq(municipalSchools.id, schoolId),
+          eq(municipalSchools.municipalManagerId, manager.id)
+        ));
+
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Atualizar escola
+      const [updatedSchool] = await db
+        .update(municipalSchools)
+        .set({ 
+          ...updates, 
+          updatedAt: new Date() 
+        })
+        .where(eq(municipalSchools.id, schoolId))
+        .returning();
+
+      res.json(updatedSchool);
+    } catch (error) {
+      console.error('Error updating school:', error);
+      res.status(500).json({ error: 'Failed to update school' });
+    }
+  });
+
+  // POST /api/municipal/schools/transfer-licenses - Transferir licenças entre escolas
+  app.post('/api/municipal/schools/transfer-licenses', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const { sourceSchoolId, targetSchoolId, licenseCount } = req.body;
+
+      // Buscar o gestor municipal
+      const [manager] = await db
+        .select()
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Buscar escolas de origem e destino
+      const [sourceSchool] = await db
+        .select()
+        .from(municipalSchools)
+        .where(and(
+          eq(municipalSchools.id, sourceSchoolId),
+          eq(municipalSchools.municipalManagerId, manager.id)
+        ));
+
+      const [targetSchool] = await db
+        .select()
+        .from(municipalSchools)
+        .where(and(
+          eq(municipalSchools.id, targetSchoolId),
+          eq(municipalSchools.municipalManagerId, manager.id)
+        ));
+
+      if (!sourceSchool || !targetSchool) {
+        return res.status(404).json({ message: "Schools not found" });
+      }
+
+      // Verificar se a escola de origem tem licenças suficientes disponíveis
+      const availableLicenses = sourceSchool.allocatedLicenses - sourceSchool.usedLicenses;
+      if (licenseCount > availableLicenses) {
+        return res.status(400).json({ 
+          message: "Insufficient licenses available in source school" 
+        });
+      }
+
+      // Transferir licenças
+      await db
+        .update(municipalSchools)
+        .set({ 
+          allocatedLicenses: sourceSchool.allocatedLicenses - licenseCount,
+          updatedAt: new Date()
+        })
+        .where(eq(municipalSchools.id, sourceSchoolId));
+
+      await db
+        .update(municipalSchools)
+        .set({ 
+          allocatedLicenses: targetSchool.allocatedLicenses + licenseCount,
+          updatedAt: new Date()
+        })
+        .where(eq(municipalSchools.id, targetSchoolId));
+
+      res.json({ 
+        message: "Licenses transferred successfully",
+        transfer: {
+          from: sourceSchool.schoolName,
+          to: targetSchool.schoolName,
+          count: licenseCount
+        }
+      });
+    } catch (error) {
+      console.error('Error transferring licenses:', error);
+      res.status(500).json({ error: 'Failed to transfer licenses' });
+    }
+  });
+
+  // GET /api/municipal/policies - Listar políticas municipais
+  app.get('/api/municipal/policies', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      
+      // Buscar o gestor municipal
+      const [manager] = await db
+        .select()
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Buscar todas as políticas do município
+      const policies = await db
+        .select()
+        .from(municipalPolicies)
+        .where(eq(municipalPolicies.municipalManagerId, manager.id));
+
+      res.json(policies);
+    } catch (error) {
+      console.error('Error fetching policies:', error);
+      res.status(500).json({ error: 'Failed to fetch policies' });
+    }
+  });
+
+  // POST /api/municipal/policies - Criar nova política
+  app.post('/api/municipal/policies', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const { policyType, policyName, policyValue, description } = req.body;
+
+      // Buscar o gestor municipal
+      const [manager] = await db
+        .select()
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Criar nova política
+      const [newPolicy] = await db
+        .insert(municipalPolicies)
+        .values({
+          municipalManagerId: manager.id,
+          policyType,
+          policyName,
+          policyValue,
+          description,
+          isActive: true,
+        })
+        .returning();
+
+      res.status(201).json(newPolicy);
+    } catch (error) {
+      console.error('Error creating policy:', error);
+      res.status(500).json({ error: 'Failed to create policy' });
+    }
+  });
+
+  // PATCH /api/municipal/policies/:id - Atualizar política
+  app.patch('/api/municipal/policies/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const policyId = parseInt(req.params.id);
+      const updates = req.body;
+
+      // Buscar o gestor municipal
+      const [manager] = await db
+        .select()
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Verificar se a política pertence ao gestor
+      const [policy] = await db
+        .select()
+        .from(municipalPolicies)
+        .where(and(
+          eq(municipalPolicies.id, policyId),
+          eq(municipalPolicies.municipalManagerId, manager.id)
+        ));
+
+      if (!policy) {
+        return res.status(404).json({ message: "Policy not found" });
+      }
+
+      // Atualizar política
+      const [updatedPolicy] = await db
+        .update(municipalPolicies)
+        .set({ 
+          ...updates, 
+          updatedAt: new Date() 
+        })
+        .where(eq(municipalPolicies.id, policyId))
+        .returning();
+
+      res.json(updatedPolicy);
+    } catch (error) {
+      console.error('Error updating policy:', error);
+      res.status(500).json({ error: 'Failed to update policy' });
+    }
+  });
+
+  // GET /api/municipal/security-incidents - Incidentes de segurança (mock)
+  app.get('/api/municipal/security-incidents', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      // Mock data para demonstração
+      const incidents = [
+        {
+          id: 1,
+          title: "Tentativa de acesso não autorizado",
+          severity: "high",
+          status: "investigating",
+          affectedSchool: "EMEF Prof. João Silva",
+          createdAt: "2025-06-30",
+        },
+        {
+          id: 2,
+          title: "Uso excessivo de tokens detectado",
+          severity: "medium",
+          status: "resolved",
+          affectedSchool: "EMEI Pequenos Grandes",
+          createdAt: "2025-06-29",
+        },
+      ];
+
+      res.json(incidents);
+    } catch (error) {
+      console.error('Error fetching security incidents:', error);
+      res.status(500).json({ error: 'Failed to fetch security incidents' });
+    }
+  });
+
+  // GET /api/municipal/manager-info - Informações do gestor municipal
+  app.get('/api/municipal/manager-info', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      
+      // Buscar o gestor municipal com informações do usuário
+      const [manager] = await db
+        .select({
+          id: municipalManagers.id,
+          municipalityName: municipalManagers.municipalityName,
+          municipalityCode: municipalManagers.municipalityCode,
+          cnpj: municipalManagers.cnpj,
+          address: municipalManagers.address,
+          phone: municipalManagers.phone,
+          totalLicenses: municipalManagers.totalLicenses,
+          usedLicenses: municipalManagers.usedLicenses,
+          firstName: users.first_name,
+          lastName: users.last_name,
+          email: users.email,
+        })
+        .from(municipalManagers)
+        .innerJoin(users, eq(municipalManagers.userId, users.id))
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      res.json(manager);
+    } catch (error) {
+      console.error('Error fetching manager info:', error);
+      res.status(500).json({ error: 'Failed to fetch manager info' });
+    }
+  });
+
+  // GET /api/municipal/available-directors - Buscar diretores disponíveis
+  app.get('/api/municipal/available-directors', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      
+      // Buscar informações da empresa do usuário
+      const userCompany = await getUserCompanyInfo(userId);
+      console.log('🔍 [DIRECTORS] User company ID:', userCompany.companyId);
+
+      // Buscar diretores da mesma empresa
+      const directorsData = await db
+        .select({
+          id: users.id,
+          firstName: users.first_name,
+          lastName: users.last_name,
+          email: users.email,
+          role: users.role,
+          companyId: users.companyId,
+          contractId: users.contractId,
+        })
+        .from(users)
+        .where(and(
+          eq(users.role, 'school_director'),
+          eq(users.companyId, userCompany.companyId)
+        ));
+
+      console.log('🔍 [DIRECTORS] Query SQL para diretores:', {
+        role: 'school_director',
+        companyId: userCompany.companyId,
+        encontrados: directorsData.length
+      });
+      
+      console.log('🔍 [DIRECTORS] Lista completa de diretores:', directorsData);
+
+      console.log('🔍 [DIRECTORS] Diretores encontrados na empresa:', directorsData.length);
+
+      // Buscar informações de escola atual para cada diretor
+      const directorsWithSchoolInfo = await Promise.all(
+        directorsData.map(async (director) => {
+          let currentSchool = null;
+          
+          try {
+            // Verificar se diretor tem escola atual (usando campo antigo primeiro)
+            const [schoolOld] = await db
+              .select({ name: municipalSchools.schoolName })
+              .from(municipalSchools)
+              .where(eq(municipalSchools.principalEmail, director.email));
+              
+            if (schoolOld) {
+              currentSchool = schoolOld.name;
+            } else {
+              // Tentar com campo novo se existir
+              const [schoolNew] = await db
+                .select({ name: municipalSchools.name })
+                .from(municipalSchools)
+                .where(eq(municipalSchools.directorUserId, director.id));
+                
+              if (schoolNew) {
+                currentSchool = schoolNew.name;
+              }
+            }
+          } catch (err) {
+            // Ignorar erros de campos inexistentes
+            currentSchool = null;
+          }
+
+          return {
+            ...director,
+            currentSchool,
+            isAvailable: !currentSchool
+          };
+        })
+      );
+
+      console.log('🔍 [DIRECTORS] Diretores com info de escola:', directorsWithSchoolInfo);
+
+      res.json({
+        directors: directorsWithSchoolInfo,
+        total: directorsWithSchoolInfo.length,
+        available: directorsWithSchoolInfo.filter(d => d.isAvailable).length
+      });
+    } catch (error) {
+      console.error('Error fetching available directors:', error);
+      res.status(500).json({ error: 'Failed to fetch available directors' });
+    }
+  });
+
+  // GET /api/municipal/contracts/available - Buscar contratos disponíveis
+  app.get('/api/municipal/contracts/available', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      
+      // Buscar informações da empresa do usuário
+      const userCompany = await getUserCompanyInfo(userId);
+      console.log('🔍 [CONTRACTS] User company ID:', userCompany.companyId);
+
+      // Buscar contratos da empresa do usuário que estão ativos
+      const contractsData = await db
+        .select({
+          id: contracts.id,
+          name: contracts.name,
+          description: contracts.description,
+          status: contracts.status,
+          maxUsers: contracts.maxUsers,
+          startDate: contracts.startDate,
+          endDate: contracts.endDate,
+          companyId: contracts.companyId,
+        })
+        .from(contracts)
+        .where(and(
+          eq(contracts.companyId, userCompany.companyId),
+          eq(contracts.status, 'active')
+        ));
+
+      console.log('🔍 [CONTRACTS] Contratos encontrados para empresa:', contractsData.length);
+
+      // Para cada contrato, contar escolas que o utilizam
+      const contractsWithUsage = await Promise.all(
+        contractsData.map(async (contract) => {
+          let usageCount = 0;
+          try {
+            const [usage] = await db
+              .select({ count: count() })
+              .from(municipalSchools)
+              .where(eq(municipalSchools.contractId, contract.id));
+            usageCount = usage?.count || 0;
+          } catch (err) {
+            usageCount = 0;
+          }
+
+          return {
+            ...contract,
+            usedBySchools: usageCount.toString(),
+            description: contract.description || `Contrato para ${contract.name}`
+          };
+        })
+      );
+
+      console.log('🔍 [CONTRACTS] Contratos detalhes:', contractsWithUsage);
+
+      res.json({
+        contracts: contractsWithUsage
+      });
+    } catch (error) {
+      console.error('Error fetching available contracts:', error);
+      res.status(500).json({ error: 'Failed to fetch available contracts' });
+    }
+  });
+
+  // GET /api/municipal/company/info - Informações da empresa do usuário logado
+  app.get('/api/municipal/company/info', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const userCompany = await getUserCompanyInfo(userId);
+      
+      const [company] = await db
+        .select({
+          id: companies.id,
+          name: companies.name,
+          email: companies.email,
+          phone: companies.phone,
+          address: companies.address,
+          cnpj: companies.cnpj,
+          status: companies.status,
+        })
+        .from(companies)
+        .where(eq(companies.id, userCompany.companyId));
+
+      res.json({ 
+        success: true, 
+        company,
+        user: {
+          id: userCompany.id,
+          email: userCompany.email,
+          firstName: userCompany.firstName,
+          lastName: userCompany.lastName,
+          companyId: userCompany.companyId
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching company info:', error);
+      res.status(500).json({ error: 'Failed to fetch company information' });
+    }
+  });
+
+  // GET /api/municipal/contracts/filtered - Contratos filtrados por empresa do usuário
   app.get('/api/municipal/contracts/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
       
-      // Obter empresa do usuário logado
+      // 1. Obter empresa do usuário logado
       const userCompanyId = await getUserCompany(userId);
       if (!userCompanyId) {
         return res.json({ success: true, contracts: [] });
       }
-
-      // Buscar contratos APENAS da empresa do usuário (consulta simplificada)
-      const contractsData = await db
+      
+      // 2. Buscar APENAS contratos da empresa do usuário
+      const contractsList = await db
         .select()
         .from(contracts)
-        .where(eq(contracts.companyId, userCompanyId));
+        .where(eq(contracts.companyId, userCompanyId))
+        .limit(50);
 
-      // Buscar nome da empresa separadamente
-      const [companyInfo] = await db
-        .select({ name: companies.name })
-        .from(companies)
-        .where(eq(companies.id, userCompanyId));
-
-      const contractsWithCompany = contractsData.map(contract => ({
-        ...contract,
-        companyName: companyInfo?.name || 'N/A'
-      }));
-
-      console.log(`✅ [CONTRACTS] User ${userId} empresa ${userCompanyId}: ${contractsData.length} contratos`);
-      
-      res.json({ success: true, contracts: contractsWithCompany });
-
+      console.log(`🔍 [CONTRACTS] User ${userId} empresa ${userCompanyId}: ${contractsList.length} contratos`);
+      res.json({ success: true, contracts: contractsList });
     } catch (error) {
-      console.error('❌ [CONTRACTS] Erro ao buscar contratos:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch contracts', 
-        error: error.message 
-      });
+      console.error('Error fetching contracts:', error);
+      res.json({ success: true, contracts: [] });
     }
   });
 
-  // GET /api/municipal/directors/filtered - Buscar diretores da empresa do usuário
+  // GET /api/municipal/directors/filtered - Diretores filtrados por empresa do usuário
   app.get('/api/municipal/directors/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
       
-      // Obter empresa do usuário logado
+      // 1. Obter empresa do usuário logado
       const userCompanyId = await getUserCompany(userId);
       if (!userCompanyId) {
         return res.json({ success: true, directors: [] });
       }
-
-      // Buscar diretores APENAS da empresa do usuário (consulta simplificada)
-      const directorsData = await db
+      
+      // 2. Buscar APENAS diretores da mesma empresa
+      const directorsList = await db
         .select()
         .from(users)
-        .where(
-          and(
-            eq(users.companyId, userCompanyId),
-            eq(users.cognito_group, 'Diretores')
-          )
-        );
+        .where(and(
+          eq(users.companyId, userCompanyId),
+          eq(users.role, 'school_director')
+        ))
+        .limit(30);
 
-      // Buscar nomes dos contratos separadamente se necessário
-      const directorsWithContracts = await Promise.all(
-        directorsData.map(async (director) => {
-          let contractName = null;
-          if (director.contractId) {
-            const [contract] = await db
-              .select({ schoolName: contracts.schoolName })
-              .from(contracts)
-              .where(eq(contracts.id, director.contractId));
-            contractName = contract?.schoolName || null;
-          }
-          
-          return {
-            id: director.id,
-            firstName: director.first_name,
-            lastName: director.last_name,
-            email: director.email,
-            cognitoStatus: director.cognito_status,
-            contractId: director.contractId,
-            contractName
-          };
-        })
-      );
-
-      console.log(`✅ [DIRECTORS] User ${userId} empresa ${userCompanyId}: ${directorsData.length} diretores`);
-      
-      res.json({ success: true, directors: directorsWithContracts });
-
+      console.log(`🔍 [DIRECTORS] User ${userId} empresa ${userCompanyId}: ${directorsList.length} diretores`);
+      res.json({ success: true, directors: directorsList });
     } catch (error) {
-      console.error('❌ [DIRECTORS] Erro ao buscar diretores:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch directors', 
-        error: error.message 
-      });
+      console.error('Error fetching directors:', error);
+      res.json({ success: true, directors: [] });
     }
   });
 
-  // GET /api/municipal/schools/filtered - Buscar escolas da empresa do usuário
+  // GET /api/municipal/schools/filtered - Escolas filtradas por empresa do usuário
   app.get('/api/municipal/schools/filtered', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
       
-      // Obter empresa do usuário logado
+      // 1. Obter empresa do usuário logado
       const userCompanyId = await getUserCompany(userId);
       if (!userCompanyId) {
         return res.json({ success: true, schools: [] });
       }
-
-      // Primeiro, buscar IDs dos contratos da empresa
-      const companyContracts = await db
-        .select({ id: contracts.id })
-        .from(contracts)
-        .where(eq(contracts.companyId, userCompanyId));
-
-      const contractIds = companyContracts.map(c => c.id);
       
-      if (contractIds.length === 0) {
-        return res.json({ success: true, schools: [] });
-      }
-
-      // Buscar escolas usando os IDs dos contratos
-      const schoolsData = await db
-        .select()
-        .from(municipalSchools)
-        .where(inArray(municipalSchools.contractId, contractIds));
-
-      // Buscar nomes dos contratos separadamente
-      const schoolsWithContracts = await Promise.all(
-        schoolsData.map(async (school) => {
-          const [contract] = await db
-            .select({ schoolName: contracts.schoolName })
-            .from(contracts)
-            .where(eq(contracts.id, school.contractId));
-          
-          return {
-            id: school.id,
-            schoolName: school.schoolName,
-            contractId: school.contractId,
-            directorName: school.directorName,
-            numberOfStudents: school.numberOfStudents,
-            numberOfTeachers: school.numberOfTeachers,
-            status: school.status,
-            contractName: contract?.schoolName || 'N/A'
-          };
+      // 2. Buscar escolas através dos contratos da empresa
+      const schoolsWithContracts = await db
+        .select({
+          id: municipalSchools.id,
+          name: municipalSchools.schoolName,
+          schoolName: municipalSchools.schoolName,
+          inep: municipalSchools.inepCode,
+          inepCode: municipalSchools.inepCode,
+          cnpj: municipalSchools.cnpj,
+          address: municipalSchools.address,
+          neighborhood: municipalSchools.neighborhood,
+          city: municipalSchools.city,
+          state: municipalSchools.state,
+          zipCode: municipalSchools.zipCode,
+          phone: municipalSchools.phone,
+          email: municipalSchools.email,
+          numberOfStudents: municipalSchools.numberOfStudents,
+          numberOfTeachers: municipalSchools.numberOfTeachers,
+          numberOfClassrooms: municipalSchools.numberOfClassrooms,
+          status: municipalSchools.status,
+          contractId: municipalSchools.contractId,
+          directorUserId: municipalSchools.directorUserId,
+          contractName: contracts.name,
         })
-      );
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(eq(contracts.companyId, userCompanyId))
+        .limit(30);
 
-      console.log(`✅ [SCHOOLS] User ${userId} empresa ${userCompanyId}: ${schoolsData.length} escolas`);
-      
+      console.log(`🔍 [SCHOOLS] User ${userId} empresa ${userCompanyId}: ${schoolsWithContracts.length} escolas`);
       res.json({ success: true, schools: schoolsWithContracts });
-
     } catch (error) {
-      console.error('❌ [SCHOOLS] Erro ao buscar escolas:', error);
-      res.status(500).json({ 
-        success: false,
-        message: 'Failed to fetch schools', 
-        error: error.message 
-      });
+      console.error('Error fetching schools:', error);
+      res.json({ success: true, schools: [] });
     }
   });
 
-  // GET /api/municipal/company/info - Informações da empresa do usuário
-  app.get('/api/municipal/company/info', authenticateMunicipal, async (req: Request, res: Response) => {
+  // PATCH /api/municipal/schools/:id - Editar escola existente
+  app.patch('/api/municipal/schools/:id', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
+      const schoolId = parseInt(req.params.id);
       const userId = req.session.user!.id;
       
-      // Obter empresa do usuário logado
+      // Verificar se usuário tem acesso à empresa
       const userCompanyId = await getUserCompany(userId);
       if (!userCompanyId) {
-        return res.json({ success: true, company: null });
+        return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
       }
 
-      // Buscar informações APENAS da empresa do usuário (consulta simplificada)
-      const [companyInfo] = await db
-        .select()
-        .from(companies)
-        .where(eq(companies.id, userCompanyId));
+      const {
+        name,
+        inep,
+        cnpj,
+        contractId,
+        address,
+        neighborhood,
+        city,
+        state,
+        zipCode,
+        phone,
+        email,
+        foundationDate,
+        numberOfClassrooms,
+        numberOfStudents,
+        numberOfTeachers,
+        zone,
+        type,
+        existingDirectorId,
+      } = req.body;
 
-      console.log(`✅ [COMPANY-INFO] User ${userId} empresa ${userCompanyId}:`, companyInfo?.name);
+      console.log('🔧 [UPDATE-SCHOOL] Dados recebidos:', { schoolId, name, contractId, existingDirectorId });
+
+      // Verificar se a escola pertence à empresa do usuário
+      const schoolCheck = await db
+        .select({ contractId: municipalSchools.contractId })
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(and(
+          eq(municipalSchools.id, schoolId),
+          eq(contracts.companyId, userCompanyId)
+        ))
+        .limit(1);
+
+      if (!schoolCheck.length) {
+        return res.status(404).json({ error: 'Escola não encontrada ou acesso negado' });
+      }
+
+      // Atualizar dados da escola
+      const updateData: any = {
+        schoolName: name,
+        inepCode: inep,
+        cnpj: cnpj,
+        address: address,
+        neighborhood: neighborhood,
+        city: city,
+        state: state,
+        zipCode: zipCode,
+        phone: phone,
+        email: email,
+        numberOfStudents: numberOfStudents,
+        numberOfTeachers: numberOfTeachers,
+        numberOfClassrooms: numberOfClassrooms,
+        zone: zone,
+        type: type,
+        updatedAt: new Date(),
+      };
+
+      // Adicionar campos opcionais se fornecidos
+      if (contractId && contractId !== 'none') updateData.contractId = parseInt(contractId);
+      if (existingDirectorId && existingDirectorId !== 'none') updateData.directorUserId = parseInt(existingDirectorId);
+      if (foundationDate) updateData.foundationDate = new Date(foundationDate);
+
+      await db
+        .update(municipalSchools)
+        .set(updateData)
+        .where(eq(municipalSchools.id, schoolId));
+
+      console.log('✅ [UPDATE-SCHOOL] Escola atualizada:', schoolId);
+      res.json({ success: true, message: 'Escola atualizada com sucesso' });
+    } catch (error) {
+      console.error('Error updating school:', error);
+      res.status(500).json({ error: 'Erro ao atualizar escola' });
+    }
+  });
+
+  // PATCH /api/municipal/directors/:id - Editar diretor existente
+  app.patch('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const directorId = parseInt(req.params.id);
+      const userId = req.session.user!.id;
       
-      res.json({ success: true, company: companyInfo || null });
+      // Verificar se usuário tem acesso à empresa
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
+      }
+
+      const { firstName, lastName, email, contractId } = req.body;
+
+      console.log('🔧 [UPDATE-DIRECTOR] Dados recebidos:', { directorId, firstName, lastName, email, contractId });
+
+      // Verificar se o diretor pertence à mesma empresa do usuário
+      const directorCheck = await db
+        .select({ companyId: users.companyId })
+        .from(users)
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, userCompanyId),
+          eq(users.role, 'school_director')
+        ))
+        .limit(1);
+
+      if (!directorCheck.length) {
+        return res.status(404).json({ error: 'Diretor não encontrado ou acesso negado' });
+      }
+
+      // Atualizar dados do diretor
+      const updateData: any = {
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        updatedAt: new Date(),
+      };
+
+      // Adicionar contractId se fornecido
+      if (contractId && contractId !== 'none') {
+        updateData.contractId = parseInt(contractId);
+      } else {
+        updateData.contractId = null;
+      }
+
+      await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, directorId));
+
+      console.log('✅ [UPDATE-DIRECTOR] Diretor atualizado:', directorId);
+      res.json({ success: true, message: 'Diretor atualizado com sucesso' });
+    } catch (error) {
+      console.error('Error updating director:', error);
+      res.status(500).json({ error: 'Erro ao atualizar diretor' });
+    }
+  });
+
+  // POST /api/municipal/schools/create - Criar nova escola
+  app.post('/api/municipal/schools/create', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const userCompany = await getUserCompanyInfo(userId);
+      
+      const {
+        name,
+        inep,
+        cnpj,
+        contractId,
+        address,
+        neighborhood,
+        city,
+        state,
+        zipCode,
+        phone,
+        email,
+        foundationDate,
+        numberOfClassrooms,
+        numberOfStudents,
+        numberOfTeachers,
+        zone,
+        type,
+        existingDirectorId,
+      } = req.body;
+
+      console.log('🔧 [CREATE-SCHOOL] Dados recebidos:', { name, contractId, existingDirectorId, companyId: userCompany.companyId });
+
+      // Validar campos obrigatórios
+      if (!name || !contractId || !address) {
+        return res.status(400).json({ error: 'Name, contract, and address are required' });
+      }
+
+      // Verificar se o contrato pertence à empresa do usuário
+      const [contract] = await db
+        .select({ id: contracts.id })
+        .from(contracts)
+        .where(and(
+          eq(contracts.id, contractId),
+          eq(contracts.companyId, userCompany.companyId)
+        ));
+
+      if (!contract) {
+        return res.status(400).json({ error: 'Contract not found or does not belong to your company' });
+      }
+
+      // Se diretor foi especificado, verificar se pertence à empresa
+      if (existingDirectorId) {
+        const [director] = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(and(
+            eq(users.id, existingDirectorId),
+            eq(users.companyId, userCompany.companyId),
+            eq(users.role, 'school_director')
+          ));
+
+        if (!director) {
+          return res.status(400).json({ error: 'Director not found or does not belong to your company' });
+        }
+      }
+
+      // Buscar municipalManagerId do usuário logado
+      const [municipalManager] = await db
+        .select({ id: municipalManagers.id })
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+
+      if (!municipalManager) {
+        return res.status(400).json({ error: 'Municipal manager not found for current user' });
+      }
+
+      // Criar a escola
+      const [newSchool] = await db
+        .insert(municipalSchools)
+        .values({
+          schoolName: name,
+          name,
+          inep: inep || null,
+          cnpj: cnpj || null,
+          municipalManagerId: municipalManager.id,
+          contractId,
+          address,
+          neighborhood: neighborhood || null,
+          city: city || null,
+          state: state || null,
+          zipCode: zipCode || null,
+          phone: phone || null,
+          email: email || null,
+          foundationDate: foundationDate ? new Date(foundationDate) : null,
+          numberOfClassrooms: numberOfClassrooms || 0,
+          numberOfStudents: numberOfStudents || 0,
+          numberOfTeachers: numberOfTeachers || 0,
+          zone: zone || 'urbana',
+          type: type || 'municipal',
+          status: 'active',
+          directorUserId: existingDirectorId || null,
+        })
+        .returning();
+
+      console.log('✅ [CREATE-SCHOOL] Escola criada:', newSchool.id, 'para empresa:', userCompany.companyId);
+
+      res.json({ success: true, school: newSchool });
+    } catch (error) {
+      console.error('❌ [CREATE-SCHOOL] Erro ao criar escola:', error);
+      res.status(500).json({ error: 'Failed to create school' });
+    }
+  });
+
+  // PATCH /api/municipal/schools/:id - Editar escola
+  app.patch('/api/municipal/schools/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user!.id;
+      const schoolId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      console.log('🔧 [SCHOOL_EDIT] Iniciando edição de escola:', { schoolId, updateData });
+
+      // Buscar informações da empresa do usuário
+      const userCompany = await getUserCompanyInfo(userId);
+
+      // Verificar se a escola pertence à empresa do gestor
+      const [existingSchool] = await db
+        .select()
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(and(
+          eq(municipalSchools.id, schoolId),
+          eq(contracts.companyId, userCompany.companyId)
+        ));
+
+      if (!existingSchool) {
+        return res.status(404).json({ message: "School not found or not accessible" });
+      }
+
+      // Validar contrato se fornecido
+      if (updateData.contractId) {
+        const [contract] = await db
+          .select()
+          .from(contracts)
+          .where(and(
+            eq(contracts.id, parseInt(updateData.contractId)),
+            eq(contracts.companyId, userCompany.companyId)
+          ));
+
+        if (!contract) {
+          return res.status(400).json({ message: "Invalid contract for this company" });
+        }
+      }
+
+      // Preparar dados para atualização
+      const updateFields: any = {
+        updatedAt: new Date()
+      };
+
+      // Mapear campos recebidos para campos do banco
+      if (updateData.name !== undefined) updateFields.schoolName = updateData.name;
+      if (updateData.inep !== undefined) updateFields.inepCode = updateData.inep;
+      if (updateData.cnpj !== undefined) updateFields.cnpj = updateData.cnpj;
+      if (updateData.contractId !== undefined) updateFields.contractId = parseInt(updateData.contractId);
+      if (updateData.address !== undefined) updateFields.address = updateData.address;
+      if (updateData.neighborhood !== undefined) updateFields.neighborhood = updateData.neighborhood;
+      if (updateData.city !== undefined) updateFields.city = updateData.city;
+      if (updateData.state !== undefined) updateFields.state = updateData.state;
+      if (updateData.zipCode !== undefined) updateFields.zipCode = updateData.zipCode;
+      if (updateData.phone !== undefined) updateFields.phone = updateData.phone;
+      if (updateData.email !== undefined) updateFields.email = updateData.email;
+      if (updateData.foundationDate !== undefined) updateFields.foundationDate = updateData.foundationDate ? new Date(updateData.foundationDate) : null;
+      if (updateData.numberOfClassrooms !== undefined) updateFields.numberOfClassrooms = updateData.numberOfClassrooms;
+      if (updateData.numberOfStudents !== undefined) updateFields.numberOfStudents = updateData.numberOfStudents;
+      if (updateData.numberOfTeachers !== undefined) updateFields.numberOfTeachers = updateData.numberOfTeachers;
+      if (updateData.zone !== undefined) updateFields.zone = updateData.zone;
+      if (updateData.type !== undefined) updateFields.type = updateData.type;
+      if (updateData.existingDirectorId !== undefined) updateFields.directorUserId = updateData.existingDirectorId ? parseInt(updateData.existingDirectorId) : null;
+
+      // Atualizar no banco de dados
+      const [updatedSchool] = await db
+        .update(municipalSchools)
+        .set(updateFields)
+        .where(eq(municipalSchools.id, schoolId))
+        .returning();
+
+      console.log('✅ [SCHOOL_EDIT] Escola atualizada:', updatedSchool.id);
+
+      res.json({ 
+        success: true,
+        message: "School updated successfully",
+        school: updatedSchool
+      });
 
     } catch (error) {
-      console.error('❌ [COMPANY-INFO] Erro ao buscar informações da empresa:', error);
+      console.error('❌ [SCHOOL_EDIT] Erro ao atualizar escola:', error);
       res.status(500).json({ 
         success: false,
-        message: 'Failed to fetch company info', 
+        message: "Failed to update school", 
         error: error.message 
       });
     }
   });
 
-  // Outros endpoints existentes...
+  // PATCH /api/municipal/directors/:id - Editar dados do diretor
+  app.patch('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const directorId = parseInt(req.params.id);
+      const { firstName, lastName, email, contractId } = req.body;
+
+      const userId = req.session.user!.id;
+      console.log(`🔍 [EDIT-DIRECTOR] Editando diretor ID: ${directorId} para usuário: ${userId}`);
+
+      // Validação dos dados obrigatórios
+      if (!firstName || !lastName || !email) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nome, sobrenome e email são obrigatórios'
+        });
+      }
+
+      // Buscar o gestor municipal para verificar a empresa
+      const [manager] = await db
+        .select()
+        .from(municipalManagers)
+        .where(eq(municipalManagers.userId, userId));
+        
+      if (!manager) {
+        return res.status(404).json({ message: "Municipal manager not found" });
+      }
+
+      // Verificar se o diretor existe e pertence à empresa do usuário
+      const [existingDirector] = await db.select()
+        .from(users)
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, manager.companyId),
+          eq(users.role, 'school_director')
+        ));
+
+      if (!existingDirector) {
+        return res.status(404).json({
+          success: false,
+          message: 'Diretor não encontrado ou sem permissão para editar'
+        });
+      }
+
+      // Verificar se o email já está em uso por outro usuário
+      if (email !== existingDirector.email) {
+        const [emailExists] = await db.select()
+          .from(users)
+          .where(and(
+            eq(users.email, email),
+            ne(users.id, directorId)
+          ));
+
+        if (emailExists) {
+          return res.status(400).json({
+            success: false,
+            message: 'Este email já está sendo usado por outro usuário'
+          });
+        }
+      }
+
+      // Verificar se o contrato existe e pertence à empresa (se fornecido)
+      if (contractId) {
+        const [contractExists] = await db.select()
+          .from(contracts)
+          .where(and(
+            eq(contracts.id, contractId),
+            eq(contracts.companyId, manager.companyId)
+          ));
+
+        if (!contractExists) {
+          return res.status(400).json({
+            success: false,
+            message: 'Contrato não encontrado ou não pertence à sua empresa'
+          });
+        }
+      }
+
+      // Atualizar dados do diretor
+      const [updatedDirector] = await db.update(users)
+        .set({
+          first_name: firstName,
+          last_name: lastName,
+          email,
+          contractId: contractId ? contractId : null,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(users.id, directorId))
+        .returning();
+
+      console.log(`✅ [EDIT-DIRECTOR] Diretor atualizado: ${firstName} ${lastName} (${email})`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Diretor atualizado com sucesso',
+        director: updatedDirector
+      });
+
+    } catch (error) {
+      console.error('❌ [EDIT-DIRECTOR] Erro:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Erro interno do servidor' 
+      });
+    }
+  });
+
 }
