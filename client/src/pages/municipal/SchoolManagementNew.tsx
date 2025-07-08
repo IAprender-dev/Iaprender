@@ -269,7 +269,7 @@ export default function SchoolManagementNew() {
       numberOfStudents: Number(formData.numberOfStudents),
       numberOfTeachers: Number(formData.numberOfTeachers),
       contractId: Number(formData.contractId),
-      existingDirectorId: formData.existingDirectorId ? Number(formData.existingDirectorId) : null,
+      existingDirectorId: (formData.existingDirectorId && formData.existingDirectorId !== 'none') ? Number(formData.existingDirectorId) : null,
     };
 
     if (isEditing) {
@@ -335,7 +335,7 @@ export default function SchoolManagementNew() {
       firstName: director.firstName,
       lastName: director.lastName,
       email: director.email,
-      contractId: director.contractId?.toString() || ''
+      contractId: director.contractId?.toString() || 'none'
     });
     setIsEditDirectorDialogOpen(true);
   };
@@ -360,7 +360,7 @@ export default function SchoolManagementNew() {
       firstName: directorEditData.firstName,
       lastName: directorEditData.lastName,
       email: directorEditData.email,
-      contractId: directorEditData.contractId ? Number(directorEditData.contractId) : null,
+      contractId: (directorEditData.contractId && directorEditData.contractId !== 'none') ? Number(directorEditData.contractId) : null,
     });
   };
 
@@ -887,6 +887,7 @@ export default function SchoolManagementNew() {
                   <SelectValue placeholder="Selecione um diretor disponível" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Selecionar diretor</SelectItem>
                   {availableDirectors.map((director: Director) => (
                     <SelectItem key={director.id} value={director.id.toString()}>
                       {director.firstName} {director.lastName} - {director.email}
@@ -1201,6 +1202,7 @@ export default function SchoolManagementNew() {
                     <SelectValue placeholder="Selecione um diretor" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="none">Selecionar diretor</SelectItem>
                     {availableDirectors.map((director: Director) => (
                       <SelectItem key={director.id} value={director.id.toString()}>
                         {director.firstName} {director.lastName} - {director.email}
@@ -1331,7 +1333,7 @@ export default function SchoolManagementNew() {
                     <SelectValue placeholder="Selecione um contrato" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Sem contrato específico</SelectItem>
+                    <SelectItem value="none">Sem contrato específico</SelectItem>
                     {contracts.map((contract: Contract) => (
                       <SelectItem key={contract.id} value={contract.id.toString()}>
                         {contract.name} - {contract.status}

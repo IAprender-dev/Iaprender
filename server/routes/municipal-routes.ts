@@ -1034,14 +1034,21 @@ export function registerMunicipalRoutes(app: Express) {
       const schoolsWithContracts = await db
         .select({
           id: municipalSchools.id,
+          name: municipalSchools.schoolName,
           schoolName: municipalSchools.schoolName,
+          inep: municipalSchools.inepCode,
           inepCode: municipalSchools.inepCode,
           cnpj: municipalSchools.cnpj,
           address: municipalSchools.address,
+          neighborhood: municipalSchools.neighborhood,
           city: municipalSchools.city,
           state: municipalSchools.state,
+          zipCode: municipalSchools.zipCode,
+          phone: municipalSchools.phone,
+          email: municipalSchools.email,
           numberOfStudents: municipalSchools.numberOfStudents,
           numberOfTeachers: municipalSchools.numberOfTeachers,
+          numberOfClassrooms: municipalSchools.numberOfClassrooms,
           status: municipalSchools.status,
           contractId: municipalSchools.contractId,
           directorUserId: municipalSchools.directorUserId,
@@ -1057,6 +1064,94 @@ export function registerMunicipalRoutes(app: Express) {
     } catch (error) {
       console.error('Error fetching schools:', error);
       res.json({ success: true, schools: [] });
+    }
+  });
+
+  // PATCH /api/municipal/schools/:id - Editar escola existente
+  app.patch('/api/municipal/schools/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const schoolId = parseInt(req.params.id);
+      const userId = req.session.user!.id;
+      
+      // Verificar se usuário tem acesso à empresa
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
+      }
+
+      const {
+        name,
+        inep,
+        cnpj,
+        contractId,
+        address,
+        neighborhood,
+        city,
+        state,
+        zipCode,
+        phone,
+        email,
+        foundationDate,
+        numberOfClassrooms,
+        numberOfStudents,
+        numberOfTeachers,
+        zone,
+        type,
+        existingDirectorId,
+      } = req.body;
+
+      console.log('🔧 [UPDATE-SCHOOL] Dados recebidos:', { schoolId, name, contractId, existingDirectorId });
+
+      // Verificar se a escola pertence à empresa do usuário
+      const schoolCheck = await db
+        .select({ contractId: municipalSchools.contractId })
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(and(
+          eq(municipalSchools.id, schoolId),
+          eq(contracts.companyId, userCompanyId)
+        ))
+        .limit(1);
+
+      if (!schoolCheck.length) {
+        return res.status(404).json({ error: 'Escola não encontrada ou acesso negado' });
+      }
+
+      // Atualizar dados da escola
+      const updateData: any = {
+        schoolName: name,
+        inepCode: inep,
+        cnpj: cnpj,
+        address: address,
+        neighborhood: neighborhood,
+        city: city,
+        state: state,
+        zipCode: zipCode,
+        phone: phone,
+        email: email,
+        numberOfStudents: numberOfStudents,
+        numberOfTeachers: numberOfTeachers,
+        numberOfClassrooms: numberOfClassrooms,
+        zone: zone,
+        type: type,
+        updatedAt: new Date(),
+      };
+
+      // Adicionar campos opcionais se fornecidos
+      if (contractId && contractId !== 'none') updateData.contractId = parseInt(contractId);
+      if (existingDirectorId && existingDirectorId !== 'none') updateData.directorUserId = parseInt(existingDirectorId);
+      if (foundationDate) updateData.foundationDate = new Date(foundationDate);
+
+      await db
+        .update(municipalSchools)
+        .set(updateData)
+        .where(eq(municipalSchools.id, schoolId));
+
+      console.log('✅ [UPDATE-SCHOOL] Escola atualizada:', schoolId);
+      res.json({ success: true, message: 'Escola atualizada com sucesso' });
+    } catch (error) {
+      console.error('Error updating school:', error);
+      res.status(500).json({ error: 'Erro ao atualizar escola' });
     }
   });
 
