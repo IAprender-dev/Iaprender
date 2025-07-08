@@ -258,7 +258,7 @@ export default function PerformanceDashboard() {
           <TabsContent value="queries" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Consultas Lentas (> 1s)</CardTitle>
+                <CardTitle>Consultas Lentas (&gt; 1s)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
