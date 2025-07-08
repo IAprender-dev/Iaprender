@@ -1001,10 +1001,23 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, directors: [] });
       }
       
-      // 2. Buscar APENAS diretores da mesma empresa
+      // 2. Buscar APENAS diretores da mesma empresa COM informações do contrato
       const directorsList = await db
-        .select()
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          role: users.role,
+          companyId: users.companyId,
+          contractId: users.contractId,
+          contractName: contracts.name,
+          contractStatus: contracts.status,
+          cognitoGroup: users.cognitoGroup,
+          createdAt: users.createdAt
+        })
         .from(users)
+        .leftJoin(contracts, eq(users.contractId, contracts.id))
         .where(and(
           eq(users.companyId, userCompanyId),
           eq(users.role, 'school_director')
