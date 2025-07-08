@@ -149,16 +149,20 @@ export default function SchoolManagement() {
 
   const updateSchoolMutation = useMutation({
     mutationFn: async (schoolData: any) => {
+      console.log('🚀 [CLIENT] Enviando dados para edição:', schoolData);
       const response = await apiRequest(`/api/municipal/schools/${selectedSchool?.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(schoolData),
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Erro ao atualizar escola');
+        const errorData = await response.json();
+        console.error('❌ [CLIENT] Erro na resposta:', errorData);
+        throw new Error(errorData.message || errorData.error || 'Erro ao atualizar escola');
       }
-      return response.json();
+      const result = await response.json();
+      console.log('✅ [CLIENT] Escola atualizada com sucesso:', result);
+      return result;
     },
     onSuccess: () => {
       toast({

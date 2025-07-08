@@ -1393,12 +1393,9 @@ export function registerMunicipalRoutes(app: Express) {
       if (updateData.zipCode !== undefined) updateFields.zipCode = updateData.zipCode;
       if (updateData.phone !== undefined) updateFields.phone = updateData.phone;
       if (updateData.email !== undefined) updateFields.email = updateData.email;
-      if (updateData.foundationDate !== undefined) updateFields.foundationDate = updateData.foundationDate ? new Date(updateData.foundationDate) : null;
       if (updateData.numberOfClassrooms !== undefined) updateFields.numberOfClassrooms = updateData.numberOfClassrooms;
       if (updateData.numberOfStudents !== undefined) updateFields.numberOfStudents = updateData.numberOfStudents;
       if (updateData.numberOfTeachers !== undefined) updateFields.numberOfTeachers = updateData.numberOfTeachers;
-      if (updateData.zone !== undefined) updateFields.zone = updateData.zone;
-      if (updateData.type !== undefined) updateFields.type = updateData.type;
       if (updateData.existingDirectorId !== undefined) updateFields.directorUserId = updateData.existingDirectorId ? parseInt(updateData.existingDirectorId) : null;
 
       // Atualizar no banco de dados
