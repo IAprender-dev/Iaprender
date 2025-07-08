@@ -1,164 +1,160 @@
-import { db } from '../db';
+import { Request, Response, NextFunction } from 'express';
+import { CacheManager } from './cache-manager';
 
-export interface QueryPerformance {
-  query: string;
+interface PerformanceMetrics {
+  endpoint: string;
+  method: string;
   duration: number;
   timestamp: Date;
-  route?: string;
+  status: number;
+  query_count?: number;
+  cache_hit?: boolean;
+  user_id?: number;
 }
 
 export class PerformanceMonitor {
-  private queryLogs: QueryPerformance[] = [];
-  private maxLogs = 100;
-
-  // Executa query com EXPLAIN ANALYZE para análise de performance
-  async explainAnalyze(query: string, params?: any[]): Promise<any> {
-    const startTime = Date.now();
+  private static metrics: PerformanceMetrics[] = [];
+  private static maxMetrics = 1000; // Keep last 1000 metrics
+  
+  static recordMetric(metric: PerformanceMetrics): void {
+    this.metrics.push(metric);
     
-    try {
-      // Executa EXPLAIN ANALYZE
-      const explainQuery = `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${query}`;
-      console.log(`\n🔍 [EXPLAIN ANALYZE] Query: ${query}`);
-      console.log(`📊 [EXPLAIN ANALYZE] Params:`, params);
-      
-      const result = await db.execute(explainQuery);
-      const duration = Date.now() - startTime;
-      
-      console.log(`⏱️  [PERFORMANCE] Query executada em ${duration}ms`);
-      console.log(`📈 [EXPLAIN ANALYZE] Plano de execução:`, JSON.stringify(result.rows[0], null, 2));
-      
-      // Salva log de performance
-      this.addQueryLog({
-        query,
-        duration,
-        timestamp: new Date()
-      });
-      
-      return result.rows[0];
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      console.error(`❌ [PERFORMANCE ERROR] Query falhou em ${duration}ms:`, error);
-      throw error;
+    // Keep only recent metrics
+    if (this.metrics.length > this.maxMetrics) {
+      this.metrics = this.metrics.slice(-this.maxMetrics);
+    }
+    
+    // Log slow queries for debugging
+    if (metric.duration > 500) {
+      console.warn(`⚠️  [SLOW QUERY] ${metric.method} ${metric.endpoint} took ${metric.duration}ms`);
     }
   }
-
-  // Monitora performance de uma função
-  async monitorQuery<T>(
-    operation: string,
-    queryFn: () => Promise<T>,
-    route?: string
-  ): Promise<T> {
-    const startTime = Date.now();
-    
-    try {
-      console.log(`🚀 [QUERY START] ${operation}${route ? ` (${route})` : ''}`);
-      
-      const result = await queryFn();
-      const duration = Date.now() - startTime;
-      
-      console.log(`✅ [QUERY SUCCESS] ${operation} executada em ${duration}ms`);
-      
-      this.addQueryLog({
-        query: operation,
-        duration,
-        timestamp: new Date(),
-        route
-      });
-      
-      return result;
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      console.error(`❌ [QUERY ERROR] ${operation} falhou em ${duration}ms:`, error);
-      throw error;
-    }
+  
+  static getMetrics(): PerformanceMetrics[] {
+    return this.metrics;
   }
-
-  // Adiciona log de query
-  private addQueryLog(log: QueryPerformance) {
-    this.queryLogs.push(log);
-    
-    // Mantém apenas os últimos logs
-    if (this.queryLogs.length > this.maxLogs) {
-      this.queryLogs = this.queryLogs.slice(-this.maxLogs);
-    }
+  
+  static getSlowQueries(threshold = 500): PerformanceMetrics[] {
+    return this.metrics.filter(metric => metric.duration > threshold);
   }
-
-  // Retorna estatísticas de performance
-  getPerformanceStats() {
-    if (this.queryLogs.length === 0) {
-      return {
-        totalQueries: 0,
-        averageDuration: 0,
-        slowestQuery: null,
-        fastestQuery: null,
-        recentQueries: []
-      };
-    }
-
-    const durations = this.queryLogs.map(log => log.duration);
-    const sorted = [...durations].sort((a, b) => b - a);
+  
+  static getAverageResponseTime(): number {
+    if (this.metrics.length === 0) return 0;
     
+    const sum = this.metrics.reduce((acc, metric) => acc + metric.duration, 0);
+    return Math.round(sum / this.metrics.length);
+  }
+  
+  static getEndpointStats(endpoint: string): {
+    avg: number;
+    min: number;
+    max: number;
+    count: number;
+  } {
+    const endpointMetrics = this.metrics.filter(m => m.endpoint === endpoint);
+    
+    if (endpointMetrics.length === 0) {
+      return { avg: 0, min: 0, max: 0, count: 0 };
+    }
+    
+    const durations = endpointMetrics.map(m => m.duration);
     return {
-      totalQueries: this.queryLogs.length,
-      averageDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length),
-      slowestQuery: {
-        duration: sorted[0],
-        query: this.queryLogs.find(log => log.duration === sorted[0])?.query
-      },
-      fastestQuery: {
-        duration: sorted[sorted.length - 1],
-        query: this.queryLogs.find(log => log.duration === sorted[sorted.length - 1])?.query
-      },
-      recentQueries: this.queryLogs.slice(-10).map(log => ({
-        query: log.query,
-        duration: log.duration,
-        route: log.route,
-        timestamp: log.timestamp.toISOString()
-      }))
+      avg: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length),
+      min: Math.min(...durations),
+      max: Math.max(...durations),
+      count: durations.length
     };
   }
-
-  // Identifica queries lentas
-  getSlowQueries(threshold: number = 1000) {
-    return this.queryLogs
-      .filter(log => log.duration > threshold)
-      .sort((a, b) => b.duration - a.duration)
-      .slice(0, 10);
+  
+  static getCacheHitRate(): number {
+    const metricsWithCache = this.metrics.filter(m => m.cache_hit !== undefined);
+    if (metricsWithCache.length === 0) return 0;
+    
+    const hits = metricsWithCache.filter(m => m.cache_hit === true).length;
+    return Math.round((hits / metricsWithCache.length) * 100);
   }
-
-  // Limpa logs
-  clearLogs() {
-    this.queryLogs = [];
+  
+  static getTopSlowEndpoints(limit = 10): Array<{
+    endpoint: string;
+    avgDuration: number;
+    count: number;
+  }> {
+    const endpointGroups = this.metrics.reduce((acc, metric) => {
+      if (!acc[metric.endpoint]) {
+        acc[metric.endpoint] = [];
+      }
+      acc[metric.endpoint].push(metric.duration);
+      return acc;
+    }, {} as Record<string, number[]>);
+    
+    return Object.entries(endpointGroups)
+      .map(([endpoint, durations]) => ({
+        endpoint,
+        avgDuration: Math.round(durations.reduce((a, b) => a + b, 0) / durations.length),
+        count: durations.length
+      }))
+      .sort((a, b) => b.avgDuration - a.avgDuration)
+      .slice(0, limit);
   }
 }
 
-// Instância global do monitor
-export const performanceMonitor = new PerformanceMonitor();
-
-// Middleware para monitorar tempo de resposta das rotas
+// Middleware para monitorar performance
 export const performanceMiddleware = (routeName: string) => {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     const startTime = Date.now();
     
-    res.on('finish', () => {
+    // Interceptar response para capturar métricas
+    const originalSend = res.send;
+    res.send = function(data) {
       const duration = Date.now() - startTime;
-      const method = req.method;
-      const path = req.path;
-      const status = res.statusCode;
       
-      console.log(`📊 [ROUTE PERFORMANCE] ${method} ${path} - ${status} - ${duration}ms`);
+      // Verificar se foi cache hit
+      const cacheHit = req.headers['x-cache-status'] === 'HIT';
       
-      // Log queries lentas (> 500ms)
-      if (duration > 500) {
-        console.warn(`⚠️  [SLOW ROUTE] ${method} ${path} demorou ${duration}ms`);
+      const metric: PerformanceMetrics = {
+        endpoint: routeName,
+        method: req.method,
+        duration,
+        timestamp: new Date(),
+        status: res.statusCode,
+        cache_hit: cacheHit,
+        user_id: req.session?.user?.id
+      };
+      
+      PerformanceMonitor.recordMetric(metric);
+      
+      // Log em tempo real
+      const status = res.statusCode < 400 ? '✅' : '❌';
+      const cacheStatus = cacheHit ? '📦' : '🔍';
+      console.log(`${status} ${cacheStatus} [${req.method}] ${routeName} - ${duration}ms - ${res.statusCode}`);
+      
+      return originalSend.call(this, data);
+    };
+    
+    next();
+  };
+};
+
+// Middleware para adicionar headers de cache
+export const cacheMiddleware = (key: string, ttl: number = 60) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const cached = CacheManager.get(key);
+    
+    if (cached) {
+      req.headers['x-cache-status'] = 'HIT';
+      return res.json(cached);
+    }
+    
+    req.headers['x-cache-status'] = 'MISS';
+    
+    // Interceptar response para cachear
+    const originalJson = res.json;
+    res.json = function(data) {
+      if (res.statusCode === 200) {
+        CacheManager.set(key, data, ttl);
       }
-      
-      performanceMonitor.monitorQuery(
-        `${method} ${path}`,
-        async () => ({ status, duration }),
-        routeName
-      );
-    });
+      return originalJson.call(this, data);
+    };
     
     next();
   };

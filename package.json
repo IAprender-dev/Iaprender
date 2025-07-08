@@ -78,6 +78,7 @@
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.1",
     "jwks-client": "^2.0.5",
+    "lru-cache": "^11.1.0",
     "lucide-react": "^0.453.0",
     "mammoth": "^1.9.1",
     "memoizee": "^0.4.17",

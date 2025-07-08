@@ -1,180 +1,200 @@
 import { Express, Request, Response } from 'express';
-import { performanceMonitor } from '../utils/performance-monitor';
-import { db } from '../db';
+import { PerformanceMonitor } from '../utils/performance-monitor';
+import { CacheManager } from '../utils/cache-manager';
 
 export function registerPerformanceRoutes(app: Express) {
-  
-  // GET /api/performance/stats - Estatísticas de performance
-  app.get('/api/performance/stats', async (req: Request, res: Response) => {
-    try {
-      const stats = performanceMonitor.getPerformanceStats();
-      res.json({ success: true, stats });
-    } catch (error) {
-      console.error('Error fetching performance stats:', error);
-      res.status(500).json({ error: 'Failed to fetch performance stats' });
+  // Middleware de autenticação para rotas administrativas
+  const authenticateAdmin = (req: Request, res: Response, next: Function) => {
+    if (!req.session?.user || req.session.user.role !== 'admin') {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
-  });
+    next();
+  };
 
-  // GET /api/performance/slow-queries - Queries lentas
-  app.get('/api/performance/slow-queries', async (req: Request, res: Response) => {
+  // GET /api/performance/metrics - Métricas de performance
+  app.get('/api/performance/metrics', authenticateAdmin, async (req: Request, res: Response) => {
     try {
-      const threshold = parseInt(req.query.threshold as string) || 1000;
-      const slowQueries = performanceMonitor.getSlowQueries(threshold);
-      res.json({ success: true, slowQueries, threshold });
-    } catch (error) {
-      console.error('Error fetching slow queries:', error);
-      res.status(500).json({ error: 'Failed to fetch slow queries' });
-    }
-  });
-
-  // POST /api/performance/explain - EXPLAIN ANALYZE para uma query específica
-  app.post('/api/performance/explain', async (req: Request, res: Response) => {
-    try {
-      const { query, params } = req.body;
+      const metrics = PerformanceMonitor.getMetrics();
+      const slowQueries = PerformanceMonitor.getSlowQueries();
+      const avgResponseTime = PerformanceMonitor.getAverageResponseTime();
+      const cacheHitRate = PerformanceMonitor.getCacheHitRate();
+      const topSlowEndpoints = PerformanceMonitor.getTopSlowEndpoints();
       
-      if (!query) {
-        return res.status(400).json({ error: 'Query is required' });
+      res.json({
+        success: true,
+        data: {
+          totalRequests: metrics.length,
+          avgResponseTime,
+          cacheHitRate,
+          slowQueries: slowQueries.length,
+          topSlowEndpoints,
+          recentMetrics: metrics.slice(-50) // Last 50 requests
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching performance metrics:', error);
+      res.status(500).json({ error: 'Failed to fetch performance metrics' });
+    }
+  });
+
+  // GET /api/performance/endpoints - Estatísticas por endpoint
+  app.get('/api/performance/endpoints', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const metrics = PerformanceMonitor.getMetrics();
+      const endpointStats = {};
+      
+      // Agrupar por endpoint
+      metrics.forEach(metric => {
+        if (!endpointStats[metric.endpoint]) {
+          endpointStats[metric.endpoint] = {
+            endpoint: metric.endpoint,
+            requests: 0,
+            totalDuration: 0,
+            minDuration: Infinity,
+            maxDuration: 0,
+            errors: 0
+          };
+        }
+        
+        const stats = endpointStats[metric.endpoint];
+        stats.requests++;
+        stats.totalDuration += metric.duration;
+        stats.minDuration = Math.min(stats.minDuration, metric.duration);
+        stats.maxDuration = Math.max(stats.maxDuration, metric.duration);
+        
+        if (metric.status >= 400) {
+          stats.errors++;
+        }
+      });
+      
+      // Calcular médias
+      const result = Object.values(endpointStats).map((stats: any) => ({
+        ...stats,
+        avgDuration: Math.round(stats.totalDuration / stats.requests),
+        errorRate: Math.round((stats.errors / stats.requests) * 100)
+      }));
+      
+      res.json({
+        success: true,
+        data: result.sort((a, b) => b.avgDuration - a.avgDuration)
+      });
+    } catch (error) {
+      console.error('Error fetching endpoint stats:', error);
+      res.status(500).json({ error: 'Failed to fetch endpoint stats' });
+    }
+  });
+
+  // GET /api/performance/cache - Estatísticas de cache
+  app.get('/api/performance/cache', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const cacheStats = CacheManager.getStats();
+      const hitRate = PerformanceMonitor.getCacheHitRate();
+      
+      res.json({
+        success: true,
+        data: {
+          ...cacheStats,
+          hitRate,
+          efficiency: hitRate > 70 ? 'High' : hitRate > 40 ? 'Medium' : 'Low'
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching cache stats:', error);
+      res.status(500).json({ error: 'Failed to fetch cache stats' });
+    }
+  });
+
+  // POST /api/performance/cache/clear - Limpar cache
+  app.post('/api/performance/cache/clear', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      CacheManager.clear();
+      
+      res.json({
+        success: true,
+        message: 'Cache cleared successfully'
+      });
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      res.status(500).json({ error: 'Failed to clear cache' });
+    }
+  });
+
+  // GET /api/performance/real-time - Métricas em tempo real
+  app.get('/api/performance/real-time', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const metrics = PerformanceMonitor.getMetrics();
+      const last5Minutes = metrics.filter(m => 
+        Date.now() - m.timestamp.getTime() < 5 * 60 * 1000
+      );
+      
+      const currentLoad = {
+        requestsPerMinute: Math.round(last5Minutes.length / 5),
+        avgResponseTime: last5Minutes.length > 0 
+          ? Math.round(last5Minutes.reduce((sum, m) => sum + m.duration, 0) / last5Minutes.length)
+          : 0,
+        errorRate: last5Minutes.length > 0
+          ? Math.round((last5Minutes.filter(m => m.status >= 400).length / last5Minutes.length) * 100)
+          : 0,
+        activeUsers: new Set(last5Minutes.map(m => m.user_id).filter(Boolean)).size
+      };
+      
+      res.json({
+        success: true,
+        data: currentLoad
+      });
+    } catch (error) {
+      console.error('Error fetching real-time metrics:', error);
+      res.status(500).json({ error: 'Failed to fetch real-time metrics' });
+    }
+  });
+
+  // GET /api/performance/alerts - Alertas de performance
+  app.get('/api/performance/alerts', authenticateAdmin, async (req: Request, res: Response) => {
+    try {
+      const metrics = PerformanceMonitor.getMetrics();
+      const alerts = [];
+      
+      // Verificar queries lentas
+      const slowQueries = metrics.filter(m => m.duration > 1000);
+      if (slowQueries.length > 0) {
+        alerts.push({
+          type: 'slow_query',
+          severity: 'high',
+          message: `${slowQueries.length} queries took more than 1 second`,
+          timestamp: new Date()
+        });
       }
-
-      const result = await performanceMonitor.explainAnalyze(query, params);
-      res.json({ success: true, result });
-    } catch (error) {
-      console.error('Error explaining query:', error);
-      res.status(500).json({ error: 'Failed to explain query' });
-    }
-  });
-
-  // GET /api/performance/database-stats - Estatísticas do banco de dados
-  app.get('/api/performance/database-stats', async (req: Request, res: Response) => {
-    try {
-      // Estatísticas de conexões ativas
-      const connectionsResult = await db.execute(`
-        SELECT 
-          count(*) as total_connections,
-          count(*) FILTER (WHERE state = 'active') as active_connections,
-          count(*) FILTER (WHERE state = 'idle') as idle_connections
-        FROM pg_stat_activity 
-        WHERE datname = current_database()
-      `);
-
-      // Estatísticas de tamanho das tabelas
-      const tableSizesResult = await db.execute(`
-        SELECT 
-          schemaname,
-          tablename,
-          pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) as size,
-          pg_total_relation_size(schemaname||'.'||tablename) as size_bytes
-        FROM pg_tables 
-        WHERE schemaname = 'public'
-        ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC
-        LIMIT 10
-      `);
-
-      // Estatísticas de índices
-      const indexStatsResult = await db.execute(`
-        SELECT 
-          schemaname,
-          tablename,
-          indexname,
-          idx_scan,
-          idx_tup_read,
-          idx_tup_fetch
-        FROM pg_stat_user_indexes
-        ORDER BY idx_scan DESC
-        LIMIT 10
-      `);
-
-      // Queries mais lentas do log
-      const slowestQueriesResult = await db.execute(`
-        SELECT 
-          query,
-          calls,
-          total_exec_time,
-          mean_exec_time,
-          max_exec_time
-        FROM pg_stat_statements
-        WHERE query NOT LIKE '%pg_stat%'
-        ORDER BY mean_exec_time DESC
-        LIMIT 10
-      `);
-
+      
+      // Verificar taxa de erro
+      const last100 = metrics.slice(-100);
+      const errorRate = last100.filter(m => m.status >= 400).length / last100.length;
+      if (errorRate > 0.05) {
+        alerts.push({
+          type: 'high_error_rate',
+          severity: 'medium',
+          message: `Error rate is ${Math.round(errorRate * 100)}%`,
+          timestamp: new Date()
+        });
+      }
+      
+      // Verificar cache hit rate
+      const cacheHitRate = PerformanceMonitor.getCacheHitRate();
+      if (cacheHitRate < 30) {
+        alerts.push({
+          type: 'low_cache_hit',
+          severity: 'medium',
+          message: `Cache hit rate is only ${cacheHitRate}%`,
+          timestamp: new Date()
+        });
+      }
+      
       res.json({
         success: true,
-        stats: {
-          connections: connectionsResult.rows[0],
-          tableSizes: tableSizesResult.rows,
-          indexStats: indexStatsResult.rows,
-          slowestQueries: slowestQueriesResult.rows
-        }
+        data: alerts
       });
     } catch (error) {
-      console.error('Error fetching database stats:', error);
-      res.status(500).json({ error: 'Failed to fetch database stats' });
-    }
-  });
-
-  // DELETE /api/performance/clear-logs - Limpar logs de performance
-  app.delete('/api/performance/clear-logs', async (req: Request, res: Response) => {
-    try {
-      performanceMonitor.clearLogs();
-      res.json({ success: true, message: 'Performance logs cleared' });
-    } catch (error) {
-      console.error('Error clearing performance logs:', error);
-      res.status(500).json({ error: 'Failed to clear performance logs' });
-    }
-  });
-
-  // GET /api/performance/real-time - Monitoramento em tempo real
-  app.get('/api/performance/real-time', async (req: Request, res: Response) => {
-    try {
-      // Atividade atual do banco
-      const currentActivityResult = await db.execute(`
-        SELECT 
-          pid,
-          usename,
-          application_name,
-          client_addr,
-          state,
-          query_start,
-          query
-        FROM pg_stat_activity 
-        WHERE datname = current_database() AND state = 'active'
-        ORDER BY query_start DESC
-        LIMIT 20
-      `);
-
-      // Cache hit ratio
-      const cacheHitResult = await db.execute(`
-        SELECT 
-          sum(heap_blks_read) as heap_read,
-          sum(heap_blks_hit) as heap_hit,
-          round(sum(heap_blks_hit) / (sum(heap_blks_hit) + sum(heap_blks_read)) * 100, 2) as cache_hit_ratio
-        FROM pg_statio_user_tables
-      `);
-
-      // Locks
-      const locksResult = await db.execute(`
-        SELECT 
-          mode,
-          count(*) as count
-        FROM pg_locks 
-        WHERE database = (SELECT oid FROM pg_database WHERE datname = current_database())
-        GROUP BY mode
-        ORDER BY count DESC
-      `);
-
-      res.json({
-        success: true,
-        realTimeStats: {
-          currentActivity: currentActivityResult.rows,
-          cacheHitRatio: cacheHitResult.rows[0],
-          locks: locksResult.rows,
-          timestamp: new Date().toISOString()
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching real-time stats:', error);
-      res.status(500).json({ error: 'Failed to fetch real-time stats' });
+      console.error('Error fetching alerts:', error);
+      res.status(500).json({ error: 'Failed to fetch alerts' });
     }
   });
 }

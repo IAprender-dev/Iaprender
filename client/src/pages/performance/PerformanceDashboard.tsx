@@ -1,424 +1,402 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
 import { 
   Activity, 
-  Database, 
   Clock, 
-  AlertTriangle, 
-  RefreshCw, 
-  BarChart3, 
+  Database, 
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Trash2,
+  Server,
   Zap,
-  HardDrive,
-  Cpu,
-  Eye,
-  TrendingUp
+  Shield,
+  BarChart3
 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
-interface PerformanceStats {
-  totalQueries: number;
-  averageDuration: number;
-  slowestQuery: { duration: number; query: string } | null;
-  fastestQuery: { duration: number; query: string } | null;
-  recentQueries: Array<{
-    query: string;
+interface PerformanceMetrics {
+  totalRequests: number;
+  avgResponseTime: number;
+  cacheHitRate: number;
+  slowQueries: number;
+  topSlowEndpoints: Array<{
+    endpoint: string;
+    avgDuration: number;
+    count: number;
+  }>;
+  recentMetrics: Array<{
+    endpoint: string;
+    method: string;
     duration: number;
-    route?: string;
+    status: number;
     timestamp: string;
   }>;
 }
 
-interface DatabaseStats {
-  connections: {
-    total_connections: number;
-    active_connections: number;
-    idle_connections: number;
-  };
-  tableSizes: Array<{
-    tablename: string;
-    size: string;
-    size_bytes: number;
-  }>;
-  indexStats: Array<{
-    tablename: string;
-    indexname: string;
-    idx_scan: number;
-    idx_tup_read: number;
-  }>;
-  slowestQueries: Array<{
-    query: string;
-    calls: number;
-    total_exec_time: number;
-    mean_exec_time: number;
-    max_exec_time: number;
-  }>;
+interface EndpointStats {
+  endpoint: string;
+  requests: number;
+  avgDuration: number;
+  minDuration: number;
+  maxDuration: number;
+  errorRate: number;
 }
 
-interface RealTimeStats {
-  currentActivity: Array<{
-    pid: number;
-    usename: string;
-    state: string;
-    query: string;
-    query_start: string;
-  }>;
-  cacheHitRatio: {
-    cache_hit_ratio: number;
-  };
-  locks: Array<{
-    mode: string;
-    count: number;
-  }>;
+interface CacheStats {
+  size: number;
+  hits: number;
+  misses: number;
+  hitRate: number;
+  efficiency: string;
+}
+
+interface Alert {
+  type: string;
+  severity: 'high' | 'medium' | 'low';
+  message: string;
   timestamp: string;
 }
 
 export default function PerformanceDashboard() {
-  const [selectedTab, setSelectedTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'endpoints' | 'cache' | 'alerts'>('overview');
+  const [autoRefresh, setAutoRefresh] = useState(true);
   const queryClient = useQueryClient();
 
-  // Buscar estatísticas de performance
-  const { data: performanceStats, isLoading: statsLoading } = useQuery<{ stats: PerformanceStats }>({
-    queryKey: ['/api/performance/stats'],
-    refetchInterval: 5000 // Atualiza a cada 5 segundos
+  // Queries
+  const { data: metrics, isLoading: metricsLoading } = useQuery<{ data: PerformanceMetrics }>({
+    queryKey: ['/api/performance/metrics'],
+    refetchInterval: autoRefresh ? 5000 : false,
   });
 
-  // Buscar queries lentas
-  const { data: slowQueries } = useQuery<{ slowQueries: any[]; threshold: number }>({
-    queryKey: ['/api/performance/slow-queries'],
-    refetchInterval: 10000
+  const { data: endpointStats, isLoading: endpointsLoading } = useQuery<{ data: EndpointStats[] }>({
+    queryKey: ['/api/performance/endpoints'],
+    refetchInterval: autoRefresh ? 10000 : false,
   });
 
-  // Buscar estatísticas do banco
-  const { data: dbStats } = useQuery<{ stats: DatabaseStats }>({
-    queryKey: ['/api/performance/database-stats'],
-    refetchInterval: 30000
+  const { data: cacheStats, isLoading: cacheLoading } = useQuery<{ data: CacheStats }>({
+    queryKey: ['/api/performance/cache'],
+    refetchInterval: autoRefresh ? 5000 : false,
   });
 
-  // Buscar estatísticas em tempo real
-  const { data: realTimeStats } = useQuery<{ realTimeStats: RealTimeStats }>({
-    queryKey: ['/api/performance/real-time'],
-    refetchInterval: 2000
+  const { data: alerts, isLoading: alertsLoading } = useQuery<{ data: Alert[] }>({
+    queryKey: ['/api/performance/alerts'],
+    refetchInterval: autoRefresh ? 5000 : false,
   });
 
-  const refreshAll = () => {
-    queryClient.invalidateQueries({ queryKey: ['/api/performance'] });
-  };
+  // Mutations
+  const clearCacheMutation = useMutation({
+    mutationFn: () => apiRequest('/api/performance/cache/clear', { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/performance/cache'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/performance/metrics'] });
+    },
+  });
 
-  const clearLogs = async () => {
-    try {
-      const response = await fetch('/api/performance/clear-logs', { method: 'DELETE' });
-      if (response.ok) {
-        queryClient.invalidateQueries({ queryKey: ['/api/performance/stats'] });
-      }
-    } catch (error) {
-      console.error('Erro ao limpar logs:', error);
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'high': return 'bg-red-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-blue-500';
+      default: return 'bg-gray-500';
     }
   };
 
-  const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
+  const getStatusColor = (status: number) => {
+    if (status < 300) return 'text-green-600';
+    if (status < 400) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
-  const formatQuery = (query: string, maxLength: number = 60) => {
-    if (query.length <= maxLength) return query;
-    return query.substring(0, maxLength) + '...';
+  const getCacheEfficiencyColor = (efficiency: string) => {
+    switch (efficiency) {
+      case 'High': return 'text-green-600';
+      case 'Medium': return 'text-yellow-600';
+      case 'Low': return 'text-red-600';
+      default: return 'text-gray-600';
+    }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Monitor de Performance</h1>
-                <p className="text-gray-600">Análise detalhada de performance do sistema</p>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={refreshAll}>
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Atualizar
-              </Button>
-              <Button variant="outline" onClick={clearLogs}>
-                <Database className="w-4 h-4 mr-2" />
-                Limpar Logs
-              </Button>
-            </div>
-          </div>
+  if (metricsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </div>
+    );
+  }
 
-      <div className="p-6">
-        <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-            <TabsTrigger value="queries">Consultas</TabsTrigger>
-            <TabsTrigger value="database">Banco de Dados</TabsTrigger>
-            <TabsTrigger value="realtime">Tempo Real</TabsTrigger>
-            <TabsTrigger value="analysis">Análise</TabsTrigger>
-          </TabsList>
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Performance Dashboard</h1>
+            <p className="text-gray-600 mt-1">Monitoramento em tempo real do sistema</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant={autoRefresh ? "default" : "outline"}
+              size="sm"
+              onClick={() => setAutoRefresh(!autoRefresh)}
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {autoRefresh ? 'Auto-refresh ON' : 'Auto-refresh OFF'}
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => clearCacheMutation.mutate()}
+              disabled={clearCacheMutation.isPending}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Limpar Cache
+            </Button>
+          </div>
+        </div>
 
-          {/* Visão Geral */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total de Consultas</CardTitle>
-                  <Activity className="h-4 w-4 text-blue-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{performanceStats?.stats.totalQueries || 0}</div>
-                  <p className="text-xs text-muted-foreground">Consultas monitoradas</p>
-                </CardContent>
-              </Card>
+        {/* Tab Navigation */}
+        <div className="flex space-x-4 mb-6">
+          {[
+            { key: 'overview', label: 'Visão Geral', icon: Activity },
+            { key: 'endpoints', label: 'Endpoints', icon: Server },
+            { key: 'cache', label: 'Cache', icon: Database },
+            { key: 'alerts', label: 'Alertas', icon: AlertTriangle },
+          ].map(({ key, label, icon: Icon }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key as any)}
+              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                activeTab === key
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Icon className="h-4 w-4 mr-2" />
+              {label}
+            </button>
+          ))}
+        </div>
 
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Tempo Médio</CardTitle>
-                  <Clock className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {formatDuration(performanceStats?.stats.averageDuration || 0)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">Duração média das consultas</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Consulta Mais Lenta</CardTitle>
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {formatDuration(performanceStats?.stats.slowestQuery?.duration || 0)}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatQuery(performanceStats?.stats.slowestQuery?.query || 'N/A', 30)}
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Cache Hit Ratio</CardTitle>
-                  <Zap className="h-4 w-4 text-yellow-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {realTimeStats?.realTimeStats.cacheHitRatio?.cache_hit_ratio || 0}%
-                  </div>
-                  <p className="text-xs text-muted-foreground">Taxa de acerto do cache</p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Consultas Recentes */}
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card>
-              <CardHeader>
-                <CardTitle>Consultas Recentes</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+                <BarChart3 className="h-4 w-4 text-blue-600" />
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {performanceStats?.stats.recentQueries?.slice(0, 5).map((query, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="text-2xl font-bold">{metrics?.data.totalRequests || 0}</div>
+                <p className="text-xs text-gray-500">Todas as requisições</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Tempo Médio</CardTitle>
+                <Clock className="h-4 w-4 text-green-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{metrics?.data.avgResponseTime || 0}ms</div>
+                <p className="text-xs text-gray-500">Tempo de resposta</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Cache Hit Rate</CardTitle>
+                <Zap className="h-4 w-4 text-purple-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{metrics?.data.cacheHitRate || 0}%</div>
+                <p className="text-xs text-gray-500">Taxa de acerto</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Queries Lentas</CardTitle>
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{metrics?.data.slowQueries || 0}</div>
+                <p className="text-xs text-gray-500">Acima de 500ms</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Endpoints Tab */}
+        {activeTab === 'endpoints' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Server className="h-5 w-5 mr-2" />
+                Estatísticas por Endpoint
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {endpointsLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {endpointStats?.data?.map((endpoint, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
-                        <p className="font-medium text-sm">{formatQuery(query.query)}</p>
-                        {query.route && (
-                          <Badge variant="outline" className="mt-1 text-xs">
-                            {query.route}
-                          </Badge>
-                        )}
+                        <h3 className="font-medium text-gray-900">{endpoint.endpoint}</h3>
+                        <p className="text-sm text-gray-500">{endpoint.requests} requisições</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-sm">{formatDuration(query.duration)}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(query.timestamp).toLocaleTimeString()}
-                        </p>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-center">
+                          <div className="text-sm font-medium">{endpoint.avgDuration}ms</div>
+                          <div className="text-xs text-gray-500">Médio</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-medium">{endpoint.minDuration}ms</div>
+                          <div className="text-xs text-gray-500">Mín</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-sm font-medium">{endpoint.maxDuration}ms</div>
+                          <div className="text-xs text-gray-500">Máx</div>
+                        </div>
+                        <Badge variant={endpoint.errorRate > 5 ? "destructive" : "secondary"}>
+                          {endpoint.errorRate}% erros
+                        </Badge>
                       </div>
                     </div>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-          {/* Consultas */}
-          <TabsContent value="queries" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Consultas Lentas (&gt; 1s)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {slowQueries?.slowQueries?.map((query, index) => (
-                    <div key={index} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge variant="destructive">
-                          {formatDuration(query.duration)}
-                        </Badge>
-                        {query.route && (
-                          <Badge variant="outline">{query.route}</Badge>
-                        )}
-                      </div>
-                      <p className="text-sm font-mono bg-gray-100 p-2 rounded">
-                        {query.query}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        {new Date(query.timestamp).toLocaleString()}
-                      </p>
+        {/* Cache Tab */}
+        {activeTab === 'cache' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Database className="h-5 w-5 mr-2" />
+                Estatísticas de Cache
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cacheLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-blue-600">{cacheStats?.data.size || 0}</div>
+                    <div className="text-sm text-gray-500">Itens no Cache</div>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">{cacheStats?.data.hits || 0}</div>
+                    <div className="text-sm text-gray-500">Cache Hits</div>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className="text-2xl font-bold text-red-600">{cacheStats?.data.misses || 0}</div>
+                    <div className="text-sm text-gray-500">Cache Misses</div>
+                  </div>
+                  <div className="text-center p-4 border rounded-lg">
+                    <div className={`text-2xl font-bold ${getCacheEfficiencyColor(cacheStats?.data.efficiency || 'Low')}`}>
+                      {cacheStats?.data.efficiency || 'Low'}
                     </div>
-                  ))}
-                  {(!slowQueries?.slowQueries || slowQueries.slowQueries.length === 0) && (
-                    <p className="text-center text-gray-500 py-8">
-                      Nenhuma consulta lenta detectada
-                    </p>
+                    <div className="text-sm text-gray-500">Eficiência</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Alerts Tab */}
+        {activeTab === 'alerts' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <AlertTriangle className="h-5 w-5 mr-2" />
+                Alertas de Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {alertsLoading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {alerts?.data?.length === 0 ? (
+                    <div className="text-center py-8">
+                      <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900">Nenhum Alerta</h3>
+                      <p className="text-gray-500">Sistema funcionando normalmente</p>
+                    </div>
+                  ) : (
+                    alerts?.data?.map((alert, index) => (
+                      <div key={index} className="flex items-center p-4 border rounded-lg">
+                        <div className={`w-3 h-3 rounded-full ${getSeverityColor(alert.severity)} mr-4`}></div>
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">{alert.message}</h3>
+                          <p className="text-sm text-gray-500">
+                            {new Date(alert.timestamp).toLocaleString()}
+                          </p>
+                        </div>
+                        <Badge variant={alert.severity === 'high' ? 'destructive' : 'secondary'}>
+                          {alert.severity.toUpperCase()}
+                        </Badge>
+                      </div>
+                    ))
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-          {/* Banco de Dados */}
-          <TabsContent value="database" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Conexões</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Total:</span>
-                      <span className="font-bold">{dbStats?.stats.connections?.total_connections || 0}</span>
+        {/* Recent Metrics */}
+        {activeTab === 'overview' && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <TrendingUp className="h-5 w-5 mr-2" />
+                Requisições Recentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {metrics?.data.recentMetrics?.slice(0, 10).map((metric, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Badge variant="outline">{metric.method}</Badge>
+                      <span className="text-sm font-medium">{metric.endpoint}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Ativas:</span>
-                      <span className="font-bold text-green-600">{dbStats?.stats.connections?.active_connections || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Ociosas:</span>
-                      <span className="font-bold text-gray-500">{dbStats?.stats.connections?.idle_connections || 0}</span>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-gray-600">{metric.duration}ms</span>
+                      <span className={`text-sm font-medium ${getStatusColor(metric.status)}`}>
+                        {metric.status}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(metric.timestamp).toLocaleTimeString()}
+                      </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Tamanho das Tabelas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {dbStats?.stats.tableSizes?.slice(0, 5).map((table, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>{table.tablename}</span>
-                        <span className="font-bold">{table.size}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Locks</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {realTimeStats?.realTimeStats.locks?.map((lock, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span>{lock.mode}</span>
-                        <span className="font-bold">{lock.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Tempo Real */}
-          <TabsContent value="realtime" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Atividade Atual do Banco</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {realTimeStats?.realTimeStats.currentActivity?.map((activity, index) => (
-                    <div key={index} className="p-3 border rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <Badge variant="outline">PID: {activity.pid}</Badge>
-                          <Badge variant="outline" className="ml-2">{activity.usename}</Badge>
-                        </div>
-                        <Badge variant={activity.state === 'active' ? 'default' : 'secondary'}>
-                          {activity.state}
-                        </Badge>
-                      </div>
-                      <p className="text-sm font-mono bg-gray-100 p-2 rounded">
-                        {formatQuery(activity.query, 100)}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Iniciado: {new Date(activity.query_start).toLocaleTimeString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Análise */}
-          <TabsContent value="analysis" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Análise de Performance</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h3 className="font-medium text-blue-900 mb-2">Recomendações</h3>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Monitorar consultas que demoram mais de 1 segundo</li>
-                      <li>• Manter cache hit ratio acima de 95%</li>
-                      <li>• Revisar índices para consultas frequentes</li>
-                      <li>• Considerar connection pooling para muitas conexões</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <h4 className="font-medium text-green-900 mb-2">✅ Performance Boa</h4>
-                      <p className="text-sm text-green-800">
-                        Cache hit ratio: {realTimeStats?.realTimeStats.cacheHitRatio?.cache_hit_ratio || 0}%
-                      </p>
-                    </div>
-                    
-                    <div className="p-4 bg-yellow-50 rounded-lg">
-                      <h4 className="font-medium text-yellow-900 mb-2">⚠️ Atenção</h4>
-                      <p className="text-sm text-yellow-800">
-                        {slowQueries?.slowQueries?.length || 0} consultas lentas detectadas
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
