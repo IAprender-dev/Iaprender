@@ -1,723 +1,735 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Link } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
-import { School, Building2, Users, GraduationCap, MapPin, Phone, Mail, Calendar, AlertTriangle, CheckCircle, XCircle, Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
-import { Link } from 'wouter';
-import iAprenderLogo from '@assets/IAprender_1750262377399.png';
+import { ArrowLeft, Plus, Edit2, Users, Building, MapPin, Phone, Mail, Calendar, Hash } from 'lucide-react';
 
 interface School {
   id: number;
   name: string;
-  inep: string | null;
-  cnpj: string | null;
+  inep?: string;
+  cnpj?: string;
   address: string;
-  city: string;
-  state: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  phone?: string;
+  email?: string;
+  numberOfClassrooms: number;
   numberOfStudents: number;
   numberOfTeachers: number;
+  foundationDate?: string;
+  zone: string;
+  type: string;
   status: string;
-  isActive: boolean;
-  createdAt: string;
+  contractId: number;
   contractName: string;
-  contractStatus: string;
-  companyName: string;
-  directorName: string | null;
-  directorEmail: string | null;
+  directorUserId?: number;
+  directorEmail?: string;
+  directorName?: string;
+}
+
+interface Director {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  contractId?: number;
 }
 
 interface Contract {
   id: number;
   name: string;
   status: string;
-  maxUsers: number;
-  startDate: string;
-  endDate: string;
 }
 
+interface FormData {
+  name: string;
+  inep: string;
+  cnpj: string;
+  address: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  phone: string;
+  email: string;
+  numberOfClassrooms: number;
+  numberOfStudents: number;
+  numberOfTeachers: number;
+  foundationDate: string;
+  zone: string;
+  type: string;
+  contractId: string;
+  existingDirectorId: string;
+}
+
+const initialFormData: FormData = {
+  name: '',
+  inep: '',
+  cnpj: '',
+  address: '',
+  neighborhood: '',
+  city: '',
+  state: '',
+  zipCode: '',
+  phone: '',
+  email: '',
+  numberOfClassrooms: 0,
+  numberOfStudents: 0,
+  numberOfTeachers: 0,
+  foundationDate: '',
+  zone: 'urbana',
+  type: 'municipal',
+  contractId: '',
+  existingDirectorId: '',
+};
+
 export default function SchoolManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Estados do formulário
+  const [formData, setFormData] = useState<FormData>(initialFormData);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Form state for creating school
-  const [formData, setFormData] = useState({
-    name: '',
-    inep: '',
-    cnpj: '',
-    contractId: '',
-    address: '',
-    neighborhood: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    phone: '',
-    email: '',
-    foundationDate: '',
-    numberOfClassrooms: 0,
-    numberOfStudents: 0,
-    numberOfTeachers: 0,
-    zone: '',
-    type: 'municipal',
-    directorOption: 'create', // 'create' ou 'existing'
-    existingDirectorId: '',
-    directorData: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: ''
-    }
-  });
-
-  // Estado para diretores existentes
-  const [availableDirectors, setAvailableDirectors] = useState<any[]>([]);
 
   // Queries
-  const { data: schools, isLoading: schoolsLoading } = useQuery({
-    queryKey: ['/api/municipal/schools'],
+  const { data: statsData } = useQuery({
+    queryKey: ['/api/municipal/stats'],
   });
 
-  const { data: contractsResponse } = useQuery({
-    queryKey: ['/api/municipal/contracts/available'],
+  const { data: contractsData } = useQuery({
+    queryKey: ['/api/municipal/contracts/filtered'],
   });
 
-  const { data: schoolStats } = useQuery({
-    queryKey: ['/api/municipal/schools/stats'],
-  });
-
-  // Query para buscar diretores disponíveis
   const { data: directorsData } = useQuery({
-    queryKey: ['/api/municipal/available-directors'],
+    queryKey: ['/api/municipal/directors/filtered'],
+  });
+
+  const { data: schoolsData, refetch: refetchSchools } = useQuery({
+    queryKey: ['/api/municipal/schools/filtered'],
   });
 
   // Mutations
   const createSchoolMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return await apiRequest('/api/municipal/schools', {
+    mutationFn: async (schoolData: any) => {
+      const response = await apiRequest('/api/municipal/schools/create', {
         method: 'POST',
-        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(schoolData),
       });
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools/stats'] });
-      setIsCreateDialogOpen(false);
-      resetForm();
-      
-      if (data.director) {
-        toast({
-          title: "Escola Criada com Sucesso!",
-          description: `Escola "${formData.name}" foi criada e o diretor foi automaticamente criado no sistema.`,
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Escola Criada!",
-          description: data.warning || `Escola "${formData.name}" foi criada com sucesso.`,
-          variant: data.warning ? "destructive" : "default",
-        });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao criar escola');
       }
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Erro ao Criar Escola",
-        description: error.message || "Ocorreu um erro ao criar a escola.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deactivateSchoolMutation = useMutation({
-    mutationFn: async (schoolId: number) => {
-      return await apiRequest(`/api/municipal/schools/${schoolId}/deactivate`, {
-        method: 'POST',
-      });
+      return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools/stats'] });
       toast({
-        title: "Escola Desativada",
-        description: "Escola, usuários e contrato foram desativados com sucesso.",
-        variant: "default",
+        title: "Escola criada com sucesso!",
+        description: "A nova escola foi adicionada ao sistema.",
       });
+      setIsCreateDialogOpen(false);
+      resetForm();
+      refetchSchools();
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/stats'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
-        title: "Erro ao Desativar Escola",
-        description: error.message || "Ocorreu um erro ao desativar a escola.",
+        title: "Erro ao criar escola",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      inep: '',
-      cnpj: '',
-      contractId: '',
-      address: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-      zipCode: '',
-      phone: '',
-      email: '',
-      foundationDate: '',
-      numberOfClassrooms: 0,
-      numberOfStudents: 0,
-      numberOfTeachers: 0,
-      zone: '',
-      type: 'municipal',
-      directorOption: 'create',
-      existingDirectorId: '',
-      directorData: {
-        firstName: '',
-        lastName: '',
-        email: '',
-        phone: ''
+  const updateSchoolMutation = useMutation({
+    mutationFn: async (schoolData: any) => {
+      const response = await apiRequest(`/api/municipal/schools/${selectedSchool?.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(schoolData),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao atualizar escola');
       }
-    });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Escola atualizada com sucesso!",
+        description: "As informações da escola foram salvas.",
+      });
+      setIsEditDialogOpen(false);
+      setSelectedSchool(null);
+      resetForm();
+      refetchSchools();
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/stats'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro ao atualizar escola",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Funções auxiliares
+  const resetForm = () => {
+    setFormData(initialFormData);
   };
 
-  const handleCreateSchool = () => {
-    if (!formData.name || !formData.contractId || !formData.address || !formData.city || !formData.state) {
+  const handleInputChange = (field: keyof FormData, value: string | number) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validações básicas
+    if (!formData.name || !formData.contractId || !formData.address) {
       toast({
-        title: "Campos Obrigatórios",
-        description: "Preencha todos os campos obrigatórios: Nome, Contrato, Endereço, Cidade e Estado.",
+        title: "Campos obrigatórios",
+        description: "Preencha nome, contrato e endereço da escola.",
         variant: "destructive",
       });
       return;
     }
 
-    createSchoolMutation.mutate(formData);
-  };
+    if (!formData.existingDirectorId || formData.existingDirectorId === 'none') {
+      toast({
+        title: "Diretor obrigatório",
+        description: "Selecione um diretor para a escola.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleDeactivateSchool = (school: School) => {
-    if (window.confirm(`Tem certeza que deseja desativar a escola "${school.name}"? Esta ação desativará também o contrato e tornará os dados inacessíveis.`)) {
-      deactivateSchoolMutation.mutate(school.id);
+    // Preparar dados para envio
+    const schoolData = {
+      ...formData,
+      numberOfClassrooms: Number(formData.numberOfClassrooms),
+      numberOfStudents: Number(formData.numberOfStudents),
+      numberOfTeachers: Number(formData.numberOfTeachers),
+      contractId: Number(formData.contractId),
+      existingDirectorId: Number(formData.existingDirectorId),
+    };
+
+    // Determinar se é criação ou edição
+    if (selectedSchool) {
+      updateSchoolMutation.mutate(schoolData);
+    } else {
+      createSchoolMutation.mutate(schoolData);
     }
   };
 
-  const getStatusBadge = (status: string, isActive: boolean) => {
-    if (!isActive || status === 'inactive') {
-      return <Badge variant="destructive">Inativa</Badge>;
-    }
-    return <Badge variant="default">Ativa</Badge>;
+  const handleEditSchool = (school: School) => {
+    setSelectedSchool(school);
+    setFormData({
+      name: school.name,
+      inep: school.inep || '',
+      cnpj: school.cnpj || '',
+      address: school.address,
+      neighborhood: school.neighborhood || '',
+      city: school.city || '',
+      state: school.state || '',
+      zipCode: school.zipCode || '',
+      phone: school.phone || '',
+      email: school.email || '',
+      numberOfClassrooms: school.numberOfClassrooms,
+      numberOfStudents: school.numberOfStudents,
+      numberOfTeachers: school.numberOfTeachers,
+      foundationDate: school.foundationDate || '',
+      zone: school.zone,
+      type: school.type,
+      contractId: school.contractId.toString(),
+      existingDirectorId: school.directorUserId?.toString() || 'none',
+    });
+    setIsEditDialogOpen(true);
   };
 
-  // Contratos já filtrados pela empresa do gestor (ID da empresa não é exposto no frontend)
-  const availableContracts = contractsResponse?.contracts || [];
+  const openCreateDialog = () => {
+    resetForm();
+    setSelectedSchool(null);
+    setIsCreateDialogOpen(true);
+  };
 
-  if (schoolsLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Dados processados
+  const stats = statsData?.stats || {};
+  const contracts = contractsData?.contracts || [];
+  const directors = directorsData?.directors || [];
+  const schools = schoolsData?.schools || [];
+
+  // Filtrar diretores disponíveis (que não estão vinculados a outras escolas)
+  const availableDirectors = directors.filter((director: Director) => 
+    !schools.some((school: School) => school.directorEmail === director.email && school.id !== selectedSchool?.id)
+  );
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header with Back Button, Logo and Brand */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Left side: Back button and branding */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-4">
             <Link href="/gestor/dashboard">
-              <Button variant="outline" className="flex items-center space-x-2">
-                <ArrowLeft className="h-4 w-4" />
-                <span>Voltar</span>
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar
               </Button>
             </Link>
-            
-            <div className="flex items-center space-x-3">
-              <div className="bg-white p-2 rounded-lg shadow-sm border">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white rounded-lg shadow-sm border flex items-center justify-center">
                 <img 
-                  src={iAprenderLogo} 
-                  alt="IAprender Logo" 
-                  className="h-8 w-auto"
+                  src="/attached_assets/IAprender Logo_1751743080748.png" 
+                  alt="IAprender" 
+                  className="w-6 h-6"
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  IAprender
-                </h1>
-                <p className="text-sm text-gray-600">Gestão de Escolas</p>
+                <h1 className="text-xl font-semibold text-gray-900">Gestão de Escolas</h1>
+                <p className="text-sm text-gray-500">Gerenciar escolas municipais</p>
               </div>
             </div>
           </div>
-          
-          {/* Right side: Title and description */}
-          <div className="text-right">
-            <h2 className="text-xl font-semibold text-gray-900">Gestão de Escolas Municipais</h2>
-            <p className="text-gray-600">Gerencie as escolas vinculadas aos seus contratos</p>
-          </div>
+          <Button onClick={openCreateDialog} className="bg-emerald-600 hover:bg-emerald-700">
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Escola
+          </Button>
         </div>
       </div>
 
-      {/* Action Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">Escolas Cadastradas</h3>
-          <p className="text-gray-600">Visualize e gerencie todas as escolas municipais</p>
-        </div>
-        
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Escola
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Criar Nova Escola</DialogTitle>
-              <DialogDescription>
-                Cada escola representa um contrato específico para liberação de acesso aos tokens de IA
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6 py-4">
-              {/* Informações Básicas */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Informações Básicas</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Nome da Escola *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Ex: Escola Municipal João Silva"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="contractId">Contrato Vinculado *</Label>
-                    <Select 
-                      value={formData.contractId} 
-                      onValueChange={(value) => setFormData({ ...formData, contractId: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um contrato disponível" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableContracts.map((contract: Contract) => (
-                          <SelectItem key={contract.id} value={contract.id.toString()}>
-                            {contract.name} (Máx: {contract.maxUsers} usuários)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Apenas contratos ativos da sua empresa são exibidos
-                    </p>
-                  </div>
-                  <div>
-                    <Label htmlFor="inep">Código INEP</Label>
-                    <Input
-                      id="inep"
-                      value={formData.inep}
-                      onChange={(e) => setFormData({ ...formData, inep: e.target.value })}
-                      placeholder="12345678"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cnpj">CNPJ</Label>
-                    <Input
-                      id="cnpj"
-                      value={formData.cnpj}
-                      onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
-                      placeholder="00.000.000/0000-00"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Endereço */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Endereço</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <Label htmlFor="address">Endereço *</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="Rua, número"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="neighborhood">Bairro</Label>
-                    <Input
-                      id="neighborhood"
-                      value={formData.neighborhood}
-                      onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                      placeholder="Nome do bairro"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="zipCode">CEP</Label>
-                    <Input
-                      id="zipCode"
-                      value={formData.zipCode}
-                      onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
-                      placeholder="00000-000"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="city">Cidade *</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                      placeholder="Nome da cidade"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">Estado *</Label>
-                    <Input
-                      id="state"
-                      value={formData.state}
-                      onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                      placeholder="SP"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Opções do Diretor */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Designação do Diretor</h3>
-                
-                {/* Opção: Criar Novo ou Vincular Existente */}
-                <div className="flex space-x-6">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="directorOption"
-                      value="create"
-                      checked={formData.directorOption === 'create'}
-                      onChange={(e) => setFormData({...formData, directorOption: e.target.value, existingDirectorId: ''})}
-                      className="text-emerald-600"
-                    />
-                    <span className="text-sm font-medium">Criar Novo Diretor</span>
-                  </label>
-                  
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="directorOption"
-                      value="existing"
-                      checked={formData.directorOption === 'existing'}
-                      onChange={(e) => setFormData({...formData, directorOption: e.target.value})}
-                      className="text-emerald-600"
-                    />
-                    <span className="text-sm font-medium">Vincular Diretor Existente</span>
-                  </label>
-                </div>
-
-                {/* Formulário para Novo Diretor */}
-                {formData.directorOption === 'create' && (
-                  <div className="space-y-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <h4 className="text-sm font-medium text-emerald-700">Dados do Novo Diretor</h4>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label htmlFor="directorFirstName">Nome *</Label>
-                        <Input
-                          id="directorFirstName"
-                          value={formData.directorData.firstName}
-                          onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, firstName: e.target.value}})}
-                          placeholder="João"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="directorLastName">Sobrenome *</Label>
-                        <Input
-                          id="directorLastName"
-                          value={formData.directorData.lastName}
-                          onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, lastName: e.target.value}})}
-                          placeholder="Silva"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="directorEmail">Email *</Label>
-                        <Input
-                          id="directorEmail"
-                          type="email"
-                          value={formData.directorData.email}
-                          onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, email: e.target.value}})}
-                          placeholder="diretor@escola.edu.br"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="directorPhone">Telefone</Label>
-                      <Input
-                        id="directorPhone"
-                        value={formData.directorData.phone}
-                        onChange={(e) => setFormData({...formData, directorData: {...formData.directorData, phone: e.target.value}})}
-                        placeholder="(51) 99999-9999"
-                      />
-                    </div>
-                    
-                    <div className="text-xs text-emerald-600 bg-emerald-100 p-2 rounded">
-                      <strong>Nota:</strong> O diretor será criado automaticamente no sistema AWS Cognito com acesso à empresa e ao contrato selecionado.
-                    </div>
-                  </div>
-                )}
-
-                {/* Seleção de Diretor Existente */}
-                {formData.directorOption === 'existing' && (
-                  <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="text-sm font-medium text-blue-700">Selecionar Diretor Existente</h4>
-                    
-                    <div>
-                      <Label htmlFor="existingDirector">Diretor Disponível</Label>
-                      <Select 
-                        value={formData.existingDirectorId} 
-                        onValueChange={(value) => setFormData({...formData, existingDirectorId: value})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um diretor..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {directorsData?.directors?.map((director: any) => (
-                            <SelectItem key={director.id} value={director.id.toString()}>
-                              {director.firstName} {director.lastName} ({director.email})
-                              {director.currentSchool && (
-                                <span className="text-xs text-gray-500 ml-2">
-                                  - Atualmente em: {director.currentSchool}
-                                </span>
-                              )}
-                            </SelectItem>
-                          ))}
-                          {(!directorsData?.directors || directorsData.directors.length === 0) && (
-                            <SelectItem value="none" disabled>
-                              Nenhum diretor disponível
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="text-xs text-blue-600 bg-blue-100 p-2 rounded">
-                      <strong>Nota:</strong> Diretores já vinculados a outras escolas podem ser transferidos. O acesso será automaticamente atualizado para o novo contrato.
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Informações Adicionais */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Informações Pedagógicas</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="numberOfStudents">Número de Alunos</Label>
-                    <Input
-                      id="numberOfStudents"
-                      type="number"
-                      value={formData.numberOfStudents}
-                      onChange={(e) => setFormData({ ...formData, numberOfStudents: parseInt(e.target.value) || 0 })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="numberOfTeachers">Número de Professores</Label>
-                    <Input
-                      id="numberOfTeachers"
-                      type="number"
-                      value={formData.numberOfTeachers}
-                      onChange={(e) => setFormData({ ...formData, numberOfTeachers: parseInt(e.target.value) || 0 })}
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="numberOfClassrooms">Número de Salas</Label>
-                    <Input
-                      id="numberOfClassrooms"
-                      type="number"
-                      value={formData.numberOfClassrooms}
-                      onChange={(e) => setFormData({ ...formData, numberOfClassrooms: parseInt(e.target.value) || 0 })}
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleCreateSchool}
-                disabled={createSchoolMutation.isPending}
-                className="bg-emerald-600 hover:bg-emerald-700"
-              >
-                {createSchoolMutation.isPending ? 'Criando...' : 'Criar Escola'}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Statistics Cards */}
-      {schoolStats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Estatísticas */}
+      <div className="px-6 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Escolas</CardTitle>
-              <Building2 className="h-4 w-4 text-emerald-600" />
+              <Building className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{schoolStats.stats?.totalSchools || 0}</div>
+              <div className="text-2xl font-bold">{stats.totalSchools || 0}</div>
             </CardContent>
           </Card>
-
+          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Escolas Ativas</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <Building className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{schoolStats.stats?.activeSchools || 0}</div>
+              <div className="text-2xl font-bold text-green-600">{stats.activeSchools || 0}</div>
             </CardContent>
           </Card>
-
+          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Alunos</CardTitle>
               <Users className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{schoolStats.stats?.totalStudents || 0}</div>
+              <div className="text-2xl font-bold text-blue-600">{stats.totalStudents || 0}</div>
             </CardContent>
           </Card>
-
+          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Professores</CardTitle>
-              <GraduationCap className="h-4 w-4 text-purple-600" />
+              <Users className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{schoolStats.stats?.totalTeachers || 0}</div>
+              <div className="text-2xl font-bold text-purple-600">{stats.totalTeachers || 0}</div>
             </CardContent>
           </Card>
         </div>
-      )}
 
-      {/* Schools List */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900">Escolas Cadastradas</h2>
-        
-        {(!schools?.schools || schools.schools.length === 0) ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">Nenhuma escola cadastrada</h3>
-              <p className="text-gray-500 mb-4">
-                Comece criando sua primeira escola vinculada a um contrato.
-              </p>
+        {/* Lista de Escolas */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-900">Escolas Cadastradas</h2>
+          {schools.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Building className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma escola cadastrada</h3>
+                <p className="text-gray-500 mb-4">Comece criando sua primeira escola</p>
+                <Button onClick={openCreateDialog} className="bg-emerald-600 hover:bg-emerald-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Criar Primeira Escola
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {schools.map((school: School) => (
+                <Card key={school.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg">{school.name}</CardTitle>
+                        <p className="text-sm text-gray-500 mt-1">{school.contractName}</p>
+                      </div>
+                      <Badge variant={school.status === 'active' ? 'default' : 'secondary'}>
+                        {school.status === 'active' ? 'Ativa' : 'Inativa'}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span>{school.address}</span>
+                    </div>
+                    
+                    {school.phone && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Phone className="w-4 h-4" />
+                        <span>{school.phone}</span>
+                      </div>
+                    )}
+                    
+                    {school.email && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Mail className="w-4 h-4" />
+                        <span>{school.email}</span>
+                      </div>
+                    )}
+                    
+                    {school.inep && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Hash className="w-4 h-4" />
+                        <span>INEP: {school.inep}</span>
+                      </div>
+                    )}
+                    
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t">
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-blue-600">{school.numberOfStudents}</div>
+                        <div className="text-xs text-gray-500">Alunos</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-purple-600">{school.numberOfTeachers}</div>
+                        <div className="text-xs text-gray-500">Professores</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-orange-600">{school.numberOfClassrooms}</div>
+                        <div className="text-xs text-gray-500">Salas</div>
+                      </div>
+                    </div>
+                    
+                    {school.directorName && (
+                      <div className="pt-2 border-t">
+                        <div className="text-sm text-gray-600">
+                          <strong>Diretor:</strong> {school.directorName}
+                        </div>
+                        <div className="text-xs text-gray-500">{school.directorEmail}</div>
+                      </div>
+                    )}
+                    
+                    <div className="pt-3">
+                      <Button 
+                        onClick={() => handleEditSchool(school)} 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                      >
+                        <Edit2 className="w-4 h-4 mr-2" />
+                        Editar Escola
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Dialog de Criação/Edição */}
+      <Dialog open={isCreateDialogOpen || isEditDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsCreateDialogOpen(false);
+          setIsEditDialogOpen(false);
+          setSelectedSchool(null);
+          resetForm();
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedSchool ? 'Editar Escola' : 'Nova Escola'}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Informações Básicas */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Informações Básicas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome da Escola *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="Nome completo da escola"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contractId">Contrato *</Label>
+                  <Select value={formData.contractId} onValueChange={(value) => handleInputChange('contractId', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um contrato" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Selecionar contrato</SelectItem>
+                      {contracts.map((contract: Contract) => (
+                        <SelectItem key={contract.id} value={contract.id.toString()}>
+                          {contract.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="inep">Código INEP</Label>
+                  <Input
+                    id="inep"
+                    value={formData.inep}
+                    onChange={(e) => handleInputChange('inep', e.target.value)}
+                    placeholder="00000000"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="cnpj">CNPJ</Label>
+                  <Input
+                    id="cnpj"
+                    value={formData.cnpj}
+                    onChange={(e) => handleInputChange('cnpj', e.target.value)}
+                    placeholder="00.000.000/0000-00"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="type">Tipo de Escola</Label>
+                  <Select value={formData.type} onValueChange={(value) => handleInputChange('type', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="municipal">Municipal</SelectItem>
+                      <SelectItem value="estadual">Estadual</SelectItem>
+                      <SelectItem value="federal">Federal</SelectItem>
+                      <SelectItem value="particular">Particular</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="zone">Zona</Label>
+                  <Select value={formData.zone} onValueChange={(value) => handleInputChange('zone', value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="urbana">Urbana</SelectItem>
+                      <SelectItem value="rural">Rural</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Endereço */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Endereço</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="address">Endereço *</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    placeholder="Rua, número"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="neighborhood">Bairro</Label>
+                  <Input
+                    id="neighborhood"
+                    value={formData.neighborhood}
+                    onChange={(e) => handleInputChange('neighborhood', e.target.value)}
+                    placeholder="Nome do bairro"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="city">Cidade</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder="Nome da cidade"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="state">Estado</Label>
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    placeholder="UF"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">CEP</Label>
+                  <Input
+                    id="zipCode"
+                    value={formData.zipCode}
+                    onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                    placeholder="00000-000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contato */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Contato</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telefone</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    placeholder="(51) 9999-9999"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    placeholder="escola@educacao.rs.gov.br"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Informações Numéricas */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Informações Gerais</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfClassrooms">Salas de Aula</Label>
+                  <Input
+                    id="numberOfClassrooms"
+                    type="number"
+                    value={formData.numberOfClassrooms}
+                    onChange={(e) => handleInputChange('numberOfClassrooms', Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfStudents">Número de Alunos</Label>
+                  <Input
+                    id="numberOfStudents"
+                    type="number"
+                    value={formData.numberOfStudents}
+                    onChange={(e) => handleInputChange('numberOfStudents', Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="numberOfTeachers">Número de Professores</Label>
+                  <Input
+                    id="numberOfTeachers"
+                    type="number"
+                    value={formData.numberOfTeachers}
+                    onChange={(e) => handleInputChange('numberOfTeachers', Number(e.target.value))}
+                    min="0"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="foundationDate">Data de Fundação</Label>
+                <Input
+                  id="foundationDate"
+                  type="date"
+                  value={formData.foundationDate}
+                  onChange={(e) => handleInputChange('foundationDate', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Diretor */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium">Diretor</h3>
+              <div className="space-y-2">
+                <Label htmlFor="existingDirectorId">Diretor da Escola *</Label>
+                <Select value={formData.existingDirectorId} onValueChange={(value) => handleInputChange('existingDirectorId', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um diretor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Selecionar diretor</SelectItem>
+                    {availableDirectors.map((director: Director) => (
+                      <SelectItem key={director.id} value={director.id.toString()}>
+                        {director.firstName} {director.lastName} - {director.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Botões */}
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => {
+                setIsCreateDialogOpen(false);
+                setIsEditDialogOpen(false);
+                setSelectedSchool(null);
+                resetForm();
+              }}>
+                Cancelar
+              </Button>
               <Button 
-                onClick={() => setIsCreateDialogOpen(true)}
+                type="submit" 
+                disabled={createSchoolMutation.isPending || updateSchoolMutation.isPending}
                 className="bg-emerald-600 hover:bg-emerald-700"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Primeira Escola
+                {createSchoolMutation.isPending || updateSchoolMutation.isPending ? 'Salvando...' : 
+                 selectedSchool ? 'Salvar Alterações' : 'Criar Escola'}
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {schools.schools.map((school: School) => (
-              <Card key={school.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg font-semibold">{school.name}</CardTitle>
-                      <CardDescription>{school.city}, {school.state}</CardDescription>
-                    </div>
-                    {getStatusBadge(school.status, school.isActive)}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {school.address}
-                  </div>
-                  
-                  {school.directorName && (
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Users className="w-4 h-4 mr-2" />
-                      Diretor: {school.directorName}
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="flex items-center text-gray-600">
-                      <Users className="w-3 h-3 mr-1" />
-                      {school.numberOfStudents} alunos
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <GraduationCap className="w-3 h-3 mr-1" />
-                      {school.numberOfTeachers} professores
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t">
-                    <p className="text-xs text-gray-500">
-                      Contrato: {school.contractName}
-                    </p>
-                    <Badge variant={school.contractStatus === 'active' ? 'default' : 'destructive'} className="mt-1 text-xs">
-                      {school.contractStatus === 'active' ? 'Ativo' : 'Inativo'}
-                    </Badge>
-                  </div>
-
-                  <div className="flex justify-end space-x-2 pt-2">
-                    {school.isActive && school.status === 'active' && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeactivateSchool(school)}
-                        disabled={deactivateSchoolMutation.isPending}
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Desativar
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -932,8 +932,13 @@ export function registerMunicipalRoutes(app: Express) {
   app.get('/api/municipal/company/info', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
-      const userCompany = await getUserCompanyInfo(userId);
-      
+      // 1. Obter empresa do usuário logado
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.json({ success: true, company: null, user: null });
+      }
+
+      // 2. Buscar informações da empresa
       const [company] = await db
         .select({
           id: companies.id,
@@ -945,18 +950,24 @@ export function registerMunicipalRoutes(app: Express) {
           status: companies.status,
         })
         .from(companies)
-        .where(eq(companies.id, userCompany.companyId));
+        .where(eq(companies.id, userCompanyId));
+
+      // 3. Buscar informações do usuário
+      const [userInfo] = await db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.first_name,
+          lastName: users.last_name,
+          companyId: users.companyId,
+        })
+        .from(users)
+        .where(eq(users.id, userId));
 
       res.json({ 
         success: true, 
         company,
-        user: {
-          id: userCompany.id,
-          email: userCompany.email,
-          firstName: userCompany.firstName,
-          lastName: userCompany.lastName,
-          companyId: userCompany.companyId
-        }
+        user: userInfo || null
       });
     } catch (error) {
       console.error('Error fetching company info:', error);

@@ -326,7 +326,7 @@ export default function GestorDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <Link href="/municipal/schools/new">
+                    <Link href="/municipal/schools">
                       <Button className="w-full h-20 flex flex-col space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all duration-200">
                         <PlusCircle className="h-6 w-6" />
                         <span className="text-sm">Nova Escola</span>
@@ -440,7 +440,7 @@ export default function GestorDashboard() {
                   <p className="text-gray-600 mb-6">
                     Funcionalidade avançada para cadastro, monitoramento e gestão completa das escolas municipais
                   </p>
-                  <Link href="/municipal/schools/new">
+                  <Link href="/municipal/schools">
                     <Button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700">
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Acessar Gestão de Escolas
