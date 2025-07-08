@@ -59,7 +59,7 @@ export default function SchoolManagementNew() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'contracts' | 'directors' | 'schools'>('overview');
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'directors' | 'schools'>('overview');
   const [isEditDirectorDialogOpen, setIsEditDirectorDialogOpen] = useState(false);
   const [selectedDirector, setSelectedDirector] = useState<Director | null>(null);
   const [directorEditData, setDirectorEditData] = useState({
@@ -404,7 +404,6 @@ export default function SchoolManagementNew() {
           <nav className="flex space-x-8">
             {[
               { id: 'overview', label: 'Visão Geral', icon: Building2 },
-              { id: 'contracts', label: 'Contratos', icon: School },
               { id: 'directors', label: 'Diretores', icon: Users },
               { id: 'schools', label: 'Escolas', icon: GraduationCap },
             ].map((tab) => {
@@ -480,91 +479,74 @@ export default function SchoolManagementNew() {
               </Card>
             </div>
 
-            {/* Ações rápidas */}
+            {/* Informações do Gestor */}
             <Card>
               <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
-                <CardDescription>Principais funcionalidades do sistema</CardDescription>
+                <CardTitle>Dados do Gestor Municipal</CardTitle>
+                <CardDescription>Informações sobre sua gestão e recursos disponíveis</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700">
-                        <Plus className="w-4 h-4" />
-                        Nova Escola
-                      </Button>
-                    </DialogTrigger>
-                  </Dialog>
-
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setSelectedTab('contracts')}
-                    className="flex items-center gap-2"
-                  >
-                    <School className="w-4 h-4" />
-                    Ver Contratos
-                  </Button>
-
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setSelectedTab('directors')}
-                    className="flex items-center gap-2"
-                  >
-                    <Users className="w-4 h-4" />
-                    Ver Diretores
-                  </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Escolas Gerenciadas</h4>
+                      <div className="space-y-2">
+                        {schools.slice(0, 3).map((school) => (
+                          <div key={school.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <span className="text-sm">{school.name}</span>
+                            <Badge variant={school.status === 'active' ? 'default' : 'secondary'}>
+                              {school.status === 'active' ? 'Ativa' : 'Inativa'}
+                            </Badge>
+                          </div>
+                        ))}
+                        {schools.length > 3 && (
+                          <p className="text-sm text-gray-500">
+                            E mais {schools.length - 3} escolas...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-medium text-gray-900 mb-2">Diretores Disponíveis</h4>
+                      <div className="space-y-2">
+                        {availableDirectors.slice(0, 3).map((director) => (
+                          <div key={director.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <span className="text-sm">{director.firstName} {director.lastName}</span>
+                            <Badge variant="outline">Disponível</Badge>
+                          </div>
+                        ))}
+                        {availableDirectors.length > 3 && (
+                          <p className="text-sm text-gray-500">
+                            E mais {availableDirectors.length - 3} diretores...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
 
-        {/* Aba Contratos */}
-        {selectedTab === 'contracts' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Contratos</h2>
-                <p className="text-gray-600">Contratos da gestão municipal</p>
-              </div>
-            </div>
-
-            {contractsLoading ? (
-              <div className="text-center py-8">Carregando contratos...</div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {contracts.map((contract: Contract) => (
-                  <Card key={contract.id}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        {contract.name}
-                        <Badge variant={contract.status === 'active' ? 'default' : 'secondary'}>
-                          {contract.status}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>{contract.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Máximo de usuários:</span>
-                          <span className="font-medium">{contract.maxUsers.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Início:</span>
-                          <span className="font-medium">{new Date(contract.startDate).toLocaleDateString('pt-BR')}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Término:</span>
-                          <span className="font-medium">{new Date(contract.endDate).toLocaleDateString('pt-BR')}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            {/* Botão para criar nova escola */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Criar Nova Escola</CardTitle>
+                <CardDescription>Adicione uma nova escola ao sistema municipal</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700">
+                      <Plus className="w-4 h-4" />
+                      Nova Escola
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
+              </CardContent>
+            </Card>
           </div>
         )}
 

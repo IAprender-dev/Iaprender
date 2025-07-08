@@ -143,6 +143,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 8, 2025: ✅ CONCLUÍDO - Sistema de Gestão de Contratos Municipais Implementado
+  - ✅ Criada página ContractManagement.tsx para visualização e edição de contratos
+  - ✅ Implementados endpoints PATCH para edição de contratos (/api/municipal/contracts/:id)
+  - ✅ Adicionada rota /municipal/contracts ao sistema de navegação
+  - ✅ Botão de acesso aos contratos incluído no dashboard do gestor
+  - ✅ Removida aba "Contratos" do formulário de criação de escolas conforme solicitado
+  - ✅ Substituídas "Ações Rápidas" por "Dados do Gestor Municipal" na visão geral
+  - ✅ Interface focada nos dados reais do gestor: escolas gerenciadas e diretores disponíveis
 - July 8, 2025: ✅ CONCLUÍDO - Sistema de Filtros Baseado em Empresa do Usuário Implementado
   - ✅ Refatoração completa conforme especificação: usuário logado obtém apenas dados da sua empresa
   - ✅ Função central getUserCompany() criada para obter empresa do usuário autenticado
