@@ -1042,17 +1042,7 @@ export function registerMunicipalRoutes(app: Express) {
       
       // 2. Buscar APENAS diretores da mesma empresa
       const directorsList = await db
-        .select({
-          id: users.id,
-          firstName: users.first_name,
-          lastName: users.last_name,
-          email: users.email,
-          role: users.role,
-          companyId: users.company_id,
-          contractId: users.contract_id,
-          cognitoGroup: users.cognito_group,
-          createdAt: users.created_at
-        })
+        .select()
         .from(users)
         .where(and(
           eq(users.company_id, userCompanyId),
@@ -1062,26 +1052,27 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Buscar informações dos contratos separadamente
       const contractIds = directorsList
-        .map(director => director.contractId)
+        .map(director => director.contract_id)
         .filter(id => id !== null);
 
       let contractsData = [];
       if (contractIds.length > 0) {
         contractsData = await db
-          .select({
-            id: contracts.id,
-            name: contracts.name,
-            status: contracts.status
-          })
+          .select()
           .from(contracts)
           .where(inArray(contracts.id, contractIds));
       }
 
       // Combinar dados
       const formattedDirectors = directorsList.map(director => {
-        const contract = contractsData.find(c => c.id === director.contractId);
+        const contract = contractsData.find(c => c.id === director.contract_id);
         return {
-          ...director,
+          id: director.id,
+          firstName: director.first_name,
+          lastName: director.last_name,
+          email: director.email,
+          companyId: director.company_id,
+          contractId: director.contract_id,
           contractName: contract?.name || null,
           contractStatus: contract?.status || null
         };
