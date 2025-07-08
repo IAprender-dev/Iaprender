@@ -526,7 +526,7 @@ export default function SchoolManagementNew() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Contratos</h2>
-                <p className="text-gray-600">Contratos de {company.name || 'sua empresa'}</p>
+                <p className="text-gray-600">Contratos da gestão municipal</p>
               </div>
             </div>
 
@@ -574,7 +574,7 @@ export default function SchoolManagementNew() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Diretores</h2>
-                <p className="text-gray-600">Diretores vinculados a {company.name || 'sua empresa'}</p>
+                <p className="text-gray-600">Diretores da rede municipal</p>
               </div>
             </div>
 
@@ -623,7 +623,7 @@ export default function SchoolManagementNew() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Escolas</h2>
-                <p className="text-gray-600">Escolas de {company.name || 'sua empresa'}</p>
+                <p className="text-gray-600">Escolas da rede municipal</p>
               </div>
               <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
@@ -709,7 +709,7 @@ export default function SchoolManagementNew() {
         <DialogHeader>
           <DialogTitle>Nova Escola</DialogTitle>
           <DialogDescription>
-            Cadastre uma nova escola para {company.name || 'sua empresa'}
+            Cadastre uma nova escola no sistema municipal
           </DialogDescription>
         </DialogHeader>
 
