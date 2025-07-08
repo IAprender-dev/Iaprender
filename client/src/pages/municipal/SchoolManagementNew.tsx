@@ -101,10 +101,11 @@ export default function SchoolManagementNew() {
   });
 
   // Queries para dados filtrados pela empresa do usuário logado
-  const { data: companyData } = useQuery({
-    queryKey: ['/api/municipal/company/info'],
-    enabled: true
-  });
+  // Removido carregamento de dados da empresa para melhorar performance
+  // const { data: companyData } = useQuery({
+  //   queryKey: ['/api/municipal/company/info'],
+  //   enabled: true
+  // });
 
   const { data: contractsData, isLoading: contractsLoading } = useQuery({
     queryKey: ['/api/municipal/contracts/filtered'],
@@ -364,8 +365,7 @@ export default function SchoolManagementNew() {
     });
   };
 
-  const company = companyData?.company || {};
-  const user = companyData?.user || {};
+  // Removido dados da empresa para melhor performance
   const contracts = contractsData?.contracts || [];
   const directors = directorsData?.directors || [];
   const schools = schoolsData?.schools || [];
@@ -391,7 +391,7 @@ export default function SchoolManagementNew() {
               <img src={iAprenderLogo} alt="IAprender" className="w-8 h-8 bg-white p-1 rounded shadow" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">Gestão de Escolas</h1>
-                <p className="text-sm text-gray-600">{company.name || 'Carregando empresa...'}</p>
+                <p className="text-sm text-gray-600">Sistema de gestão escolar municipal</p>
               </div>
             </div>
           </div>
