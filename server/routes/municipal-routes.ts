@@ -1,6 +1,6 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
-import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts } from '../../shared/schema';
+import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts, schools } from '../../shared/schema';
 import { eq, and, count, sum, isNull, or, inArray, isNotNull } from 'drizzle-orm';
 import { performanceMonitor, performanceMiddleware } from '../utils/performance-monitor';
 import { CognitoService } from '../utils/cognito-service';
@@ -1042,19 +1042,7 @@ export function registerMunicipalRoutes(app: Express) {
       
       // 2. Buscar APENAS diretores da mesma empresa COM informações do contrato
       const directorsList = await db
-        .select({
-          id: users.id,
-          firstName: users.first_name,
-          lastName: users.last_name,
-          email: users.email,
-          role: users.role,
-          companyId: users.company_id,
-          contractId: users.contract_id,
-          contractName: contracts.name,
-          contractStatus: contracts.status,
-          cognitoGroup: users.cognito_group,
-          createdAt: users.created_at
-        })
+        .select()
         .from(users)
         .leftJoin(contracts, eq(users.contract_id, contracts.id))
         .where(and(
@@ -1066,11 +1054,26 @@ export function registerMunicipalRoutes(app: Express) {
         ))
         .limit(30);
 
-      // Cache por 60 segundos
-      CacheManager.set(cacheKey, directorsList, 60);
+      // Formatear os dados para o frontend
+      const formattedDirectors = directorsList.map(row => ({
+        id: row.users.id,
+        firstName: row.users.first_name,
+        lastName: row.users.last_name,
+        email: row.users.email,
+        role: row.users.role,
+        companyId: row.users.company_id,
+        contractId: row.users.contract_id,
+        contractName: row.contracts?.name || null,
+        contractStatus: row.contracts?.status || null,
+        cognitoGroup: row.users.cognito_group,
+        createdAt: row.users.created_at
+      }));
 
-      console.log(`🔍 [DIRECTORS] User ${userId} empresa ${userCompanyId}: ${directorsList.length} diretores`);
-      res.json({ success: true, directors: directorsList });
+      // Cache por 60 segundos
+      CacheManager.set(cacheKey, formattedDirectors, 60);
+
+      console.log(`🔍 [DIRECTORS] User ${userId} empresa ${userCompanyId}: ${formattedDirectors.length} diretores`);
+      res.json({ success: true, directors: formattedDirectors });
     } catch (error) {
       console.error('Error fetching directors:', error);
       res.json({ success: true, directors: [] });
@@ -1096,31 +1099,34 @@ export function registerMunicipalRoutes(app: Express) {
       }
       
       // 2. Buscar escolas através dos contratos da empresa
-      const schoolsWithContracts = await db
-        .select({
-          id: schools.id,
-          name: schools.name,
-          inep: schools.inep,
-          cnpj: schools.cnpj,
-          address: schools.address,
-          city: schools.city,
-          state: schools.state,
-          numberOfStudents: schools.number_of_students,
-          numberOfTeachers: schools.number_of_teachers,
-          numberOfClassrooms: schools.number_of_classrooms,
-          status: schools.status,
-          contractId: schools.contract_id,
-          directorId: schools.director_id,
-          contractName: contracts.name,
-          directorFirstName: users.first_name,
-          directorLastName: users.last_name,
-          directorEmail: users.email,
-        })
+      const schoolsData = await db
+        .select()
         .from(schools)
         .innerJoin(contracts, eq(schools.contract_id, contracts.id))
         .leftJoin(users, eq(schools.director_id, users.id))
         .where(eq(contracts.company_id, userCompanyId))
         .limit(30);
+
+      // Formatear os dados para o frontend
+      const schoolsWithContracts = schoolsData.map(row => ({
+        id: row.schools.id,
+        name: row.schools.name,
+        inep: row.schools.inep,
+        cnpj: row.schools.cnpj,
+        address: row.schools.address,
+        city: row.schools.city,
+        state: row.schools.state,
+        numberOfStudents: row.schools.number_of_students,
+        numberOfTeachers: row.schools.number_of_teachers,
+        numberOfClassrooms: row.schools.number_of_classrooms,
+        status: row.schools.status,
+        contractId: row.schools.contract_id,
+        directorId: row.schools.director_id,
+        contractName: row.contracts.name,
+        directorFirstName: row.users?.first_name || null,
+        directorLastName: row.users?.last_name || null,
+        directorEmail: row.users?.email || null,
+      }));
 
       // Cache por 60 segundos
       CacheManager.set(cacheKey, schoolsWithContracts, 60);
