@@ -143,6 +143,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 8, 2025: ✅ CONCLUÍDO - Atualização Completa dos Dados do Sistema Municipal
+  - ✅ Criados 5 diretores com vínculos corretos: Maria Silva, João Santos, Ana Ferreira, Carlos Oliveira, Lúcia Costa
+  - ✅ Inseridas 5 escolas ativas com diretores associados e dados realistas de alunos/professores
+  - ✅ Atualizadas descrições e valores dos contratos ativos (R$ 6.166.666,67/mês total)
+  - ✅ Criados 5 professores e 5 alunos para completar a base de dados
+  - ✅ Sistema com dados consistentes: 5 contratos ativos, 5 escolas, 2.350 alunos, 128 professores
+  - ✅ Valores monetários realistas: R$ 41,67 por licença mensal
 - July 8, 2025: ✅ CONCLUÍDO - Sistema de Gestão de Contratos Municipais Implementado
   - ✅ Criada página ContractManagement.tsx para visualização e edição de contratos
   - ✅ Implementados endpoints PATCH para edição de contratos (/api/municipal/contracts/:id)
