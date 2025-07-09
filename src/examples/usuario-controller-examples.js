@@ -198,9 +198,9 @@ export function exemplosCurl() {
   -H "Content-Type: application/json"`
     },
     {
-      nome: 'Criar novo usuário',
+      nome: 'Criar novo usuário (Admin)',
       comando: `curl -X POST "http://localhost:5000/api/usuarios" \\
-  -H "Authorization: Bearer SEU_TOKEN_JWT" \\
+  -H "Authorization: Bearer SEU_TOKEN_ADMIN" \\
   -H "Content-Type: application/json" \\
   -d '{
     "cognito_sub": "novo-sub-123",
@@ -209,6 +209,66 @@ export function exemplosCurl() {
     "tipo_usuario": "professor",
     "empresa_id": 1,
     "telefone": "(11) 9999-8888"
+  }'`
+    },
+    {
+      nome: 'Criar professor com dados específicos (Gestor)',
+      comando: `curl -X POST "http://localhost:5000/api/usuarios" \\
+  -H "Authorization: Bearer SEU_TOKEN_GESTOR" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "cognito_sub": "prof-sub-456",
+    "email": "professor@escola.edu.br",
+    "nome": "Ana Silva Santos",
+    "tipo_usuario": "professor",
+    "telefone": "(11) 9999-1111",
+    "documento": "12345678901",
+    "disciplinas": ["Matemática", "Física"],
+    "formacao": "Licenciatura em Matemática",
+    "escola_id": 1,
+    "data_admissao": "2025-07-09"
+  }'`
+    },
+    {
+      nome: 'Criar aluno com responsável (Gestor)',
+      comando: `curl -X POST "http://localhost:5000/api/usuarios" \\
+  -H "Authorization: Bearer SEU_TOKEN_GESTOR" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "cognito_sub": "aluno-sub-789",
+    "email": "aluno@escola.edu.br",
+    "nome": "João Pedro Silva",
+    "tipo_usuario": "aluno",
+    "telefone": "(11) 8888-7777",
+    "endereco": "Rua das Flores, 123",
+    "cidade": "São Paulo",
+    "estado": "SP",
+    "matricula": "2025001",
+    "turma": "9A",
+    "serie": "9º Ano",
+    "turno": "manhã",
+    "nome_responsavel": "Maria Silva",
+    "contato_responsavel": "(11) 9999-0000",
+    "escola_id": 1,
+    "data_matricula": "2025-07-09"
+  }'`
+    },
+    {
+      nome: 'Criar diretor de escola (Admin)',
+      comando: `curl -X POST "http://localhost:5000/api/usuarios" \\
+  -H "Authorization: Bearer SEU_TOKEN_ADMIN" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "cognito_sub": "diretor-sub-101",
+    "email": "diretor@escola.edu.br",
+    "nome": "Roberto Carlos Lima",
+    "tipo_usuario": "diretor",
+    "telefone": "(11) 7777-6666",
+    "documento": "98765432100",
+    "empresa_id": 1,
+    "escola_id": 1,
+    "cargo": "Diretor Geral",
+    "data_inicio": "2025-07-09"
   }'`
     },
     {

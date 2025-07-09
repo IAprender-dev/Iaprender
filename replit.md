@@ -173,6 +173,40 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Função demonstrarListarUsuarios() para testes e documentação
   - ✅ Integração com sistema de autorização empresarial existente
   - ✅ Status: Sistema de listagem de usuários completo e pronto para produção
+- July 9, 2025: ✅ CONCLUÍDO - Função criarUsuario() Implementada com Sistema Hierárquico de Criação e Validações Avançadas
+  - ✅ Função criarUsuario(req, res) criada com controle rigoroso de permissões
+  - ✅ Sistema de autorização hierárquico: apenas admin e gestor podem criar usuários
+  - ✅ Validações obrigatórias: cognito_sub, email, nome, tipo_usuario
+  - ✅ Controle de empresa automático:
+    • Admin: pode especificar qualquer empresa ou deixar null
+    • Gestor: limitado à própria empresa (req.user.empresa_id)
+  - ✅ Hierarquia de criação implementada:
+    • Admin: pode criar qualquer tipo (admin, gestor, diretor, professor, aluno)
+    • Gestor: pode criar apenas diretor, professor, aluno
+  - ✅ Validações de duplicatas: email único, cognito_sub único
+  - ✅ Sanitização automática de dados: email lowercase/trim, documento sem pontuação
+  - ✅ Sistema de criação de registros específicos por tipo de usuário:
+    • Gestor: cargo, data_admissao
+    • Diretor: escola_id, cargo, data_inicio
+    • Professor: disciplinas, formacao, escola_id, data_admissao
+    • Aluno: matrícula, turma, série, responsável, escola_id, data_matricula
+  - ✅ Geração automática de matrícula para alunos (formato: AAAA + ID padded)
+  - ✅ Import dinâmico de modelos específicos para evitar dependências circulares
+  - ✅ Tratamento gracioso de erros: criação do usuário principal não falha por erro em registro específico
+  - ✅ Resposta com metadata completa: criado_por, tipo_criador, empresa_atribuida, registros_especificos_criados
+  - ✅ Prepared statements para proteção contra SQL injection
+  - ✅ Logging detalhado para auditoria e debugging
+  - ✅ Endpoint POST /api/usuarios com middleware autenticar + adminOuGestor
+  - ✅ Arquivo /src/examples/criar-usuario-examples.js criado com 10 seções detalhadas:
+    • 5 exemplos de criação para diferentes tipos de usuário
+    • Validações e erros comuns (6 tipos de erro)
+    • Controle de acesso por tipo de usuário
+    • Campos específicos por tipo
+    • Casos de uso práticos (formulário, importação, matrícula)
+    • Segurança e validações (prepared statements, sanitização, duplicatas)
+  - ✅ Função demonstrarCriarUsuario() para testes e documentação
+  - ✅ Integração completa com sistema de modelos específicos existente
+  - ✅ Status: Sistema de criação de usuários completo e pronto para produção
 - July 9, 2025: ✅ CONCLUÍDO - Função verificarTipoUsuario() Implementada com Sistema de Autorização Hierárquico
   - ✅ Função verificarTipoUsuario(tiposPermitidos) criada para verificação de tipo de usuário
   - ✅ Suporte a string única ou array de tipos permitidos

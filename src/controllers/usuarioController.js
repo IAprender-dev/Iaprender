@@ -1165,6 +1165,257 @@ export class UsuarioController {
   }
 
   /**
+   * POST /api/usuarios - Cria novo usuário
+   * Middlewares: autenticar, adminOuGestor
+   */
+  static async criarUsuario(req, res) {
+    try {
+      console.log('➕ UsuarioController.criarUsuario - User:', req.user.id, 'Dados:', req.body);
+
+      // Validar campos obrigatórios
+      this.validateRequiredFields(req.body, [
+        'cognito_sub', 'email', 'nome', 'tipo_usuario'
+      ]);
+
+      const {
+        cognito_sub,
+        email,
+        nome,
+        telefone,
+        endereco,
+        cidade,
+        estado,
+        data_nascimento,
+        documento,
+        tipo_usuario,
+        empresa_id,
+        status = 'ativo',
+        configuracoes = {}
+      } = req.body;
+
+      console.log('🔍 Dados recebidos para criação:', { cognito_sub, email, nome, tipo_usuario, empresa_id });
+
+      // Determinar empresa_id baseado no tipo de usuário solicitante
+      let empresaFinal;
+      if (req.user.tipo_usuario === 'admin') {
+        // Admin pode especificar empresa ou deixar null
+        empresaFinal = empresa_id || null;
+      } else if (req.user.tipo_usuario === 'gestor') {
+        // Gestor só pode criar usuários na própria empresa
+        empresaFinal = req.user.empresa_id;
+        if (empresa_id && empresa_id !== req.user.empresa_id) {
+          console.warn('⚠️ Gestor tentou criar usuário em empresa diferente');
+          return this.sendResponse(res, 400, null, 
+            'Gestores só podem criar usuários em sua própria empresa');
+        }
+      } else {
+        return this.sendResponse(res, 403, null, 
+          'Apenas administradores e gestores podem criar usuários');
+      }
+
+      // Validações específicas por tipo de usuário
+      const validacaoTipo = this._validarTipoUsuarioParaCriacao(tipo_usuario, req.user);
+      if (!validacaoTipo.valido) {
+        return this.sendResponse(res, 400, null, validacaoTipo.motivo);
+      }
+
+      // Validar se empresa existe (se especificada)
+      if (empresaFinal) {
+        const { Empresa } = await import('../models/Empresa.js');
+        const empresa = await Empresa.findById(empresaFinal);
+        if (!empresa) {
+          return this.sendResponse(res, 400, null, 'Empresa especificada não encontrada');
+        }
+        console.log('✅ Empresa validada:', empresa.nome);
+      }
+
+      // Verificar se email já existe
+      const usuarioExistente = await Usuario.findByEmail(email);
+      if (usuarioExistente) {
+        return this.sendResponse(res, 409, null, 
+          `Já existe um usuário com o email: ${email}`);
+      }
+
+      // Verificar se cognito_sub já existe
+      const cognitoExistente = await Usuario.findByCognitoSub(cognito_sub);
+      if (cognitoExistente) {
+        return this.sendResponse(res, 409, null, 
+          `Já existe um usuário com o Cognito Sub: ${cognito_sub}`);
+      }
+
+      // Preparar dados para criação
+      const dadosUsuario = {
+        cognito_sub,
+        email: email.toLowerCase().trim(),
+        nome: nome.trim(),
+        telefone: telefone?.trim(),
+        endereco: endereco?.trim(),
+        cidade: cidade?.trim(),
+        estado: estado?.trim(),
+        data_nascimento,
+        documento: documento?.replace(/\D/g, ''), // Remove pontuação
+        tipo_usuario,
+        empresa_id: empresaFinal,
+        status,
+        configuracoes: typeof configuracoes === 'object' ? configuracoes : {}
+      };
+
+      console.log('📝 Dados preparados para criação:', dadosUsuario);
+
+      // Criar usuário
+      const novoUsuario = await Usuario.criar(dadosUsuario);
+      console.log('✅ Usuário criado com sucesso:', novoUsuario.id);
+
+      // Criar registro específico do tipo de usuário se necessário
+      const dadosEspecificos = this._extrairDadosEspecificos(tipo_usuario, req.body);
+      if (dadosEspecificos && Object.keys(dadosEspecificos).length > 0) {
+        try {
+          await this._criarRegistroEspecifico(tipo_usuario, novoUsuario.id, empresaFinal, dadosEspecificos);
+          console.log('✅ Registro específico criado para tipo:', tipo_usuario);
+        } catch (errorEspecifico) {
+          console.warn('⚠️ Erro ao criar registro específico:', errorEspecifico.message);
+          // Não falha a criação do usuário por erro no registro específico
+        }
+      }
+
+      // Preparar resposta
+      const usuarioResposta = novoUsuario.toJSON();
+      const resposta = {
+        ...usuarioResposta,
+        metadata: {
+          criado_por: req.user.id,
+          tipo_criador: req.user.tipo_usuario,
+          empresa_atribuida: empresaFinal,
+          timestamp: new Date().toISOString(),
+          registros_especificos_criados: dadosEspecificos ? Object.keys(dadosEspecificos) : []
+        }
+      };
+
+      console.log(`✅ Criação concluída: usuário ${novoUsuario.id} (${tipo_usuario}) na empresa ${empresaFinal}`);
+      this.sendResponse(res, 201, resposta, 'Usuário criado com sucesso');
+
+    } catch (error) {
+      this.handleError(res, error, 'criarUsuario');
+    }
+  }
+
+  /**
+   * Valida se o tipo de usuário pode ser criado pelo solicitante
+   */
+  static _validarTipoUsuarioParaCriacao(tipoUsuario, userSolicitante) {
+    const tiposValidos = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+    
+    if (!tiposValidos.includes(tipoUsuario)) {
+      return {
+        valido: false,
+        motivo: `Tipo de usuário inválido. Tipos válidos: ${tiposValidos.join(', ')}`
+      };
+    }
+
+    // Regras hierárquicas de criação
+    if (userSolicitante.tipo_usuario === 'admin') {
+      // Admin pode criar qualquer tipo
+      return { valido: true };
+    }
+
+    if (userSolicitante.tipo_usuario === 'gestor') {
+      // Gestor pode criar diretor, professor, aluno (não pode criar admin ou outros gestores)
+      const tiposPermitidos = ['diretor', 'professor', 'aluno'];
+      if (!tiposPermitidos.includes(tipoUsuario)) {
+        return {
+          valido: false,
+          motivo: `Gestores podem criar apenas: ${tiposPermitidos.join(', ')}`
+        };
+      }
+      return { valido: true };
+    }
+
+    return {
+      valido: false,
+      motivo: 'Apenas administradores e gestores podem criar usuários'
+    };
+  }
+
+  /**
+   * Extrai dados específicos do tipo de usuário dos dados de criação
+   */
+  static _extrairDadosEspecificos(tipoUsuario, dados) {
+    const dadosEspecificos = {};
+
+    switch (tipoUsuario) {
+      case 'gestor':
+        if (dados.cargo) dadosEspecificos.cargo = dados.cargo;
+        if (dados.data_admissao) dadosEspecificos.data_admissao = dados.data_admissao;
+        break;
+
+      case 'diretor':
+        if (dados.escola_id) dadosEspecificos.escola_id = dados.escola_id;
+        if (dados.cargo) dadosEspecificos.cargo = dados.cargo;
+        if (dados.data_inicio) dadosEspecificos.data_inicio = dados.data_inicio;
+        break;
+
+      case 'professor':
+        if (dados.disciplinas) dadosEspecificos.disciplinas = dados.disciplinas;
+        if (dados.formacao) dadosEspecificos.formacao = dados.formacao;
+        if (dados.escola_id) dadosEspecificos.escola_id = dados.escola_id;
+        if (dados.data_admissao) dadosEspecificos.data_admissao = dados.data_admissao;
+        break;
+
+      case 'aluno':
+        if (dados.matricula) dadosEspecificos.matricula = dados.matricula;
+        if (dados.turma) dadosEspecificos.turma = dados.turma;
+        if (dados.serie) dadosEspecificos.serie = dados.serie;
+        if (dados.turno) dadosEspecificos.turno = dados.turno;
+        if (dados.nome_responsavel) dadosEspecificos.nome_responsavel = dados.nome_responsavel;
+        if (dados.contato_responsavel) dadosEspecificos.contato_responsavel = dados.contato_responsavel;
+        if (dados.escola_id) dadosEspecificos.escola_id = dados.escola_id;
+        if (dados.data_matricula) dadosEspecificos.data_matricula = dados.data_matricula;
+        break;
+    }
+
+    return dadosEspecificos;
+  }
+
+  /**
+   * Cria registro específico do tipo de usuário
+   */
+  static async _criarRegistroEspecifico(tipoUsuario, userId, empresaId, dadosEspecificos) {
+    const dadosComIds = {
+      ...dadosEspecificos,
+      usr_id: userId,
+      empresa_id: empresaId,
+      nome: dadosEspecificos.nome || 'Nome do registro específico',
+      status: 'ativo'
+    };
+
+    switch (tipoUsuario) {
+      case 'gestor':
+        const { Gestor } = await import('../models/Gestor.js');
+        await Gestor.criar(dadosComIds);
+        break;
+
+      case 'diretor':
+        const { Diretor } = await import('../models/Diretor.js');
+        await Diretor.criar(dadosComIds);
+        break;
+
+      case 'professor':
+        const { Professor } = await import('../models/Professor.js');
+        await Professor.criar(dadosComIds);
+        break;
+
+      case 'aluno':
+        const { Aluno } = await import('../models/Aluno.js');
+        if (!dadosEspecificos.matricula) {
+          // Gerar matrícula única se não fornecida
+          dadosComIds.matricula = `${new Date().getFullYear()}${String(userId).padStart(3, '0')}`;
+        }
+        await Aluno.criar(dadosComIds);
+        break;
+    }
+  }
+
+  /**
    * PATCH /api/usuarios/me - Atualiza perfil do usuário logado
    * Middlewares: autenticar
    */
