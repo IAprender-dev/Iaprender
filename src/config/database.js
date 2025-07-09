@@ -1,4 +1,4 @@
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
 // Database connection configuration
 const dbConfig = {
@@ -36,7 +36,7 @@ const testConnection = async () => {
   }
 };
 
-module.exports = {
+export {
   pool,
   testConnection
 };
