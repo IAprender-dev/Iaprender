@@ -39,14 +39,14 @@ const router = express.Router();
  * GET /api/usuarios/:id
  * Buscar usuário específico por ID
  * 
- * MIDDLEWARE: autenticar, verificarAcessoUsuario
- * PERMISSÕES: Próprios dados ou admin/gestor da mesma empresa
+ * MIDDLEWARE: autenticar, verificarProprioUsuario
+ * PERMISSÕES: Apenas próprios dados do usuário
  * RATE LIMIT: 50 requests/min
  */
 router.get('/:id', 
   autenticar, 
-  verificarAcessoUsuario, 
-  UsuarioController.buscarPorId
+  verificarProprioUsuario, 
+  UsuarioController.obterUsuario
 );
 
 /**

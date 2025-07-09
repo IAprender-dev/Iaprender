@@ -228,6 +228,15 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Campos específicos por tipo: Professor (disciplinas, formacao), Aluno (matricula auto-gerada), Diretor (escola_id, cargo), Gestor (cargo, data_admissao)
   - ✅ Sistema hierárquico: Admin cria qualquer tipo, Gestor cria diretor/professor/aluno
   - ✅ Status: ROTA POST / CONFIGURADA PARA CRIAÇÃO DE USUÁRIOS
+- July 9, 2025: ✅ CONCLUÍDO - Configuração da Rota GET /:id para Obter Usuário
+  - ✅ Configurada rota GET /api/usuarios/:id com middlewares corretos
+  - ✅ Middleware aplicado: autenticar + verificarProprioUsuario
+  - ✅ Controller configurado: UsuarioController.obterUsuario
+  - ✅ Rate limiting de 50 requests/min aplicado
+  - ✅ Permissões: Apenas próprios dados do usuário
+  - ✅ Validação: req.user.id == req.params.id obrigatória
+  - ✅ Segurança: Usuários podem acessar apenas seus próprios dados por ID
+  - ✅ Status: ROTA GET /:id CONFIGURADA PARA DADOS PRÓPRIOS
 - July 9, 2025: ✅ CONCLUÍDO - Função listarUsuarios() Implementada com Sistema Completo de Filtros e Paginação
   - ✅ Função listarUsuarios(req, res) criada com sistema avançado de filtros por empresa
   - ✅ Controle de acesso hierárquico: admin (qualquer empresa) vs gestor (própria empresa)
