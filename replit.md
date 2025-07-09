@@ -159,6 +159,19 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Todos os arquivos convertidos para ES modules (import/export)
   - ✅ Sistema testado e funcionando: servidor rodando na porta 5000
   - ✅ Status: Base do projeto preparada para próximas tarefas da nova arquitetura hierárquica
+- July 9, 2025: ✅ CONCLUÍDO - TAREFA 2 ETAPA 1: Schema de Banco de Dados - Tabela Usuarios Criada
+  - ✅ Arquivo /src/config/database.sql criado com schema PostgreSQL completo
+  - ✅ Tabela usuarios implementada: 16 campos (id, cognito_sub, email, nome, tipo_usuario, etc.)
+  - ✅ Constraints criadas: PRIMARY KEY, UNIQUE, CHECK para tipo_usuario
+  - ✅ Índices otimizados: cognito_sub, email, tipo_usuario, empresa_id
+  - ✅ Trigger update_timestamp() para atualização automática de atualizado_em
+  - ✅ Script init-database.js para execução automatizada do schema
+  - ✅ Script setup-database.js para configuração completa do banco
+  - ✅ Modelo Usuario.js criado com métodos CRUD completos
+  - ✅ Validação de schema implementada e testada com sucesso
+  - ✅ Integração com AWS Cognito: sincronização e mapeamento de grupos
+  - ✅ Sistema testado: tabela criada e funcionando corretamente
+  - ✅ Status: ETAPA 1 concluída, aguardando ETAPA 2
 - July 9, 2025: ✅ CONCLUÍDO - LIMPEZA COMPLETA DO BANCO DE DADOS: Reset Total da Estrutura Hierárquica
   - ✅ Removidas TODAS as tabelas do schema.ts: users, companies, contracts, schools, e demais tabelas não essenciais
   - ✅ Mantidos apenas os enums básicos para evitar erros de compilação durante a reescrita
