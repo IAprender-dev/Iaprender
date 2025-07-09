@@ -193,6 +193,74 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
+// Middleware autenticar (versão simplificada e otimizada)
+export const autenticar = async (req, res, next) => {
+  // Extrair token do header Authorization
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ 
+      message: 'Token de acesso requerido',
+      error: 'NO_TOKEN'
+    });
+  }
+  
+  try {
+    // Validar o token usando verificarToken
+    const payload = await verificarToken(token);
+    
+    // Buscar dados do usuário no banco local
+    const userResult = await executeQuery(
+      'SELECT id, nome, email, tipo_usuario, empresa_id, status FROM usuarios WHERE cognito_sub = $1',
+      [payload.sub]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ 
+        message: 'Usuário não encontrado',
+        error: 'USER_NOT_FOUND'
+      });
+    }
+    
+    const user = userResult.rows[0];
+    
+    // Verificar se usuário está ativo
+    if (user.status !== 'ativo') {
+      return res.status(401).json({ 
+        message: 'Usuário desativado',
+        error: 'USER_INACTIVE'
+      });
+    }
+    
+    // Adicionar user data ao req.user
+    req.user = {
+      id: user.id,
+      sub: payload.sub,
+      nome: payload.nome || user.nome,
+      email: payload.email || user.email,
+      tipo_usuario: user.tipo_usuario,
+      empresa_id: payload.empresa_id || user.empresa_id,
+      groups: payload.groups,
+      exp: payload.exp,
+      iat: payload.iat
+    };
+    
+    console.log(`✅ Autenticado: ${req.user.nome} (${req.user.tipo_usuario})`);
+    
+    // Chamar next() para continuar
+    next();
+    
+  } catch (error) {
+    // Retornar erro 401 em caso de falha
+    console.error('❌ Falha na autenticação:', error.message);
+    return res.status(401).json({ 
+      message: 'Token inválido ou expirado',
+      error: error.error || 'AUTHENTICATION_FAILED'
+    });
+  }
+};
+
 // Middleware para autorizar por tipo de usuário
 export const authorize = (allowedTypes) => {
   return (req, res, next) => {
@@ -366,6 +434,7 @@ export const validateOrigin = (req, res, next) => {
 
 export default {
   verificarToken,
+  autenticar,
   authenticateToken,
   authorize,
   authorizeGroups,
