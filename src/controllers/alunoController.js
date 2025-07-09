@@ -394,6 +394,89 @@ export class AlunoController {
   }
 
   /**
+   * GET /api/alunos/:id/completo
+   * Obter dados completos do aluno com escola e responsável
+   */
+  static async obterAluno(req, res) {
+    try {
+      const { id } = req.params;
+      const usuarioLogado = req.user;
+
+      // Validar ID numérico
+      const alunoId = parseInt(id);
+      if (!alunoId || alunoId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID do aluno deve ser um número válido',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Buscar aluno
+      const aluno = await Aluno.findById(alunoId);
+      if (!aluno) {
+        return res.status(404).json({
+          success: false,
+          message: 'Aluno não encontrado',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Verificar permissões de acesso
+      const temAcesso = await AlunoController._verificarAcessoAluno(usuarioLogado, aluno);
+      if (!temAcesso) {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado a este aluno',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Obter dados completos do aluno com enriquecimento
+      const alunoCompleto = await AlunoController._obterDadosCompletos(aluno);
+
+      // Log de auditoria
+      console.log(`📋 Dados completos do aluno consultados:`, {
+        aluno_id: alunoId,
+        aluno_nome: aluno.nome,
+        usuario: `${usuarioLogado.id} (${usuarioLogado.tipo_usuario})`,
+        empresa_usuario: usuarioLogado.empresa_id,
+        incluiu_escola: !!alunoCompleto.escola,
+        incluiu_empresa: !!alunoCompleto.empresa,
+        incluiu_responsavel: !!alunoCompleto.responsavel,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        message: 'Dados completos do aluno obtidos com sucesso',
+        data: alunoCompleto,
+        metadata: {
+          consultado_por: usuarioLogado.id,
+          tipo_usuario: usuarioLogado.tipo_usuario,
+          dados_incluidos: {
+            aluno_basico: true,
+            escola: !!alunoCompleto.escola,
+            empresa: !!alunoCompleto.empresa,
+            responsavel: !!alunoCompleto.responsavel,
+            historico_academico: !!alunoCompleto.historico_academico
+          }
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao obter dados completos do aluno:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
    * GET /api/alunos/stats
    * Obter estatísticas de alunos
    */
@@ -728,6 +811,142 @@ export class AlunoController {
       console.error('Erro ao gerar matrícula:', error);
       const timestamp = Date.now().toString().slice(-6);
       return `${new Date().getFullYear()}${timestamp}`;
+    }
+  }
+
+  /**
+   * Obter dados completos do aluno com todas as informações relacionadas
+   */
+  static async _obterDadosCompletos(aluno) {
+    try {
+      const dadosCompletos = {
+        // Dados básicos do aluno
+        id: aluno.id,
+        nome: aluno.nome,
+        matricula: aluno.matricula,
+        turma: aluno.turma,
+        serie: aluno.serie,
+        turno: aluno.turno,
+        data_matricula: aluno.data_matricula,
+        status: aluno.status,
+        escola_id: aluno.escola_id,
+        empresa_id: aluno.empresa_id,
+        criado_em: aluno.criado_em
+      };
+
+      // Dados do responsável
+      dadosCompletos.responsavel = {
+        nome: aluno.nome_responsavel || null,
+        contato: aluno.contato_responsavel || null,
+        parentesco: aluno.parentesco_responsavel || 'Responsável',
+        endereco: aluno.endereco_responsavel || null,
+        documento: aluno.documento_responsavel || null
+      };
+
+      // Buscar dados da escola
+      if (aluno.escola_id) {
+        try {
+          const escola = await Escola.findById(aluno.escola_id);
+          if (escola) {
+            dadosCompletos.escola = {
+              id: escola.id,
+              nome: escola.nome,
+              codigo_inep: escola.codigo_inep,
+              tipo_escola: escola.tipo_escola,
+              telefone: escola.telefone,
+              email: escola.email,
+              endereco: escola.endereco,
+              cidade: escola.cidade,
+              estado: escola.estado,
+              status: escola.status,
+              diretor: null // Será preenchido abaixo
+            };
+
+            // Buscar diretor da escola
+            try {
+              const { Diretor } = await import('../models/Diretor.js');
+              const diretor = await Diretor.findByEscolaId(escola.id);
+              if (diretor) {
+                dadosCompletos.escola.diretor = {
+                  id: diretor.id,
+                  nome: diretor.nome,
+                  cargo: diretor.cargo,
+                  data_inicio: diretor.data_inicio
+                };
+              }
+            } catch (err) {
+              console.log('ℹ️ Diretor não encontrado para a escola:', escola.id);
+            }
+          }
+        } catch (err) {
+          console.error('❌ Erro ao buscar dados da escola:', err);
+          dadosCompletos.escola = null;
+        }
+      }
+
+      // Buscar dados da empresa
+      if (aluno.empresa_id) {
+        try {
+          const empresa = await Empresa.findById(aluno.empresa_id);
+          if (empresa) {
+            dadosCompletos.empresa = {
+              id: empresa.id,
+              nome: empresa.nome,
+              cnpj: empresa.cnpj,
+              telefone: empresa.telefone,
+              email_contato: empresa.email_contato,
+              cidade: empresa.cidade,
+              estado: empresa.estado,
+              logo: empresa.logo
+            };
+          }
+        } catch (err) {
+          console.error('❌ Erro ao buscar dados da empresa:', err);
+          dadosCompletos.empresa = null;
+        }
+      }
+
+      // Buscar histórico acadêmico (notas, frequência, observações)
+      try {
+        dadosCompletos.historico_academico = {
+          ano_letivo: new Date().getFullYear(),
+          situacao: aluno.status === 'ativo' ? 'Matriculado' : 'Inativo',
+          data_ultima_atualizacao: aluno.atualizado_em || aluno.criado_em,
+          observacoes: aluno.observacoes || null,
+          necessidades_especiais: aluno.necessidades_especiais || null
+        };
+      } catch (err) {
+        console.error('❌ Erro ao construir histórico acadêmico:', err);
+        dadosCompletos.historico_academico = null;
+      }
+
+      // Estatísticas de acesso (para auditoria)
+      dadosCompletos.metadata = {
+        total_acessos: 1, // Seria consultado de uma tabela de logs
+        ultimo_acesso: new Date().toISOString(),
+        dados_completos: true,
+        versao_dados: '2.0'
+      };
+
+      return dadosCompletos;
+
+    } catch (error) {
+      console.error('❌ Erro ao obter dados completos do aluno:', error);
+      // Retornar pelo menos os dados básicos em caso de erro
+      return {
+        ...aluno,
+        responsavel: {
+          nome: aluno.nome_responsavel || null,
+          contato: aluno.contato_responsavel || null
+        },
+        escola: null,
+        empresa: null,
+        historico_academico: null,
+        metadata: {
+          dados_completos: false,
+          erro: 'Erro ao enriquecer dados'
+        }
+      };
     }
   }
 
