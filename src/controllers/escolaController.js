@@ -735,7 +735,7 @@ export class EscolaController {
   /**
    * Enriquecer dados da escola com informações relacionadas
    */
-  static async _enriquecerDadosEscola(escola) {
+  static async _enriquecerDadosEscola(escola, incluirContadores = false) {
     try {
       const dadosEnriquecidos = { ...escola };
 
@@ -762,9 +762,16 @@ export class EscolaController {
             descricao: contrato.descricao,
             numero_licencas: contrato.numero_licencas,
             valor_total: contrato.valor_total,
+            data_inicio: contrato.data_inicio,
+            data_fim: contrato.data_fim,
             status: contrato.status
           };
         }
+      }
+
+      // Incluir contadores se solicitado
+      if (incluirContadores) {
+        dadosEnriquecidos.contadores = await EscolaController._obterContadoresEscola(escola.id);
       }
 
       return dadosEnriquecidos;
@@ -819,5 +826,139 @@ export class EscolaController {
     }
 
     return dependencias;
+  }
+
+  /**
+   * Obter contadores de alunos e professores da escola
+   */
+  static async _obterContadoresEscola(escolaId) {
+    try {
+      const contadores = {
+        total_alunos: 0,
+        total_professores: 0,
+        total_diretores: 0,
+        alunos_ativos: 0,
+        professores_ativos: 0,
+        diretores_ativos: 0
+      };
+
+      // Contar diretores
+      try {
+        const { Diretor } = await import('../models/Diretor.js');
+        const diretores = await Diretor.findByEscolaId(escolaId);
+        contadores.total_diretores = diretores.length;
+        contadores.diretores_ativos = diretores.filter(d => d.status === 'ativo').length;
+      } catch (error) {
+        console.log('Modelo Diretor não disponível:', error.message);
+      }
+
+      // Contar professores
+      try {
+        const { Professor } = await import('../models/Professor.js');
+        const professores = await Professor.findByEscolaId(escolaId);
+        contadores.total_professores = professores.length;
+        contadores.professores_ativos = professores.filter(p => p.status === 'ativo').length;
+      } catch (error) {
+        console.log('Modelo Professor não disponível:', error.message);
+      }
+
+      // Contar alunos
+      try {
+        const { Aluno } = await import('../models/Aluno.js');
+        const alunos = await Aluno.findByEscolaId(escolaId);
+        contadores.total_alunos = alunos.length;
+        contadores.alunos_ativos = alunos.filter(a => a.status === 'ativo').length;
+      } catch (error) {
+        console.log('Modelo Aluno não disponível:', error.message);
+      }
+
+      return contadores;
+    } catch (error) {
+      console.error('Erro ao obter contadores da escola:', error);
+      return {
+        total_alunos: 0,
+        total_professores: 0,
+        total_diretores: 0,
+        alunos_ativos: 0,
+        professores_ativos: 0,
+        diretores_ativos: 0
+      };
+    }
+  }
+
+  /**
+   * GET /api/escolas/:id/detalhes
+   * Obter escola com dados completos incluindo contadores
+   */
+  static async obterEscola(req, res) {
+    try {
+      const { id } = req.params;
+      const usuarioLogado = req.user;
+
+      // Validar ID numérico
+      const escolaId = parseInt(id);
+      if (!escolaId || escolaId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID da escola deve ser um número válido',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Buscar escola
+      const escola = await Escola.findById(escolaId);
+      if (!escola) {
+        return res.status(404).json({
+          success: false,
+          message: 'Escola não encontrada',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Verificar permissões de acesso
+      const temAcesso = await EscolaController._verificarAcessoEscola(usuarioLogado, escola);
+      if (!temAcesso) {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado a esta escola',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Enriquecer dados da escola com contadores
+      const escolaCompleta = await EscolaController._enriquecerDadosEscola(escola, true);
+
+      // Log de auditoria
+      console.log(`📊 Escola com detalhes consultada:`, {
+        escola_id: escolaId,
+        nome: escola.nome,
+        usuario: `${usuarioLogado.id} (${usuarioLogado.tipo_usuario})`,
+        empresa_usuario: usuarioLogado.empresa_id,
+        contadores_incluidos: true,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        message: 'Dados completos da escola obtidos com sucesso',
+        data: escolaCompleta,
+        metadata: {
+          incluiu_contadores: true,
+          consultado_por: usuarioLogado.id,
+          tipo_usuario: usuarioLogado.tipo_usuario,
+          timestamp: new Date().toISOString()
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao obter escola com detalhes:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno',
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 }
