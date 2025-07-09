@@ -14,18 +14,18 @@ process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test_secret_key_iaprender_2025_jest';
 process.env.TEST_DATABASE_URL = process.env.DATABASE_URL || 'postgresql://localhost:5432/iaprender_test';
 
-// Configurar timeout padrão para operações de banco
-jest.setTimeout(30000);
-
 // Mock de console para testes mais limpos
 const originalConsole = console;
+
+// Funções de mock simples
+const mockFunction = () => {};
 
 beforeAll(() => {
   // Silenciar logs durante os testes (opcional)
   if (process.env.JEST_SILENT === 'true') {
-    console.log = jest.fn();
-    console.warn = jest.fn();
-    console.error = jest.fn();
+    console.log = mockFunction;
+    console.warn = mockFunction;
+    console.error = mockFunction;
   }
 });
 
