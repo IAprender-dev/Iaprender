@@ -3,11 +3,10 @@
 import express from 'express';
 const router = express.Router();
 
-// Import route modules (to be created)
-// const authRoutes = require('./auth');
-// const userRoutes = require('./users');
-// const schoolRoutes = require('./schools');
-// const adminRoutes = require('./admin');
+// Import route modules
+import usuarioRoutes from './usuarios.js';
+import alunoRoutes from './alunos.js';
+// import escolaRoutes from './escolas.js';
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -20,10 +19,9 @@ router.get('/health', (req, res) => {
 });
 
 // Register route modules
-// router.use('/auth', authRoutes);
-// router.use('/users', userRoutes);
-// router.use('/schools', schoolRoutes);
-// router.use('/admin', adminRoutes);
+router.use('/usuarios', usuarioRoutes);
+router.use('/alunos', alunoRoutes);
+// router.use('/escolas', escolaRoutes);
 
 // Placeholder routes for testing
 router.get('/test', (req, res) => {
