@@ -209,6 +209,15 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Formulário responsivo com campos específicos por tipo
     • Estados de loading, edição e salvamento
   - ✅ Status: ROTA PUT /me CONFIGURADA E DOCUMENTADA COMPLETAMENTE
+- July 9, 2025: ✅ CONCLUÍDO - Configuração da Rota GET / para Listar Usuários
+  - ✅ Configurada rota GET /api/usuarios/ com middlewares corretos
+  - ✅ Middleware aplicado: autenticar + verificarTipoUsuario(['admin', 'gestor'])
+  - ✅ Controller configurado: UsuarioController.listarUsuarios
+  - ✅ Rate limiting de 20 requests/min aplicado
+  - ✅ Permissões: Admin (qualquer empresa) ou Gestor (própria empresa)
+  - ✅ Filtros disponíveis: page, limit, tipo_usuario, status, search, data_inicio, data_fim, orderBy
+  - ✅ Sistema hierárquico aplicado: admin pode ver todos, gestor limitado à própria empresa
+  - ✅ Status: ROTA GET / CONFIGURADA PARA LISTAGEM DE USUÁRIOS
 - July 9, 2025: ✅ CONCLUÍDO - Função listarUsuarios() Implementada com Sistema Completo de Filtros e Paginação
   - ✅ Função listarUsuarios(req, res) criada com sistema avançado de filtros por empresa
   - ✅ Controle de acesso hierárquico: admin (qualquer empresa) vs gestor (própria empresa)

@@ -81,7 +81,7 @@ router.get('/cognito/:sub',
  * GET /api/usuarios
  * Listar usuários com filtros e paginação
  * 
- * MIDDLEWARE: autenticar, adminOuGestor, verificarEmpresa
+ * MIDDLEWARE: autenticar, verificarTipoUsuario(['admin', 'gestor'])
  * PERMISSÕES: Admin (todos) ou Gestor (própria empresa)
  * RATE LIMIT: 20 requests/min
  * 
@@ -95,8 +95,7 @@ router.get('/cognito/:sub',
  */
 router.get('/', 
   autenticar, 
-  adminOuGestor, 
-  verificarEmpresa, 
+  verificarTipoUsuario(['admin', 'gestor']), 
   UsuarioController.listarUsuarios
 );
 
