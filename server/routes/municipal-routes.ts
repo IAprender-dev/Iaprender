@@ -2,6 +2,7 @@ import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts, schools } from '../../shared/schema';
 import { eq, count, sum, isNull, or, inArray, isNotNull, and } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 import { performanceMonitor, performanceMiddleware } from '../utils/performance-monitor';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';
@@ -94,27 +95,30 @@ export function registerMunicipalRoutes(app: Express) {
         return res.json({ success: true, stats: emptyStats });
       }
       
-      // 2. Buscar estatísticas APENAS da empresa do usuário (QUERY ÚNICA OTIMIZADA)
-      const statsQuery = await db
+      // 2. Buscar estatísticas APENAS da empresa do usuário (QUERIES SEPARADAS PARA EVITAR ERROS)
+      const [contractsCount] = await db
+        .select({ count: count() })
+        .from(contracts)
+        .where(eq(contracts.companyId, userCompanyId));
+
+      const [schoolsStats] = await db
         .select({
-          totalContracts: count(contracts.id),
-          totalSchools: count(municipalSchools.id),
-          activeSchools: count(municipalSchools.id),
+          totalSchools: count(),
           totalStudents: sum(municipalSchools.numberOfStudents),
           totalTeachers: sum(municipalSchools.numberOfTeachers),
           totalClassrooms: sum(municipalSchools.numberOfClassrooms),
         })
-        .from(contracts)
-        .leftJoin(municipalSchools, eq(municipalSchools.contractId, contracts.id))
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
         .where(eq(contracts.companyId, userCompanyId));
       
       const stats = {
-        totalContracts: Number(statsQuery[0]?.totalContracts || 0),
-        totalSchools: Number(statsQuery[0]?.totalSchools || 0),
-        activeSchools: Number(statsQuery[0]?.activeSchools || 0),
-        totalStudents: Number(statsQuery[0]?.totalStudents || 0),
-        totalTeachers: Number(statsQuery[0]?.totalTeachers || 0),
-        totalClassrooms: Number(statsQuery[0]?.totalClassrooms || 0)
+        totalContracts: Number(contractsCount?.count || 0),
+        totalSchools: Number(schoolsStats?.totalSchools || 0),
+        activeSchools: Number(schoolsStats?.totalSchools || 0),
+        totalStudents: Number(schoolsStats?.totalStudents || 0),
+        totalTeachers: Number(schoolsStats?.totalTeachers || 0),
+        totalClassrooms: Number(schoolsStats?.totalClassrooms || 0)
       };
       
       // Cache por 30 segundos
@@ -785,8 +789,8 @@ export function registerMunicipalRoutes(app: Express) {
       const userId = req.session.user!.id;
       
       // Buscar informações da empresa do usuário
-      const userCompany = await getUserCompanyInfo(userId);
-      console.log('🔍 [DIRECTORS] User company ID:', userCompany.companyId);
+      const userCompanyId = await getUserCompanyInfo(userId);
+      console.log('🔍 [DIRECTORS] User company ID:', userCompanyId);
 
       // Buscar diretores da mesma empresa
       const directorsData = await db
@@ -802,12 +806,12 @@ export function registerMunicipalRoutes(app: Express) {
         .from(users)
         .where(eq(
           eq(users.role, 'school_director'),
-          eq(users.companyId, userCompany.companyId)
+          eq(users.companyId, userCompanyId)
         ));
 
       console.log('🔍 [DIRECTORS] Query SQL para diretores:', {
         role: 'school_director',
-        companyId: userCompany.companyId,
+        companyId: userCompanyId,
         encontrados: directorsData.length
       });
       
@@ -872,8 +876,8 @@ export function registerMunicipalRoutes(app: Express) {
       const userId = req.session.user!.id;
       
       // Buscar informações da empresa do usuário
-      const userCompany = await getUserCompanyInfo(userId);
-      console.log('🔍 [CONTRACTS] User company ID:', userCompany.companyId);
+      const userCompanyId = await getUserCompanyInfo(userId);
+      console.log('🔍 [CONTRACTS] User company ID:', userCompanyId);
 
       // Buscar contratos da empresa do usuário que estão ativos
       const contractsData = await db
@@ -889,7 +893,7 @@ export function registerMunicipalRoutes(app: Express) {
         })
         .from(contracts)
         .where(eq(
-          eq(contracts.companyId, userCompany.companyId),
+          eq(contracts.companyId, userCompanyId),
           eq(contracts.status, 'active')
         ));
 
@@ -932,7 +936,7 @@ export function registerMunicipalRoutes(app: Express) {
   app.get('/api/municipal/company/info', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
-      const userCompany = await getUserCompanyInfo(userId);
+      const userCompanyId = await getUserCompanyInfo(userId);
       
       const [company] = await db
         .select({
@@ -945,7 +949,7 @@ export function registerMunicipalRoutes(app: Express) {
           status: companies.status,
         })
         .from(companies)
-        .where(eq(companies.id, userCompany.companyId));
+        .where(eq(companies.id, userCompanyId));
 
       res.json({ 
         success: true, 
@@ -955,7 +959,7 @@ export function registerMunicipalRoutes(app: Express) {
           email: userCompany.email,
           firstName: userCompany.firstName,
           lastName: userCompany.lastName,
-          companyId: userCompany.companyId
+          companyId: userCompanyId
         }
       });
     } catch (error) {
@@ -1315,7 +1319,7 @@ export function registerMunicipalRoutes(app: Express) {
   app.post('/api/municipal/schools/create', authenticateMunicipal, async (req: Request, res: Response) => {
     try {
       const userId = req.session.user!.id;
-      const userCompany = await getUserCompanyInfo(userId);
+      const userCompanyId = await getUserCompanyInfo(userId);
       
       const {
         name,
@@ -1338,7 +1342,7 @@ export function registerMunicipalRoutes(app: Express) {
         existingDirectorId,
       } = req.body;
 
-      console.log('🔧 [CREATE-SCHOOL] Dados recebidos:', { name, contractId, existingDirectorId, companyId: userCompany.companyId });
+      console.log('🔧 [CREATE-SCHOOL] Dados recebidos:', { name, contractId, existingDirectorId, companyId: userCompanyId });
 
       // Validar campos obrigatórios
       if (!name || !contractId || !address) {
@@ -1351,7 +1355,7 @@ export function registerMunicipalRoutes(app: Express) {
         .from(contracts)
         .where(eq(
           eq(contracts.id, contractId),
-          eq(contracts.company_id, userCompany.companyId)
+          eq(contracts.company_id, userCompanyId)
         ));
 
       if (!contract) {
@@ -1365,7 +1369,7 @@ export function registerMunicipalRoutes(app: Express) {
           .from(users)
           .where(eq(
             eq(users.id, existingDirectorId),
-            eq(users.company_id, userCompany.companyId),
+            eq(users.company_id, userCompanyId),
             eq(users.cognito_group, 'Diretores')
           ));
 
@@ -1391,7 +1395,7 @@ export function registerMunicipalRoutes(app: Express) {
           name,
           inep: inep || null,
           cnpj: cnpj || null,
-          company_id: userCompany.companyId,
+          company_id: userCompanyId,
           contract_id: contractId,
           address,
           city: city || null,
@@ -1405,11 +1409,11 @@ export function registerMunicipalRoutes(app: Express) {
         })
         .returning();
 
-      console.log('✅ [CREATE-SCHOOL] Escola criada:', newSchool.id, 'para empresa:', userCompany.companyId);
+      console.log('✅ [CREATE-SCHOOL] Escola criada:', newSchool.id, 'para empresa:', userCompanyId);
 
       // Invalidar caches relacionados
       CacheManager.invalidateUserCache(userId);
-      CacheManager.invalidateCompanyCache(userCompany.companyId);
+      CacheManager.invalidateCompanyCache(userCompanyId);
 
       res.json({ success: true, school: newSchool });
     } catch (error) {
@@ -1428,7 +1432,7 @@ export function registerMunicipalRoutes(app: Express) {
       console.log('🔧 [SCHOOL_EDIT] Iniciando edição de escola:', { schoolId, updateData });
 
       // Buscar informações da empresa do usuário
-      const userCompany = await getUserCompanyInfo(userId);
+      const userCompanyId = await getUserCompanyInfo(userId);
 
       // Verificar se a escola pertence à empresa do gestor
       const [existingSchool] = await db
@@ -1437,7 +1441,7 @@ export function registerMunicipalRoutes(app: Express) {
         .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
         .where(eq(
           eq(municipalSchools.id, schoolId),
-          eq(contracts.companyId, userCompany.companyId)
+          eq(contracts.companyId, userCompanyId)
         ));
 
       if (!existingSchool) {
@@ -1451,7 +1455,7 @@ export function registerMunicipalRoutes(app: Express) {
           .from(contracts)
           .where(eq(
             eq(contracts.id, parseInt(updateData.contractId)),
-            eq(contracts.companyId, userCompany.companyId)
+            eq(contracts.companyId, userCompanyId)
           ));
 
         if (!contract) {
@@ -1495,7 +1499,7 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Invalidar caches relacionados
       CacheManager.invalidateUserCache(userId);
-      CacheManager.invalidateCompanyCache(userCompany.companyId);
+      CacheManager.invalidateCompanyCache(userCompanyId);
 
       res.json({ 
         success: true,
@@ -1816,8 +1820,8 @@ export function registerMunicipalRoutes(app: Express) {
       console.log('🔧 [CONTRACT_EDIT] Editing contract:', contractId, 'Data:', updateData);
 
       // Verificar se o usuário tem acesso ao contrato através da empresa
-      const userCompany = await getUserCompany(userId);
-      if (!userCompany) {
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
         return res.status(403).json({ success: false, message: 'Acesso negado' });
       }
 
@@ -1825,9 +1829,9 @@ export function registerMunicipalRoutes(app: Express) {
       const [existingContract] = await db
         .select()
         .from(contracts)
-        .where(eq(
+        .where(and(
           eq(contracts.id, contractId),
-          eq(contracts.companyId, userCompany.companyId)
+          eq(contracts.companyId, userCompanyId)
         ));
 
       if (!existingContract) {
@@ -1852,7 +1856,7 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Invalidar caches
       CacheManager.invalidateUserCache(userId);
-      CacheManager.invalidateCompanyCache(userCompany.companyId);
+      CacheManager.invalidateCompanyCache(userCompanyId);
 
       console.log('✅ [CONTRACT_EDIT] Contrato atualizado:', updatedContract.id);
 
@@ -1877,8 +1881,8 @@ export function registerMunicipalRoutes(app: Express) {
       console.log('🔧 [DIRECTOR_EDIT] Editing director:', directorId, 'Data:', updateData);
 
       // Verificar acesso através da empresa
-      const userCompany = await getUserCompany(userId);
-      if (!userCompany) {
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
         return res.status(403).json({ success: false, message: 'Acesso negado' });
       }
 
@@ -1888,7 +1892,7 @@ export function registerMunicipalRoutes(app: Express) {
         .from(users)
         .where(and(
           eq(users.id, directorId),
-          eq(users.companyId, userCompany.companyId),
+          eq(users.companyId, userCompanyId),
           eq(users.role, 'school_director')
         ));
 
@@ -1910,7 +1914,7 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Invalidar caches
       CacheManager.invalidateUserCache(userId);
-      CacheManager.invalidateCompanyCache(userCompany.companyId);
+      CacheManager.invalidateCompanyCache(userCompanyId);
 
       console.log('✅ [DIRECTOR_EDIT] Diretor atualizado:', updatedDirector.id);
 
@@ -1931,8 +1935,8 @@ export function registerMunicipalRoutes(app: Express) {
       const userId = req.session.user!.id;
       const contractId = parseInt(req.params.id);
 
-      const userCompany = await getUserCompany(userId);
-      if (!userCompany) {
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
         return res.status(403).json({ success: false, message: 'Acesso negado' });
       }
 
@@ -1941,7 +1945,7 @@ export function registerMunicipalRoutes(app: Express) {
         .from(contracts)
         .where(and(
           eq(contracts.id, contractId),
-          eq(contracts.companyId, userCompany.companyId)
+          eq(contracts.companyId, userCompanyId)
         ));
 
       if (!contract) {
@@ -1961,8 +1965,8 @@ export function registerMunicipalRoutes(app: Express) {
       const userId = req.session.user!.id;
       const directorId = parseInt(req.params.id);
 
-      const userCompany = await getUserCompany(userId);
-      if (!userCompany) {
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
         return res.status(403).json({ success: false, message: 'Acesso negado' });
       }
 
@@ -1984,7 +1988,7 @@ export function registerMunicipalRoutes(app: Express) {
         .leftJoin(contracts, eq(users.contractId, contracts.id))
         .where(and(
           eq(users.id, directorId),
-          eq(users.companyId, userCompany.companyId),
+          eq(users.companyId, userCompanyId),
           eq(users.role, 'school_director')
         ));
 
