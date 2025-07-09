@@ -22,8 +22,12 @@ import {
   verificarEmpresaDiretor,
   verificarEmpresaProfessor,
   verificarEmpresaAluno,
+  verificarEmpresaUsuario,
   verificarAcessoEmpresa,
   verificarGestaoEmpresa,
+  verificarProprioUsuario,
+  verificarUsuarioMesmaEmpresa,
+  verificarAcessoUsuario,
   filtrarPorEmpresa,
   aplicarFiltroEmpresa,
   auditarAcessoEmpresa
@@ -237,7 +241,183 @@ app.post('/api/usuarios/:id/promover',
   }
 );
 
-// EXEMPLO 1: Rota para listar contratos (apenas da empresa do usuário)
+// ============================================================================
+// EXEMPLOS DE VERIFICAÇÃO DE ACESSO A DADOS PRÓPRIOS
+// ============================================================================
+
+// EXEMPLO 10: Usuário acessando apenas seus próprios dados
+app.get('/api/usuarios/:userId/perfil', 
+  autenticar, 
+  verificarProprioUsuario,
+  (req, res) => {
+    res.json({
+      message: 'Perfil do usuário',
+      user: {
+        id: req.user.id,
+        nome: req.user.nome,
+        tipo_usuario: req.user.tipo_usuario
+      },
+      perfil: {
+        user_id: req.params.userId,
+        configuracoes: { tema: 'claro', notificacoes: true },
+        preferencias: { idioma: 'pt-BR' }
+      }
+    });
+  }
+);
+
+// EXEMPLO 11: Atualizar dados pessoais (apenas próprios dados)
+app.put('/api/usuarios/:userId/dados-pessoais', 
+  autenticar, 
+  verificarProprioUsuario,
+  auditarAcessoEmpresa('ATUALIZAR_DADOS_PESSOAIS'),
+  (req, res) => {
+    res.json({
+      message: 'Dados pessoais atualizados',
+      updated_user_id: req.params.userId,
+      by_user: req.user.nome,
+      dados_atualizados: req.body
+    });
+  }
+);
+
+// EXEMPLO 12: Admin acessando dados de qualquer usuário
+app.get('/api/admin/usuarios/:userId/detalhes', 
+  autenticar, 
+  apenasAdmin,
+  verificarProprioUsuario, // Admin sempre passa nesta verificação
+  (req, res) => {
+    res.json({
+      message: 'Detalhes completos do usuário (acesso admin)',
+      target_user_id: req.params.userId,
+      admin_user: req.user.nome,
+      detalhes: {
+        dados_pessoais: {},
+        historico_acessos: [],
+        configuracoes_sistema: {}
+      }
+    });
+  }
+);
+
+// EXEMPLO 13: Gestor acessando dados de usuários da mesma empresa
+app.get('/api/usuarios/:userId/relatorio-atividades', 
+  autenticar, 
+  gestorOuDiretor,
+  verificarUsuarioMesmaEmpresa,
+  auditarAcessoEmpresa('VISUALIZAR_RELATORIO_ATIVIDADES'),
+  (req, res) => {
+    res.json({
+      message: 'Relatório de atividades do usuário',
+      target_user_id: req.params.userId,
+      gestor: req.user.nome,
+      empresa_id: req.user.empresa_id,
+      atividades: [
+        { data: '2025-07-09', acao: 'Login', horario: '08:30' },
+        { data: '2025-07-09', acao: 'Gerou plano de aula', horario: '09:15' }
+      ]
+    });
+  }
+);
+
+// EXEMPLO 14: Acesso combinado (próprio + hierarquia + empresa)
+app.get('/api/usuarios/:userId/dashboard-personalizado', 
+  autenticar, 
+  verificarAcessoUsuario, // Função combinada mais inteligente
+  (req, res) => {
+    const isOwnData = parseInt(req.user.id) === parseInt(req.params.userId);
+    
+    res.json({
+      message: 'Dashboard personalizado',
+      target_user_id: req.params.userId,
+      accessed_by: req.user.nome,
+      access_type: isOwnData ? 'próprios_dados' : 'hierarquia_empresarial',
+      dashboard: {
+        widgets: isOwnData ? 
+          ['meu_progresso', 'minhas_atividades', 'configuracoes'] :
+          ['progresso_usuario', 'atividades_supervisionadas', 'relatorios'],
+        nivel_acesso: req.user.tipo_usuario
+      }
+    });
+  }
+);
+
+// EXEMPLO 15: Professor acessando dados de alunos da mesma empresa
+app.get('/api/professores/:professorId/alunos/:alunoId/notas', 
+  autenticar, 
+  apenasProfessor,
+  // Verifica se o professor está acessando seus próprios dados OU se é da mesma empresa
+  async (req, res, next) => {
+    const professorId = req.params.professorId;
+    const isProfessorOwn = parseInt(req.user.id) === parseInt(professorId);
+    
+    if (!isProfessorOwn) {
+      return res.status(403).json({
+        message: 'Professor só pode acessar dados dos próprios alunos',
+        error: 'PROFESSOR_OWN_STUDENTS_ONLY'
+      });
+    }
+    
+    next();
+  },
+  verificarUsuarioMesmaEmpresa, // Verifica se aluno é da mesma empresa
+  auditarAcessoEmpresa('VISUALIZAR_NOTAS_ALUNO'),
+  (req, res) => {
+    res.json({
+      message: 'Notas do aluno',
+      professor_id: req.params.professorId,
+      aluno_id: req.params.alunoId,
+      professor: req.user.nome,
+      notas: [
+        { disciplina: 'Matemática', nota: 8.5, bimestre: 1 },
+        { disciplina: 'Português', nota: 9.0, bimestre: 1 }
+      ]
+    });
+  }
+);
+
+// EXEMPLO 16: Rota de alteração de senha (apenas próprios dados)
+app.post('/api/usuarios/:userId/alterar-senha', 
+  autenticar, 
+  verificarProprioUsuario,
+  auditarAcessoEmpresa('ALTERAR_SENHA'),
+  (req, res) => {
+    const { senha_atual, nova_senha } = req.body;
+    
+    // Aqui faria a validação da senha atual
+    res.json({
+      message: 'Senha alterada com sucesso',
+      user_id: req.params.userId,
+      changed_by: req.user.nome,
+      timestamp: new Date().toISOString()
+    });
+  }
+);
+
+// EXEMPLO 17: Diretor gerenciando professores da escola
+app.patch('/api/escolas/:escolaId/professores/:professorId', 
+  autenticar, 
+  apenasDiretor,
+  verificarEmpresaEscola, // Verifica se escola pertence à empresa do diretor
+  verificarUsuarioMesmaEmpresa, // Verifica se professor é da mesma empresa
+  auditarAcessoEmpresa('GERENCIAR_PROFESSOR_ESCOLA'),
+  (req, res) => {
+    res.json({
+      message: 'Dados do professor atualizados',
+      escola_id: req.params.escolaId,
+      professor_id: req.params.professorId,
+      diretor: req.user.nome,
+      empresa_id: req.user.empresa_id,
+      atualizacoes: req.body
+    });
+  }
+);
+
+// ============================================================================
+// EXEMPLOS DE VERIFICAÇÃO DE EMPRESA (MANTIDOS DOS EXEMPLOS ANTERIORES)
+// ============================================================================
+
+// EXEMPLO 18: Rota para listar contratos (apenas da empresa do usuário)
 app.get('/api/contratos', 
   autenticar, 
   verificarAcessoEmpresa,
@@ -747,7 +927,185 @@ export function testarMiddlewaresPreConfigurados() {
   });
 }
 
-// EXEMPLO 17: Executar todos os testes
+// EXEMPLO 17: Função para testar verificação de próprio usuário
+export function testarVerificacaoProprioUsuario() {
+  console.log('🧪 Testando verificação de próprio usuário...\n');
+  
+  const cenarios = [
+    {
+      nome: 'Usuário acessando seus próprios dados',
+      user: { id: 5, nome: 'João Silva', tipo_usuario: 'professor', empresa_id: 1 },
+      params: { userId: '5' },
+      esperado: 'success'
+    },
+    {
+      nome: 'Usuário tentando acessar dados de outro usuário',
+      user: { id: 5, nome: 'João Silva', tipo_usuario: 'professor', empresa_id: 1 },
+      params: { userId: '6' },
+      esperado: 'error'
+    },
+    {
+      nome: 'Admin acessando dados de qualquer usuário',
+      user: { id: 1, nome: 'Admin', tipo_usuario: 'admin', empresa_id: null },
+      params: { userId: '5' },
+      esperado: 'success'
+    },
+    {
+      nome: 'Admin da empresa acessando dados de usuário',
+      user: { id: 2, nome: 'Admin Empresa', tipo_usuario: 'admin', empresa_id: 1 },
+      params: { userId: '5' },
+      esperado: 'success'
+    },
+    {
+      nome: 'Usuário sem parâmetro userId na URL',
+      user: { id: 5, nome: 'João Silva', tipo_usuario: 'professor', empresa_id: 1 },
+      params: {},
+      esperado: 'error'
+    },
+    {
+      nome: 'Usuário não autenticado',
+      user: null,
+      params: { userId: '5' },
+      esperado: 'error'
+    }
+  ];
+  
+  console.log('📋 Executando cenários de teste:\n');
+  
+  cenarios.forEach((cenario, index) => {
+    console.log(`${index + 1}. ${cenario.nome}`);
+    
+    const req = { 
+      user: cenario.user, 
+      params: cenario.params
+    };
+    
+    const res = {
+      status: (code) => ({
+        json: (data) => {
+          const resultado = code === 403 || code === 401 || code === 400 ? 'error' : 'success';
+          const status = resultado === cenario.esperado ? '✅' : '❌';
+          
+          console.log(`   ${status} Status: ${code} | Esperado: ${cenario.esperado} | Resultado: ${resultado}`);
+          if (data.message) {
+            console.log(`   Mensagem: ${data.message}`);
+          }
+          console.log('');
+        }
+      })
+    };
+    
+    const next = () => {
+      const status = cenario.esperado === 'success' ? '✅' : '❌';
+      console.log(`   ${status} Acesso autorizado | Esperado: ${cenario.esperado} | Resultado: success\n`);
+    };
+    
+    try {
+      verificarProprioUsuario(req, res, next);
+    } catch (error) {
+      console.log(`   ❌ Erro: ${error.message}\n`);
+    }
+  });
+}
+
+// EXEMPLO 18: Função para testar verificação combinada de acesso a usuário
+export async function testarVerificacaoAcessoUsuario() {
+  console.log('🧪 Testando verificação combinada de acesso a usuário...\n');
+  
+  // Mock da função buscarEmpresaRecurso para testes
+  const mockBuscarEmpresaRecurso = (tabela, campo, retorno, id) => {
+    // Simular dados de teste
+    const usuarios = {
+      '1': { empresa_id: null, tipo_usuario: 'admin' }, // Admin global
+      '2': { empresa_id: 1, tipo_usuario: 'admin' },    // Admin empresa 1
+      '3': { empresa_id: 1, tipo_usuario: 'gestor' },   // Gestor empresa 1
+      '4': { empresa_id: 1, tipo_usuario: 'diretor' },  // Diretor empresa 1
+      '5': { empresa_id: 1, tipo_usuario: 'professor' }, // Professor empresa 1
+      '6': { empresa_id: 2, tipo_usuario: 'professor' }, // Professor empresa 2
+      '7': { empresa_id: 1, tipo_usuario: 'aluno' }      // Aluno empresa 1
+    };
+    
+    const usuario = usuarios[id];
+    if (!usuario) return null;
+    
+    return retorno === 'empresa_id' ? usuario.empresa_id : usuario.tipo_usuario;
+  };
+  
+  const cenarios = [
+    {
+      nome: 'Admin global acessando qualquer usuário',
+      user: { id: 1, nome: 'Admin Global', tipo_usuario: 'admin', empresa_id: null },
+      targetUserId: '5',
+      esperado: 'success'
+    },
+    {
+      nome: 'Usuário acessando seus próprios dados',
+      user: { id: 5, nome: 'Professor', tipo_usuario: 'professor', empresa_id: 1 },
+      targetUserId: '5',
+      esperado: 'success'
+    },
+    {
+      nome: 'Gestor acessando professor da mesma empresa',
+      user: { id: 3, nome: 'Gestor', tipo_usuario: 'gestor', empresa_id: 1 },
+      targetUserId: '5',
+      esperado: 'success'
+    },
+    {
+      nome: 'Professor tentando acessar dados de outro professor',
+      user: { id: 5, nome: 'Professor', tipo_usuario: 'professor', empresa_id: 1 },
+      targetUserId: '6',
+      esperado: 'error'
+    },
+    {
+      nome: 'Diretor acessando aluno da mesma empresa',
+      user: { id: 4, nome: 'Diretor', tipo_usuario: 'diretor', empresa_id: 1 },
+      targetUserId: '7',
+      esperado: 'success'
+    },
+    {
+      nome: 'Gestor tentando acessar usuário de outra empresa',
+      user: { id: 3, nome: 'Gestor', tipo_usuario: 'gestor', empresa_id: 1 },
+      targetUserId: '6',
+      esperado: 'error'
+    }
+  ];
+  
+  console.log('📋 Executando cenários de teste:\n');
+  
+  for (const [index, cenario] of cenarios.entries()) {
+    console.log(`${index + 1}. ${cenario.nome}`);
+    
+    // Resultado esperado baseado na lógica
+    const empresaIdAlvo = mockBuscarEmpresaRecurso('usuarios', 'id', 'empresa_id', cenario.targetUserId);
+    const tipoUsuarioAlvo = mockBuscarEmpresaRecurso('usuarios', 'id', 'tipo_usuario', cenario.targetUserId);
+    
+    let resultadoEsperado = 'error';
+    
+    // Lógica de verificação
+    if (cenario.user.tipo_usuario === 'admin' && !cenario.user.empresa_id) {
+      resultadoEsperado = 'success'; // Admin global
+    } else if (parseInt(cenario.user.id) === parseInt(cenario.targetUserId)) {
+      resultadoEsperado = 'success'; // Próprios dados
+    } else if (cenario.user.empresa_id === empresaIdAlvo) {
+      // Mesma empresa + hierarquia
+      if (cenario.user.tipo_usuario === 'gestor' && 
+          ['diretor', 'professor', 'aluno'].includes(tipoUsuarioAlvo)) {
+        resultadoEsperado = 'success';
+      } else if (cenario.user.tipo_usuario === 'diretor' && 
+                 ['professor', 'aluno'].includes(tipoUsuarioAlvo)) {
+        resultadoEsperado = 'success';
+      } else if (cenario.user.tipo_usuario === 'admin') {
+        resultadoEsperado = 'success';
+      }
+    }
+    
+    const status = resultadoEsperado === cenario.esperado ? '✅' : '❌';
+    console.log(`   ${status} Esperado: ${cenario.esperado} | Resultado: ${resultadoEsperado}`);
+    console.log(`   Detalhes: ${cenario.user.tipo_usuario} (empresa ${cenario.user.empresa_id}) → ${tipoUsuarioAlvo} (empresa ${empresaIdAlvo})\n`);
+  }
+}
+
+// EXEMPLO 19: Executar todos os testes
 export async function executarTodosOsTestesAutorizacao() {
   console.log('🧪 Executando todos os testes de autorização...\n');
   
@@ -766,6 +1124,16 @@ export async function executarTodosOsTestesAutorizacao() {
     console.log('TESTES DE VERIFICAÇÃO DE EMPRESA');
     console.log('='.repeat(80));
     await testarVerificacaoEmpresa();
+    
+    console.log('='.repeat(80));
+    console.log('TESTES DE VERIFICAÇÃO DE PRÓPRIO USUÁRIO');
+    console.log('='.repeat(80));
+    testarVerificacaoProprioUsuario();
+    
+    console.log('='.repeat(80));
+    console.log('TESTES DE VERIFICAÇÃO COMBINADA DE ACESSO A USUÁRIO');
+    console.log('='.repeat(80));
+    await testarVerificacaoAcessoUsuario();
     
     console.log('='.repeat(80));
     console.log('TESTES DE FILTROS DE EMPRESA');

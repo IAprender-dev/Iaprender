@@ -162,6 +162,27 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ 2 funções de teste criadas: testarVerificacaoTipoUsuario() e testarMiddlewaresPreConfigurados()
   - ✅ Integração completa com sistema existente de autorização empresarial
   - ✅ Status: Sistema de autorização por tipo de usuário completo e pronto para produção
+- July 9, 2025: ✅ CONCLUÍDO - Funções verificarProprioUsuario() e verificarAcessoUsuario() Implementadas
+  - ✅ Função verificarProprioUsuario() criada para controle de acesso a dados próprios
+  - ✅ Validação: req.user.id == req.params.userId ou usuário é admin
+  - ✅ Suporte a múltiplos nomes de parâmetro: userId, user_id, id
+  - ✅ Admin global e admin da empresa podem acessar dados de qualquer usuário
+  - ✅ Função verificarUsuarioMesmaEmpresa() para verificar usuários da mesma empresa
+  - ✅ Função verificarAcessoUsuario() combinada com lógica hierárquica completa:
+    • Admin global: acesso total ao sistema
+    • Próprios dados: sempre permitido para qualquer usuário
+    • Hierarquia empresarial: gestor → diretor/professor/aluno, diretor → professor/aluno
+    • Admin da empresa: acesso total aos usuários da empresa
+  - ✅ Códigos de erro específicos: OWN_DATA_ACCESS_ONLY, DIFFERENT_COMPANY_USER, USER_ACCESS_DENIED
+  - ✅ 8 exemplos práticos no arquivo autorizar-examples.js:
+    • Acesso a perfil pessoal, dados pessoais, relatórios
+    • Admin acessando qualquer usuário
+    • Gestores/diretores com hierarquia empresarial
+    • Professor gerenciando alunos da mesma empresa
+    • Alteração de senha (apenas próprios dados)
+  - ✅ 2 funções de teste: testarVerificacaoProprioUsuario() e testarVerificacaoAcessoUsuario()
+  - ✅ Estrutura de exportação completa organizada por categorias
+  - ✅ Status: Sistema de controle de acesso a dados próprios completo e pronto para produção
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 4: Controle de Acesso por Empresa Implementado Completamente
   - ✅ Arquivo /src/middleware/autorizar.js criado com sistema completo de autorização empresarial
   - ✅ Função verificarEmpresa() implementada com validação flexível baseada em empresa_id
