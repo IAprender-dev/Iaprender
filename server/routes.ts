@@ -51,18 +51,19 @@ const answerSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Rate limiting configurations
+  // Rate limiting configurations - more permissive for development
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 1000, // increased limit for development
     message: { message: "Too many requests from this IP, please try again later." },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.path.startsWith('/static') || req.path.startsWith('/assets') || req.path.includes('.'),
   });
 
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // limit each IP to 10 auth requests per windowMs
+    max: 50, // increased for development
     message: { message: "Too many authentication attempts, please try again later." },
     standardHeaders: true,
     legacyHeaders: false,
@@ -70,14 +71,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const apiLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
-    max: 20, // limit each IP to 20 API requests per minute
+    max: 200, // increased for development
     message: { message: "API rate limit exceeded, please try again later." },
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.path.startsWith('/api/auth/me'), // skip auth check endpoint
   });
 
-  // Apply rate limiting
-  app.use(generalLimiter);
+  // Rate limiting temporarily disabled for debugging
+  // app.use((req, res, next) => {
+  //   if (req.path.startsWith('/static') || req.path.startsWith('/assets') || req.path.includes('.js') || req.path.includes('.css')) {
+  //     return next();
+  //   }
+  //   generalLimiter(req, res, next);
+  // });
 
   // Multer configuration for file uploads with enhanced audio support
   const upload = multer({ 
@@ -202,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/cognito-ui", cognitoUIRouter);
 
   // Basic auth routes - placeholders (will be implemented with new schema)
-  app.post("/api/auth/login", authLimiter, async (req: Request, res: Response) => {
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
       const { email, password } = loginSchema.parse(req.body);
       
@@ -236,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Rotas de usuários
-  app.get("/api/usuarios", apiLimiter, authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+  app.get("/api/usuarios", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
       // Simular busca de usuários (placeholder até nova estrutura)
       const query = `
@@ -427,6 +434,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('close', () => {
       console.log('Conexão WebSocket fechada');
     });
+  });
+
+  // Redirect route for login
+  app.get("/start-login", (req: Request, res: Response) => {
+    console.log("🔄 Redirecionamento /start-login -> /auth");
+    res.redirect("/auth");
   });
 
   // Placeholder routes that will be implemented with new database structure
