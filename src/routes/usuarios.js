@@ -211,6 +211,26 @@ router.get('/perfil',
 );
 
 /**
+ * PUT /api/usuarios/me
+ * Atualizar próprio perfil (método PUT)
+ * 
+ * MIDDLEWARE: autenticar
+ * PERMISSÕES: Qualquer usuário autenticado (próprios dados)
+ * RATE LIMIT: 10 requests/min
+ * 
+ * CAMPOS PERMITIDOS POR TIPO:
+ * - Admin: todos os campos incluindo email, tipo_usuario, empresa_id
+ * - Gestor: dados pessoais + documento (não pode alterar email/tipo/empresa)
+ * - Diretor: apenas dados pessoais básicos
+ * - Professor: dados pessoais + disciplinas/formação específicas
+ * - Aluno: dados limitados + informações do responsável
+ */
+router.put('/me', 
+  autenticar, 
+  UsuarioController.atualizarPerfil
+);
+
+/**
  * PATCH /api/usuarios/perfil
  * Atualizar próprio perfil com validações hierárquicas
  * 

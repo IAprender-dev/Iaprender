@@ -191,6 +191,24 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Casos de erro e tratamento (401, 404, 429, 500)
     • Configuração e permissões detalhadas
   - ✅ Status: ROTA GET /me CONFIGURADA E PRONTA PARA USO
+- July 9, 2025: ✅ CONCLUÍDO - Configuração da Rota Protegida PUT /me
+  - ✅ Adicionada rota PUT /api/usuarios/me com middleware autenticar
+  - ✅ Controller atualizarPerfil configurado para atualização de perfil
+  - ✅ Rate limiting de 10 requests/min aplicado para operações de escrita
+  - ✅ Permissões hierárquicas por tipo de usuário implementadas:
+    • Admin: todos os campos incluindo email, tipo_usuario, empresa_id
+    • Gestor: dados pessoais + documento (não pode alterar email/tipo/empresa)
+    • Diretor: apenas dados pessoais básicos
+    • Professor: dados pessoais + disciplinas/formação específicas
+    • Aluno: dados limitados + informações do responsável
+  - ✅ Atualizado arquivo /src/examples/rota-me-example.js com exemplos PUT:
+    • Curl command para atualização via PUT /me
+    • JavaScript fetch com tratamento de erros
+    • Hook React expandido com função atualizarPerfil
+    • Componente React com interface de edição inline
+    • Formulário responsivo com campos específicos por tipo
+    • Estados de loading, edição e salvamento
+  - ✅ Status: ROTA PUT /me CONFIGURADA E DOCUMENTADA COMPLETAMENTE
 - July 9, 2025: ✅ CONCLUÍDO - Função listarUsuarios() Implementada com Sistema Completo de Filtros e Paginação
   - ✅ Função listarUsuarios(req, res) criada com sistema avançado de filtros por empresa
   - ✅ Controle de acesso hierárquico: admin (qualquer empresa) vs gestor (própria empresa)

@@ -11,19 +11,37 @@ console.log('👤 EXEMPLO DE USO - ROTA PROTEGIDA GET /me');
 // CONFIGURAÇÃO DA ROTA
 // ============================================================================
 
-const configuracaoRota = {
-  endpoint: 'GET /api/usuarios/me',
-  middleware: ['autenticar'],
-  controller: 'UsuarioController.obterPerfil',
-  rate_limit: '30 requests/min',
-  permissoes: 'Qualquer usuário autenticado (próprios dados)',
+const configuracaoRotas = {
+  get_me: {
+    endpoint: 'GET /api/usuarios/me',
+    middleware: ['autenticar'],
+    controller: 'UsuarioController.obterPerfil',
+    rate_limit: '30 requests/min',
+    permissoes: 'Qualquer usuário autenticado (próprios dados)',
+    
+    retorna: [
+      'Dados do token JWT',
+      'Dados completos do banco',
+      'Dados específicos do tipo (professor, aluno, diretor, gestor)',
+      'Informações da empresa vinculada'
+    ]
+  },
   
-  retorna: [
-    'Dados do token JWT',
-    'Dados completos do banco',
-    'Dados específicos do tipo (professor, aluno, diretor, gestor)',
-    'Informações da empresa vinculada'
-  ]
+  put_me: {
+    endpoint: 'PUT /api/usuarios/me',
+    middleware: ['autenticar'],
+    controller: 'UsuarioController.atualizarPerfil',
+    rate_limit: '10 requests/min',
+    permissoes: 'Qualquer usuário autenticado (próprios dados)',
+    
+    campos_permitidos_por_tipo: {
+      admin: 'todos os campos incluindo email, tipo_usuario, empresa_id',
+      gestor: 'dados pessoais + documento (não pode alterar email/tipo/empresa)',
+      diretor: 'apenas dados pessoais básicos',
+      professor: 'dados pessoais + disciplinas/formação específicas',
+      aluno: 'dados limitados + informações do responsável'
+    }
+  }
 };
 
 // ============================================================================
@@ -38,6 +56,22 @@ const exemplocurl = `
 curl -X GET "http://localhost:5000/api/usuarios/me" \\
   -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \\
   -H "Content-Type: application/json"
+`;
+
+/**
+ * EXEMPLO 1.5: Curl command para PUT /me (atualizar perfil)
+ */
+const exemploCurlPutMe = `
+# Atualizar perfil próprio via PUT
+curl -X PUT "http://localhost:5000/api/usuarios/me" \\
+  -H "Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..." \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "nome": "João Silva Santos",
+    "telefone": "(11) 98765-4321",
+    "endereco": "Av. Paulista, 1000",
+    "cidade": "São Paulo"
+  }'
 `;
 
 /**
@@ -71,7 +105,35 @@ async function obterMeuPerfil() {
   }
 }
 
-// Usar a função
+// Atualizar perfil próprio via PUT /me
+async function atualizarMeuPerfil(dadosAtualizacao) {
+  try {
+    const token = localStorage.getItem('authToken');
+    
+    const response = await fetch('/api/usuarios/me', {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dadosAtualizacao)
+    });
+    
+    if (!response.ok) {
+      throw new Error('Erro ao atualizar perfil: ' + response.status);
+    }
+    
+    const resultado = await response.json();
+    console.log('Perfil atualizado:', resultado);
+    
+    return resultado;
+  } catch (error) {
+    console.error('Erro:', error);
+    throw error;
+  }
+}
+
+// Usar as funções
 obterMeuPerfil()
   .then(perfil => {
     console.log('Nome:', perfil.data.nome);
@@ -80,6 +142,19 @@ obterMeuPerfil()
   })
   .catch(error => {
     console.error('Falha ao carregar perfil:', error);
+  });
+
+// Exemplo de atualização
+atualizarMeuPerfil({
+  nome: 'João Silva Santos',
+  telefone: '(11) 98765-4321',
+  endereco: 'Av. Paulista, 1000'
+})
+  .then(resultado => {
+    console.log('Perfil atualizado com sucesso:', resultado.data);
+  })
+  .catch(error => {
+    console.error('Falha ao atualizar perfil:', error);
   });
 `;
 
@@ -146,7 +221,51 @@ export function useMeuPerfil() {
     carregarPerfil();
   };
   
-  return { perfil, loading, error, recarregarPerfil };
+  // Função para atualizar perfil via PUT /me
+  const atualizarPerfil = async (dadosAtualizacao) => {
+    try {
+      setError(null);
+      
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+      
+      const response = await fetch('/api/usuarios/me', {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dadosAtualizacao)
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          localStorage.removeItem('authToken');
+          window.location.href = '/auth';
+          return;
+        }
+        throw new Error(\`Erro HTTP: \${response.status}\`);
+      }
+      
+      const data = await response.json();
+      if (data.success) {
+        // Atualizar o estado local com os novos dados
+        setPerfil(data.data.usuario || data.data);
+        return data;
+      } else {
+        throw new Error(data.message || 'Erro ao atualizar perfil');
+      }
+      
+    } catch (err) {
+      setError(err.message);
+      console.error('Erro ao atualizar perfil:', err);
+      throw err;
+    }
+  };
+  
+  return { perfil, loading, error, recarregarPerfil, atualizarPerfil };
 }
 `;
 
@@ -158,7 +277,10 @@ import React from 'react';
 import { useMeuPerfil } from './hooks/useMeuPerfil';
 
 export function PerfilUsuario() {
-  const { perfil, loading, error, recarregarPerfil } = useMeuPerfil();
+  const { perfil, loading, error, recarregarPerfil, atualizarPerfil } = useMeuPerfil();
+  const [editando, setEditando] = useState(false);
+  const [dadosEdicao, setDadosEdicao] = useState({});
+  const [salvando, setSalvando] = useState(false);
   
   if (loading) {
     return (
@@ -196,19 +318,88 @@ export function PerfilUsuario() {
     );
   }
   
+  // Inicializar dados de edição quando começar a editar
+  const iniciarEdicao = () => {
+    setDadosEdicao({
+      nome: perfil.nome || '',
+      telefone: perfil.telefone || '',
+      endereco: perfil.endereco || '',
+      cidade: perfil.cidade || '',
+      // Campos específicos por tipo
+      ...(perfil.dadosEspecificos?.tipo === 'professor' && {
+        disciplinas: perfil.dadosEspecificos.disciplinas || [],
+        formacao: perfil.dadosEspecificos.formacao || ''
+      })
+    });
+    setEditando(true);
+  };
+  
+  // Salvar alterações via PUT /me
+  const salvarAlteracoes = async () => {
+    try {
+      setSalvando(true);
+      await atualizarPerfil(dadosEdicao);
+      setEditando(false);
+      setDadosEdicao({});
+      // Mostrar notificação de sucesso aqui
+    } catch (error) {
+      // Mostrar notificação de erro aqui
+      console.error('Erro ao salvar:', error);
+    } finally {
+      setSalvando(false);
+    }
+  };
+  
+  // Cancelar edição
+  const cancelarEdicao = () => {
+    setEditando(false);
+    setDadosEdicao({});
+  };
+  
   return (
     <div className="bg-white shadow rounded-lg p-6">
       {/* Header do perfil */}
-      <div className="flex items-center space-x-4 mb-6">
-        <div className="h-16 w-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
-          {perfil.nome.charAt(0).toUpperCase()}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="h-16 w-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+            {perfil.nome.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{perfil.nome}</h1>
+            <p className="text-gray-600">{perfil.email}</p>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {perfil.tipo_usuario}
+            </span>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">{perfil.nome}</h1>
-          <p className="text-gray-600">{perfil.email}</p>
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {perfil.tipo_usuario}
-          </span>
+        
+        {/* Botões de ação */}
+        <div className="flex space-x-2">
+          {!editando ? (
+            <button 
+              onClick={iniciarEdicao}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Editar Perfil (PUT /me)
+            </button>
+          ) : (
+            <div className="flex space-x-2">
+              <button 
+                onClick={salvarAlteracoes}
+                disabled={salvando}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+              >
+                {salvando ? 'Salvando...' : 'Salvar'}
+              </button>
+              <button 
+                onClick={cancelarEdicao}
+                disabled={salvando}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          )}
         </div>
       </div>
       
@@ -216,18 +407,62 @@ export function PerfilUsuario() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <h3 className="text-lg font-medium text-gray-900 mb-3">Informações Pessoais</h3>
-          <dl className="space-y-2">
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Telefone</dt>
-              <dd className="text-sm text-gray-900">{perfil.telefone || 'Não informado'}</dd>
+          
+          {!editando ? (
+            <dl className="space-y-2">
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Telefone</dt>
+                <dd className="text-sm text-gray-900">{perfil.telefone || 'Não informado'}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Endereço</dt>
+                <dd className="text-sm text-gray-900">
+                  {perfil.endereco ? \`\${perfil.endereco}, \${perfil.cidade}/\${perfil.estado}\` : 'Não informado'}
+                </dd>
+              </div>
+            </dl>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                <input
+                  type="text"
+                  value={dadosEdicao.nome || ''}
+                  onChange={(e) => setDadosEdicao({...dadosEdicao, nome: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                <input
+                  type="text"
+                  value={dadosEdicao.telefone || ''}
+                  onChange={(e) => setDadosEdicao({...dadosEdicao, telefone: e.target.value})}
+                  placeholder="(11) 99999-9999"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
+                <input
+                  type="text"
+                  value={dadosEdicao.endereco || ''}
+                  onChange={(e) => setDadosEdicao({...dadosEdicao, endereco: e.target.value})}
+                  placeholder="Rua, número, bairro"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                <input
+                  type="text"
+                  value={dadosEdicao.cidade || ''}
+                  onChange={(e) => setDadosEdicao({...dadosEdicao, cidade: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Endereço</dt>
-              <dd className="text-sm text-gray-900">
-                {perfil.endereco ? \`\${perfil.endereco}, \${perfil.cidade}/\${perfil.estado}\` : 'Não informado'}
-              </dd>
-            </div>
-          </dl>
+          )}
         </div>
         
         {perfil.empresa && (
