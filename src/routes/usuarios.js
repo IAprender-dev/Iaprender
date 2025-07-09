@@ -107,7 +107,7 @@ router.get('/',
  * POST /api/usuarios
  * Criar novo usuário no sistema
  * 
- * MIDDLEWARE: autenticar, adminOuGestor
+ * MIDDLEWARE: autenticar, verificarTipoUsuario(['admin', 'gestor'])
  * PERMISSÕES: 
  * - Admin: pode criar qualquer tipo de usuário
  * - Gestor: pode criar diretor, professor, aluno (limitado à própria empresa)
@@ -124,7 +124,7 @@ router.get('/',
  */
 router.post('/', 
   autenticar, 
-  adminOuGestor, 
+  verificarTipoUsuario(['admin', 'gestor']), 
   UsuarioController.criarUsuario
 );
 
