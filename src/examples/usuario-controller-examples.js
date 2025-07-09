@@ -116,6 +116,12 @@ export function configurarRotasPerfil() {
     UsuarioController.atualizarMeuPerfil
   );
 
+  // PATCH /api/usuarios/perfil - Atualizar perfil completo com validações
+  router.patch('/usuarios/perfil', 
+    autenticar, 
+    UsuarioController.atualizarPerfil
+  );
+
   // POST /api/usuarios/:id/ultimo-login - Atualizar último login
   router.post('/usuarios/:id/ultimo-login', 
     autenticar, 
@@ -206,7 +212,7 @@ export function exemplosCurl() {
   }'`
     },
     {
-      nome: 'Atualizar próprio perfil',
+      nome: 'Atualizar próprio perfil básico',
       comando: `curl -X PATCH "http://localhost:5000/api/usuarios/me" \\
   -H "Authorization: Bearer SEU_TOKEN_JWT" \\
   -H "Content-Type: application/json" \\
@@ -214,6 +220,31 @@ export function exemplosCurl() {
     "nome": "Nome Atualizado",
     "telefone": "(11) 8888-7777",
     "cidade": "São Paulo"
+  }'`
+    },
+    {
+      nome: 'Atualizar perfil completo com validações (Professor)',
+      comando: `curl -X PATCH "http://localhost:5000/api/usuarios/perfil" \\
+  -H "Authorization: Bearer SEU_TOKEN_PROFESSOR" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "nome": "Fernanda Silva Souza",
+    "telefone": "(11) 9999-1111",
+    "endereco": "Rua Nova, 200",
+    "disciplinas": ["Matemática", "Física", "Química"],
+    "formacao": "Mestrado em Matemática Aplicada"
+  }'`
+    },
+    {
+      nome: 'Atualizar perfil completo (Aluno)',
+      comando: `curl -X PATCH "http://localhost:5000/api/usuarios/perfil" \\
+  -H "Authorization: Bearer SEU_TOKEN_ALUNO" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "nome": "Bruno Henrique Silva",
+    "endereco": "Avenida Paulista, 1000",
+    "nome_responsavel": "Ana Silva Costa",
+    "contato_responsavel": "(11) 8888-9999"
   }'`
     },
     {

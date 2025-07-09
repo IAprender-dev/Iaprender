@@ -316,6 +316,35 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Casos de uso práticos: dashboard personalizado, validação de acesso, auditoria
     • Middleware de enriquecimento de perfil
   - ✅ Status: Função obterPerfil pronta para uso em dashboards personalizados e validações contextuais
+- July 9, 2025: ✅ CONCLUÍDO - Função atualizarPerfil() Implementada com Sistema Avançado de Validações
+  - ✅ Função atualizarPerfil(req, res) criada no UsuarioController
+  - ✅ Sistema de permissões hierárquico por tipo de usuário:
+    • Admin: Todos os campos incluindo email, tipo_usuario, empresa_id, status
+    • Gestor: Dados pessoais + documento (não pode alterar email, tipo, empresa)
+    • Diretor: Apenas dados pessoais básicos
+    • Professor: Dados pessoais + disciplinas/formação específicas
+    • Aluno: Dados limitados + informações do responsável
+  - ✅ Validações robustas implementadas:
+    • Email: formato válido obrigatório
+    • Telefone: formato brasileiro (XX) XXXXX-XXXX
+    • Documento: CPF (11 dígitos) ou CNPJ (14 dígitos)
+    • Data nascimento: válida e não futura
+    • Tipo usuário e empresa_id: valores permitidos
+  - ✅ Filtragem automática de campos: ignora campos não permitidos sem bloquear operação
+  - ✅ Atualização de dados específicos: disciplinas (professor), responsáveis (aluno)
+  - ✅ Resposta detalhada com metadata:
+    • Campos atualizados vs ignorados
+    • Status de atualização de dados específicos
+    • Timestamp e responsável pela atualização
+  - ✅ Construção de perfil completo após atualização com dados específicos
+  - ✅ Tratamento gracioso de erros: continua operação mesmo se dados específicos falharem
+  - ✅ Endpoint PATCH /api/usuarios/perfil com middleware autenticar
+  - ✅ Arquivo /src/examples/atualizar-perfil-examples.js criado com:
+    • Exemplos detalhados para cada tipo de usuário
+    • Casos de erro e validação
+    • Comparação entre endpoints de atualização
+    • Casos de uso práticos e middleware
+  - ✅ Status: Função atualizarPerfil pronta para formulários de edição e validações avançadas
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 4: Controle de Acesso por Empresa Implementado Completamente
   - ✅ Arquivo /src/middleware/autorizar.js criado com sistema completo de autorização empresarial
   - ✅ Função verificarEmpresa() implementada com validação flexível baseada em empresa_id

@@ -546,6 +546,313 @@ export class UsuarioController {
   }
 
   /**
+   * PATCH /api/usuarios/perfil - Atualizar perfil completo com validações
+   * Middlewares: autenticar
+   * Valida permissões e atualiza apenas campos permitidos para cada tipo de usuário
+   */
+  static async atualizarPerfil(req, res) {
+    try {
+      console.log('✏️ UsuarioController.atualizarPerfil - User:', req.user.id, 'Tipo:', req.user.tipo_usuario);
+
+      // Buscar usuário atual
+      const usuarioAtual = await Usuario.findById(req.user.id);
+      
+      if (!usuarioAtual) {
+        return this.sendResponse(res, 404, null, 'Usuário não encontrado');
+      }
+
+      // Definir campos permitidos por tipo de usuário
+      const camposPermitidos = this._getCamposPermitidos(req.user.tipo_usuario);
+      console.log(`🔒 Campos permitidos para ${req.user.tipo_usuario}:`, camposPermitidos);
+
+      // Filtrar apenas campos permitidos dos dados recebidos
+      const dadosParaAtualizar = {};
+      const camposEnviados = Object.keys(req.body);
+      const camposNaoPermitidos = [];
+
+      camposEnviados.forEach(campo => {
+        if (camposPermitidos.includes(campo)) {
+          dadosParaAtualizar[campo] = req.body[campo];
+        } else {
+          camposNaoPermitidos.push(campo);
+        }
+      });
+
+      // Log de campos não permitidos (sem bloquear a operação)
+      if (camposNaoPermitidos.length > 0) {
+        console.warn(`⚠️ Campos não permitidos ignorados para ${req.user.tipo_usuario}:`, camposNaoPermitidos);
+      }
+
+      // Validar se há dados para atualizar
+      if (Object.keys(dadosParaAtualizar).length === 0) {
+        return this.sendResponse(res, 400, null, 'Nenhum campo válido fornecido para atualização');
+      }
+
+      // Validações específicas
+      const validationErrors = this._validarDadosAtualizacao(dadosParaAtualizar, usuarioAtual);
+      if (validationErrors.length > 0) {
+        return this.sendResponse(res, 400, { errors: validationErrors }, 'Dados inválidos para atualização');
+      }
+
+      // Atualizar dados principais do usuário
+      console.log('📝 Atualizando dados principais:', Object.keys(dadosParaAtualizar));
+      const usuarioAtualizado = await Usuario.update(req.user.id, dadosParaAtualizar);
+
+      if (!usuarioAtualizado) {
+        return this.sendResponse(res, 500, null, 'Erro ao atualizar perfil');
+      }
+
+      // Atualizar dados específicos se fornecidos
+      const resultadoEspecificos = await this._atualizarDadosEspecificos(req.user, req.body);
+
+      // Construir resposta com perfil atualizado
+      const perfilAtualizado = await this._construirPerfilCompleto(usuarioAtualizado, req.user.tipo_usuario);
+
+      // Log da operação
+      console.log(`✅ Perfil atualizado com sucesso para ${req.user.tipo_usuario}: ${usuarioAtualizado.nome}`);
+
+      // Preparar resposta detalhada
+      const resposta = {
+        usuario: perfilAtualizado,
+        atualizacoes: {
+          campos_atualizados: Object.keys(dadosParaAtualizar),
+          campos_ignorados: camposNaoPermitidos,
+          dados_especificos: resultadoEspecificos
+        },
+        metadata: {
+          atualizado_em: new Date().toISOString(),
+          atualizado_por: req.user.id,
+          tipo_usuario: req.user.tipo_usuario
+        }
+      };
+
+      this.sendResponse(res, 200, resposta, 'Perfil atualizado com sucesso');
+
+    } catch (error) {
+      this.handleError(res, error, 'atualizarPerfil');
+    }
+  }
+
+  /**
+   * Retorna campos permitidos para atualização por tipo de usuário
+   */
+  static _getCamposPermitidos(tipoUsuario) {
+    const camposBasicos = ['nome', 'telefone', 'endereco', 'cidade', 'estado', 'data_nascimento'];
+    
+    const permissoesPorTipo = {
+      admin: [
+        ...camposBasicos,
+        'email', // Admin pode alterar email
+        'documento',
+        'tipo_usuario', // Admin pode alterar tipo
+        'empresa_id', // Admin pode alterar empresa
+        'status'
+      ],
+      gestor: [
+        ...camposBasicos,
+        'documento'
+        // Gestor não pode alterar email, tipo_usuario ou empresa_id
+      ],
+      diretor: [
+        ...camposBasicos
+        // Diretor não pode alterar dados sensíveis
+      ],
+      professor: [
+        ...camposBasicos
+        // Professor só pode alterar dados pessoais básicos
+      ],
+      aluno: [
+        'nome', 'telefone', 'endereco', 'cidade', 'estado'
+        // Aluno tem permissões mais limitadas
+      ]
+    };
+
+    return permissoesPorTipo[tipoUsuario] || camposBasicos;
+  }
+
+  /**
+   * Valida dados de atualização
+   */
+  static _validarDadosAtualizacao(dados, usuarioAtual) {
+    const erros = [];
+
+    // Validar email se fornecido
+    if (dados.email && dados.email !== usuarioAtual.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(dados.email)) {
+        erros.push('Email deve ter formato válido');
+      }
+    }
+
+    // Validar telefone se fornecido
+    if (dados.telefone) {
+      const telefoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
+      if (!telefoneRegex.test(dados.telefone)) {
+        erros.push('Telefone deve ter formato (XX) XXXXX-XXXX');
+      }
+    }
+
+    // Validar documento se fornecido
+    if (dados.documento) {
+      // CPF: 11 dígitos, CNPJ: 14 dígitos
+      const docLimpo = dados.documento.replace(/\D/g, '');
+      if (docLimpo.length !== 11 && docLimpo.length !== 14) {
+        erros.push('Documento deve ser CPF (11 dígitos) ou CNPJ (14 dígitos)');
+      }
+    }
+
+    // Validar data de nascimento se fornecida
+    if (dados.data_nascimento) {
+      const data = new Date(dados.data_nascimento);
+      if (isNaN(data.getTime()) || data > new Date()) {
+        erros.push('Data de nascimento deve ser válida e não futura');
+      }
+    }
+
+    // Validar tipo_usuario se fornecido (apenas admin pode alterar)
+    if (dados.tipo_usuario) {
+      const tiposValidos = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+      if (!tiposValidos.includes(dados.tipo_usuario)) {
+        erros.push('Tipo de usuário deve ser: admin, gestor, diretor, professor ou aluno');
+      }
+    }
+
+    // Validar empresa_id se fornecido
+    if (dados.empresa_id && dados.empresa_id !== null) {
+      if (!Number.isInteger(Number(dados.empresa_id)) || Number(dados.empresa_id) <= 0) {
+        erros.push('ID da empresa deve ser um número inteiro positivo');
+      }
+    }
+
+    return erros;
+  }
+
+  /**
+   * Atualiza dados específicos do tipo de usuário se fornecidos
+   */
+  static async _atualizarDadosEspecificos(user, dadosRecebidos) {
+    const resultado = {
+      atualizou: false,
+      tipo: user.tipo_usuario,
+      campos: [],
+      erro: null
+    };
+
+    try {
+      // Verificar se há dados específicos para atualizar
+      const camposEspecificos = this._extrairCamposEspecificos(user.tipo_usuario, dadosRecebidos);
+      
+      if (Object.keys(camposEspecificos).length === 0) {
+        return resultado;
+      }
+
+      switch (user.tipo_usuario) {
+        case 'professor':
+          if (camposEspecificos.disciplinas || camposEspecificos.formacao) {
+            const { Professor } = await import('../models/Professor.js');
+            const professor = await Professor.findByUserId(user.id);
+            if (professor) {
+              await Professor.update(professor.id, camposEspecificos);
+              resultado.atualizou = true;
+              resultado.campos = Object.keys(camposEspecificos);
+            }
+          }
+          break;
+
+        case 'aluno':
+          if (camposEspecificos.nome_responsavel || camposEspecificos.contato_responsavel) {
+            const { Aluno } = await import('../models/Aluno.js');
+            const aluno = await Aluno.findByUserId(user.id);
+            if (aluno) {
+              await Aluno.update(aluno.id, camposEspecificos);
+              resultado.atualizou = true;
+              resultado.campos = Object.keys(camposEspecificos);
+            }
+          }
+          break;
+
+        case 'diretor':
+          // Diretores geralmente não podem alterar cargo ou escola
+          // Apenas dados pessoais através dos campos básicos
+          break;
+
+        case 'gestor':
+          // Gestores geralmente não podem alterar cargo
+          // Apenas dados pessoais através dos campos básicos
+          break;
+      }
+
+    } catch (error) {
+      console.warn(`⚠️ Erro ao atualizar dados específicos do ${user.tipo_usuario}:`, error.message);
+      resultado.erro = error.message;
+    }
+
+    return resultado;
+  }
+
+  /**
+   * Extrai campos específicos do tipo de usuário dos dados recebidos
+   */
+  static _extrairCamposEspecificos(tipoUsuario, dados) {
+    const camposEspecificos = {};
+
+    switch (tipoUsuario) {
+      case 'professor':
+        if (dados.disciplinas) camposEspecificos.disciplinas = dados.disciplinas;
+        if (dados.formacao) camposEspecificos.formacao = dados.formacao;
+        break;
+      
+      case 'aluno':
+        if (dados.nome_responsavel) camposEspecificos.nome_responsavel = dados.nome_responsavel;
+        if (dados.contato_responsavel) camposEspecificos.contato_responsavel = dados.contato_responsavel;
+        break;
+    }
+
+    return camposEspecificos;
+  }
+
+  /**
+   * Constrói perfil completo após atualização
+   */
+  static async _construirPerfilCompleto(usuario, tipoUsuario) {
+    const perfil = usuario.toJSON();
+
+    // Adicionar dados específicos se existirem
+    try {
+      switch (tipoUsuario) {
+        case 'professor':
+          const { Professor } = await import('../models/Professor.js');
+          const professor = await Professor.findByUserId(usuario.id);
+          if (professor) {
+            perfil.dadosEspecificos = {
+              disciplinas: professor.disciplinas,
+              formacao: professor.formacao,
+              escola_id: professor.escola_id
+            };
+          }
+          break;
+
+        case 'aluno':
+          const { Aluno } = await import('../models/Aluno.js');
+          const aluno = await Aluno.findByUserId(usuario.id);
+          if (aluno) {
+            perfil.dadosEspecificos = {
+              matricula: aluno.matricula,
+              turma: aluno.turma,
+              nome_responsavel: aluno.nome_responsavel,
+              contato_responsavel: aluno.contato_responsavel
+            };
+          }
+          break;
+      }
+    } catch (error) {
+      console.warn('⚠️ Erro ao carregar dados específicos após atualização:', error.message);
+    }
+
+    return perfil;
+  }
+
+  /**
    * PATCH /api/usuarios/me - Atualiza perfil do usuário logado
    * Middlewares: autenticar
    */
