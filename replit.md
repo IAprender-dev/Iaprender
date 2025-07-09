@@ -143,6 +143,17 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 9, 2025: ✅ CONCLUÍDO - Sistema Avançado de Modais para Visualização e Edição de Escolas/Diretores
+  - ✅ Implementados modais responsivos com design avançado e animações suaves
+  - ✅ Modal "Ver Escola": visualização completa com cards categorizados (informações gerais, localização, estatísticas, diretor, contrato)
+  - ✅ Modal "Ver Diretor": visualização detalhada com informações pessoais e profissionais organizadas
+  - ✅ Modal "Editar Escola": formulário completo com validação e atualização em tempo real
+  - ✅ Modal "Editar Diretor": formulário otimizado para edição de dados permitidos (nome, telefone, contrato)
+  - ✅ Mutations PATCH funcionais para escolas (/api/municipal/schools/:id) e diretores (/api/municipal/directors/:id)
+  - ✅ Botões "Ver" e "Editar" configurados com eventos onClick e estados de hover avançados
+  - ✅ Design responsivo com gradientes, badges, ícones contextuais e layout de cards moderno
+  - ✅ Componentes EditSchoolForm e EditDirectorForm separados para melhor organização
+  - ✅ Experiência UX otimizada: transição fluida entre visualização → edição, toasts de feedback, estados de loading
 - July 8, 2025: ✅ CONCLUÍDO - Correção Completa dos Endpoints de Diretores e Escolas Municipais
   - ✅ Corrigidos erros de sintaxe SQL nos endpoints /api/municipal/directors/filtered e /api/municipal/schools/filtered
   - ✅ Substituídas consultas JOIN complexas por consultas separadas mais robustas no Drizzle ORM
