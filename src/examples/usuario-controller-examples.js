@@ -258,6 +258,31 @@ export function exemplosCurl() {
       comando: `curl -X GET "http://localhost:5000/api/usuarios/stats" \\
   -H "Authorization: Bearer SEU_TOKEN_ADMIN" \\
   -H "Content-Type: application/json"`
+    },
+    {
+      nome: 'Listar todos os usuários com paginação',
+      comando: `curl -X GET "http://localhost:5000/api/usuarios?page=1&limit=10" \\
+  -H "Authorization: Bearer SEU_TOKEN_GESTOR"`
+    },
+    {
+      nome: 'Listar apenas professores com dados específicos',
+      comando: `curl -X GET "http://localhost:5000/api/usuarios?tipo_usuario=professor&include_dados_especificos=true" \\
+  -H "Authorization: Bearer SEU_TOKEN_GESTOR"`
+    },
+    {
+      nome: 'Buscar usuários por nome ou email',
+      comando: `curl -X GET "http://localhost:5000/api/usuarios?busca=maria&page=1&limit=20" \\
+  -H "Authorization: Bearer SEU_TOKEN_GESTOR"`
+    },
+    {
+      nome: 'Listar usuários com filtros múltiplos',
+      comando: `curl -X GET "http://localhost:5000/api/usuarios?tipo_usuario=professor,aluno&status=ativo&ordem_por=nome&ordem_direcao=asc" \\
+  -H "Authorization: Bearer SEU_TOKEN_GESTOR"`
+    },
+    {
+      nome: 'Listar usuários por período de criação',
+      comando: `curl -X GET "http://localhost:5000/api/usuarios?data_inicio=2025-01-01&data_fim=2025-12-31&ordem_por=criado_em&ordem_direcao=desc" \\
+  -H "Authorization: Bearer SEU_TOKEN_GESTOR"`
     }
   ];
 

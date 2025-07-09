@@ -853,6 +853,318 @@ export class UsuarioController {
   }
 
   /**
+   * GET /api/usuarios - Listar usuários com filtros e paginação
+   * Middlewares: autenticar, adminOuGestor, verificarEmpresa
+   * Lista usuários da mesma empresa com filtros por tipo e paginação
+   */
+  static async listarUsuarios(req, res) {
+    try {
+      console.log('📋 UsuarioController.listarUsuarios - User:', req.user.id, 'Empresa:', req.user.empresa_id);
+
+      // Extrair parâmetros de paginação
+      const page = parseInt(req.query.page) || 1;
+      const limit = Math.min(parseInt(req.query.limit) || 20, 100); // Máximo 100 registros
+      const offset = (page - 1) * limit;
+
+      console.log(`📄 Paginação: page=${page}, limit=${limit}, offset=${offset}`);
+
+      // Extrair filtros
+      const filtros = this._extrairFiltros(req.query, req.user);
+      console.log('🔍 Filtros aplicados:', filtros);
+
+      // Buscar usuários com filtros
+      const { usuarios, total } = await this._buscarUsuariosComFiltros(filtros, limit, offset);
+
+      // Enriquecer dados dos usuários se solicitado
+      const incluirDadosEspecificos = req.query.include_dados_especificos === 'true';
+      let usuariosEnriquecidos = usuarios;
+
+      if (incluirDadosEspecificos) {
+        console.log('🔄 Enriquecendo dados específicos dos usuários...');
+        usuariosEnriquecidos = await this._enriquecerDadosEspecificos(usuarios);
+      }
+
+      // Calcular metadados de paginação
+      const totalPages = Math.ceil(total / limit);
+      const hasNext = page < totalPages;
+      const hasPrev = page > 1;
+
+      // Preparar resposta
+      const resposta = {
+        usuarios: usuariosEnriquecidos,
+        paginacao: {
+          page,
+          limit,
+          total,
+          totalPages,
+          hasNext,
+          hasPrev,
+          nextPage: hasNext ? page + 1 : null,
+          prevPage: hasPrev ? page - 1 : null
+        },
+        filtros_aplicados: filtros,
+        metadata: {
+          empresa_id: req.user.empresa_id,
+          solicitado_por: req.user.id,
+          tipo_solicitante: req.user.tipo_usuario,
+          timestamp: new Date().toISOString(),
+          dados_especificos_incluidos: incluirDadosEspecificos
+        }
+      };
+
+      console.log(`✅ Listagem concluída: ${usuarios.length} usuários encontrados de ${total} total`);
+      this.sendResponse(res, 200, resposta, `${usuarios.length} usuários encontrados`);
+
+    } catch (error) {
+      this.handleError(res, error, 'listarUsuarios');
+    }
+  }
+
+  /**
+   * Extrai e valida filtros da query string
+   */
+  static _extrairFiltros(query, user) {
+    const filtros = {};
+
+    // Filtro por empresa (obrigatório para gestores)
+    if (user.tipo_usuario === 'admin' && query.empresa_id) {
+      filtros.empresa_id = parseInt(query.empresa_id);
+    } else if (user.empresa_id) {
+      filtros.empresa_id = user.empresa_id; // Força empresa do usuário
+    }
+
+    // Filtro por tipo de usuário
+    if (query.tipo_usuario) {
+      const tiposValidos = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+      const tiposFiltro = Array.isArray(query.tipo_usuario) 
+        ? query.tipo_usuario 
+        : query.tipo_usuario.split(',');
+      
+      filtros.tipo_usuario = tiposFiltro.filter(tipo => tiposValidos.includes(tipo.trim()));
+    }
+
+    // Filtro por status
+    if (query.status) {
+      const statusValidos = ['ativo', 'inativo', 'pendente', 'bloqueado'];
+      if (statusValidos.includes(query.status)) {
+        filtros.status = query.status;
+      }
+    }
+
+    // Filtro por busca textual (nome ou email)
+    if (query.busca && query.busca.trim()) {
+      filtros.busca = query.busca.trim();
+    }
+
+    // Filtro por data de criação
+    if (query.data_inicio) {
+      const dataInicio = new Date(query.data_inicio);
+      if (!isNaN(dataInicio.getTime())) {
+        filtros.data_inicio = dataInicio;
+      }
+    }
+
+    if (query.data_fim) {
+      const dataFim = new Date(query.data_fim);
+      if (!isNaN(dataFim.getTime())) {
+        filtros.data_fim = dataFim;
+      }
+    }
+
+    // Ordenação
+    const ordenacaoValida = ['nome', 'email', 'tipo_usuario', 'criado_em', 'ultimo_login'];
+    if (query.ordem_por && ordenacaoValida.includes(query.ordem_por)) {
+      filtros.ordem_por = query.ordem_por;
+      filtros.ordem_direcao = query.ordem_direcao === 'desc' ? 'DESC' : 'ASC';
+    } else {
+      filtros.ordem_por = 'nome';
+      filtros.ordem_direcao = 'ASC';
+    }
+
+    return filtros;
+  }
+
+  /**
+   * Busca usuários aplicando filtros e paginação
+   */
+  static async _buscarUsuariosComFiltros(filtros, limit, offset) {
+    try {
+      // Construir WHERE clause
+      const condicoes = [];
+      const parametros = [];
+      let paramIndex = 1;
+
+      // Filtro por empresa
+      if (filtros.empresa_id) {
+        condicoes.push(`empresa_id = $${paramIndex}`);
+        parametros.push(filtros.empresa_id);
+        paramIndex++;
+      }
+
+      // Filtro por tipo de usuário
+      if (filtros.tipo_usuario && filtros.tipo_usuario.length > 0) {
+        const placeholders = filtros.tipo_usuario.map(() => `$${paramIndex++}`);
+        condicoes.push(`tipo_usuario IN (${placeholders.join(', ')})`);
+        parametros.push(...filtros.tipo_usuario);
+      }
+
+      // Filtro por status
+      if (filtros.status) {
+        condicoes.push(`status = $${paramIndex}`);
+        parametros.push(filtros.status);
+        paramIndex++;
+      }
+
+      // Filtro por busca textual
+      if (filtros.busca) {
+        condicoes.push(`(nome ILIKE $${paramIndex} OR email ILIKE $${paramIndex})`);
+        parametros.push(`%${filtros.busca}%`);
+        paramIndex++;
+      }
+
+      // Filtro por data de criação
+      if (filtros.data_inicio) {
+        condicoes.push(`criado_em >= $${paramIndex}`);
+        parametros.push(filtros.data_inicio);
+        paramIndex++;
+      }
+
+      if (filtros.data_fim) {
+        condicoes.push(`criado_em <= $${paramIndex}`);
+        parametros.push(filtros.data_fim);
+        paramIndex++;
+      }
+
+      // Construir query principal
+      const whereClause = condicoes.length > 0 ? `WHERE ${condicoes.join(' AND ')}` : '';
+      const orderClause = `ORDER BY ${filtros.ordem_por} ${filtros.ordem_direcao}`;
+
+      const queryUsuarios = `
+        SELECT id, cognito_sub, email, nome, telefone, endereco, cidade, estado, 
+               documento, tipo_usuario, empresa_id, status, ultimo_login, criado_em, atualizado_em
+        FROM usuarios 
+        ${whereClause}
+        ${orderClause}
+        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      `;
+
+      parametros.push(limit, offset);
+
+      // Query para contar total
+      const queryTotal = `
+        SELECT COUNT(*) as total
+        FROM usuarios 
+        ${whereClause}
+      `;
+
+      const parametrosTotal = parametros.slice(0, -2); // Remove limit e offset
+
+      console.log('🔍 Query usuários:', queryUsuarios);
+      console.log('📊 Parâmetros:', parametros);
+
+      // Importar função de banco
+      const { executeQuery } = await import('../config/database.js');
+
+      // Executar queries
+      const [resultUsuarios, resultTotal] = await Promise.all([
+        executeQuery(queryUsuarios, parametros),
+        executeQuery(queryTotal, parametrosTotal)
+      ]);
+
+      return {
+        usuarios: resultUsuarios.rows,
+        total: parseInt(resultTotal.rows[0].total)
+      };
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar usuários com filtros:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Enriquece dados dos usuários com informações específicas
+   */
+  static async _enriquecerDadosEspecificos(usuarios) {
+    try {
+      const usuariosEnriquecidos = [];
+
+      for (const usuario of usuarios) {
+        const usuarioEnriquecido = { ...usuario };
+
+        // Adicionar dados específicos baseados no tipo
+        try {
+          switch (usuario.tipo_usuario) {
+            case 'professor':
+              const { Professor } = await import('../models/Professor.js');
+              const professor = await Professor.findByUserId(usuario.id);
+              if (professor) {
+                usuarioEnriquecido.dados_especificos = {
+                  disciplinas: professor.disciplinas,
+                  formacao: professor.formacao,
+                  escola_id: professor.escola_id,
+                  data_admissao: professor.data_admissao
+                };
+              }
+              break;
+
+            case 'aluno':
+              const { Aluno } = await import('../models/Aluno.js');
+              const aluno = await Aluno.findByUserId(usuario.id);
+              if (aluno) {
+                usuarioEnriquecido.dados_especificos = {
+                  matricula: aluno.matricula,
+                  turma: aluno.turma,
+                  serie: aluno.serie,
+                  nome_responsavel: aluno.nome_responsavel,
+                  contato_responsavel: aluno.contato_responsavel
+                };
+              }
+              break;
+
+            case 'diretor':
+              const { Diretor } = await import('../models/Diretor.js');
+              const diretor = await Diretor.findByUserId(usuario.id);
+              if (diretor) {
+                usuarioEnriquecido.dados_especificos = {
+                  escola_id: diretor.escola_id,
+                  cargo: diretor.cargo,
+                  data_inicio: diretor.data_inicio
+                };
+              }
+              break;
+
+            case 'gestor':
+              const { Gestor } = await import('../models/Gestor.js');
+              const gestor = await Gestor.findByUserId(usuario.id);
+              if (gestor) {
+                usuarioEnriquecido.dados_especificos = {
+                  cargo: gestor.cargo,
+                  data_admissao: gestor.data_admissao
+                };
+              }
+              break;
+
+            default:
+              usuarioEnriquecido.dados_especificos = null;
+          }
+        } catch (modelError) {
+          console.warn(`⚠️ Erro ao carregar dados específicos para usuário ${usuario.id}:`, modelError.message);
+          usuarioEnriquecido.dados_especificos = null;
+        }
+
+        usuariosEnriquecidos.push(usuarioEnriquecido);
+      }
+
+      return usuariosEnriquecidos;
+
+    } catch (error) {
+      console.error('❌ Erro ao enriquecer dados específicos:', error);
+      return usuarios; // Retorna dados básicos em caso de erro
+    }
+  }
+
+  /**
    * PATCH /api/usuarios/me - Atualiza perfil do usuário logado
    * Middlewares: autenticar
    */

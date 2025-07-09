@@ -143,6 +143,36 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 9, 2025: ✅ CONCLUÍDO - Função listarUsuarios() Implementada com Sistema Completo de Filtros e Paginação
+  - ✅ Função listarUsuarios(req, res) criada com sistema avançado de filtros por empresa
+  - ✅ Controle de acesso hierárquico: admin (qualquer empresa) vs gestor (própria empresa)
+  - ✅ Sistema de paginação com limite máximo de 100 registros por consulta
+  - ✅ Filtros implementados:
+    • empresa_id: Automático para gestores, configurável para admins
+    • tipo_usuario: admin, gestor, diretor, professor, aluno (suporte a múltiplos tipos)
+    • status: ativo, inativo, pendente, bloqueado
+    • busca: busca textual por nome ou email (case-insensitive)
+    • data_inicio/data_fim: filtro por período de criação
+    • ordenação: nome, email, tipo_usuario, criado_em, ultimo_login
+  - ✅ Sistema de enriquecimento de dados específicos (opcional):
+    • Professor: disciplinas, formação, escola_id, data_admissao
+    • Aluno: matrícula, turma, série, responsável, contato_responsavel
+    • Diretor: escola_id, cargo, data_inicio
+    • Gestor: cargo, data_admissao
+  - ✅ Prepared statements para proteção contra SQL injection
+  - ✅ Metadados de paginação completos: total, totalPages, hasNext, hasPrev
+  - ✅ Logging detalhado para debugging e auditoria
+  - ✅ Endpoint GET /api/usuarios com middleware adminOuGestor + verificarEmpresa
+  - ✅ Arquivo /src/examples/listar-usuarios-examples.js criado com 11 exemplos detalhados:
+    • 6 exemplos de diferentes tipos de filtros e consultas
+    • Parâmetros de filtros disponíveis
+    • Controle de acesso por tipo de usuário
+    • Casos de uso práticos com código frontend
+    • Tratamento de erros específicos
+    • Comparação de performance
+  - ✅ Função demonstrarListarUsuarios() para testes e documentação
+  - ✅ Integração com sistema de autorização empresarial existente
+  - ✅ Status: Sistema de listagem de usuários completo e pronto para produção
 - July 9, 2025: ✅ CONCLUÍDO - Função verificarTipoUsuario() Implementada com Sistema de Autorização Hierárquico
   - ✅ Função verificarTipoUsuario(tiposPermitidos) criada para verificação de tipo de usuário
   - ✅ Suporte a string única ou array de tipos permitidos
