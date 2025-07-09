@@ -296,6 +296,26 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Proteção contra alteração de dados de outros usuários
     • Validação de referências (empresa_id deve existir)
   - ✅ Status: UsuarioController completo e pronto para integração com rotas de API
+- July 9, 2025: ✅ CONCLUÍDO - Função obterPerfil() Implementada com Dados Específicos por Tipo de Usuário
+  - ✅ Função obterPerfil(req, res) criada no UsuarioController
+  - ✅ Retorna dados do req.user (JWT token) + dados completos do banco + dados específicos do tipo
+  - ✅ Carregamento dinâmico de dados específicos baseado no tipo_usuario:
+    • Professor: disciplinas, formação, escola_id, data_admissao
+    • Aluno: matrícula, turma, série, responsável, contato_responsavel
+    • Diretor: escola_id, cargo, data_inicio
+    • Gestor: cargo, data_admissao
+    • Admin: permissões globais e acesso_total
+  - ✅ Busca automática de dados da empresa vinculada (nome, CNPJ, cidade, estado)
+  - ✅ Metadata completa: timestamp, versão, fonte de dados, status de carregamento
+  - ✅ Tratamento gracioso de erros: retorna dados básicos se específicos falharem
+  - ✅ Import dinâmico de modelos para evitar dependências circulares
+  - ✅ Endpoint GET /api/usuarios/perfil com middleware autenticar
+  - ✅ Arquivo /src/examples/obter-perfil-examples.js criado com exemplos completos:
+    • Exemplos de resposta para cada tipo de usuário
+    • Comparação entre /me (básico) vs /perfil (completo)
+    • Casos de uso práticos: dashboard personalizado, validação de acesso, auditoria
+    • Middleware de enriquecimento de perfil
+  - ✅ Status: Função obterPerfil pronta para uso em dashboards personalizados e validações contextuais
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 4: Controle de Acesso por Empresa Implementado Completamente
   - ✅ Arquivo /src/middleware/autorizar.js criado com sistema completo de autorização empresarial
   - ✅ Função verificarEmpresa() implementada com validação flexível baseada em empresa_id

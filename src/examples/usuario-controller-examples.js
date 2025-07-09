@@ -104,6 +104,12 @@ export function configurarRotasPerfil() {
     UsuarioController.meuPerfil
   );
 
+  // GET /api/usuarios/perfil - Perfil completo com dados específicos do tipo
+  router.get('/usuarios/perfil', 
+    autenticar, 
+    UsuarioController.obterPerfil
+  );
+
   // PATCH /api/usuarios/me - Atualizar próprio perfil
   router.patch('/usuarios/me', 
     autenticar, 
@@ -168,8 +174,14 @@ export function exemplosCurl() {
 
   const exemplos = [
     {
-      nome: 'Buscar meu perfil',
+      nome: 'Buscar meu perfil básico',
       comando: `curl -X GET "http://localhost:5000/api/usuarios/me" \\
+  -H "Authorization: Bearer SEU_TOKEN_JWT" \\
+  -H "Content-Type: application/json"`
+    },
+    {
+      nome: 'Obter perfil completo com dados específicos',
+      comando: `curl -X GET "http://localhost:5000/api/usuarios/perfil" \\
   -H "Authorization: Bearer SEU_TOKEN_JWT" \\
   -H "Content-Type: application/json"`
     },

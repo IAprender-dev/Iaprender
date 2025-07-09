@@ -376,6 +376,176 @@ export class UsuarioController {
   }
 
   /**
+   * GET /api/usuarios/perfil - Perfil completo com dados específicos do tipo
+   * Middlewares: autenticar
+   * Retorna dados do req.user + informações específicas do tipo (professor, aluno, etc.)
+   */
+  static async obterPerfil(req, res) {
+    try {
+      console.log('👤 UsuarioController.obterPerfil - User:', req.user.id, 'Tipo:', req.user.tipo_usuario);
+
+      // Dados básicos do usuário do token JWT
+      const perfilBasico = {
+        id: req.user.id,
+        sub: req.user.sub,
+        nome: req.user.nome,
+        email: req.user.email,
+        tipo_usuario: req.user.tipo_usuario,
+        empresa_id: req.user.empresa_id,
+        groups: req.user.groups || [],
+        exp: req.user.exp,
+        iat: req.user.iat
+      };
+
+      // Buscar dados completos do usuário no banco
+      const usuarioCompleto = await Usuario.findById(req.user.id);
+      
+      if (!usuarioCompleto) {
+        return this.sendResponse(res, 404, null, 'Dados do usuário não encontrados no banco');
+      }
+
+      // Dados base do perfil
+      const perfilCompleto = {
+        ...perfilBasico,
+        ...usuarioCompleto.toJSON(),
+        dadosEspecificos: {}
+      };
+
+      // Buscar dados específicos baseados no tipo de usuário
+      try {
+        switch (req.user.tipo_usuario) {
+          case 'professor':
+            const { Professor } = await import('../models/Professor.js');
+            const dadosProfessor = await Professor.findByUserId(req.user.id);
+            if (dadosProfessor) {
+              perfilCompleto.dadosEspecificos = {
+                tipo: 'professor',
+                professor_id: dadosProfessor.id,
+                escola_id: dadosProfessor.escola_id,
+                disciplinas: dadosProfessor.disciplinas,
+                formacao: dadosProfessor.formacao,
+                data_admissao: dadosProfessor.data_admissao,
+                status: dadosProfessor.status
+              };
+            }
+            break;
+
+          case 'aluno':
+            const { Aluno } = await import('../models/Aluno.js');
+            const dadosAluno = await Aluno.findByUserId(req.user.id);
+            if (dadosAluno) {
+              perfilCompleto.dadosEspecificos = {
+                tipo: 'aluno',
+                aluno_id: dadosAluno.id,
+                escola_id: dadosAluno.escola_id,
+                matricula: dadosAluno.matricula,
+                turma: dadosAluno.turma,
+                serie: dadosAluno.serie,
+                turno: dadosAluno.turno,
+                nome_responsavel: dadosAluno.nome_responsavel,
+                contato_responsavel: dadosAluno.contato_responsavel,
+                data_matricula: dadosAluno.data_matricula,
+                status: dadosAluno.status
+              };
+            }
+            break;
+
+          case 'diretor':
+            const { Diretor } = await import('../models/Diretor.js');
+            const dadosDiretor = await Diretor.findByUserId(req.user.id);
+            if (dadosDiretor) {
+              perfilCompleto.dadosEspecificos = {
+                tipo: 'diretor',
+                diretor_id: dadosDiretor.id,
+                escola_id: dadosDiretor.escola_id,
+                cargo: dadosDiretor.cargo,
+                data_inicio: dadosDiretor.data_inicio,
+                status: dadosDiretor.status
+              };
+            }
+            break;
+
+          case 'gestor':
+            const { Gestor } = await import('../models/Gestor.js');
+            const dadosGestor = await Gestor.findByUserId(req.user.id);
+            if (dadosGestor) {
+              perfilCompleto.dadosEspecificos = {
+                tipo: 'gestor',
+                gestor_id: dadosGestor.id,
+                cargo: dadosGestor.cargo,
+                data_admissao: dadosGestor.data_admissao,
+                status: dadosGestor.status
+              };
+            }
+            break;
+
+          case 'admin':
+            perfilCompleto.dadosEspecificos = {
+              tipo: 'admin',
+              descricao: 'Administrador do sistema',
+              permissoes: [
+                'Gestão completa de usuários',
+                'Gestão de empresas e contratos',
+                'Acesso a estatísticas globais',
+                'Configurações do sistema'
+              ],
+              acesso_total: true
+            };
+            break;
+
+          default:
+            perfilCompleto.dadosEspecificos = {
+              tipo: req.user.tipo_usuario,
+              descricao: 'Tipo de usuário sem dados específicos definidos'
+            };
+        }
+
+        // Buscar dados da empresa se existir
+        if (req.user.empresa_id) {
+          const { Empresa } = await import('../models/Empresa.js');
+          const empresa = await Empresa.findById(req.user.empresa_id);
+          if (empresa) {
+            perfilCompleto.empresa = {
+              id: empresa.id,
+              nome: empresa.nome,
+              cnpj: empresa.cnpj,
+              cidade: empresa.cidade,
+              estado: empresa.estado
+            };
+          }
+        }
+
+        // Adicionar timestamp e metadata
+        perfilCompleto.metadata = {
+          ultimo_acesso: new Date().toISOString(),
+          versao_perfil: '1.0',
+          fonte_dados: 'jwt_token_e_banco_local',
+          dados_especificos_carregados: Object.keys(perfilCompleto.dadosEspecificos).length > 0
+        };
+
+        console.log(`✅ Perfil completo carregado para ${req.user.tipo_usuario}: ${req.user.nome}`);
+        
+        this.sendResponse(res, 200, perfilCompleto, 'Perfil completo obtido com sucesso');
+
+      } catch (modelError) {
+        console.warn(`⚠️ Erro ao carregar dados específicos do ${req.user.tipo_usuario}:`, modelError.message);
+        
+        // Retornar perfil básico mesmo se dados específicos falharem
+        perfilCompleto.dadosEspecificos = {
+          tipo: req.user.tipo_usuario,
+          erro: 'Dados específicos não puderam ser carregados',
+          detalhes: modelError.message
+        };
+
+        this.sendResponse(res, 200, perfilCompleto, 'Perfil obtido com dados básicos (dados específicos indisponíveis)');
+      }
+
+    } catch (error) {
+      this.handleError(res, error, 'obterPerfil');
+    }
+  }
+
+  /**
    * PATCH /api/usuarios/me - Atualiza perfil do usuário logado
    * Middlewares: autenticar
    */
