@@ -174,17 +174,21 @@ router.delete('/:id',
 
 /**
  * GET /api/usuarios/me
- * Obter perfil básico do usuário logado
+ * Obter perfil completo do usuário logado
  * 
  * MIDDLEWARE: autenticar
  * PERMISSÕES: Qualquer usuário autenticado (próprios dados)
- * RATE LIMIT: 60 requests/min
+ * RATE LIMIT: 30 requests/min
  * 
- * RETORNA: Dados básicos do usuário do banco de dados
+ * RETORNA: 
+ * - Dados do token JWT
+ * - Dados completos do banco
+ * - Dados específicos do tipo (professor, aluno, diretor, gestor)
+ * - Informações da empresa vinculada
  */
 router.get('/me', 
   autenticar, 
-  UsuarioController.meuPerfil
+  UsuarioController.obterPerfil
 );
 
 /**

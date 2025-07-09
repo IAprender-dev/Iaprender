@@ -177,6 +177,20 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Controle empresarial: Gestores limitados à própria empresa, Admins acesso total
   - ✅ Validação de campos específicos por tipo de usuário (Professor, Aluno, Diretor, Gestor)
   - ✅ Status: ROTAS COMPLETAS E PRONTAS PARA INTEGRAÇÃO COM SISTEMA PRINCIPAL
+- July 9, 2025: ✅ CONCLUÍDO - Configuração da Rota Protegida GET /me
+  - ✅ Configurada rota GET /api/usuarios/me com middleware autenticar
+  - ✅ Controller alterado de meuPerfil para obterPerfil conforme solicitação
+  - ✅ Rota retorna perfil completo com dados específicos do tipo de usuário
+  - ✅ Rate limiting de 30 requests/min aplicado
+  - ✅ Permissões: Qualquer usuário autenticado (próprios dados)
+  - ✅ Retorna dados do JWT + banco + dados específicos + empresa vinculada
+  - ✅ Criado arquivo /src/examples/rota-me-example.js com documentação completa:
+    • Exemplos de curl, JavaScript fetch, React Hook customizado
+    • Componente React completo para exibição de perfil
+    • Respostas esperadas por tipo de usuário (professor, aluno, admin)
+    • Casos de erro e tratamento (401, 404, 429, 500)
+    • Configuração e permissões detalhadas
+  - ✅ Status: ROTA GET /me CONFIGURADA E PRONTA PARA USO
 - July 9, 2025: ✅ CONCLUÍDO - Função listarUsuarios() Implementada com Sistema Completo de Filtros e Paginação
   - ✅ Função listarUsuarios(req, res) criada com sistema avançado de filtros por empresa
   - ✅ Controle de acesso hierárquico: admin (qualquer empresa) vs gestor (própria empresa)
