@@ -143,6 +143,24 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 9, 2025: ✅ CONCLUÍDO - TAREFA 2 ETAPA 2: Sistema Hierárquico Empresa-Usuário com Integração Cognito Implementado
+  - ✅ Tabela empresas criada: 11 campos (id, nome, cnpj, telefone, email_contato, endereco, cidade, estado, logo, criado_por, criado_em)
+  - ✅ Foreign key constraint estabelecida: usuarios.empresa_id → empresas.id com ON DELETE SET NULL
+  - ✅ Índices otimizados criados: cnpj (unique), nome, criado_por para performance de consultas
+  - ✅ Modelo Empresa.js implementado: métodos CRUD completos, validações de negócio, estatísticas e dependências
+  - ✅ Sistema hierárquico baseado em grupos AWS Cognito definido:
+    • NÍVEL 1: ADMIN (Controle total do sistema) - Grupos: Admin, AdminMaster, Administradores
+    • NÍVEL 2: GESTOR (Gerencia uma empresa completa) - Grupos: Gestores, GestorMunicipal, GestoresMunicipais
+    • NÍVEL 3: DIRETOR (Gerencia uma escola específica) - Grupos: Diretores, Diretor, DiretoresEscolares  
+    • NÍVEL 4: PROFESSOR (Acesso às ferramentas educacionais) - Grupos: Professores, Professor, Teachers
+    • NÍVEL 5: ALUNO (Acesso ao ambiente de aprendizado) - Grupos: Alunos, Aluno, Students
+  - ✅ Serviço CognitoService.js criado: integração AWS Cognito, mapeamento de grupos para tipos, geração de dados consistentes
+  - ✅ Script sync-cognito-users.js implementado: sincronização automática Cognito → base local com validação hierárquica
+  - ✅ 5 empresas modelo criadas: Prefeitura SP, Secretaria RJ, IFMG, UFC, Escola Técnica RS
+  - ✅ 14 usuários hierárquicos inseridos: 2 admins, 3 gestores, 3 diretores, 3 professores, 3 alunos
+  - ✅ Relacionamentos empresa-usuário funcionais: cada usuário vinculado à empresa apropriada conforme nível hierárquico
+  - ✅ Usuário admin real integrado: esdrasnerideoliveira@gmail.com configurado como NÍVEL 1 (admin master)
+  - ✅ Status: ETAPA 2 concluída, estrutura hierárquica empresa-usuário operacional, pronto para ETAPA 3 (gestores)
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 1: Configuração da Base do Projeto Node.js/Express Implementada
   - ✅ Dependências instaladas: express, jsonwebtoken, jwks-client, pg, cors, helmet, dotenv
   - ✅ Arquivo .env atualizado com variáveis AWS Cognito configuradas corretamente
