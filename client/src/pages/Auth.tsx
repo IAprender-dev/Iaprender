@@ -55,7 +55,7 @@ export default function Auth() {
       if (user.role === "admin") {
         navigate("/admin/master");
       } else if (user.role === "municipal_manager") {
-        navigate("/municipal/dashboard");
+        navigate("/gestor/dashboard");
       } else if (user.role === "school_director") {
         navigate("/school/dashboard");
       } else if (user.role === "teacher") {
