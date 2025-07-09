@@ -1,269 +1,621 @@
-import { BaseModel } from './BaseModel.js';
-import logger from '../utils/logger.js';
+import { executeQuery, executeTransaction } from '../config/database.js';
 
 /**
- * Modelo Empresa - ETAPA 2
- * Representa uma empresa/organização no sistema
- * Relacionamento: 1 empresa pode ter muitos usuários
+ * Modelo de dados para empresas
+ * Gerencia todas as operações CRUD e validações para a tabela empresas
  */
-export class Empresa extends BaseModel {
-  constructor() {
-    super('empresas');
+export class Empresa {
+  constructor(data = {}) {
+    this.id = data.id || null;
+    this.nome = data.nome || null;
+    this.cnpj = data.cnpj || null;
+    this.telefone = data.telefone || null;
+    this.email_contato = data.email_contato || null;
+    this.endereco = data.endereco || null;
+    this.cidade = data.cidade || null;
+    this.estado = data.estado || null;
+    this.logo = data.logo || null;
+    this.criado_por = data.criado_por || null;
+    this.criado_em = data.criado_em || null;
+  }
+
+  // ============================================================================
+  // MÉTODOS DE LIMPEZA E VALIDAÇÃO
+  // ============================================================================
+
+  /**
+   * Retorna dados da empresa como objeto JavaScript limpo
+   * @param {Object} empresaData - Dados brutos da empresa
+   * @returns {Object} - Objeto limpo e estruturado
+   */
+  _cleanEmpresaData(empresaData) {
+    if (!empresaData || typeof empresaData !== 'object') {
+      return {};
+    }
+
+    return {
+      id: empresaData.id ? parseInt(empresaData.id) : null,
+      nome: this._sanitizeString(empresaData.nome),
+      cnpj: this._sanitizeCNPJ(empresaData.cnpj),
+      telefone: this._sanitizeString(empresaData.telefone),
+      email_contato: empresaData.email_contato?.trim().toLowerCase() || null,
+      endereco: this._sanitizeString(empresaData.endereco),
+      cidade: this._sanitizeString(empresaData.cidade),
+      estado: this._sanitizeString(empresaData.estado),
+      logo: this._sanitizeString(empresaData.logo),
+      criado_por: empresaData.criado_por ? parseInt(empresaData.criado_por) : null,
+      criado_em: empresaData.criado_em || null
+    };
   }
 
   /**
-   * Criar uma nova empresa
-   * @param {Object} dadosEmpresa - Dados da empresa
-   * @param {string} dadosEmpresa.nome - Nome da empresa
-   * @param {string} dadosEmpresa.cnpj - CNPJ da empresa (opcional)
-   * @param {string} dadosEmpresa.telefone - Telefone (opcional)
-   * @param {string} dadosEmpresa.email_contato - Email de contato (opcional)
-   * @param {string} dadosEmpresa.endereco - Endereço completo (opcional)
-   * @param {string} dadosEmpresa.cidade - Cidade (opcional)
-   * @param {string} dadosEmpresa.estado - Estado (opcional)
-   * @param {string} dadosEmpresa.logo - URL do logo (opcional)
-   * @param {number} dadosEmpresa.criado_por - ID do usuário que criou
-   * @returns {Object} Empresa criada
+   * Sanitiza entrada de string removendo caracteres perigosos
+   * @param {string} input - String de entrada
+   * @returns {string} - String sanitizada
    */
-  async criar(dadosEmpresa) {
+  _sanitizeString(input) {
+    if (!input || typeof input !== 'string') {
+      return null;
+    }
+
+    return input
+      .trim()
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove tags script
+      .replace(/<[^>]*>/g, '') // Remove outras tags HTML
+      .replace(/['"`;]/g, '') // Remove caracteres perigosos para SQL
+      .slice(0, 500); // Limita tamanho
+  }
+
+  /**
+   * Sanitiza e valida CNPJ
+   * @param {string} cnpj - CNPJ de entrada
+   * @returns {string} - CNPJ apenas com números
+   */
+  _sanitizeCNPJ(cnpj) {
+    if (!cnpj) return null;
+    return cnpj.toString().replace(/\D/g, '').slice(0, 14);
+  }
+
+  /**
+   * Valida e sanitiza ID numérico
+   * @param {any} id - ID a ser validado
+   * @returns {number|null} - ID validado ou null
+   */
+  _validateId(id) {
+    if (!id) return null;
+    const numId = parseInt(id);
+    return (!isNaN(numId) && numId > 0) ? numId : null;
+  }
+
+  // ============================================================================
+  // MÉTODOS DE VALIDAÇÃO
+  // ============================================================================
+
+  /**
+   * Valida os dados da empresa
+   * @returns {Array} - Array de erros encontrados
+   */
+  validate() {
+    const errors = [];
+
+    if (!this.nome || this.nome.trim().length < 2) {
+      errors.push('Nome da empresa é obrigatório e deve ter pelo menos 2 caracteres');
+    }
+
+    if (!this.cnpj) {
+      errors.push('CNPJ é obrigatório');
+    } else if (!this.isValidCNPJ(this.cnpj)) {
+      errors.push('CNPJ deve ter formato válido');
+    }
+
+    if (this.email_contato && !this.isValidEmail(this.email_contato)) {
+      errors.push('Email de contato deve ter formato válido');
+    }
+
+    if (this.telefone && !this.isValidPhone(this.telefone)) {
+      errors.push('Telefone deve ter formato válido');
+    }
+
+    return errors;
+  }
+
+  /**
+   * Valida formato de email
+   * @param {string} email 
+   * @returns {boolean}
+   */
+  isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  /**
+   * Valida formato de telefone brasileiro
+   * @param {string} phone 
+   * @returns {boolean}
+   */
+  isValidPhone(phone) {
+    const phoneRegex = /^\(?(\d{2})\)?[\s-]?(\d{4,5})[\s-]?(\d{4})$/;
+    return phoneRegex.test(phone.replace(/\D/g, ''));
+  }
+
+  /**
+   * Valida CNPJ
+   * @param {string} cnpj 
+   * @returns {boolean}
+   */
+  isValidCNPJ(cnpj) {
+    const cleanCNPJ = cnpj.replace(/\D/g, '');
+    return cleanCNPJ.length === 14;
+  }
+
+  // ============================================================================
+  // MÉTODOS CRUD DE INSTÂNCIA
+  // ============================================================================
+
+  /**
+   * Cria nova empresa
+   * @returns {Promise<Empresa>}
+   */
+  async create() {
     try {
-      // Validações básicas
-      if (!dadosEmpresa.nome || dadosEmpresa.nome.trim().length < 2) {
-        throw new Error('Nome da empresa é obrigatório (mínimo 2 caracteres)');
+      console.log('📝 Criando nova empresa:', this.nome);
+
+      // Validação
+      const validationErrors = this.validate();
+      if (validationErrors.length > 0) {
+        const error = new Error('Dados da empresa inválidos: ' + validationErrors.join(', '));
+        error.code = 'VALIDATION_ERROR';
+        error.errors = validationErrors;
+        throw error;
       }
 
-      if (!dadosEmpresa.criado_por) {
-        throw new Error('Campo criado_por é obrigatório');
+      // Verificar duplicatas
+      const existingEmpresa = await Empresa.findByCNPJ(this.cnpj);
+      if (existingEmpresa) {
+        const error = new Error('CNPJ já está cadastrado');
+        error.code = 'CNPJ_ALREADY_EXISTS';
+        error.cnpj = this.cnpj;
+        throw error;
       }
 
-      // Verificar se CNPJ já existe (se fornecido)
-      if (dadosEmpresa.cnpj) {
-        const empresaExistente = await this.findBy('cnpj', dadosEmpresa.cnpj);
-        if (empresaExistente) {
-          throw new Error(`CNPJ ${dadosEmpresa.cnpj} já está cadastrado`);
-        }
-      }
+      // Query com prepared statement
+      const query = `
+        INSERT INTO empresas (nome, cnpj, telefone, email_contato, endereco, cidade, estado, logo, criado_por, criado_em)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+        RETURNING *
+      `;
 
-      const dadosLimpos = {
-        nome: dadosEmpresa.nome.trim(),
-        cnpj: dadosEmpresa.cnpj?.replace(/[^\d]/g, '') || null, // Remove formatação
-        telefone: dadosEmpresa.telefone || null,
-        email_contato: dadosEmpresa.email_contato || null,
-        endereco: dadosEmpresa.endereco || null,
-        cidade: dadosEmpresa.cidade || null,
-        estado: dadosEmpresa.estado || null,
-        logo: dadosEmpresa.logo || null,
-        criado_por: dadosEmpresa.criado_por
-      };
+      const values = [
+        this.nome, this.cnpj, this.telefone, this.email_contato,
+        this.endereco, this.cidade, this.estado, this.logo, this.criado_por
+      ];
 
-      const empresa = await this.create(dadosLimpos);
-      logger.info(`✅ Empresa criada: ID ${empresa.id} - ${empresa.nome}`);
-      
-      return empresa;
+      const result = await executeQuery(query, values);
+      const empresaData = result.rows[0];
+
+      // Atualizar dados da instância com dados limpos
+      const cleanData = this._cleanEmpresaData(empresaData);
+      Object.assign(this, cleanData);
+
+      console.log('✅ Empresa criada com sucesso:', this.id);
+      return this;
+
     } catch (error) {
-      logger.error('❌ Erro ao criar empresa:', error.message);
+      console.error('❌ Erro ao criar empresa:', error.message);
+
+      if (!error.code) {
+        error.code = 'UNKNOWN_CREATE_ERROR';
+        error.operation = 'create';
+      }
+
       throw error;
     }
   }
 
   /**
-   * Buscar empresa com seus usuários
-   * @param {number} idEmpresa - ID da empresa
-   * @returns {Object} Empresa com lista de usuários
+   * Atualiza a empresa
+   * @returns {Promise<Empresa>}
    */
-  async buscarComUsuarios(idEmpresa) {
+  async update() {
     try {
-      const empresa = await this.findById(idEmpresa);
-      if (!empresa) {
-        throw new Error(`Empresa com ID ${idEmpresa} não encontrada`);
+      console.log('📝 Atualizando empresa:', this.id);
+
+      const validId = this._validateId(this.id);
+      if (!validId) {
+        const error = new Error('ID da empresa é obrigatório para atualização');
+        error.code = 'INVALID_EMPRESA_ID';
+        throw error;
       }
 
-      // Buscar usuários da empresa
+      // Validação
+      const validationErrors = this.validate();
+      if (validationErrors.length > 0) {
+        const error = new Error('Dados da empresa inválidos: ' + validationErrors.join(', '));
+        error.code = 'VALIDATION_ERROR';
+        error.errors = validationErrors;
+        throw error;
+      }
+
+      // Query com prepared statement
       const query = `
-        SELECT 
-          id, nome, email, tipo_usuario, telefone, criado_em
-        FROM usuarios 
-        WHERE empresa_id = $1 
-        ORDER BY nome
+        UPDATE empresas 
+        SET nome = $1, cnpj = $2, telefone = $3, email_contato = $4, 
+            endereco = $5, cidade = $6, estado = $7, logo = $8
+        WHERE id = $9
+        RETURNING *
       `;
-      
-      const result = await this.db.query(query, [idEmpresa]);
+
+      const values = [
+        this.nome, this.cnpj, this.telefone, this.email_contato,
+        this.endereco, this.cidade, this.estado, this.logo, validId
+      ];
+
+      const result = await executeQuery(query, values);
+
+      if (result.rowCount === 0) {
+        const error = new Error('Empresa não encontrada para atualização');
+        error.code = 'EMPRESA_NOT_FOUND_UPDATE';
+        error.empresaId = validId;
+        throw error;
+      }
+
+      const empresaData = result.rows[0];
+      const cleanData = this._cleanEmpresaData(empresaData);
+      Object.assign(this, cleanData);
+
+      console.log('✅ Empresa atualizada com sucesso:', validId);
+      return this;
+
+    } catch (error) {
+      console.error('❌ Erro ao atualizar empresa:', error.message);
+
+      if (!error.code) {
+        error.code = 'UNKNOWN_UPDATE_ERROR';
+        error.operation = 'update';
+        error.empresaId = this.id;
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Deleta a empresa
+   * @returns {Promise<boolean>}
+   */
+  async delete() {
+    try {
+      console.log('🗑️ Deletando empresa:', this.id);
+
+      const validId = this._validateId(this.id);
+      if (!validId) {
+        const error = new Error('ID da empresa é obrigatório e deve ser um número válido para exclusão');
+        error.code = 'INVALID_EMPRESA_ID';
+        error.providedId = this.id;
+        throw error;
+      }
+
+      // Query com prepared statement
+      const query = 'DELETE FROM empresas WHERE id = $1';
+      const result = await executeQuery(query, [validId]);
+
+      const deleted = result.rowCount > 0;
+
+      if (deleted) {
+        console.log('✅ Empresa deletada com sucesso:', validId);
+        this.id = null;
+      } else {
+        const error = new Error('Empresa não encontrada para exclusão');
+        error.code = 'EMPRESA_NOT_FOUND_DELETE';
+        error.empresaId = validId;
+        throw error;
+      }
+
+      return deleted;
+
+    } catch (error) {
+      console.error('❌ Erro ao deletar empresa:', error.message);
+
+      if (!error.code) {
+        error.code = 'UNKNOWN_DELETE_ERROR';
+        error.operation = 'delete';
+        error.empresaId = this.id;
+      }
+
+      throw error;
+    }
+  }
+
+  // ============================================================================
+  // MÉTODOS ESTÁTICOS DE BUSCA
+  // ============================================================================
+
+  /**
+   * Busca empresa por ID
+   * @param {number} id 
+   * @returns {Promise<Empresa|null>}
+   */
+  static async findById(id) {
+    try {
+      console.log('🔍 Buscando empresa por ID:', id);
+
+      if (!id) return null;
+
+      const validId = parseInt(id);
+      if (isNaN(validId) || validId <= 0) {
+        console.warn('⚠️ ID inválido fornecido:', id);
+        return null;
+      }
+
+      const query = 'SELECT * FROM empresas WHERE id = $1';
+      const result = await executeQuery(query, [validId]);
+
+      if (!result.rows || result.rows.length === 0) {
+        console.log('📝 Empresa não encontrada com ID:', validId);
+        return null;
+      }
+
+      const empresaData = result.rows[0];
+      const empresa = new Empresa();
+      const cleanData = empresa._cleanEmpresaData(empresaData);
+      Object.assign(empresa, cleanData);
+
+      return empresa;
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar empresa por ID:', error.message);
+      error.code = 'FIND_BY_ID_ERROR';
+      error.operation = 'findById';
+      error.searchId = id;
+      return null;
+    }
+  }
+
+  /**
+   * Busca empresa por CNPJ
+   * @param {string} cnpj 
+   * @returns {Promise<Empresa|null>}
+   */
+  static async findByCNPJ(cnpj) {
+    try {
+      console.log('🔍 Buscando empresa por CNPJ:', cnpj);
+
+      if (!cnpj || typeof cnpj !== 'string') {
+        console.warn('⚠️ CNPJ inválido fornecido:', cnpj);
+        return null;
+      }
+
+      const sanitizedCNPJ = cnpj.replace(/\D/g, '');
+      if (!sanitizedCNPJ || sanitizedCNPJ.length !== 14) {
+        console.warn('⚠️ Formato de CNPJ inválido:', cnpj);
+        return null;
+      }
+
+      const query = 'SELECT * FROM empresas WHERE cnpj = $1';
+      const result = await executeQuery(query, [sanitizedCNPJ]);
+
+      if (!result.rows || result.rows.length === 0) {
+        console.log('📝 Empresa não encontrada com CNPJ:', sanitizedCNPJ);
+        return null;
+      }
+
+      const empresaData = result.rows[0];
+      const empresa = new Empresa();
+      const cleanData = empresa._cleanEmpresaData(empresaData);
+      Object.assign(empresa, cleanData);
+
+      return empresa;
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar empresa por CNPJ:', error.message);
+      error.code = 'FIND_BY_CNPJ_ERROR';
+      error.operation = 'findByCNPJ';
+      error.searchCNPJ = cnpj;
+      return null;
+    }
+  }
+
+  /**
+   * Lista todas as empresas com filtros opcionais
+   * @param {Object} filters - Filtros de busca
+   * @param {Object} options - Opções de paginação e ordenação
+   * @returns {Promise<{empresas: Empresa[], total: number}>}
+   */
+  static async findAll(filters = {}, options = {}) {
+    try {
+      console.log('🔍 Buscando empresas com filtros:', filters);
+
+      const { 
+        page = 1, 
+        limit = 10, 
+        orderBy = 'criado_em', 
+        orderDirection = 'DESC' 
+      } = options;
+
+      const offset = (page - 1) * limit;
+
+      // Construir cláusulas WHERE
+      const whereClauses = [];
+      const params = [];
+      let paramIndex = 1;
+
+      if (filters.estado) {
+        whereClauses.push(`estado = $${paramIndex}`);
+        params.push(filters.estado);
+        paramIndex++;
+      }
+
+      if (filters.cidade) {
+        whereClauses.push(`cidade ILIKE $${paramIndex}`);
+        params.push(`%${filters.cidade}%`);
+        paramIndex++;
+      }
+
+      if (filters.search) {
+        whereClauses.push(`(nome ILIKE $${paramIndex} OR cnpj LIKE $${paramIndex})`);
+        params.push(`%${filters.search}%`);
+        paramIndex++;
+      }
+
+      const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+      // Query para contar total
+      const countQuery = `SELECT COUNT(*) FROM empresas ${whereClause}`;
+      const countResult = await executeQuery(countQuery, params);
+      const total = parseInt(countResult.rows[0].count);
+
+      // Query para buscar dados
+      const dataQuery = `
+        SELECT * FROM empresas 
+        ${whereClause}
+        ORDER BY ${orderBy} ${orderDirection}
+        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      `;
+
+      params.push(limit, offset);
+      const dataResult = await executeQuery(dataQuery, params);
+
+      const empresas = dataResult.rows.map(empresaData => {
+        const empresa = new Empresa();
+        const cleanData = empresa._cleanEmpresaData(empresaData);
+        Object.assign(empresa, cleanData);
+        return empresa;
+      });
+
+      return { empresas, total };
+
+    } catch (error) {
+      console.error('❌ Erro ao buscar empresas:', error.message);
+      error.code = 'FIND_ALL_ERROR';
+      error.operation = 'findAll';
+      return { empresas: [], total: 0 };
+    }
+  }
+
+  // ============================================================================
+  // MÉTODOS ESTÁTICOS CRUD
+  // ============================================================================
+
+  /**
+   * Cria uma nova empresa (método estático)
+   * @param {Object} dadosEmpresa - Dados da empresa a ser criada
+   * @returns {Promise<Empresa>}
+   */
+  static async criar(dadosEmpresa) {
+    console.log('📝 Criando nova empresa (método estático):', dadosEmpresa.nome);
+    const empresa = new Empresa(dadosEmpresa);
+    return await empresa.create();
+  }
+
+  /**
+   * Atualiza uma empresa existente (método estático)
+   * @param {number} id - ID da empresa
+   * @param {Object} dadosEmpresa - Dados atualizados da empresa
+   * @returns {Promise<Empresa>}
+   */
+  static async atualizar(id, dadosEmpresa) {
+    console.log('📝 Atualizando empresa (método estático):', id);
+
+    if (!id) {
+      throw new Error('ID da empresa é obrigatório para atualização');
+    }
+
+    const empresa = await Empresa.findById(id);
+    if (!empresa) {
+      throw new Error('Empresa não encontrada');
+    }
+
+    Object.assign(empresa, dadosEmpresa);
+    return await empresa.update();
+  }
+
+  /**
+   * Deleta uma empresa (método estático)
+   * @param {number} id - ID da empresa
+   * @returns {Promise<boolean>}
+   */
+  static async deletar(id) {
+    console.log('🗑️ Deletando empresa (método estático):', id);
+
+    if (!id) {
+      throw new Error('ID da empresa é obrigatório para exclusão');
+    }
+
+    const empresa = await Empresa.findById(id);
+    if (!empresa) {
+      throw new Error('Empresa não encontrada');
+    }
+
+    return await empresa.delete();
+  }
+
+  // ============================================================================
+  // MÉTODO DE SERIALIZAÇÃO
+  // ============================================================================
+
+  /**
+   * Formata os dados da empresa para resposta da API
+   * Retorna objeto JavaScript limpo e seguro
+   * @returns {Object}
+   */
+  toJSON() {
+    try {
+      return {
+        id: parseInt(this.id) || null,
+        nome: this.nome?.trim() || null,
+        cnpj: this.cnpj?.trim() || null,
+        telefone: this.telefone?.trim() || null,
+        email_contato: this.email_contato?.trim() || null,
+        endereco: this.endereco?.trim() || null,
+        cidade: this.cidade?.trim() || null,
+        estado: this.estado?.trim() || null,
+        logo: this.logo?.trim() || null,
+        criado_por: this.criado_por ? parseInt(this.criado_por) : null,
+        criado_em: this.criado_em || null
+      };
+    } catch (error) {
+      console.error('❌ Erro ao converter empresa para JSON:', error.message);
       
       return {
-        ...empresa,
-        usuarios: result.rows,
-        total_usuarios: result.rows.length
+        id: this.id || null,
+        nome: this.nome || null,
+        cnpj: this.cnpj || null,
+        error: 'Erro ao processar dados da empresa'
       };
-    } catch (error) {
-      logger.error('❌ Erro ao buscar empresa com usuários:', error.message);
-      throw error;
     }
   }
 
-  /**
-   * Listar empresas com estatísticas
-   * @param {Object} filtros - Filtros de busca
-   * @returns {Array} Lista de empresas com estatísticas
-   */
-  async listarComEstatisticas(filtros = {}) {
-    try {
-      let whereClause = '1=1';
-      const params = [];
-      let paramCounter = 1;
-
-      // Filtro por nome
-      if (filtros.nome) {
-        whereClause += ` AND e.nome ILIKE $${paramCounter}`;
-        params.push(`%${filtros.nome}%`);
-        paramCounter++;
-      }
-
-      // Filtro por estado
-      if (filtros.estado) {
-        whereClause += ` AND e.estado = $${paramCounter}`;
-        params.push(filtros.estado);
-        paramCounter++;
-      }
-
-      const query = `
-        SELECT 
-          e.*,
-          COUNT(u.id) as total_usuarios,
-          COUNT(CASE WHEN u.tipo_usuario = 'admin' THEN 1 END) as total_admins,
-          COUNT(CASE WHEN u.tipo_usuario = 'gestor' THEN 1 END) as total_gestores,
-          COUNT(CASE WHEN u.tipo_usuario = 'diretor' THEN 1 END) as total_diretores,
-          COUNT(CASE WHEN u.tipo_usuario = 'professor' THEN 1 END) as total_professores,
-          COUNT(CASE WHEN u.tipo_usuario = 'aluno' THEN 1 END) as total_alunos
-        FROM empresas e
-        LEFT JOIN usuarios u ON e.id = u.empresa_id
-        WHERE ${whereClause}
-        GROUP BY e.id
-        ORDER BY e.nome
-      `;
-
-      const result = await this.db.query(query, params);
-      return result.rows;
-    } catch (error) {
-      logger.error('❌ Erro ao listar empresas com estatísticas:', error.message);
-      throw error;
-    }
-  }
+  // ============================================================================
+  // MÉTODOS DE ESTATÍSTICAS
+  // ============================================================================
 
   /**
-   * Atualizar dados da empresa
-   * @param {number} idEmpresa - ID da empresa
-   * @param {Object} dadosAtualizacao - Dados para atualizar
-   * @returns {Object} Empresa atualizada
+   * Obtém estatísticas das empresas
+   * @returns {Promise<Object>}
    */
-  async atualizar(idEmpresa, dadosAtualizacao) {
-    try {
-      // Verificar se empresa existe
-      const empresaExistente = await this.findById(idEmpresa);
-      if (!empresaExistente) {
-        throw new Error(`Empresa com ID ${idEmpresa} não encontrada`);
-      }
-
-      // Verificar CNPJ duplicado (se sendo atualizado)
-      if (dadosAtualizacao.cnpj && dadosAtualizacao.cnpj !== empresaExistente.cnpj) {
-        const empresaComCnpj = await this.findBy('cnpj', dadosAtualizacao.cnpj);
-        if (empresaComCnpj && empresaComCnpj.id !== idEmpresa) {
-          throw new Error(`CNPJ ${dadosAtualizacao.cnpj} já está em uso por outra empresa`);
-        }
-      }
-
-      // Limpar dados se fornecidos
-      const dadosLimpos = {};
-      if (dadosAtualizacao.nome) dadosLimpos.nome = dadosAtualizacao.nome.trim();
-      if (dadosAtualizacao.cnpj) dadosLimpos.cnpj = dadosAtualizacao.cnpj.replace(/[^\d]/g, '');
-      if (dadosAtualizacao.telefone !== undefined) dadosLimpos.telefone = dadosAtualizacao.telefone;
-      if (dadosAtualizacao.email_contato !== undefined) dadosLimpos.email_contato = dadosAtualizacao.email_contato;
-      if (dadosAtualizacao.endereco !== undefined) dadosLimpos.endereco = dadosAtualizacao.endereco;
-      if (dadosAtualizacao.cidade !== undefined) dadosLimpos.cidade = dadosAtualizacao.cidade;
-      if (dadosAtualizacao.estado !== undefined) dadosLimpos.estado = dadosAtualizacao.estado;
-      if (dadosAtualizacao.logo !== undefined) dadosLimpos.logo = dadosAtualizacao.logo;
-
-      const empresaAtualizada = await this.update(idEmpresa, dadosLimpos);
-      logger.info(`✅ Empresa atualizada: ID ${idEmpresa} - ${empresaAtualizada.nome}`);
-      
-      return empresaAtualizada;
-    } catch (error) {
-      logger.error('❌ Erro ao atualizar empresa:', error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Deletar empresa (verifica dependências)
-   * @param {number} idEmpresa - ID da empresa
-   * @returns {boolean} Sucesso da operação
-   */
-  async deletar(idEmpresa) {
-    try {
-      // Verificar se empresa existe
-      const empresa = await this.findById(idEmpresa);
-      if (!empresa) {
-        throw new Error(`Empresa com ID ${idEmpresa} não encontrada`);
-      }
-
-      // Verificar se tem usuários vinculados
-      const usuariosVinculados = await this.db.query(
-        'SELECT COUNT(*) as total FROM usuarios WHERE empresa_id = $1',
-        [idEmpresa]
-      );
-
-      if (parseInt(usuariosVinculados.rows[0].total) > 0) {
-        throw new Error(`Não é possível excluir a empresa "${empresa.nome}" pois possui ${usuariosVinculados.rows[0].total} usuário(s) vinculado(s)`);
-      }
-
-      await this.delete(idEmpresa);
-      logger.info(`✅ Empresa deletada: ${empresa.nome}`);
-      
-      return true;
-    } catch (error) {
-      logger.error('❌ Erro ao deletar empresa:', error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Buscar empresas por estado
-   * @param {string} estado - Código do estado (ex: SP, RJ)
-   * @returns {Array} Lista de empresas do estado
-   */
-  async buscarPorEstado(estado) {
-    try {
-      const result = await this.db.query(
-        'SELECT * FROM empresas WHERE estado = $1 ORDER BY nome',
-        [estado.toUpperCase()]
-      );
-      return result.rows;
-    } catch (error) {
-      logger.error('❌ Erro ao buscar empresas por estado:', error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Obter estatísticas gerais das empresas
-   * @returns {Object} Estatísticas das empresas
-   */
-  async obterEstatisticas() {
+  static async getStats() {
     try {
       const query = `
         SELECT 
           COUNT(*) as total_empresas,
-          COUNT(CASE WHEN cnpj IS NOT NULL THEN 1 END) as com_cnpj,
-          COUNT(CASE WHEN cnpj IS NULL THEN 1 END) as sem_cnpj,
-          COUNT(DISTINCT estado) as estados_unicos,
-          SUM((SELECT COUNT(*) FROM usuarios WHERE empresa_id = empresas.id)) as total_usuarios
+          COUNT(CASE WHEN estado = 'SP' THEN 1 END) as empresas_sp,
+          COUNT(CASE WHEN estado = 'RJ' THEN 1 END) as empresas_rj,
+          COUNT(CASE WHEN estado = 'MG' THEN 1 END) as empresas_mg
         FROM empresas
       `;
 
-      const result = await this.db.query(query);
+      const result = await executeQuery(query);
       return result.rows[0];
+
     } catch (error) {
-      logger.error('❌ Erro ao obter estatísticas das empresas:', error.message);
-      throw error;
+      console.error('❌ Erro ao obter estatísticas das empresas:', error.message);
+      return {
+        total_empresas: 0,
+        empresas_sp: 0,
+        empresas_rj: 0,
+        empresas_mg: 0
+      };
     }
   }
 }
