@@ -477,6 +477,167 @@ export class AlunoController {
   }
 
   /**
+   * POST /api/alunos/:id/transferir
+   * Transferir aluno entre escolas da mesma empresa
+   */
+  static async transferirAluno(req, res) {
+    try {
+      const { id } = req.params;
+      const { nova_escola_id, motivo_transferencia, data_transferencia } = req.body;
+      const usuarioLogado = req.user;
+
+      // Validar ID numérico
+      const alunoId = parseInt(id);
+      if (!alunoId || alunoId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID do aluno deve ser um número válido',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Validar campos obrigatórios
+      if (!nova_escola_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nova escola é obrigatória para transferência',
+          campos_faltando: ['nova_escola_id'],
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Buscar aluno existente
+      const alunoExistente = await Aluno.findById(alunoId);
+      if (!alunoExistente) {
+        return res.status(404).json({
+          success: false,
+          message: 'Aluno não encontrado',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Verificar permissões de transferência
+      const podeTransferir = await AlunoController._verificarPermissaoTransferencia(usuarioLogado, alunoExistente);
+      if (!podeTransferir.permitido) {
+        return res.status(403).json({
+          success: false,
+          message: podeTransferir.motivo,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Validar nova escola
+      const novaEscola = await Escola.findById(nova_escola_id);
+      if (!novaEscola) {
+        return res.status(404).json({
+          success: false,
+          message: 'Nova escola não encontrada',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Verificar se nova escola é diferente da atual
+      if (alunoExistente.escola_id === nova_escola_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Aluno já está matriculado nesta escola',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Validar se ambas escolas pertencem à mesma empresa
+      const validacaoEmpresa = await AlunoController._validarTransferenciaEmpresa(
+        alunoExistente.escola_id, 
+        nova_escola_id, 
+        alunoExistente.empresa_id
+      );
+      if (!validacaoEmpresa.valido) {
+        return res.status(400).json({
+          success: false,
+          message: validacaoEmpresa.erro,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Preparar dados da transferência
+      const dadosTransferencia = {
+        data_transferencia: data_transferencia ? new Date(data_transferencia) : new Date(),
+        motivo_transferencia: motivo_transferencia || 'Transferência entre escolas',
+        escola_origem_id: alunoExistente.escola_id,
+        escola_destino_id: nova_escola_id,
+        usuario_responsavel_id: usuarioLogado.id,
+        status_anterior: alunoExistente.status
+      };
+
+      // Gerar nova matrícula para nova escola
+      const novaMatricula = await AlunoController._gerarMatricula(nova_escola_id);
+
+      // Executar transferência em transação
+      const resultadoTransferencia = await AlunoController._executarTransferencia(
+        alunoId,
+        nova_escola_id,
+        novaMatricula,
+        dadosTransferencia
+      );
+
+      // Buscar dados completos do aluno transferido
+      const alunoTransferido = await Aluno.findById(alunoId);
+      const alunoCompleto = await AlunoController._obterDadosCompletos(alunoTransferido);
+
+      // Log de auditoria
+      console.log(`🔄 Aluno transferido:`, {
+        aluno_id: alunoId,
+        aluno_nome: alunoExistente.nome,
+        escola_origem: alunoExistente.escola_id,
+        escola_destino: nova_escola_id,
+        matricula_anterior: alunoExistente.matricula,
+        nova_matricula: novaMatricula,
+        transferido_por: `${usuarioLogado.id} (${usuarioLogado.tipo_usuario})`,
+        motivo: motivo_transferencia,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        message: 'Aluno transferido com sucesso',
+        data: {
+          aluno: alunoCompleto,
+          transferencia: {
+            id: resultadoTransferencia.historico_id,
+            escola_origem: validacaoEmpresa.escola_origem,
+            escola_destino: validacaoEmpresa.escola_destino,
+            data_transferencia: dadosTransferencia.data_transferencia,
+            motivo: dadosTransferencia.motivo_transferencia,
+            matricula_anterior: alunoExistente.matricula,
+            nova_matricula: novaMatricula,
+            responsavel: {
+              id: usuarioLogado.id,
+              nome: usuarioLogado.nome,
+              tipo: usuarioLogado.tipo_usuario
+            }
+          }
+        },
+        metadata: {
+          transferido_por: usuarioLogado.id,
+          tipo_responsavel: usuarioLogado.tipo_usuario,
+          empresa_id: alunoExistente.empresa_id,
+          status_transferencia: 'concluida'
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao transferir aluno:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  /**
    * GET /api/alunos/stats
    * Obter estatísticas de alunos
    */
@@ -947,6 +1108,290 @@ export class AlunoController {
           erro: 'Erro ao enriquecer dados'
         }
       };
+    }
+  }
+
+  /**
+   * Verificar permissões de transferência de aluno
+   */
+  static async _verificarPermissaoTransferencia(usuario, aluno) {
+    // Apenas admin, gestor e diretor podem transferir alunos
+    if (!['admin', 'gestor', 'diretor'].includes(usuario.tipo_usuario)) {
+      return {
+        permitido: false,
+        motivo: 'Apenas administradores, gestores e diretores podem transferir alunos'
+      };
+    }
+
+    // Admin pode transferir qualquer aluno
+    if (usuario.tipo_usuario === 'admin') {
+      return { permitido: true };
+    }
+
+    // Gestor apenas alunos da própria empresa
+    if (usuario.tipo_usuario === 'gestor') {
+      if (usuario.empresa_id !== aluno.empresa_id) {
+        return {
+          permitido: false,
+          motivo: 'Gestor só pode transferir alunos da própria empresa'
+        };
+      }
+      return { permitido: true };
+    }
+
+    // Diretor apenas alunos da própria escola
+    if (usuario.tipo_usuario === 'diretor') {
+      const { Diretor } = await import('../models/Diretor.js');
+      const diretor = await Diretor.findByUserId(usuario.id);
+      
+      if (!diretor || diretor.escola_id !== aluno.escola_id) {
+        return {
+          permitido: false,
+          motivo: 'Diretor só pode transferir alunos da própria escola'
+        };
+      }
+      return { permitido: true };
+    }
+
+    return {
+      permitido: false,
+      motivo: 'Sem permissão para transferir alunos'
+    };
+  }
+
+  /**
+   * Validar transferência entre escolas da mesma empresa
+   */
+  static async _validarTransferenciaEmpresa(escolaOrigemId, escolaDestinoId, empresaId) {
+    try {
+      // Buscar escola de origem
+      const escolaOrigem = await Escola.findById(escolaOrigemId);
+      if (!escolaOrigem) {
+        return {
+          valido: false,
+          erro: 'Escola de origem não encontrada'
+        };
+      }
+
+      // Buscar escola de destino
+      const escolaDestino = await Escola.findById(escolaDestinoId);
+      if (!escolaDestino) {
+        return {
+          valido: false,
+          erro: 'Escola de destino não encontrada'
+        };
+      }
+
+      // Verificar se escola de origem pertence à empresa do aluno
+      if (escolaOrigem.empresa_id !== empresaId) {
+        return {
+          valido: false,
+          erro: 'Escola de origem não pertence à empresa do aluno'
+        };
+      }
+
+      // Verificar se escola de destino pertence à mesma empresa
+      if (escolaDestino.empresa_id !== empresaId) {
+        return {
+          valido: false,
+          erro: 'Transferência deve ser entre escolas da mesma empresa'
+        };
+      }
+
+      // Verificar se escola de destino está ativa
+      if (escolaDestino.status !== 'ativa') {
+        return {
+          valido: false,
+          erro: 'Escola de destino deve estar ativa para receber transferências'
+        };
+      }
+
+      return {
+        valido: true,
+        escola_origem: {
+          id: escolaOrigem.id,
+          nome: escolaOrigem.nome,
+          codigo_inep: escolaOrigem.codigo_inep
+        },
+        escola_destino: {
+          id: escolaDestino.id,
+          nome: escolaDestino.nome,
+          codigo_inep: escolaDestino.codigo_inep
+        }
+      };
+
+    } catch (error) {
+      console.error('Erro ao validar transferência:', error);
+      return {
+        valido: false,
+        erro: 'Erro ao validar escolas para transferência'
+      };
+    }
+  }
+
+  /**
+   * Executar transferência em transação
+   */
+  static async _executarTransferencia(alunoId, novaEscolaId, novaMatricula, dadosTransferencia) {
+    try {
+      // Importar função de transação
+      const { executeTransaction } = await import('../config/database.js');
+
+      const resultado = await executeTransaction(async (client) => {
+        // 1. Atualizar dados do aluno
+        const updateAlunoQuery = `
+          UPDATE alunos 
+          SET escola_id = $1, matricula = $2, atualizado_em = CURRENT_TIMESTAMP
+          WHERE id = $3
+          RETURNING *
+        `;
+        const alunoAtualizado = await client.query(updateAlunoQuery, [novaEscolaId, novaMatricula, alunoId]);
+
+        // 2. Inserir histórico de transferência
+        const insertHistoricoQuery = `
+          INSERT INTO historico_transferencias (
+            aluno_id, escola_origem_id, escola_destino_id, 
+            data_transferencia, motivo_transferencia, 
+            matricula_anterior, nova_matricula,
+            usuario_responsavel_id, status_anterior, criado_em
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
+          RETURNING id
+        `;
+        const historico = await client.query(insertHistoricoQuery, [
+          alunoId,
+          dadosTransferencia.escola_origem_id,
+          dadosTransferencia.escola_destino_id,
+          dadosTransferencia.data_transferencia,
+          dadosTransferencia.motivo_transferencia,
+          dadosTransferencia.matricula_anterior || 'N/A',
+          novaMatricula,
+          dadosTransferencia.usuario_responsavel_id,
+          dadosTransferencia.status_anterior
+        ]);
+
+        return {
+          aluno: alunoAtualizado.rows[0],
+          historico_id: historico.rows[0].id
+        };
+      });
+
+      return resultado;
+
+    } catch (error) {
+      console.error('❌ Erro na transação de transferência:', error);
+      throw new Error('Falha ao executar transferência: ' + error.message);
+    }
+  }
+
+  /**
+   * Obter histórico de transferências de um aluno
+   */
+  static async obterHistoricoTransferencias(req, res) {
+    try {
+      const { id } = req.params;
+      const usuarioLogado = req.user;
+
+      // Validar ID numérico
+      const alunoId = parseInt(id);
+      if (!alunoId || alunoId <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID do aluno deve ser um número válido',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Buscar aluno
+      const aluno = await Aluno.findById(alunoId);
+      if (!aluno) {
+        return res.status(404).json({
+          success: false,
+          message: 'Aluno não encontrado',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Verificar permissões de acesso
+      const temAcesso = await AlunoController._verificarAcessoAluno(usuarioLogado, aluno);
+      if (!temAcesso) {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado a este aluno',
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Buscar histórico de transferências
+      const { executeQuery } = await import('../config/database.js');
+      const historicoQuery = `
+        SELECT 
+          ht.*,
+          eo.nome as escola_origem_nome,
+          eo.codigo_inep as escola_origem_inep,
+          ed.nome as escola_destino_nome,
+          ed.codigo_inep as escola_destino_inep,
+          u.nome as usuario_responsavel_nome,
+          u.tipo_usuario as usuario_responsavel_tipo
+        FROM historico_transferencias ht
+        LEFT JOIN escolas eo ON ht.escola_origem_id = eo.id
+        LEFT JOIN escolas ed ON ht.escola_destino_id = ed.id
+        LEFT JOIN usuarios u ON ht.usuario_responsavel_id = u.id
+        WHERE ht.aluno_id = $1
+        ORDER BY ht.data_transferencia DESC, ht.criado_em DESC
+      `;
+
+      const result = await executeQuery(historicoQuery, [alunoId]);
+
+      // Estruturar dados do histórico
+      const historicoFormatado = result.rows.map(transfer => ({
+        id: transfer.id,
+        data_transferencia: transfer.data_transferencia,
+        motivo: transfer.motivo_transferencia,
+        escola_origem: {
+          id: transfer.escola_origem_id,
+          nome: transfer.escola_origem_nome,
+          codigo_inep: transfer.escola_origem_inep
+        },
+        escola_destino: {
+          id: transfer.escola_destino_id,
+          nome: transfer.escola_destino_nome,
+          codigo_inep: transfer.escola_destino_inep
+        },
+        matricula_anterior: transfer.matricula_anterior,
+        nova_matricula: transfer.nova_matricula,
+        responsavel: {
+          id: transfer.usuario_responsavel_id,
+          nome: transfer.usuario_responsavel_nome,
+          tipo: transfer.usuario_responsavel_tipo
+        },
+        status_anterior: transfer.status_anterior,
+        criado_em: transfer.criado_em
+      }));
+
+      res.json({
+        success: true,
+        message: `${historicoFormatado.length} transferência(s) encontrada(s)`,
+        data: {
+          aluno: {
+            id: aluno.id,
+            nome: aluno.nome,
+            matricula_atual: aluno.matricula,
+            escola_atual_id: aluno.escola_id
+          },
+          historico_transferencias: historicoFormatado,
+          total_transferencias: historicoFormatado.length
+        },
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao obter histórico de transferências:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'Erro interno',
+        timestamp: new Date().toISOString()
+      });
     }
   }
 

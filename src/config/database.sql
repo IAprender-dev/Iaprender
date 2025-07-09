@@ -89,6 +89,41 @@ COMMENT ON COLUMN empresas.criado_por IS 'Usuário que cadastrou a empresa (FK p
 -- Trigger para atualizar timestamp (caso precise de atualizado_em futuramente)
 -- Por enquanto não implementado pois não há campo atualizado_em na especificação
 
+-- ✅ ETAPA 9: CRIAR A TABELA DE HISTÓRICO DE TRANSFERÊNCIAS
+-- Tabela para rastrear todas as transferências de alunos entre escolas
+
+CREATE TABLE historico_transferencias (
+    id SERIAL PRIMARY KEY,
+    aluno_id INTEGER NOT NULL REFERENCES alunos(id) ON DELETE CASCADE,
+    escola_origem_id INTEGER NOT NULL REFERENCES escolas(id),
+    escola_destino_id INTEGER NOT NULL REFERENCES escolas(id),
+    data_transferencia TIMESTAMP NOT NULL,
+    motivo_transferencia TEXT,
+    matricula_anterior VARCHAR(20),
+    nova_matricula VARCHAR(20),
+    usuario_responsavel_id INTEGER NOT NULL REFERENCES usuarios(id),
+    status_anterior VARCHAR(20),
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para performance em consultas de histórico
+CREATE INDEX idx_historico_transferencias_aluno_id ON historico_transferencias(aluno_id);
+CREATE INDEX idx_historico_transferencias_data ON historico_transferencias(data_transferencia);
+CREATE INDEX idx_historico_transferencias_escolas ON historico_transferencias(escola_origem_id, escola_destino_id);
+CREATE INDEX idx_historico_transferencias_responsavel ON historico_transferencias(usuario_responsavel_id);
+
+-- Comentários para documentação
+COMMENT ON TABLE historico_transferencias IS 'Histórico completo de transferências de alunos entre escolas';
+COMMENT ON COLUMN historico_transferencias.aluno_id IS 'Aluno que foi transferido';
+COMMENT ON COLUMN historico_transferencias.escola_origem_id IS 'Escola de onde o aluno saiu';
+COMMENT ON COLUMN historico_transferencias.escola_destino_id IS 'Escola para onde o aluno foi transferido';
+COMMENT ON COLUMN historico_transferencias.data_transferencia IS 'Data/hora em que a transferência foi efetivada';
+COMMENT ON COLUMN historico_transferencias.motivo_transferencia IS 'Motivo da transferência (mudança, reorganização, etc.)';
+COMMENT ON COLUMN historico_transferencias.matricula_anterior IS 'Matrícula do aluno na escola de origem';
+COMMENT ON COLUMN historico_transferencias.nova_matricula IS 'Nova matrícula gerada para a escola de destino';
+COMMENT ON COLUMN historico_transferencias.usuario_responsavel_id IS 'Usuário que executou a transferência (admin/gestor/diretor)';
+COMMENT ON COLUMN historico_transferencias.status_anterior IS 'Status do aluno antes da transferência';
+
 -- =====================================================================
 -- PRÓXIMAS ETAPAS (a serem implementadas):
 -- ETAPA 3: Tabela de gestores
