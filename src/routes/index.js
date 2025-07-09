@@ -3,7 +3,8 @@
 import express from 'express';
 const router = express.Router();
 
-// Import route modules (to be created)
+// Import route modules
+import cognitoRoutes from './cognito.js';
 // const authRoutes = require('./auth');
 // const userRoutes = require('./users');
 // const schoolRoutes = require('./schools');
@@ -20,6 +21,7 @@ router.get('/health', (req, res) => {
 });
 
 // Register route modules
+router.use('/cognito', cognitoRoutes);
 // router.use('/auth', authRoutes);
 // router.use('/users', userRoutes);
 // router.use('/schools', schoolRoutes);
@@ -34,6 +36,34 @@ router.get('/test', (req, res) => {
     database: process.env.DATABASE_URL ? 'Configurado' : 'Não configurado',
     cognito: process.env.COGNITO_USER_POOL_ID ? 'Configurado' : 'Não configurado'
   });
+});
+
+// Debug endpoint para testar configuração do Cognito
+router.get('/debug-cognito', (req, res) => {
+  try {
+    const config = {
+      user_pool_id: process.env.COGNITO_USER_POOL_ID || 'NÃO CONFIGURADO',
+      region: process.env.AWS_REGION || 'us-east-1',
+      access_key_configured: process.env.AWS_ACCESS_KEY_ID ? 'SIM' : 'NÃO',
+      secret_key_configured: process.env.AWS_SECRET_ACCESS_KEY ? 'SIM' : 'NÃO',
+      timestamp: new Date().toISOString()
+    };
+
+    res.json({
+      success: true,
+      message: 'Configuração AWS Cognito',
+      config,
+      status: config.user_pool_id !== 'NÃO CONFIGURADO' && 
+               config.access_key_configured === 'SIM' && 
+               config.secret_key_configured === 'SIM' ? 'CONFIGURADO' : 'INCOMPLETO'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao verificar configuração',
+      error: error.message
+    });
+  }
 });
 
 export default router;

@@ -1,4 +1,10 @@
-import { CognitoIdentityProviderClient, ListUsersCommand, AdminGetUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { 
+  CognitoIdentityProviderClient, 
+  ListUsersCommand, 
+  AdminGetUserCommand,
+  AdminListGroupsForUserCommand,
+  ListGroupsCommand
+} from '@aws-sdk/client-cognito-identity-provider';
 import logger from '../utils/logger.js';
 
 /**
@@ -56,10 +62,10 @@ class CognitoService {
   }
 
   /**
-   * Listar todos os usuários do Cognito
+   * Listar todos os usuários do Cognito com seus grupos
    * @param {number} limit - Limite de usuários por página
    * @param {string} paginationToken - Token para paginação
-   * @returns {Object} Lista de usuários com token de paginação
+   * @returns {Object} Lista de usuários com grupos e token de paginação
    */
   async listarUsuarios(limit = 60, paginationToken = null) {
     try {
@@ -77,10 +83,29 @@ class CognitoService {
 
       logger.info(`📋 ${response.Users.length} usuários encontrados no Cognito`);
       
+      // Para cada usuário, buscar seus grupos
+      const usuariosComGrupos = await Promise.all(
+        response.Users.map(async (user) => {
+          try {
+            const grupos = await this.obterGruposDoUsuario(user.Username);
+            return {
+              ...user,
+              Groups: grupos
+            };
+          } catch (error) {
+            logger.warn(`⚠️ Erro ao obter grupos do usuário ${user.Username}:`, error.message);
+            return {
+              ...user,
+              Groups: []
+            };
+          }
+        })
+      );
+      
       return {
-        usuarios: response.Users,
+        usuarios: usuariosComGrupos,
         nextToken: response.PaginationToken || null,
-        total: response.Users.length
+        total: usuariosComGrupos.length
       };
     } catch (error) {
       logger.error('❌ Erro ao listar usuários do Cognito:', error.message);
@@ -229,6 +254,48 @@ class CognitoService {
     // Gestores e demais usuários têm empresa
     const empresasIds = [6, 7, 8, 9, 10]; // IDs das empresas criadas
     return empresasIds[hash % empresasIds.length];
+  }
+
+  /**
+   * Obter grupos de um usuário específico
+   * @param {string} username - Username do usuário
+   * @returns {Array} Lista de grupos do usuário
+   */
+  async obterGruposDoUsuario(username) {
+    try {
+      const command = new AdminListGroupsForUserCommand({
+        UserPoolId: this.userPoolId,
+        Username: username
+      });
+
+      const response = await this.client.send(command);
+      return response.Groups || [];
+    } catch (error) {
+      logger.error(`❌ Erro ao obter grupos do usuário ${username}:`, error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Listar todos os grupos disponíveis no User Pool
+   * @param {number} limit - Limite de grupos por página
+   * @returns {Array} Lista de grupos disponíveis
+   */
+  async listarGrupos(limit = 60) {
+    try {
+      const command = new ListGroupsCommand({
+        UserPoolId: this.userPoolId,
+        Limit: limit
+      });
+
+      const response = await this.client.send(command);
+      logger.info(`📋 ${response.Groups?.length || 0} grupos encontrados no Cognito`);
+      
+      return response.Groups || [];
+    } catch (error) {
+      logger.error('❌ Erro ao listar grupos do Cognito:', error.message);
+      throw error;
+    }
   }
 
   /**
