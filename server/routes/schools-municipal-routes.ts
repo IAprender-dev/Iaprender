@@ -1,9 +1,10 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { users, companies, contracts, municipalSchools } from '../../shared/schema';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, and } from 'drizzle-orm';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';
+import bcrypt from 'bcryptjs';
 
 export function registerSchoolsMunicipalRoutes(app: Express) {
   
@@ -329,7 +330,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
       if (!email || !firstName || !lastName || !contractId || !password) {
         return res.status(400).json({ 
           success: false, 
-          error: 'Todos os campos obrigatórios devem ser preenchidos' 
+          error: 'Email, nome, sobrenome, contrato e senha são obrigatórios' 
         });
       }
 
@@ -354,7 +355,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
         });
       }
 
-      // Verificar se email já existe
+      // Verificar se já existe usuário com esse email
       const [existingUser] = await db
         .select()
         .from(users)
@@ -363,59 +364,170 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
       if (existingUser) {
         return res.status(400).json({ 
           success: false, 
-          error: 'Email já cadastrado no sistema' 
+          error: 'Já existe um usuário com este email' 
         });
       }
 
-      try {
-        // Criar usuário no AWS Cognito
-        const cognitoService = new CognitoService();
-        const cognitoUser = await cognitoService.createUser({
+      // Hash da senha
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Criar usuário no banco local
+      const [newUser] = await db
+        .insert(users)
+        .values({
           email,
-          temporaryPassword: password,
-          firstName,
-          lastName,
-          groups: ['Diretores'],
-          customAttributes: {
-            company_id: companyId.toString(),
-            contract_id: contractId.toString(),
-          }
-        });
+          first_name: firstName,
+          last_name: lastName,
+          phone,
+          role: 'school_director',
+          companyId: companyId,
+          contractId: contractId,
+          cognitoGroup: 'Diretores',
+          hashedPassword,
+          createdAt: new Date(),
+        })
+        .returning();
 
-        // Criar usuário local
-        const [newDirector] = await db
-          .insert(users)
-          .values({
-            username: email.split('@')[0],
-            email,
-            first_name: firstName,
-            last_name: lastName,
-            phone,
-            role: 'school_director',
-            cognitoUserId: cognitoUser.username,
-            cognitoGroup: 'Diretores',
-            companyId,
-            contractId,
-            createdAt: new Date(),
-          })
-          .returning();
-
-        console.log(`✅ [DIRECTOR CREATED] User ${userId} criou diretor: ${newDirector.email}`);
-        res.json({ 
-          success: true, 
-          director: newDirector,
-          cognitoUsername: cognitoUser.username 
-        });
-      } catch (cognitoError: any) {
-        console.error('Error creating director in Cognito:', cognitoError);
-        res.status(500).json({ 
-          success: false, 
-          error: 'Erro ao criar diretor no sistema de autenticação: ' + cognitoError.message 
-        });
-      }
+      console.log(`✅ [DIRECTOR CREATED] User ${userId} criou diretor: ${newUser.email}`);
+      res.json({ success: true, director: newUser });
     } catch (error) {
       console.error('Error creating director:', error);
       res.status(500).json({ success: false, error: 'Failed to create director' });
     }
   });
+
+  // PATCH /api/municipal/schools/:id - Editar escola
+  app.patch('/api/municipal/schools/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user.id;
+      const schoolId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      // Verificar se a escola pertence à empresa do usuário
+      const companyId = await getUserCompany(userId);
+      if (!companyId) {
+        return res.status(403).json({ 
+          success: false, 
+          error: 'Usuário sem empresa vinculada' 
+        });
+      }
+
+      // Buscar escola e verificar permissão
+      const [existingSchool] = await db
+        .select()
+        .from(municipalSchools)
+        .where(eq(municipalSchools.id, schoolId));
+
+      if (!existingSchool) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Escola não encontrada' 
+        });
+      }
+
+      // Verificar se a escola pertence a um contrato da empresa do usuário
+      if (existingSchool.contract_id) {
+        const [contract] = await db
+          .select()
+          .from(contracts)
+          .where(eq(contracts.id, existingSchool.contract_id));
+
+        if (!contract || contract.companyId !== companyId) {
+          return res.status(403).json({ 
+            success: false, 
+            error: 'Não autorizado a editar esta escola' 
+          });
+        }
+      }
+
+      // Preparar dados para atualização
+      const fieldsToUpdate: any = {};
+      
+      if (updateData.name !== undefined) fieldsToUpdate.name = updateData.name;
+      if (updateData.inep !== undefined) fieldsToUpdate.inep = updateData.inep;
+      if (updateData.cnpj !== undefined) fieldsToUpdate.cnpj = updateData.cnpj;
+      if (updateData.address !== undefined) fieldsToUpdate.address = updateData.address;
+      if (updateData.city !== undefined) fieldsToUpdate.city = updateData.city;
+      if (updateData.state !== undefined) fieldsToUpdate.state = updateData.state;
+      if (updateData.numberOfStudents !== undefined) fieldsToUpdate.number_of_students = updateData.numberOfStudents;
+      if (updateData.numberOfTeachers !== undefined) fieldsToUpdate.number_of_teachers = updateData.numberOfTeachers;
+      if (updateData.numberOfClassrooms !== undefined) fieldsToUpdate.number_of_classrooms = updateData.numberOfClassrooms;
+      if (updateData.directorUserId !== undefined) fieldsToUpdate.director_user_id = updateData.directorUserId;
+      if (updateData.isActive !== undefined) fieldsToUpdate.is_active = updateData.isActive;
+      
+      fieldsToUpdate.updated_at = new Date();
+
+      // Atualizar escola
+      const [updatedSchool] = await db
+        .update(municipalSchools)
+        .set(fieldsToUpdate)
+        .where(eq(municipalSchools.id, schoolId))
+        .returning();
+
+      console.log(`✅ [SCHOOL UPDATED] User ${userId} atualizou escola: ${updatedSchool.name}`);
+      res.json({ success: true, school: updatedSchool });
+    } catch (error) {
+      console.error('Error updating school:', error);
+      res.status(500).json({ success: false, error: 'Failed to update school' });
+    }
+  });
+
+  // PATCH /api/municipal/directors/:id - Editar diretor
+  app.patch('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user.id;
+      const directorId = parseInt(req.params.id);
+      const updateData = req.body;
+
+      // Verificar se o diretor pertence à empresa do usuário
+      const companyId = await getUserCompany(userId);
+      if (!companyId) {
+        return res.status(403).json({ 
+          success: false, 
+          error: 'Usuário sem empresa vinculada' 
+        });
+      }
+
+      // Buscar diretor e verificar permissão
+      const [existingDirector] = await db
+        .select()
+        .from(users)
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, companyId),
+          eq(users.role, 'school_director')
+        ));
+
+      if (!existingDirector) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Diretor não encontrado ou não autorizado' 
+        });
+      }
+
+      // Preparar dados para atualização
+      const fieldsToUpdate: any = {};
+      
+      if (updateData.firstName !== undefined) fieldsToUpdate.first_name = updateData.firstName;
+      if (updateData.lastName !== undefined) fieldsToUpdate.last_name = updateData.lastName;
+      if (updateData.phone !== undefined) fieldsToUpdate.phone = updateData.phone;
+      if (updateData.contractId !== undefined) fieldsToUpdate.contractId = updateData.contractId;
+      
+      fieldsToUpdate.updatedAt = new Date();
+
+      // Atualizar diretor
+      const [updatedDirector] = await db
+        .update(users)
+        .set(fieldsToUpdate)
+        .where(eq(users.id, directorId))
+        .returning();
+
+      console.log(`✅ [DIRECTOR UPDATED] User ${userId} atualizou diretor: ${updatedDirector.email}`);
+      res.json({ success: true, director: updatedDirector });
+    } catch (error) {
+      console.error('Error updating director:', error);
+      res.status(500).json({ success: false, error: 'Failed to update director' });
+    }
+  });
+
 }

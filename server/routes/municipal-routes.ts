@@ -804,7 +804,7 @@ export function registerMunicipalRoutes(app: Express) {
           contractId: users.contractId,
         })
         .from(users)
-        .where(eq(
+        .where(and(
           eq(users.role, 'school_director'),
           eq(users.companyId, userCompanyId)
         ));
@@ -892,7 +892,7 @@ export function registerMunicipalRoutes(app: Express) {
           companyId: contracts.companyId,
         })
         .from(contracts)
-        .where(eq(
+        .where(and(
           eq(contracts.companyId, userCompanyId),
           eq(contracts.status, 'active')
         ));
@@ -953,14 +953,7 @@ export function registerMunicipalRoutes(app: Express) {
 
       res.json({ 
         success: true, 
-        company,
-        user: {
-          id: userCompany.id,
-          email: userCompany.email,
-          firstName: userCompany.firstName,
-          lastName: userCompany.lastName,
-          companyId: userCompanyId
-        }
+        company
       });
     } catch (error) {
       console.error('Error fetching company info:', error);
