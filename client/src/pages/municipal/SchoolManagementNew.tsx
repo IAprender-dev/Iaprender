@@ -248,6 +248,50 @@ export default function SchoolManagementNew() {
     },
   });
 
+  // Mutation para excluir escola
+  const deleteSchoolMutation = useMutation({
+    mutationFn: (id: number) => 
+      apiRequest(`/api/municipal/schools/${id}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/schools/filtered'] });
+      toast({
+        title: "Sucesso",
+        description: "Escola excluída com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir escola",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation para excluir diretor
+  const deleteDirectorMutation = useMutation({
+    mutationFn: (id: number) => 
+      apiRequest(`/api/municipal/directors/${id}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/municipal/directors/filtered'] });
+      toast({
+        title: "Sucesso",
+        description: "Diretor excluído com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir diretor",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateSchool = () => {
     createSchoolMutation.mutate({
       ...schoolFormData,
@@ -263,6 +307,40 @@ export default function SchoolManagementNew() {
       ...directorFormData,
       contractId: parseInt(directorFormData.contractId),
     });
+  };
+
+  // Função para confirmar exclusão de escola
+  const handleDeleteSchool = (school: School) => {
+    if (window.confirm(`Tem certeza que deseja excluir a escola "${school.name}"? Esta ação não pode ser desfeita.`)) {
+      deleteSchoolMutation.mutate(school.id);
+    }
+  };
+
+  // Função para confirmar exclusão de diretor
+  const handleDeleteDirector = (director: Director) => {
+    if (window.confirm(`Tem certeza que deseja excluir o diretor "${director.firstName} ${director.lastName}"? Esta ação não pode ser desfeita.`)) {
+      deleteDirectorMutation.mutate(director.id);
+    }
+  };
+
+  // Função para editar escola
+  const handleEditSchool = (school: School) => {
+    setEditingSchool(school);
+  };
+
+  // Função para editar diretor
+  const handleEditDirector = (director: Director) => {
+    setEditingDirector(director);
+  };
+
+  // Função para visualizar escola
+  const handleViewSchool = (school: School) => {
+    setViewingSchool(school);
+  };
+
+  // Função para visualizar diretor
+  const handleViewDirector = (director: Director) => {
+    setViewingDirector(director);
   };
 
   if (schoolsLoading || directorsLoading) {
@@ -472,7 +550,7 @@ export default function SchoolManagementNew() {
                         variant="outline"
                         size="sm"
                         className="flex-1 hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                        onClick={() => setViewingSchool(school)}
+                        onClick={() => handleViewSchool(school)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         Ver
@@ -481,10 +559,20 @@ export default function SchoolManagementNew() {
                         variant="outline"
                         size="sm"
                         className="flex-1 hover:bg-green-50 hover:border-green-300 transition-colors"
-                        onClick={() => setEditingSchool(school)}
+                        onClick={() => handleEditSchool(school)}
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 hover:bg-red-50 hover:border-red-300 transition-colors"
+                        onClick={() => handleDeleteSchool(school)}
+                        disabled={deleteSchoolMutation.isPending}
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Excluir
                       </Button>
                     </div>
                   </CardContent>
@@ -549,7 +637,7 @@ export default function SchoolManagementNew() {
                         variant="outline"
                         size="sm"
                         className="flex-1 hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                        onClick={() => setViewingDirector(director)}
+                        onClick={() => handleViewDirector(director)}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         Ver
@@ -558,10 +646,20 @@ export default function SchoolManagementNew() {
                         variant="outline"
                         size="sm"
                         className="flex-1 hover:bg-green-50 hover:border-green-300 transition-colors"
-                        onClick={() => setEditingDirector(director)}
+                        onClick={() => handleEditDirector(director)}
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 hover:bg-red-50 hover:border-red-300 transition-colors"
+                        onClick={() => handleDeleteDirector(director)}
+                        disabled={deleteDirectorMutation.isPending}
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Excluir
                       </Button>
                     </div>
                   </CardContent>

@@ -489,42 +489,81 @@ export function registerMunicipalRoutes(app: Express) {
     try {
       const userId = req.session.user!.id;
       const schoolId = parseInt(req.params.id);
-      const updates = req.body;
+      const {
+        name,
+        inep,
+        cnpj,
+        address,
+        city,
+        state,
+        numberOfStudents,
+        numberOfTeachers,
+        numberOfClassrooms,
+        isActive
+      } = req.body;
 
-      // Buscar o gestor municipal
-      const [manager] = await db
-        .select()
-        .from(municipalManagers)
-        .where(eq(municipalManagers.userId, userId));
-        
-      if (!manager) {
-        return res.status(404).json({ message: "Municipal manager not found" });
+      console.log(`🔧 [SCHOOL_UPDATE] Updating school ${schoolId} for user ${userId}`);
+
+      // Verificar se usuário tem acesso à empresa
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
       }
 
-      // Verificar se a escola pertence ao gestor
-      const [school] = await db
-        .select()
+      // Verificar se a escola existe e pertence à empresa do usuário (usando ID simples)
+      const [existingSchool] = await db
+        .select({
+          id: municipalSchools.id,
+          contractId: municipalSchools.contractId,
+          name: municipalSchools.name
+        })
         .from(municipalSchools)
-        .where(eq(
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(and(
           eq(municipalSchools.id, schoolId),
-          eq(municipalSchools.municipalManagerId, manager.id)
-        ));
+          eq(contracts.companyId, userCompanyId)
+        ))
+        .limit(1);
 
-      if (!school) {
-        return res.status(404).json({ message: "School not found" });
+      if (!existingSchool) {
+        return res.status(404).json({ 
+          error: 'Escola não encontrada ou acesso negado' 
+        });
       }
 
-      // Atualizar escola
+      // Atualizar dados da escola usando apenas campos seguros
+      const updateData = {
+        name,
+        inep: inep || null,
+        cnpj: cnpj || null,
+        address,
+        city,
+        state,
+        numberOfStudents: parseInt(numberOfStudents) || 0,
+        numberOfTeachers: parseInt(numberOfTeachers) || 0,
+        numberOfClassrooms: parseInt(numberOfClassrooms) || 0,
+        isActive: Boolean(isActive),
+        updatedAt: new Date()
+      };
+
+      // Atualizar escola usando apenas o ID como validação
       const [updatedSchool] = await db
         .update(municipalSchools)
-        .set({ 
-          ...updates, 
-          updatedAt: new Date() 
-        })
+        .set(updateData)
         .where(eq(municipalSchools.id, schoolId))
         .returning();
 
-      res.json(updatedSchool);
+      console.log(`✅ [SCHOOL_UPDATE] School ${schoolId} updated successfully`);
+
+      // Invalidar caches relacionados
+      CacheManager.invalidateUserCache(userId);
+      CacheManager.invalidateCompanyCache(userCompanyId);
+
+      res.json({ 
+        success: true,
+        message: 'Escola atualizada com sucesso',
+        school: updatedSchool
+      });
     } catch (error) {
       console.error('Error updating school:', error);
       res.status(500).json({ error: 'Failed to update school' });
@@ -1161,11 +1200,13 @@ export function registerMunicipalRoutes(app: Express) {
     }
   });
 
-  // PATCH /api/municipal/schools/:id - Editar escola existente
-  app.patch('/api/municipal/schools/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+  // DELETE /api/municipal/schools/:id - Excluir escola
+  app.delete('/api/municipal/schools/:id', authenticateMunicipal, performanceMiddleware('/api/municipal/schools/:id'), async (req: Request, res: Response) => {
     try {
       const schoolId = parseInt(req.params.id);
       const userId = req.session.user!.id;
+      
+      console.log(`🗑️ [DELETE_SCHOOL] Iniciando exclusão da escola ${schoolId} para usuário ${userId}`);
       
       // Verificar se usuário tem acesso à empresa
       const userCompanyId = await getUserCompany(userId);
@@ -1173,79 +1214,62 @@ export function registerMunicipalRoutes(app: Express) {
         return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
       }
 
-      const {
-        name,
-        inep,
-        cnpj,
-        contractId,
-        address,
-        neighborhood,
-        city,
-        state,
-        zipCode,
-        phone,
-        email,
-        foundationDate,
-        numberOfClassrooms,
-        numberOfStudents,
-        numberOfTeachers,
-        zone,
-        type,
-        existingDirectorId,
-      } = req.body;
-
-      console.log('🔧 [UPDATE-SCHOOL] Dados recebidos:', { schoolId, name, contractId, existingDirectorId });
-
-      // Verificar se a escola pertence à empresa do usuário
-      const schoolCheck = await db
-        .select({ contractId: schools.contract_id })
-        .from(schools)
-        .innerJoin(contracts, eq(schools.contract_id, contracts.id))
-        .where(eq(
-          eq(schools.id, schoolId),
-          eq(contracts.company_id, userCompanyId)
+      // Verificar se a escola existe e pertence à empresa do usuário
+      const [existingSchool] = await db
+        .select({
+          id: municipalSchools.id,
+          name: municipalSchools.name,
+          contractId: municipalSchools.contractId,
+          directorUserId: municipalSchools.directorUserId
+        })
+        .from(municipalSchools)
+        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
+        .where(and(
+          eq(municipalSchools.id, schoolId),
+          eq(contracts.companyId, userCompanyId)
         ))
         .limit(1);
 
-      if (!schoolCheck.length) {
-        return res.status(404).json({ error: 'Escola não encontrada ou acesso negado' });
+      if (!existingSchool) {
+        return res.status(404).json({ 
+          error: 'Escola não encontrada ou acesso negado' 
+        });
       }
 
-      // Atualizar dados da escola
-      const updateData: any = {
-        name: name,
-        inep: inep,
-        cnpj: cnpj,
-        address: address,
-        city: city,
-        state: state,
-        number_of_students: numberOfStudents,
-        number_of_teachers: numberOfTeachers,
-        number_of_classrooms: numberOfClassrooms,
-        updated_at: new Date(),
-      };
+      // Verificar se há dependências (usuários associados, etc.)
+      const dependencyChecks = await Promise.all([
+        // Verificar se há usuários associados à escola
+        db.select({ count: count() }).from(users).where(eq(users.schoolId, schoolId)),
+        // Verificar se há registros de atividades
+        db.select({ count: count() }).from(notifications).where(eq(notifications.schoolId, schoolId))
+      ]);
 
-      // Adicionar campos opcionais se fornecidos
-      if (contractId && contractId !== 'none') updateData.contract_id = parseInt(contractId);
-      if (existingDirectorId && existingDirectorId !== 'none') updateData.director_id = parseInt(existingDirectorId);
-
-      await db
-        .update(schools)
-        .set(updateData)
-        .where(eq(schools.id, schoolId));
-
-      console.log('✅ [UPDATE-SCHOOL] Escola atualizada:', schoolId);
+      const [usersCount, notificationsCount] = dependencyChecks;
       
+      if (usersCount[0].count > 0) {
+        return res.status(400).json({ 
+          error: `Não é possível excluir a escola "${existingSchool.name}" pois há ${usersCount[0].count} usuários associados.` 
+        });
+      }
+
+      // Excluir a escola
+      await db
+        .delete(municipalSchools)
+        .where(eq(municipalSchools.id, schoolId));
+
+      console.log(`✅ [DELETE_SCHOOL] Escola "${existingSchool.name}" (ID: ${schoolId}) excluída com sucesso`);
+
       // Invalidar caches relacionados
       CacheManager.invalidateUserCache(userId);
-      if (userCompanyId) {
-        CacheManager.invalidateCompanyCache(userCompanyId);
-      }
-      
-      res.json({ success: true, message: 'Escola atualizada com sucesso' });
+      CacheManager.invalidateCompanyCache(userCompanyId);
+
+      res.json({ 
+        success: true,
+        message: `Escola "${existingSchool.name}" excluída com sucesso`
+      });
     } catch (error) {
-      console.error('Error updating school:', error);
-      res.status(500).json({ error: 'Erro ao atualizar escola' });
+      console.error('❌ [DELETE_SCHOOL] Erro ao excluir escola:', error);
+      res.status(500).json({ error: 'Erro ao excluir escola' });
     }
   });
 
@@ -1269,7 +1293,7 @@ export function registerMunicipalRoutes(app: Express) {
       const directorCheck = await db
         .select({ companyId: users.companyId })
         .from(users)
-        .where(eq(
+        .where(and(
           eq(users.id, directorId),
           eq(users.companyId, userCompanyId),
           eq(users.role, 'school_director')
@@ -1305,6 +1329,76 @@ export function registerMunicipalRoutes(app: Express) {
     } catch (error) {
       console.error('Error updating director:', error);
       res.status(500).json({ error: 'Erro ao atualizar diretor' });
+    }
+  });
+
+  // DELETE /api/municipal/directors/:id - Excluir diretor
+  app.delete('/api/municipal/directors/:id', authenticateMunicipal, async (req: Request, res: Response) => {
+    try {
+      const directorId = parseInt(req.params.id);
+      const userId = req.session.user!.id;
+      
+      console.log(`🗑️ [DELETE_DIRECTOR] Iniciando exclusão do diretor ${directorId} para usuário ${userId}`);
+      
+      // Verificar se usuário tem acesso à empresa
+      const userCompanyId = await getUserCompany(userId);
+      if (!userCompanyId) {
+        return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
+      }
+
+      // Verificar se o diretor existe e pertence à empresa do usuário
+      const [existingDirector] = await db
+        .select({
+          id: users.id,
+          firstName: users.first_name,
+          lastName: users.last_name,
+          email: users.email,
+          companyId: users.companyId
+        })
+        .from(users)
+        .where(and(
+          eq(users.id, directorId),
+          eq(users.companyId, userCompanyId),
+          eq(users.role, 'school_director')
+        ))
+        .limit(1);
+
+      if (!existingDirector) {
+        return res.status(404).json({ 
+          error: 'Diretor não encontrado ou acesso negado' 
+        });
+      }
+
+      // Verificar se o diretor está vinculado a alguma escola
+      const [schoolsCount] = await db
+        .select({ count: count() })
+        .from(municipalSchools)
+        .where(eq(municipalSchools.directorUserId, directorId));
+
+      if (schoolsCount.count > 0) {
+        return res.status(400).json({ 
+          error: `Não é possível excluir o diretor "${existingDirector.firstName} ${existingDirector.lastName}" pois está vinculado a ${schoolsCount.count} escola(s).` 
+        });
+      }
+
+      // Excluir o diretor
+      await db
+        .delete(users)
+        .where(eq(users.id, directorId));
+
+      console.log(`✅ [DELETE_DIRECTOR] Diretor "${existingDirector.firstName} ${existingDirector.lastName}" (ID: ${directorId}) excluído com sucesso`);
+
+      // Invalidar caches relacionados
+      CacheManager.invalidateUserCache(userId);
+      CacheManager.invalidateCompanyCache(userCompanyId);
+
+      res.json({ 
+        success: true,
+        message: `Diretor "${existingDirector.firstName} ${existingDirector.lastName}" excluído com sucesso`
+      });
+    } catch (error) {
+      console.error('❌ [DELETE_DIRECTOR] Erro ao excluir diretor:', error);
+      res.status(500).json({ error: 'Erro ao excluir diretor' });
     }
   });
 
@@ -1346,9 +1440,9 @@ export function registerMunicipalRoutes(app: Express) {
       const [contract] = await db
         .select({ id: contracts.id })
         .from(contracts)
-        .where(eq(
+        .where(and(
           eq(contracts.id, contractId),
-          eq(contracts.company_id, userCompanyId)
+          eq(contracts.companyId, userCompanyId)
         ));
 
       if (!contract) {
@@ -1360,10 +1454,10 @@ export function registerMunicipalRoutes(app: Express) {
         const [director] = await db
           .select({ id: users.id })
           .from(users)
-          .where(eq(
+          .where(and(
             eq(users.id, existingDirectorId),
-            eq(users.company_id, userCompanyId),
-            eq(users.cognito_group, 'Diretores')
+            eq(users.companyId, userCompanyId),
+            eq(users.role, 'school_director')
           ));
 
         if (!director) {
