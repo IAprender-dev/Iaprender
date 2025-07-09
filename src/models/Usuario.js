@@ -322,6 +322,15 @@ export class Usuario {
   }
 
   /**
+   * Busca usuário por email (alias para compatibilidade)
+   * @param {string} email 
+   * @returns {Promise<Usuario|null>}
+   */
+  static async buscarPorEmail(email) {
+    return await Usuario.findByEmail(email);
+  }
+
+  /**
    * Busca usuário por cognito_sub
    * @param {string} cognitoSub 
    * @returns {Promise<Usuario|null>}
@@ -342,6 +351,15 @@ export class Usuario {
       : userData.configuracoes;
     
     return new Usuario(userData);
+  }
+
+  /**
+   * Busca usuário por cognito_sub (alias para compatibilidade)
+   * @param {string} cognitoSub 
+   * @returns {Promise<Usuario|null>}
+   */
+  static async buscarPorCognitoSub(cognitoSub) {
+    return await Usuario.findByCognitoSub(cognitoSub);
   }
 
   /**
@@ -441,6 +459,76 @@ export class Usuario {
         : userData.configuracoes;
       return new Usuario(userData);
     });
+  }
+
+  /**
+   * Busca usuários por empresa (alias para compatibilidade)
+   * @param {number} empresaId 
+   * @returns {Promise<Usuario[]>}
+   */
+  static async buscarPorEmpresa(empresaId) {
+    return await Usuario.findByEmpresa(empresaId);
+  }
+
+  // ============================================================================
+  // MÉTODOS ESTÁTICOS CRUD
+  // ============================================================================
+
+  /**
+   * Cria um novo usuário (método estático)
+   * @param {Object} dadosUsuario - Dados do usuário a ser criado
+   * @returns {Promise<Usuario>}
+   */
+  static async criar(dadosUsuario) {
+    console.log('📝 Criando novo usuário (método estático):', dadosUsuario.nome);
+    
+    const usuario = new Usuario(dadosUsuario);
+    return await usuario.create();
+  }
+
+  /**
+   * Atualiza um usuário existente (método estático)
+   * @param {number} id - ID do usuário
+   * @param {Object} dadosUsuario - Dados atualizados do usuário
+   * @returns {Promise<Usuario>}
+   */
+  static async atualizar(id, dadosUsuario) {
+    console.log('📝 Atualizando usuário (método estático):', id);
+    
+    if (!id) {
+      throw new Error('ID do usuário é obrigatório para atualização');
+    }
+
+    // Buscar usuário existente
+    const usuario = await Usuario.findById(id);
+    if (!usuario) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    // Atualizar dados
+    Object.assign(usuario, dadosUsuario);
+    return await usuario.update();
+  }
+
+  /**
+   * Deleta um usuário (método estático)
+   * @param {number} id - ID do usuário
+   * @returns {Promise<boolean>}
+   */
+  static async deletar(id) {
+    console.log('🗑️ Deletando usuário (método estático):', id);
+    
+    if (!id) {
+      throw new Error('ID do usuário é obrigatório para exclusão');
+    }
+
+    // Buscar usuário existente
+    const usuario = await Usuario.findById(id);
+    if (!usuario) {
+      throw new Error('Usuário não encontrado');
+    }
+
+    return await usuario.delete();
   }
 
   // ============================================================================

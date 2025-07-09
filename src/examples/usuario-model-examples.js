@@ -178,7 +178,31 @@ export async function criarUsuarioAluno() {
 // EXEMPLOS DE BUSCA E CONSULTA
 // ============================================================================
 
-// EXEMPLO 6: Buscar usuário por ID
+// EXEMPLO 6: Usando métodos estáticos (buscarPorCognitoSub, buscarPorEmail, buscarPorEmpresa)
+export async function exemploMetodosEstaticos() {
+  console.log('🔧 Exemplo 6: Usando métodos estáticos');
+  
+  try {
+    // Buscar por Cognito Sub
+    const usuarioPorCognito = await Usuario.buscarPorCognitoSub('admin-123456');
+    console.log('✅ Usuário por Cognito Sub:', usuarioPorCognito ? usuarioPorCognito.nome : 'Não encontrado');
+    
+    // Buscar por Email
+    const usuarioPorEmail = await Usuario.buscarPorEmail('admin@iaprender.com');
+    console.log('✅ Usuário por Email:', usuarioPorEmail ? usuarioPorEmail.nome : 'Não encontrado');
+    
+    // Buscar por Empresa
+    const usuariosPorEmpresa = await Usuario.buscarPorEmpresa(1);
+    console.log('✅ Usuários por Empresa:', usuariosPorEmpresa.length);
+    
+    return { usuarioPorCognito, usuarioPorEmail, usuariosPorEmpresa };
+  } catch (error) {
+    console.error('❌ Erro nos métodos estáticos:', error.message);
+    throw error;
+  }
+}
+
+// EXEMPLO 7: Buscar usuário por ID
 export async function buscarUsuarioPorId(id) {
   console.log('🔍 Exemplo 6: Buscando usuário por ID:', id);
   
@@ -297,7 +321,46 @@ export async function buscarUsuariosPorEmpresa(empresaId) {
 // EXEMPLOS DE ATUALIZAÇÃO
 // ============================================================================
 
-// EXEMPLO 11: Atualizar dados do usuário
+// EXEMPLO 11: Usando métodos estáticos CRUD (criar, atualizar, deletar)
+export async function exemploMetodosEstaticosManipulacao() {
+  console.log('🔧 Exemplo 11: Usando métodos estáticos CRUD');
+  
+  try {
+    // 1. Criar usuário usando método estático
+    const novoUsuario = await Usuario.criar({
+      email: 'teste.estatico@exemplo.com',
+      nome: 'Usuario Teste Estático',
+      tipo_usuario: 'professor',
+      empresa_id: 1,
+      telefone: '(11) 99999-9999',
+      configuracoes: {
+        tema: 'light',
+        notificacoes: true
+      }
+    });
+    
+    console.log('✅ Usuário criado (método estático):', novoUsuario.id);
+    
+    // 2. Atualizar usuário usando método estático
+    const usuarioAtualizado = await Usuario.atualizar(novoUsuario.id, {
+      telefone: '(11) 88888-8888',
+      endereco: 'Rua Teste, 123 - São Paulo/SP'
+    });
+    
+    console.log('✅ Usuário atualizado (método estático):', usuarioAtualizado.telefone);
+    
+    // 3. Deletar usuário usando método estático
+    const foiDeletado = await Usuario.deletar(novoUsuario.id);
+    console.log('✅ Usuário deletado (método estático):', foiDeletado);
+    
+    return { novoUsuario, usuarioAtualizado, foiDeletado };
+  } catch (error) {
+    console.error('❌ Erro nos métodos estáticos CRUD:', error.message);
+    throw error;
+  }
+}
+
+// EXEMPLO 12: Atualizar dados do usuário (método de instância)
 export async function atualizarUsuario(id, novosDados) {
   console.log('📝 Exemplo 11: Atualizando usuário:', id);
   

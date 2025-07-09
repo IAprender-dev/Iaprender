@@ -211,6 +211,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • 1 exemplo de exclusão
   - ✅ Função executarTodosExemplosUsuario() para testes completos
   - ✅ Status: Modelo Usuario.js completo e pronto para produção
+  - ✅ ADICIONADO: 6 métodos estáticos implementados conforme especificação:
+    • buscarPorCognitoSub() - Busca usuário por cognito_sub
+    • buscarPorEmail() - Busca usuário por email
+    • buscarPorEmpresa() - Busca usuários por empresa
+    • criar() - Cria novo usuário via método estático
+    • atualizar() - Atualiza usuário existente via método estático
+    • deletar() - Deleta usuário via método estático
+  - ✅ Arquivo /src/examples/teste-metodos-estaticos.js criado com testes funcionais
+  - ✅ Exemplos de uso em rotas/controllers implementados
+  - ✅ Compatibilidade mantida com métodos originais (findById, findByEmail, etc.)
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 4: Controle de Acesso por Empresa Implementado Completamente
   - ✅ Arquivo /src/middleware/autorizar.js criado com sistema completo de autorização empresarial
   - ✅ Função verificarEmpresa() implementada com validação flexível baseada em empresa_id
