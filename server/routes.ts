@@ -1259,8 +1259,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Processar autenticação com sistema aprimorado
       const authData = cognitoService.processUserAuthentication(userInfo);
       
-      // Verificar se usuário já existe na base
-      let user = await storage.getUserByEmail(userInfo.email);
+      // Importar o sistema de reconexão
+      const { dbReconnectionManager } = await import('./utils/database-reconnection');
+      
+      // Verificar se usuário já existe na base com retry automático
+      let user = await dbReconnectionManager.executeWithRetry(async () => {
+        return await storage.getUserByEmail(userInfo.email);
+      }, 'cognito-auth');
       
       if (!user) {
         // Usuário será criado sem contractId específico
@@ -1278,7 +1283,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
         
         try {
-          user = await storage.createUser(newUser);
+          user = await dbReconnectionManager.executeWithRetry(async () => {
+            return await storage.createUser(newUser);
+          }, 'cognito-auth');
+          
           console.log('✅ Novo usuário criado:', {
             id: user.id,
             email: user.email,
@@ -1288,7 +1296,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (createError.code === '23505') {
             // Usuário já existe, buscar o usuário existente
             console.log('👤 Usuário já existe, buscando dados existentes...');
-            const existingUser = await storage.getUserByUsername(newUser.username);
+            const existingUser = await dbReconnectionManager.executeWithRetry(async () => {
+              return await storage.getUserByUsername(newUser.username);
+            }, 'cognito-auth');
+            
             if (existingUser) {
               user = existingUser;
               console.log('✅ Usuário existente encontrado:', {
@@ -1330,12 +1341,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Erro no callback do Cognito:', error);
       
-      res.status(500).send(`
-        <h1>Erro na Autenticação</h1>
-        <p>Ocorreu um erro durante o processo de autenticação.</p>
-        <p>Erro: ${error instanceof Error ? error.message : 'Erro desconhecido'}</p>
-        <p><a href="/">Voltar ao início</a></p>
-      `);
+      // Verificar se é erro de conexão de banco
+      if (error instanceof Error && error.message.includes('terminating connection due to administrator command')) {
+        console.log('🔄 [COGNITO-CALLBACK] Erro de conexão detectado, tentando reconectar...');
+        
+        try {
+          // Tentar reconectar e processar novamente
+          const { dbReconnectionManager } = await import('./utils/database-reconnection');
+          await dbReconnectionManager.closeConnection('cognito-auth');
+          
+          // Aguardar um pouco e tentar novamente
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          res.status(500).send(`
+            <h1>Erro Temporário na Autenticação</h1>
+            <p>Ocorreu um erro temporário de conexão. Tente novamente em alguns segundos.</p>
+            <p><a href="/auth">Tentar novamente</a></p>
+            <p><a href="/">Voltar ao início</a></p>
+            <script>
+              setTimeout(() => {
+                window.location.href = '/auth';
+              }, 3000);
+            </script>
+          `);
+        } catch (reconnectError) {
+          console.error('Erro na reconexão:', reconnectError);
+          res.status(500).send(`
+            <h1>Erro na Autenticação</h1>
+            <p>Ocorreu um erro durante o processo de autenticação.</p>
+            <p>Erro: ${error.message}</p>
+            <p><a href="/">Voltar ao início</a></p>
+          `);
+        }
+      } else {
+        res.status(500).send(`
+          <h1>Erro na Autenticação</h1>
+          <p>Ocorreu um erro durante o processo de autenticação.</p>
+          <p>Erro: ${error instanceof Error ? error.message : 'Erro desconhecido'}</p>
+          <p><a href="/">Voltar ao início</a></p>
+        `);
+      }
     }
   });
 
