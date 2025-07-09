@@ -193,6 +193,130 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
+// Função para sincronizar usuário do Cognito com banco local
+export const sincronizarUsuario = async (cognitoUser) => {
+  try {
+    console.log(`🔄 Sincronizando usuário: ${cognitoUser.sub}`);
+    
+    // Buscar usuário por cognito_sub
+    const userResult = await executeQuery(
+      'SELECT * FROM usuarios WHERE cognito_sub = $1',
+      [cognitoUser.sub]
+    );
+    
+    let usuario;
+    
+    if (userResult.rows.length === 0) {
+      // Usuário não existe, criar novo registro
+      console.log(`➕ Criando novo usuário: ${cognitoUser.email}`);
+      
+      // Determinar tipo de usuário baseado nos grupos
+      const tipoUsuario = determinarTipoUsuario(cognitoUser.groups || []);
+      
+      // Extrair empresa_id se presente
+      const empresaId = cognitoUser.empresa_id ? parseInt(cognitoUser.empresa_id) : null;
+      
+      const insertResult = await executeQuery(
+        `INSERT INTO usuarios 
+         (cognito_sub, email, nome, tipo_usuario, empresa_id, status, criado_em, atualizado_em) 
+         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW()) 
+         RETURNING *`,
+        [
+          cognitoUser.sub,
+          cognitoUser.email,
+          cognitoUser.nome || cognitoUser.name || cognitoUser.email,
+          tipoUsuario,
+          empresaId,
+          'ativo'
+        ]
+      );
+      
+      usuario = insertResult.rows[0];
+      console.log(`✅ Usuário criado com ID: ${usuario.id}`);
+      
+    } else {
+      // Usuário existe, verificar se precisa atualizar
+      usuario = userResult.rows[0];
+      
+      const precisaAtualizar = 
+        usuario.email !== cognitoUser.email ||
+        usuario.nome !== (cognitoUser.nome || cognitoUser.name) ||
+        usuario.empresa_id !== (cognitoUser.empresa_id ? parseInt(cognitoUser.empresa_id) : null);
+      
+      if (precisaAtualizar) {
+        console.log(`🔄 Atualizando dados do usuário: ${cognitoUser.email}`);
+        
+        const updateResult = await executeQuery(
+          `UPDATE usuarios 
+           SET email = $2, nome = $3, empresa_id = $4, atualizado_em = NOW() 
+           WHERE cognito_sub = $1 
+           RETURNING *`,
+          [
+            cognitoUser.sub,
+            cognitoUser.email,
+            cognitoUser.nome || cognitoUser.name || cognitoUser.email,
+            cognitoUser.empresa_id ? parseInt(cognitoUser.empresa_id) : null
+          ]
+        );
+        
+        usuario = updateResult.rows[0];
+        console.log(`✅ Usuário atualizado: ${usuario.nome}`);
+      } else {
+        console.log(`✅ Usuário já sincronizado: ${usuario.nome}`);
+      }
+    }
+    
+    // Retornar dados do usuário local
+    return {
+      id: usuario.id,
+      cognito_sub: usuario.cognito_sub,
+      email: usuario.email,
+      nome: usuario.nome,
+      tipo_usuario: usuario.tipo_usuario,
+      empresa_id: usuario.empresa_id,
+      status: usuario.status,
+      criado_em: usuario.criado_em,
+      atualizado_em: usuario.atualizado_em
+    };
+    
+  } catch (error) {
+    console.error('❌ Erro ao sincronizar usuário:', error.message);
+    throw new Error(`Falha na sincronização do usuário: ${error.message}`);
+  }
+};
+
+// Função auxiliar para determinar tipo de usuário baseado nos grupos
+function determinarTipoUsuario(groups) {
+  // Mapear grupos do Cognito para tipos de usuário
+  const grupoParaTipo = {
+    'Admin': 'admin',
+    'AdminMaster': 'admin',
+    'Administradores': 'admin',
+    'Gestores': 'gestor',
+    'GestorMunicipal': 'gestor',
+    'GestoresMunicipais': 'gestor',
+    'Diretores': 'diretor',
+    'Diretor': 'diretor',
+    'DiretoresEscolares': 'diretor',
+    'Professores': 'professor',
+    'Professor': 'professor',
+    'Teachers': 'professor',
+    'Alunos': 'aluno',
+    'Aluno': 'aluno',
+    'Students': 'aluno'
+  };
+  
+  // Buscar o primeiro grupo que corresponde a um tipo conhecido
+  for (const grupo of groups) {
+    if (grupoParaTipo[grupo]) {
+      return grupoParaTipo[grupo];
+    }
+  }
+  
+  // Tipo padrão se nenhum grupo for reconhecido
+  return 'aluno';
+}
+
 // Middleware autenticar (versão simplificada e otimizada)
 export const autenticar = async (req, res, next) => {
   // Extrair token do header Authorization
@@ -210,20 +334,16 @@ export const autenticar = async (req, res, next) => {
     // Validar o token usando verificarToken
     const payload = await verificarToken(token);
     
-    // Buscar dados do usuário no banco local
-    const userResult = await executeQuery(
-      'SELECT id, nome, email, tipo_usuario, empresa_id, status FROM usuarios WHERE cognito_sub = $1',
-      [payload.sub]
-    );
+    // Sincronizar usuário do Cognito com banco local
+    const cognitoUser = {
+      sub: payload.sub,
+      email: payload.email,
+      nome: payload.nome || payload.name,
+      groups: payload.groups,
+      empresa_id: payload.empresa_id
+    };
     
-    if (userResult.rows.length === 0) {
-      return res.status(401).json({ 
-        message: 'Usuário não encontrado',
-        error: 'USER_NOT_FOUND'
-      });
-    }
-    
-    const user = userResult.rows[0];
+    const user = await sincronizarUsuario(cognitoUser);
     
     // Verificar se usuário está ativo
     if (user.status !== 'ativo') {
@@ -237,10 +357,10 @@ export const autenticar = async (req, res, next) => {
     req.user = {
       id: user.id,
       sub: payload.sub,
-      nome: payload.nome || user.nome,
-      email: payload.email || user.email,
+      nome: user.nome,
+      email: user.email,
       tipo_usuario: user.tipo_usuario,
-      empresa_id: payload.empresa_id || user.empresa_id,
+      empresa_id: user.empresa_id,
       groups: payload.groups,
       exp: payload.exp,
       iat: payload.iat
@@ -434,6 +554,7 @@ export const validateOrigin = (req, res, next) => {
 
 export default {
   verificarToken,
+  sincronizarUsuario,
   autenticar,
   authenticateToken,
   authorize,
