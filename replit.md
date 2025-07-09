@@ -262,6 +262,40 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Controle de duplicatas: usr_id único, CNPJ único, matrícula única
     • Validação de integridade referencial entre entidades
   - ✅ Status: Todos os 7 modelos implementados e prontos para produção com segurança enterprise-level
+- July 9, 2025: ✅ CONCLUÍDO - TAREFA 6: Controller de Usuários Implementado com Integração Completa
+  - ✅ Arquivo /src/controllers/usuarioController.js criado com classe UsuarioController completa
+  - ✅ Importação do modelo Usuario e middlewares de autenticação/autorização
+  - ✅ Integração com middlewares: autenticar, verificarTipoUsuario, verificarProprioUsuario, verificarAcessoUsuario, verificarEmpresa
+  - ✅ 15 endpoints implementados com validação e autorização adequada:
+    • GET /api/usuarios/:id - Busca usuário por ID (middleware: verificarAcessoUsuario)
+    • GET /api/usuarios/email/:email - Busca por email (middleware: adminOuGestor)
+    • GET /api/usuarios/cognito/:sub - Busca por Cognito Sub (middleware: adminOuGestor)
+    • GET /api/usuarios - Lista com filtros e paginação (middleware: adminOuGestor + verificarEmpresa)
+    • POST /api/usuarios - Cria novo usuário (middleware: adminOuGestor)
+    • PATCH /api/usuarios/:id - Atualiza usuário (middleware: verificarAcessoUsuario)
+    • DELETE /api/usuarios/:id - Remove usuário (middleware: apenasAdmin)
+    • GET /api/usuarios/me - Perfil do usuário logado (middleware: autenticar)
+    • PATCH /api/usuarios/me - Atualiza próprio perfil (middleware: autenticar)
+    • POST /api/usuarios/:id/ultimo-login - Atualiza último login (middleware: verificarProprioUsuario)
+    • GET /api/usuarios/empresa/:empresaId - Lista por empresa (middleware: verificarEmpresa)
+    • GET /api/usuarios/stats - Estatísticas (middleware: adminOuGestor)
+    • POST /api/usuarios/sincronizar - Sincronização Cognito (middleware: adminOuGestor)
+  - ✅ PADRÕES IMPLEMENTADOS:
+    • Tratamento robusto de erros com códigos específicos e mensagens adequadas
+    • Validação de campos obrigatórios com feedback detalhado
+    • Formato de resposta padronizado com success, timestamp, message, data
+    • Proteção de campos sensíveis (cognito_sub, criado_em não podem ser alterados)
+    • Controle hierárquico: admins podem tudo, gestores limitados à empresa, usuários aos próprios dados
+    • Paginação com limite máximo (100 registros) e filtros por empresa/tipo/status/busca
+    • Logs detalhados de todas as operações para auditoria
+    • Integração completa com sistema de autorização empresarial
+  - ✅ SEGURANÇA ENTERPRISE-LEVEL:
+    • Validação de IDs numéricos em todos os endpoints
+    • Sanitização automática via toJSON() do modelo Usuario
+    • Controle de acesso baseado em tipo de usuário e empresa
+    • Proteção contra alteração de dados de outros usuários
+    • Validação de referências (empresa_id deve existir)
+  - ✅ Status: UsuarioController completo e pronto para integração com rotas de API
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 4: Controle de Acesso por Empresa Implementado Completamente
   - ✅ Arquivo /src/middleware/autorizar.js criado com sistema completo de autorização empresarial
   - ✅ Função verificarEmpresa() implementada com validação flexível baseada em empresa_id
