@@ -551,7 +551,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [sourceSchool] = await db
         .select()
         .from(municipalSchools)
-        .where(eq(
+        .where(and(
           eq(municipalSchools.id, sourceSchoolId),
           eq(municipalSchools.municipalManagerId, manager.id)
         ));
@@ -559,7 +559,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [targetSchool] = await db
         .select()
         .from(municipalSchools)
-        .where(eq(
+        .where(and(
           eq(municipalSchools.id, targetSchoolId),
           eq(municipalSchools.municipalManagerId, manager.id)
         ));
@@ -692,7 +692,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [policy] = await db
         .select()
         .from(municipalPolicies)
-        .where(eq(
+        .where(and(
           eq(municipalPolicies.id, policyId),
           eq(municipalPolicies.municipalManagerId, manager.id)
         ));
@@ -1038,15 +1038,15 @@ export function registerMunicipalRoutes(app: Express) {
       const directorsList = await db
         .select()
         .from(users)
-        .where(eq(
-          eq(users.company_id, userCompanyId),
-          eq(users.cognito_group, 'Diretores')
+        .where(and(
+          eq(users.companyId, userCompanyId),
+          eq(users.role, 'school_director')
         ))
         .limit(30);
 
       // Buscar informações dos contratos separadamente
       const contractIds = directorsList
-        .map(director => director.contract_id)
+        .map(director => director.contractId)
         .filter(id => id !== null);
 
       let contractsData = [];
@@ -1059,14 +1059,14 @@ export function registerMunicipalRoutes(app: Express) {
 
       // Combinar dados
       const formattedDirectors = directorsList.map(director => {
-        const contract = contractsData.find(c => c.id === director.contract_id);
+        const contract = contractsData.find(c => c.id === director.contractId);
         return {
           id: director.id,
           firstName: director.first_name,
           lastName: director.last_name,
           email: director.email,
-          companyId: director.company_id,
-          contractId: director.contract_id,
+          companyId: director.companyId,
+          contractId: director.contractId,
           contractName: contract?.name || null,
           contractStatus: contract?.status || null
         };
@@ -1111,16 +1111,16 @@ export function registerMunicipalRoutes(app: Express) {
       const companyContracts = await db
         .select()
         .from(contracts)
-        .where(eq(contracts.company_id, userCompanyId));
+        .where(eq(contracts.companyId, userCompanyId));
 
       const contractIds = companyContracts.map(c => c.id);
       const filteredSchools = schoolsRaw.filter(school => 
-        contractIds.includes(school.contract_id)
+        contractIds.includes(school.contractId)
       );
 
       // 4. Buscar informações dos diretores para as escolas filtradas
       const directorIds = filteredSchools
-        .map(school => school.director_id)
+        .map(school => school.directorUserId)
         .filter(id => id !== null);
 
       let directorsData = [];
@@ -1133,8 +1133,8 @@ export function registerMunicipalRoutes(app: Express) {
 
       // 5. Combinar dados
       const schoolsWithContracts = filteredSchools.map(school => {
-        const contract = companyContracts.find(c => c.id === school.contract_id);
-        const director = directorsData.find(d => d.id === school.director_id);
+        const contract = companyContracts.find(c => c.id === school.contractId);
+        const director = directorsData.find(d => d.id === school.directorUserId);
         
         return {
           id: school.id,
@@ -1144,12 +1144,12 @@ export function registerMunicipalRoutes(app: Express) {
           address: school.address,
           city: school.city,
           state: school.state,
-          numberOfStudents: school.number_of_students,
-          numberOfTeachers: school.number_of_teachers,
-          numberOfClassrooms: school.number_of_classrooms,
+          numberOfStudents: school.numberOfStudents,
+          numberOfTeachers: school.numberOfTeachers,
+          numberOfClassrooms: school.numberOfClassrooms,
           status: school.status,
-          contractId: school.contract_id,
-          directorId: school.director_id,
+          contractId: school.contractId,
+          directorId: school.directorUserId,
           contractName: contract?.name || null,
           directorFirstName: director?.first_name || null,
           directorLastName: director?.last_name || null,
