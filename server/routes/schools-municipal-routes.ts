@@ -79,7 +79,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
       const schoolsData = await db
         .select()
         .from(municipalSchools)
-        .where(inArray(municipalSchools.contractId, contractIds));
+        .where(inArray(municipalSchools.contract_id, contractIds));
 
       // Processar escolas com informações adicionais
       const schoolsWithDetails = await Promise.all(
@@ -88,7 +88,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
           let directorInfo = null;
 
           // Buscar informações do contrato
-          if (school.contractId) {
+          if (school.contract_id) {
             try {
               const [contract] = await db
                 .select({ 
@@ -97,7 +97,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
                   status: contracts.status 
                 })
                 .from(contracts)
-                .where(eq(contracts.id, school.contractId));
+                .where(eq(contracts.id, school.contract_id));
               contractInfo = contract;
             } catch (err) {
               console.log('Contract not found for school:', school.id);
@@ -105,7 +105,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
           }
 
           // Buscar informações do diretor
-          if (school.directorUserId) {
+          if (school.director_user_id) {
             try {
               const [director] = await db
                 .select({ 
@@ -114,7 +114,7 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
                   email: users.email 
                 })
                 .from(users)
-                .where(eq(users.id, school.directorUserId));
+                .where(eq(users.id, school.director_user_id));
               directorInfo = director;
             } catch (err) {
               console.log('Director not found for school:', school.id);
@@ -123,19 +123,19 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
 
           return {
             id: school.id,
-            name: school.name || school.schoolName,
-            inep: school.inep || school.inepCode,
+            name: school.name || school.school_name,
+            inep: school.inep || school.inep_code,
             cnpj: school.cnpj,
             address: school.address,
             city: school.city,
             state: school.state,
-            numberOfStudents: school.numberOfStudents || 0,
-            numberOfTeachers: school.numberOfTeachers || 0,
-            numberOfClassrooms: school.numberOfClassrooms || 0,
+            numberOfStudents: school.number_of_students || 0,
+            numberOfTeachers: school.number_of_teachers || 0,
+            numberOfClassrooms: school.number_of_classrooms || 0,
             status: school.status,
-            isActive: school.isActive,
-            createdAt: school.createdAt,
-            contractId: school.contractId,
+            isActive: school.is_active,
+            createdAt: school.created_at,
+            contractId: school.contract_id,
             contractName: contractInfo?.name || 'Sem contrato',
             contractStatus: contractInfo?.status || 'unknown',
             companyName: 'Empresa Municipal',
@@ -294,13 +294,13 @@ export function registerSchoolsMunicipalRoutes(app: Express) {
           address,
           city,
           state,
-          numberOfStudents: numberOfStudents || 0,
-          numberOfTeachers: numberOfTeachers || 0,
-          numberOfClassrooms: numberOfClassrooms || 0,
-          contractId,
+          number_of_students: numberOfStudents || 0,
+          number_of_teachers: numberOfTeachers || 0,
+          number_of_classrooms: numberOfClassrooms || 0,
+          contract_id: contractId,
           status: 'active',
-          isActive: true,
-          createdAt: new Date(),
+          is_active: true,
+          created_at: new Date(),
         })
         .returning();
 

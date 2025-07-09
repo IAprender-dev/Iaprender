@@ -729,37 +729,37 @@ export const municipalManagers = pgTable("municipal_managers", {
 // Municipal Schools Table
 export const municipalSchools = pgTable("municipal_schools", {
   id: serial("id").primaryKey(),
-  municipalManagerId: integer("municipal_manager_id").references(() => municipalManagers.id).notNull(),
-  schoolName: text("school_name").notNull(), // Campo obrigatório do banco
-  schoolCode: text("school_code"),
-  inepCode: text("inep_code"),
+  municipalManagerId: integer("municipal_manager_id").references(() => municipalManagers.id),
+  school_name: text("school_name"), // Campo legacy
+  school_code: text("school_code"), // Campo legacy
+  inep_code: text("inep_code"), // Campo legacy
   address: text("address"),
-  principalName: text("principal_name"),
-  principalEmail: text("principal_email"),
+  principal_name: text("principal_name"), // Campo legacy
+  principal_email: text("principal_email"), // Campo legacy
   phone: text("phone"),
-  allocatedLicenses: integer("allocated_licenses").default(0),
-  usedLicenses: integer("used_licenses").default(0),
+  allocated_licenses: integer("allocated_licenses").default(0), // Campo legacy
+  used_licenses: integer("used_licenses").default(0), // Campo legacy
   status: text("status").default("active"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-  // Campos adicionais do schema atual
-  name: text("name"),
-  inep: text("inep"),
-  cnpj: text("cnpj"),
-  contractId: integer("contract_id").references(() => contracts.id),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+  // Campos padronizados (novos)
+  name: text("name"), // Nome principal da escola
+  inep: text("inep"), // Código INEP padronizado
+  cnpj: text("cnpj"), // CNPJ da escola
+  contract_id: integer("contract_id").references(() => contracts.id), // Referência ao contrato
   neighborhood: text("neighborhood"),
   city: text("city"),
   state: text("state"),
-  zipCode: text("zip_code"),
+  zip_code: text("zip_code"),
   email: text("email"),
-  foundationDate: date("foundation_date"),
-  numberOfClassrooms: integer("number_of_classrooms").default(0),
-  numberOfStudents: integer("number_of_students").default(0),
-  numberOfTeachers: integer("number_of_teachers").default(0),
+  foundation_date: date("foundation_date"),
+  number_of_classrooms: integer("number_of_classrooms").default(0),
+  number_of_students: integer("number_of_students").default(0),
+  number_of_teachers: integer("number_of_teachers").default(0),
   zone: text("zone").default("urban"), // urban, rural
   type: text("type").default("municipal"), // municipal, state, federal, private
-  directorUserId: integer("director_user_id").references(() => users.id),
-  isActive: boolean("is_active").default(true),
+  director_user_id: integer("director_user_id").references(() => users.id),
+  is_active: boolean("is_active").default(true),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
