@@ -204,66 +204,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Endpoint para testar integração AWS Cognito
-  app.get("/api/cognito-test", async (req: Request, res: Response) => {
-    try {
-      // Verificar configuração
-      const config = {
-        user_pool_id: process.env.COGNITO_USER_POOL_ID || 'NÃO CONFIGURADO',
-        region: process.env.AWS_REGION || 'us-east-1',
-        access_key_configured: process.env.AWS_ACCESS_KEY_ID ? 'SIM' : 'NÃO',
-        secret_key_configured: process.env.AWS_SECRET_ACCESS_KEY ? 'SIM' : 'NÃO'
-      };
-
-      // Tentar listar usuários do Cognito via cognitoService (se disponível)
-      let cognitoStatus = 'NÃO TESTADO';
-      let usuariosEncontrados = 0;
-      let gruposEncontrados = 0;
-      let erro = null;
-
-      if (cognitoService) {
-        try {
-          // Testar listagem de usuários
-          const resultadoUsuarios = await cognitoService.listUsers(5); // Limitar a 5 para teste
-          usuariosEncontrados = resultadoUsuarios.users?.length || 0;
-          
-          // Testar listagem de grupos
-          const resultadoGrupos = await cognitoService.listGroups();
-          gruposEncontrados = resultadoGrupos.groups?.length || 0;
-          
-          cognitoStatus = 'CONECTADO';
-        } catch (error: any) {
-          cognitoStatus = 'ERRO';
-          erro = error.message;
-        }
-      }
-
-      res.json({
-        success: true,
-        timestamp: new Date().toISOString(),
-        configuracao: config,
-        cognito_status: cognitoStatus,
-        estatisticas: {
-          usuarios_encontrados: usuariosEncontrados,
-          grupos_encontrados: gruposEncontrados
-        },
-        erro_detalhes: erro,
-        message: cognitoStatus === 'CONECTADO' ? 
-          'AWS Cognito conectado com sucesso' : 
-          'Verifique as credenciais AWS e permissões do Cognito'
-      });
-
-    } catch (error: any) {
-      console.error('Erro no teste Cognito:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao testar conectividade Cognito',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      });
-    }
-  });
-
   console.log("✅ All routes registered successfully (placeholder mode)");
   
   return httpServer;
