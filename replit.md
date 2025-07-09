@@ -143,6 +143,21 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 9, 2025: ✅ CONCLUÍDO - Função verificarToken() Implementada com Validação Completa de JWT
+  - ✅ Função verificarToken() criada com validação completa de tokens JWT do AWS Cognito
+  - ✅ Passo 1: Decodificação do header JWT para extrair kid (Key ID)
+  - ✅ Passo 2: Verificação da presença do kid no header do token
+  - ✅ Passo 3: Busca da chave pública correspondente no JWKS do Cognito
+  - ✅ Passo 4: Verificação criptográfica do token com algoritmo RS256
+  - ✅ Passo 5: Extração do payload com sub, email, cognito:groups, custom:empresa_id
+  - ✅ Configuração JWKS client otimizada: 10 chaves cache, TTL 10min, SSL rigoroso
+  - ✅ Middleware authenticateToken refatorado para usar verificarToken()
+  - ✅ Tratamento de erros específicos: INVALID_JWT_HEADER, MISSING_KEY_ID, JWKS_ERROR, TOKEN_VERIFICATION_FAILED
+  - ✅ Logging detalhado de cada passo da validação para debugging
+  - ✅ Arquivo /src/examples/verificar-token-examples.js criado com 10 exemplos práticos
+  - ✅ Exemplos cobrem: token válido, inválido, expirado, sem kid, performance, múltiplos grupos
+  - ✅ Sistema Promise-based para melhor integração com código assíncrono
+  - ✅ Status: Função verificarToken() pronta para uso em produção
 - July 9, 2025: ✅ CONCLUÍDO - Sistema de Autenticação JWT com AWS Cognito Implementado
   - ✅ Arquivo /src/middleware/auth.js criado com integração completa do AWS Cognito
   - ✅ Middleware authenticateToken() para validação de tokens JWT com JWKS

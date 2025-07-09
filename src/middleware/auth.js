@@ -7,13 +7,17 @@ const jwksUri = `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${p
 
 const client = jwksClient({
   jwksUri,
-  requestHeaders: {}, // Headers opcionais
+  requestHeaders: {
+    'User-Agent': 'IAprender-Auth-Service/1.0.0'
+  },
   timeout: 30000, // 30 segundos
   cache: true,
-  cacheMaxEntries: 5,
+  cacheMaxEntries: 10, // Aumentado para mais chaves
   cacheMaxAge: 600000, // 10 minutos
   rateLimit: true,
-  jwksRequestsPerMinute: 10
+  jwksRequestsPerMinute: 10,
+  strictSsl: true, // Verificação SSL rigorosa
+  proxy: false // Sem proxy
 });
 
 // Função para obter a chave de assinatura
@@ -29,8 +33,101 @@ function getKey(header, callback) {
   });
 }
 
-// Middleware para verificar token JWT
-export const authenticateToken = (req, res, next) => {
+// Função principal para verificar token JWT
+export const verificarToken = (token) => {
+  return new Promise((resolve, reject) => {
+    // Passo 1: Decodificar o header JWT sem verificação
+    let decodedHeader;
+    try {
+      const decoded = jwt.decode(token, { complete: true });
+      if (!decoded || !decoded.header) {
+        throw new Error('Token JWT inválido - header não encontrado');
+      }
+      decodedHeader = decoded.header;
+      console.log('📋 Header JWT decodificado:', decodedHeader);
+    } catch (error) {
+      console.error('❌ Erro ao decodificar header JWT:', error.message);
+      return reject({
+        error: 'INVALID_JWT_HEADER',
+        message: 'Não foi possível decodificar o header do token JWT',
+        details: error.message
+      });
+    }
+
+    // Passo 2: Verificar se o header possui kid (Key ID)
+    if (!decodedHeader.kid) {
+      console.error('❌ Token JWT sem Key ID (kid)');
+      return reject({
+        error: 'MISSING_KEY_ID',
+        message: 'Token JWT não possui Key ID (kid) no header',
+        details: 'O token deve conter um kid para localizar a chave pública'
+      });
+    }
+
+    // Passo 3: Buscar a chave pública correspondente
+    console.log(`🔍 Buscando chave pública para kid: ${decodedHeader.kid}`);
+    client.getSigningKey(decodedHeader.kid, (err, key) => {
+      if (err) {
+        console.error('❌ Erro ao buscar chave pública:', err.message);
+        return reject({
+          error: 'JWKS_ERROR',
+          message: 'Não foi possível obter a chave pública do JWKS',
+          details: err.message
+        });
+      }
+
+      const signingKey = key.getPublicKey();
+      console.log('✅ Chave pública obtida com sucesso');
+
+      // Passo 4: Verificar se o token é válido
+      jwt.verify(token, signingKey, {
+        audience: process.env.COGNITO_CLIENT_ID,
+        issuer: `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`,
+        algorithms: ['RS256']
+      }, (verifyErr, decoded) => {
+        if (verifyErr) {
+          console.error('❌ Erro na verificação do token:', verifyErr.message);
+          return reject({
+            error: 'TOKEN_VERIFICATION_FAILED',
+            message: 'Token JWT inválido ou expirado',
+            details: verifyErr.message
+          });
+        }
+
+        // Passo 5: Extrair informações importantes do payload
+        const payload = {
+          sub: decoded.sub,
+          email: decoded.email,
+          groups: decoded['cognito:groups'] || [],
+          empresa_id: decoded['custom:empresa_id'] || null,
+          nome: decoded.name || decoded['custom:nome'] || null,
+          token_use: decoded.token_use,
+          aud: decoded.aud,
+          iss: decoded.iss,
+          exp: decoded.exp,
+          iat: decoded.iat,
+          auth_time: decoded.auth_time,
+          username: decoded['cognito:username'] || null
+        };
+
+        console.log('✅ Token verificado com sucesso');
+        console.log('📋 Payload extraído:', {
+          sub: payload.sub,
+          email: payload.email,
+          groups: payload.groups,
+          empresa_id: payload.empresa_id,
+          nome: payload.nome,
+          expires_in: payload.exp - Math.floor(Date.now() / 1000)
+        });
+
+        resolve(payload);
+      });
+    });
+  });
+};
+
+// Middleware para verificar token JWT (versão refatorada usando verificarToken)
+export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
   
@@ -41,69 +138,59 @@ export const authenticateToken = (req, res, next) => {
     });
   }
   
-  // Verificar e validar o token JWT
-  jwt.verify(token, getKey, {
-    audience: process.env.COGNITO_CLIENT_ID,
-    issuer: `https://cognito-idp.${process.env.AWS_REGION}.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`,
-    algorithms: ['RS256']
-  }, async (err, decoded) => {
-    if (err) {
-      console.error('❌ Erro na verificação do token:', err.message);
-      return res.status(403).json({ 
-        message: 'Token inválido ou expirado',
-        error: 'INVALID_TOKEN'
+  try {
+    // Usar a função verificarToken para validar o token
+    const payload = await verificarToken(token);
+    
+    // Buscar informações do usuário no banco local
+    const userResult = await executeQuery(
+      'SELECT id, nome, email, tipo_usuario, empresa_id, status FROM usuarios WHERE cognito_sub = $1',
+      [payload.sub]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ 
+        message: 'Usuário não encontrado no sistema',
+        error: 'USER_NOT_FOUND'
       });
     }
     
-    try {
-      // Buscar informações do usuário no banco local
-      const userResult = await executeQuery(
-        'SELECT id, nome, email, tipo_usuario, empresa_id, status FROM usuarios WHERE cognito_sub = $1',
-        [decoded.sub]
-      );
-      
-      if (userResult.rows.length === 0) {
-        return res.status(404).json({ 
-          message: 'Usuário não encontrado no sistema',
-          error: 'USER_NOT_FOUND'
-        });
-      }
-      
-      const user = userResult.rows[0];
-      
-      // Verificar se o usuário está ativo
-      if (user.status !== 'ativo') {
-        return res.status(403).json({ 
-          message: 'Usuário desativado',
-          error: 'USER_INACTIVE'
-        });
-      }
-      
-      // Adicionar informações do usuário ao request
-      req.user = {
-        id: user.id,
-        cognitoSub: decoded.sub,
-        nome: user.nome,
-        email: user.email,
-        tipo_usuario: user.tipo_usuario,
-        empresa_id: user.empresa_id,
-        groups: decoded['cognito:groups'] || [],
-        tokenUse: decoded.token_use,
-        exp: decoded.exp,
-        iat: decoded.iat
-      };
-      
-      console.log(`✅ Usuário autenticado: ${user.nome} (${user.email}) - Tipo: ${user.tipo_usuario}`);
-      next();
-      
-    } catch (dbError) {
-      console.error('❌ Erro ao buscar usuário no banco:', dbError.message);
-      return res.status(500).json({ 
-        message: 'Erro interno do servidor',
-        error: 'DATABASE_ERROR'
+    const user = userResult.rows[0];
+    
+    // Verificar se o usuário está ativo
+    if (user.status !== 'ativo') {
+      return res.status(403).json({ 
+        message: 'Usuário desativado',
+        error: 'USER_INACTIVE'
       });
     }
-  });
+    
+    // Adicionar informações do usuário ao request
+    req.user = {
+      id: user.id,
+      cognitoSub: payload.sub,
+      nome: payload.nome || user.nome,
+      email: payload.email || user.email,
+      tipo_usuario: user.tipo_usuario,
+      empresa_id: payload.empresa_id || user.empresa_id,
+      groups: payload.groups,
+      tokenUse: payload.token_use,
+      exp: payload.exp,
+      iat: payload.iat,
+      auth_time: payload.auth_time,
+      username: payload.username
+    };
+    
+    console.log(`✅ Usuário autenticado: ${req.user.nome} (${req.user.email}) - Tipo: ${req.user.tipo_usuario}`);
+    next();
+    
+  } catch (error) {
+    console.error('❌ Erro na autenticação:', error.message);
+    return res.status(403).json({ 
+      message: error.message || 'Token inválido ou expirado',
+      error: error.error || 'INVALID_TOKEN'
+    });
+  }
 };
 
 // Middleware para autorizar por tipo de usuário
@@ -278,6 +365,7 @@ export const validateOrigin = (req, res, next) => {
 };
 
 export default {
+  verificarToken,
   authenticateToken,
   authorize,
   authorizeGroups,
