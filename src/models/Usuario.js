@@ -25,6 +25,79 @@ export class Usuario {
   }
 
   // ============================================================================
+  // MÉTODOS AUXILIARES PRIVADOS
+  // ============================================================================
+
+  /**
+   * Limpa e estrutura dados do usuário para retorno seguro
+   * @param {Object} userData - Dados brutos do banco
+   * @returns {Object} - Dados limpos e estruturados
+   */
+  _cleanUserData(userData) {
+    try {
+      // Parse seguro das configurações JSON
+      let configuracoes = {};
+      if (userData.configuracoes) {
+        try {
+          configuracoes = typeof userData.configuracoes === 'string' 
+            ? JSON.parse(userData.configuracoes) 
+            : userData.configuracoes;
+        } catch (parseError) {
+          console.warn('⚠️ Erro ao fazer parse das configurações:', parseError.message);
+          configuracoes = {};
+        }
+      }
+
+      // Retorna objeto limpo com tipos corretos
+      return {
+        id: parseInt(userData.id),
+        cognito_sub: userData.cognito_sub || null,
+        email: userData.email?.trim() || null,
+        nome: userData.nome?.trim() || null,
+        tipo_usuario: userData.tipo_usuario || null,
+        empresa_id: userData.empresa_id ? parseInt(userData.empresa_id) : null,
+        telefone: userData.telefone?.trim() || null,
+        endereco: userData.endereco?.trim() || null,
+        data_nascimento: userData.data_nascimento || null,
+        documento: userData.documento?.trim() || null,
+        foto_perfil: userData.foto_perfil?.trim() || null,
+        status: userData.status || 'ativo',
+        ultimo_login: userData.ultimo_login || null,
+        configuracoes: configuracoes,
+        criado_em: userData.criado_em || null,
+        atualizado_em: userData.atualizado_em || null
+      };
+    } catch (error) {
+      console.error('❌ Erro ao limpar dados do usuário:', error.message);
+      throw new Error('Erro interno ao processar dados do usuário');
+    }
+  }
+
+  /**
+   * Sanitiza entrada de string removendo caracteres perigosos
+   * @param {string} input - String de entrada
+   * @returns {string} - String sanitizada
+   */
+  _sanitizeString(input) {
+    if (!input || typeof input !== 'string') return null;
+    
+    return input
+      .trim()
+      .replace(/[<>'"]/g, '') // Remove caracteres HTML perigosos
+      .substring(0, 500); // Limita tamanho
+  }
+
+  /**
+   * Valida e sanitiza ID numérico
+   * @param {any} id - ID a ser validado
+   * @returns {number|null} - ID validado ou null
+   */
+  _validateId(id) {
+    const numId = parseInt(id);
+    return isNaN(numId) || numId <= 0 ? null : numId;
+  }
+
+  // ============================================================================
   // VALIDAÇÕES
   // ============================================================================
 
@@ -122,62 +195,93 @@ export class Usuario {
    * @returns {Promise<Usuario>}
    */
   async create() {
-    console.log('📝 Criando novo usuário:', this.nome);
-    
-    const validation = this.validate();
-    if (!validation.valid) {
-      throw new Error('Dados inválidos: ' + validation.errors.join(', '));
-    }
-
-    // Verificar se email já existe
-    const existingUser = await Usuario.findByEmail(this.email);
-    if (existingUser) {
-      throw new Error('Email já está em uso');
-    }
-
-    // Verificar se cognito_sub já existe (se fornecido)
-    if (this.cognito_sub) {
-      const existingCognito = await Usuario.findByCognitoSub(this.cognito_sub);
-      if (existingCognito) {
-        throw new Error('Usuário Cognito já está vinculado a outra conta');
+    try {
+      console.log('📝 Criando novo usuário:', this.nome);
+      
+      // Validação dos dados de entrada
+      const validation = this.validate();
+      if (!validation.valid) {
+        const error = new Error('Dados inválidos: ' + validation.errors.join(', '));
+        error.code = 'VALIDATION_ERROR';
+        error.details = validation.errors;
+        throw error;
       }
+
+      // Verificar se email já existe usando prepared statement
+      const existingUser = await Usuario.findByEmail(this.email);
+      if (existingUser) {
+        const error = new Error('Email já está em uso');
+        error.code = 'EMAIL_ALREADY_EXISTS';
+        error.email = this.email;
+        throw error;
+      }
+
+      // Verificar se cognito_sub já existe (se fornecido) usando prepared statement
+      if (this.cognito_sub) {
+        const existingCognito = await Usuario.findByCognitoSub(this.cognito_sub);
+        if (existingCognito) {
+          const error = new Error('Usuário Cognito já está vinculado a outra conta');
+          error.code = 'COGNITO_SUB_ALREADY_EXISTS';
+          error.cognito_sub = this.cognito_sub;
+          throw error;
+        }
+      }
+
+      // Query com prepared statements (proteção contra SQL injection)
+      const query = `
+        INSERT INTO usuarios (
+          cognito_sub, email, nome, tipo_usuario, empresa_id, telefone, 
+          endereco, data_nascimento, documento, foto_perfil, status, 
+          configuracoes, criado_em, atualizado_em
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+        RETURNING *
+      `;
+
+      // Parâmetros sanitizados para prepared statement
+      const params = [
+        this.cognito_sub || null,
+        this.email?.trim(),
+        this.nome?.trim(),
+        this.tipo_usuario,
+        this.empresa_id || null,
+        this.telefone?.trim() || null,
+        this.endereco?.trim() || null,
+        this.data_nascimento || null,
+        this.documento?.replace(/\D/g, '') || null, // Sanitizar documento
+        this.foto_perfil?.trim() || null,
+        this.status || 'ativo',
+        JSON.stringify(this.configuracoes || {})
+      ];
+
+      const result = await executeQuery(query, params);
+      
+      if (!result.rows || result.rows.length === 0) {
+        const error = new Error('Falha ao criar usuário - nenhum dado retornado');
+        error.code = 'INSERT_FAILED';
+        throw error;
+      }
+
+      const userData = result.rows[0];
+      
+      // Limpar e estruturar dados de retorno
+      const cleanUserData = this._cleanUserData(userData);
+      Object.assign(this, cleanUserData);
+
+      console.log('✅ Usuário criado com sucesso:', this.id);
+      return this;
+      
+    } catch (error) {
+      console.error('❌ Erro ao criar usuário:', error.message);
+      
+      // Re-throw com contexto adicional se não for erro conhecido
+      if (!error.code) {
+        error.code = 'UNKNOWN_CREATE_ERROR';
+        error.operation = 'create';
+        error.userData = { email: this.email, nome: this.nome };
+      }
+      
+      throw error;
     }
-
-    const query = `
-      INSERT INTO usuarios (
-        cognito_sub, email, nome, tipo_usuario, empresa_id, telefone, 
-        endereco, data_nascimento, documento, foto_perfil, status, 
-        configuracoes, criado_em, atualizado_em
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
-      RETURNING *
-    `;
-
-    const params = [
-      this.cognito_sub,
-      this.email,
-      this.nome,
-      this.tipo_usuario,
-      this.empresa_id,
-      this.telefone,
-      this.endereco,
-      this.data_nascimento,
-      this.documento,
-      this.foto_perfil,
-      this.status,
-      JSON.stringify(this.configuracoes)
-    ];
-
-    const result = await executeQuery(query, params);
-    const userData = result.rows[0];
-    
-    // Atualizar instância atual
-    Object.assign(this, userData);
-    this.configuracoes = typeof userData.configuracoes === 'string' 
-      ? JSON.parse(userData.configuracoes) 
-      : userData.configuracoes;
-
-    console.log('✅ Usuário criado com sucesso:', this.id);
-    return this;
   }
 
   /**
@@ -185,66 +289,94 @@ export class Usuario {
    * @returns {Promise<Usuario>}
    */
   async update() {
-    console.log('📝 Atualizando usuário:', this.id);
-    
-    if (!this.id) {
-      throw new Error('ID do usuário é obrigatório para atualização');
+    try {
+      console.log('📝 Atualizando usuário:', this.id);
+      
+      // Validação de ID obrigatório
+      const validId = this._validateId(this.id);
+      if (!validId) {
+        const error = new Error('ID do usuário é obrigatório e deve ser um número válido para atualização');
+        error.code = 'INVALID_USER_ID';
+        error.providedId = this.id;
+        throw error;
+      }
+
+      // Validação dos dados de entrada
+      const validation = this.validate();
+      if (!validation.valid) {
+        const error = new Error('Dados inválidos: ' + validation.errors.join(', '));
+        error.code = 'VALIDATION_ERROR';
+        error.details = validation.errors;
+        throw error;
+      }
+
+      // Query com prepared statements (proteção contra SQL injection)
+      const query = `
+        UPDATE usuarios SET
+          cognito_sub = $1,
+          email = $2,
+          nome = $3,
+          tipo_usuario = $4,
+          empresa_id = $5,
+          telefone = $6,
+          endereco = $7,
+          data_nascimento = $8,
+          documento = $9,
+          foto_perfil = $10,
+          status = $11,
+          configuracoes = $12,
+          atualizado_em = NOW()
+        WHERE id = $13
+        RETURNING *
+      `;
+
+      // Parâmetros sanitizados para prepared statement
+      const params = [
+        this.cognito_sub || null,
+        this._sanitizeString(this.email),
+        this._sanitizeString(this.nome),
+        this.tipo_usuario,
+        this._validateId(this.empresa_id),
+        this._sanitizeString(this.telefone),
+        this._sanitizeString(this.endereco),
+        this.data_nascimento || null,
+        this.documento?.replace(/\D/g, '') || null, // Sanitizar documento
+        this._sanitizeString(this.foto_perfil),
+        this.status || 'ativo',
+        JSON.stringify(this.configuracoes || {}),
+        validId
+      ];
+
+      const result = await executeQuery(query, params);
+      
+      if (!result.rows || result.rows.length === 0) {
+        const error = new Error('Usuário não encontrado para atualização ou nenhum dado foi alterado');
+        error.code = 'USER_NOT_FOUND_UPDATE';
+        error.userId = validId;
+        throw error;
+      }
+
+      const userData = result.rows[0];
+      
+      // Limpar e estruturar dados de retorno
+      const cleanUserData = this._cleanUserData(userData);
+      Object.assign(this, cleanUserData);
+
+      console.log('✅ Usuário atualizado com sucesso:', this.id);
+      return this;
+      
+    } catch (error) {
+      console.error('❌ Erro ao atualizar usuário:', error.message);
+      
+      // Re-throw com contexto adicional se não for erro conhecido
+      if (!error.code) {
+        error.code = 'UNKNOWN_UPDATE_ERROR';
+        error.operation = 'update';
+        error.userId = this.id;
+      }
+      
+      throw error;
     }
-
-    const validation = this.validate();
-    if (!validation.valid) {
-      throw new Error('Dados inválidos: ' + validation.errors.join(', '));
-    }
-
-    const query = `
-      UPDATE usuarios SET
-        cognito_sub = $1,
-        email = $2,
-        nome = $3,
-        tipo_usuario = $4,
-        empresa_id = $5,
-        telefone = $6,
-        endereco = $7,
-        data_nascimento = $8,
-        documento = $9,
-        foto_perfil = $10,
-        status = $11,
-        configuracoes = $12,
-        atualizado_em = NOW()
-      WHERE id = $13
-      RETURNING *
-    `;
-
-    const params = [
-      this.cognito_sub,
-      this.email,
-      this.nome,
-      this.tipo_usuario,
-      this.empresa_id,
-      this.telefone,
-      this.endereco,
-      this.data_nascimento,
-      this.documento,
-      this.foto_perfil,
-      this.status,
-      JSON.stringify(this.configuracoes),
-      this.id
-    ];
-
-    const result = await executeQuery(query, params);
-    
-    if (result.rows.length === 0) {
-      throw new Error('Usuário não encontrado');
-    }
-
-    const userData = result.rows[0];
-    Object.assign(this, userData);
-    this.configuracoes = typeof userData.configuracoes === 'string' 
-      ? JSON.parse(userData.configuracoes) 
-      : userData.configuracoes;
-
-    console.log('✅ Usuário atualizado com sucesso:', this.id);
-    return this;
   }
 
   /**
@@ -252,23 +384,50 @@ export class Usuario {
    * @returns {Promise<boolean>}
    */
   async delete() {
-    console.log('🗑️ Deletando usuário:', this.id);
-    
-    if (!this.id) {
-      throw new Error('ID do usuário é obrigatório para exclusão');
-    }
+    try {
+      console.log('🗑️ Deletando usuário:', this.id);
+      
+      // Validação de ID obrigatório
+      const validId = this._validateId(this.id);
+      if (!validId) {
+        const error = new Error('ID do usuário é obrigatório e deve ser um número válido para exclusão');
+        error.code = 'INVALID_USER_ID';
+        error.providedId = this.id;
+        throw error;
+      }
 
-    const query = 'DELETE FROM usuarios WHERE id = $1';
-    const result = await executeQuery(query, [this.id]);
-    
-    const deleted = result.rowCount > 0;
-    if (deleted) {
-      console.log('✅ Usuário deletado com sucesso:', this.id);
-    } else {
-      console.log('❌ Usuário não encontrado para exclusão:', this.id);
+      // Query com prepared statement (proteção contra SQL injection)
+      const query = 'DELETE FROM usuarios WHERE id = $1';
+      const result = await executeQuery(query, [validId]);
+      
+      const deleted = result.rowCount > 0;
+      
+      if (deleted) {
+        console.log('✅ Usuário deletado com sucesso:', validId);
+        // Limpar dados da instância atual
+        this.id = null;
+        this.status = 'deletado';
+      } else {
+        const error = new Error('Usuário não encontrado para exclusão');
+        error.code = 'USER_NOT_FOUND_DELETE';
+        error.userId = validId;
+        throw error;
+      }
+      
+      return deleted;
+      
+    } catch (error) {
+      console.error('❌ Erro ao deletar usuário:', error.message);
+      
+      // Re-throw com contexto adicional se não for erro conhecido
+      if (!error.code) {
+        error.code = 'UNKNOWN_DELETE_ERROR';
+        error.operation = 'delete';
+        error.userId = this.id;
+      }
+      
+      throw error;
     }
-    
-    return deleted;
   }
 
   // ============================================================================
@@ -281,21 +440,49 @@ export class Usuario {
    * @returns {Promise<Usuario|null>}
    */
   static async findById(id) {
-    console.log('🔍 Buscando usuário por ID:', id);
-    
-    const query = 'SELECT * FROM usuarios WHERE id = $1';
-    const result = await executeQuery(query, [id]);
-    
-    if (result.rows.length === 0) {
+    try {
+      console.log('🔍 Buscando usuário por ID:', id);
+      
+      // Validação de entrada
+      if (!id) {
+        return null;
+      }
+      
+      const validId = parseInt(id);
+      if (isNaN(validId) || validId <= 0) {
+        console.warn('⚠️ ID inválido fornecido:', id);
+        return null;
+      }
+      
+      // Query com prepared statement (proteção contra SQL injection)
+      const query = 'SELECT * FROM usuarios WHERE id = $1';
+      const result = await executeQuery(query, [validId]);
+      
+      if (!result.rows || result.rows.length === 0) {
+        console.log('📝 Usuário não encontrado com ID:', validId);
+        return null;
+      }
+
+      const userData = result.rows[0];
+      
+      // Criar instância com dados limpos
+      const usuario = new Usuario();
+      const cleanUserData = usuario._cleanUserData(userData);
+      Object.assign(usuario, cleanUserData);
+      
+      return usuario;
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar usuário por ID:', error.message);
+      
+      // Log do erro mas não rethrowing para não quebrar a aplicação
+      error.code = 'FIND_BY_ID_ERROR';
+      error.operation = 'findById';
+      error.searchId = id;
+      
+      // Para busca, retorna null em caso de erro ao invés de throw
       return null;
     }
-
-    const userData = result.rows[0];
-    userData.configuracoes = typeof userData.configuracoes === 'string' 
-      ? JSON.parse(userData.configuracoes) 
-      : userData.configuracoes;
-    
-    return new Usuario(userData);
   }
 
   /**
@@ -304,21 +491,48 @@ export class Usuario {
    * @returns {Promise<Usuario|null>}
    */
   static async findByEmail(email) {
-    console.log('🔍 Buscando usuário por email:', email);
-    
-    const query = 'SELECT * FROM usuarios WHERE email = $1';
-    const result = await executeQuery(query, [email]);
-    
-    if (result.rows.length === 0) {
+    try {
+      console.log('🔍 Buscando usuário por email:', email);
+      
+      // Validação de entrada
+      if (!email || typeof email !== 'string') {
+        console.warn('⚠️ Email inválido fornecido:', email);
+        return null;
+      }
+      
+      const sanitizedEmail = email.trim().toLowerCase();
+      if (!sanitizedEmail || !sanitizedEmail.includes('@')) {
+        console.warn('⚠️ Formato de email inválido:', email);
+        return null;
+      }
+      
+      // Query com prepared statement (proteção contra SQL injection)
+      const query = 'SELECT * FROM usuarios WHERE LOWER(email) = $1';
+      const result = await executeQuery(query, [sanitizedEmail]);
+      
+      if (!result.rows || result.rows.length === 0) {
+        console.log('📝 Usuário não encontrado com email:', sanitizedEmail);
+        return null;
+      }
+
+      const userData = result.rows[0];
+      
+      // Criar instância com dados limpos
+      const usuario = new Usuario();
+      const cleanUserData = usuario._cleanUserData(userData);
+      Object.assign(usuario, cleanUserData);
+      
+      return usuario;
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar usuário por email:', error.message);
+      
+      error.code = 'FIND_BY_EMAIL_ERROR';
+      error.operation = 'findByEmail';
+      error.searchEmail = email;
+      
       return null;
     }
-
-    const userData = result.rows[0];
-    userData.configuracoes = typeof userData.configuracoes === 'string' 
-      ? JSON.parse(userData.configuracoes) 
-      : userData.configuracoes;
-    
-    return new Usuario(userData);
   }
 
   /**
@@ -336,21 +550,48 @@ export class Usuario {
    * @returns {Promise<Usuario|null>}
    */
   static async findByCognitoSub(cognitoSub) {
-    console.log('🔍 Buscando usuário por Cognito Sub:', cognitoSub);
-    
-    const query = 'SELECT * FROM usuarios WHERE cognito_sub = $1';
-    const result = await executeQuery(query, [cognitoSub]);
-    
-    if (result.rows.length === 0) {
+    try {
+      console.log('🔍 Buscando usuário por Cognito Sub:', cognitoSub);
+      
+      // Validação de entrada
+      if (!cognitoSub || typeof cognitoSub !== 'string') {
+        console.warn('⚠️ Cognito Sub inválido fornecido:', cognitoSub);
+        return null;
+      }
+      
+      const sanitizedCognitoSub = cognitoSub.trim();
+      if (!sanitizedCognitoSub) {
+        console.warn('⚠️ Cognito Sub vazio fornecido');
+        return null;
+      }
+      
+      // Query com prepared statement (proteção contra SQL injection)
+      const query = 'SELECT * FROM usuarios WHERE cognito_sub = $1';
+      const result = await executeQuery(query, [sanitizedCognitoSub]);
+      
+      if (!result.rows || result.rows.length === 0) {
+        console.log('📝 Usuário não encontrado com Cognito Sub:', sanitizedCognitoSub);
+        return null;
+      }
+
+      const userData = result.rows[0];
+      
+      // Criar instância com dados limpos
+      const usuario = new Usuario();
+      const cleanUserData = usuario._cleanUserData(userData);
+      Object.assign(usuario, cleanUserData);
+      
+      return usuario;
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar usuário por Cognito Sub:', error.message);
+      
+      error.code = 'FIND_BY_COGNITO_SUB_ERROR';
+      error.operation = 'findByCognitoSub';
+      error.searchCognitoSub = cognitoSub;
+      
       return null;
     }
-
-    const userData = result.rows[0];
-    userData.configuracoes = typeof userData.configuracoes === 'string' 
-      ? JSON.parse(userData.configuracoes) 
-      : userData.configuracoes;
-    
-    return new Usuario(userData);
   }
 
   /**
@@ -621,27 +862,56 @@ export class Usuario {
 
   /**
    * Formata os dados do usuário para resposta da API
+   * Retorna objeto JavaScript limpo e seguro
    * @returns {Object}
    */
   toJSON() {
-    return {
-      id: this.id,
-      cognito_sub: this.cognito_sub,
-      email: this.email,
-      nome: this.nome,
-      tipo_usuario: this.tipo_usuario,
-      empresa_id: this.empresa_id,
-      telefone: this.telefone,
-      endereco: this.endereco,
-      data_nascimento: this.data_nascimento,
-      documento: this.documento,
-      foto_perfil: this.foto_perfil,
-      status: this.status,
-      ultimo_login: this.ultimo_login,
-      configuracoes: this.configuracoes,
-      criado_em: this.criado_em,
-      atualizado_em: this.atualizado_em
-    };
+    try {
+      // Garantir que configuracoes seja um objeto válido
+      let configuracoes = {};
+      if (this.configuracoes) {
+        try {
+          configuracoes = typeof this.configuracoes === 'string' 
+            ? JSON.parse(this.configuracoes) 
+            : this.configuracoes;
+        } catch (parseError) {
+          console.warn('⚠️ Erro ao fazer parse das configurações no toJSON:', parseError.message);
+          configuracoes = {};
+        }
+      }
+
+      // Retornar objeto limpo com tipos corretos e validações
+      return {
+        id: parseInt(this.id) || null,
+        cognito_sub: this.cognito_sub || null,
+        email: this.email?.trim() || null,
+        nome: this.nome?.trim() || null,
+        tipo_usuario: this.tipo_usuario || null,
+        empresa_id: this.empresa_id ? parseInt(this.empresa_id) : null,
+        telefone: this.telefone?.trim() || null,
+        endereco: this.endereco?.trim() || null,
+        data_nascimento: this.data_nascimento || null,
+        documento: this.documento?.trim() || null,
+        foto_perfil: this.foto_perfil?.trim() || null,
+        status: this.status || 'ativo',
+        ultimo_login: this.ultimo_login || null,
+        configuracoes: configuracoes,
+        criado_em: this.criado_em || null,
+        atualizado_em: this.atualizado_em || null
+      };
+    } catch (error) {
+      console.error('❌ Erro ao converter usuário para JSON:', error.message);
+      
+      // Retornar objeto mínimo em caso de erro
+      return {
+        id: this.id || null,
+        email: this.email || null,
+        nome: this.nome || null,
+        tipo_usuario: this.tipo_usuario || null,
+        status: this.status || 'ativo',
+        error: 'Erro ao processar dados do usuário'
+      };
+    }
   }
 
   // ============================================================================
