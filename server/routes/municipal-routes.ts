@@ -1,7 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts, schools } from '../../shared/schema';
-import { eq, count, sum, isNull, or, inArray, isNotNull } from 'drizzle-orm';
+import { eq, count, sum, isNull, or, inArray, isNotNull, and } from 'drizzle-orm';
 import { performanceMonitor, performanceMiddleware } from '../utils/performance-monitor';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';
@@ -1886,7 +1886,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [existingDirector] = await db
         .select()
         .from(users)
-        .where(eq(
+        .where(and(
           eq(users.id, directorId),
           eq(users.companyId, userCompany.companyId),
           eq(users.role, 'school_director')
@@ -1939,7 +1939,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [contract] = await db
         .select()
         .from(contracts)
-        .where(eq(
+        .where(and(
           eq(contracts.id, contractId),
           eq(contracts.companyId, userCompany.companyId)
         ));
@@ -1982,7 +1982,7 @@ export function registerMunicipalRoutes(app: Express) {
         })
         .from(users)
         .leftJoin(contracts, eq(users.contractId, contracts.id))
-        .where(eq(
+        .where(and(
           eq(users.id, directorId),
           eq(users.companyId, userCompany.companyId),
           eq(users.role, 'school_director')
