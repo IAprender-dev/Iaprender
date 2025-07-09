@@ -143,6 +143,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 9, 2025: ✅ CONCLUÍDO - CORREÇÃO CRÍTICA: Sistema DELETE de Diretores Totalmente Funcional
+  - ✅ Corrigido mapeamento de campos Drizzle ORM: firstName/lastName vs first_name/last_name
+  - ✅ Endpoints DELETE testados e funcionais com validação de dependências
+  - ✅ Sistema impede exclusão de diretores vinculados a escolas (mensagem: "Não é possível excluir o diretor \"Diretor Diretor\" pois está vinculado a 1 escola(s).")
+  - ✅ Sistema permite exclusão de diretores sem vínculos (mensagem: "Diretor \"Diretor Temporário\" excluído com sucesso")
+  - ✅ Consulta Drizzle ORM corrigida com select específico dos campos necessários
+  - ✅ Debug logs funcionais mostrando dados corretos dos diretores
+  - ✅ Validação de empresa/contrato funcionando corretamente
+  - ✅ Cache invalidation implementado corretamente
+  - ✅ Testes realizados com sucesso: ID 119 (bloqueado), ID 163 (excluído)
 - July 9, 2025: ✅ CONCLUÍDO - Sistema Avançado de Modais para Visualização e Edição de Escolas/Diretores
   - ✅ Implementados modais responsivos com design avançado e animações suaves
   - ✅ Modal "Ver Escola": visualização completa com cards categorizados (informações gerais, localização, estatísticas, diretor, contrato)

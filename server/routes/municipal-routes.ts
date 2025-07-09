@@ -96,36 +96,60 @@ export function registerMunicipalRoutes(app: Express) {
       }
       
       // 2. Buscar estatísticas APENAS da empresa do usuário (QUERIES SEPARADAS PARA EVITAR ERROS)
-      const [contractsCount] = await db
-        .select({ count: count() })
-        .from(contracts)
-        .where(eq(contracts.companyId, userCompanyId));
+      try {
+        const contractsCount = await db
+          .select({ count: count() })
+          .from(contracts)
+          .where(eq(contracts.companyId, userCompanyId));
 
-      const [schoolsStats] = await db
-        .select({
-          totalSchools: count(),
-          totalStudents: sum(municipalSchools.numberOfStudents),
-          totalTeachers: sum(municipalSchools.numberOfTeachers),
-          totalClassrooms: sum(municipalSchools.numberOfClassrooms),
-        })
-        .from(municipalSchools)
-        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
-        .where(eq(contracts.companyId, userCompanyId));
-      
-      const stats = {
-        totalContracts: Number(contractsCount?.count || 0),
-        totalSchools: Number(schoolsStats?.totalSchools || 0),
-        activeSchools: Number(schoolsStats?.totalSchools || 0),
-        totalStudents: Number(schoolsStats?.totalStudents || 0),
-        totalTeachers: Number(schoolsStats?.totalTeachers || 0),
-        totalClassrooms: Number(schoolsStats?.totalClassrooms || 0)
-      };
-      
-      // Cache por 30 segundos
-      CacheManager.set(cacheKey, stats, 30);
-      
-      console.log(`✅ [STATS] User ${userId} empresa ${userCompanyId}:`, stats);
-      return res.json({ success: true, stats });
+        // Buscar contratos da empresa primeiro
+        const userContracts = await db
+          .select({ id: contracts.id })
+          .from(contracts)
+          .where(eq(contracts.companyId, userCompanyId));
+
+        const contractIds = userContracts.map(c => c.id);
+        
+        let schoolsStats = { totalSchools: 0, totalStudents: 0, totalTeachers: 0, totalClassrooms: 0 };
+        
+        if (contractIds.length > 0) {
+          // Buscar diretamente as escolas sem SUM para evitar erros
+          const schoolsData = await db
+            .select({
+              number_of_students: municipalSchools.number_of_students,
+              number_of_teachers: municipalSchools.number_of_teachers,
+              number_of_classrooms: municipalSchools.number_of_classrooms,
+            })
+            .from(municipalSchools)
+            .where(inArray(municipalSchools.contract_id, contractIds));
+            
+          // Calcular totais manualmente
+          schoolsStats = {
+            totalSchools: schoolsData.length,
+            totalStudents: schoolsData.reduce((sum, school) => sum + (school.number_of_students || 0), 0),
+            totalTeachers: schoolsData.reduce((sum, school) => sum + (school.number_of_teachers || 0), 0),
+            totalClassrooms: schoolsData.reduce((sum, school) => sum + (school.number_of_classrooms || 0), 0),
+          };
+        }
+        
+        const stats = {
+          totalContracts: Number(contractsCount[0]?.count || 0),
+          totalSchools: Number(schoolsStats?.totalSchools || 0),
+          activeSchools: Number(schoolsStats?.totalSchools || 0),
+          totalStudents: Number(schoolsStats?.totalStudents || 0),
+          totalTeachers: Number(schoolsStats?.totalTeachers || 0),
+          totalClassrooms: Number(schoolsStats?.totalClassrooms || 0)
+        };
+        
+        // Cache por 30 segundos
+        CacheManager.set(cacheKey, stats, 30);
+        
+        console.log(`✅ [STATS] User ${userId} empresa ${userCompanyId}:`, stats);
+        return res.json({ success: true, stats });
+      } catch (queryError) {
+        console.error('Error in stats query:', queryError);
+        throw queryError;
+      }
     } catch (error) {
       console.error('Error fetching municipal stats:', error);
       res.status(500).json({ error: 'Failed to fetch municipal stats' });
@@ -154,9 +178,9 @@ export function registerMunicipalRoutes(app: Express) {
       const [schoolStats] = await db
         .select({
           totalSchools: count(),
-          totalStudents: sum(municipalSchools.numberOfStudents),
-          totalTeachers: sum(municipalSchools.numberOfTeachers),
-          totalClassrooms: sum(municipalSchools.numberOfClassrooms),
+          totalStudents: sum(municipalSchools.number_of_students),
+          totalTeachers: sum(municipalSchools.number_of_teachers),
+          totalClassrooms: sum(municipalSchools.number_of_classrooms),
         })
         .from(municipalSchools)
         .where(eq(municipalSchools.municipalManagerId, manager.id));
@@ -216,7 +240,7 @@ export function registerMunicipalRoutes(app: Express) {
           let directorInfo = null;
 
           // Buscar contrato se existir contract_id
-          if (school.contractId) {
+          if (school.contract_id) {
             try {
               const [contract] = await db
                 .select({ 
@@ -1183,8 +1207,8 @@ export function registerMunicipalRoutes(app: Express) {
           contractId: school.contractId,
           directorId: school.directorUserId,
           contractName: contract?.name || null,
-          directorFirstName: director?.first_name || null,
-          directorLastName: director?.last_name || null,
+          directorFirstName: director?.firstName || null,
+          directorLastName: director?.lastName || null,
           directorEmail: director?.email || null
         };
       });
@@ -1214,41 +1238,63 @@ export function registerMunicipalRoutes(app: Express) {
         return res.status(403).json({ error: 'Usuário sem empresa vinculada' });
       }
 
-      // Verificar se a escola existe e pertence à empresa do usuário
-      const [existingSchool] = await db
+      // Buscar dados da escola na tabela municipalSchools
+      console.log('🔍 [DEBUG] Buscando escola ID:', schoolId);
+      
+      const schoolData = await db
         .select({
           id: municipalSchools.id,
           name: municipalSchools.name,
-          contractId: municipalSchools.contractId,
-          directorUserId: municipalSchools.directorUserId
+          school_name: municipalSchools.school_name,
+          contract_id: municipalSchools.contract_id,
+          director_user_id: municipalSchools.director_user_id
         })
         .from(municipalSchools)
-        .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
-        .where(and(
-          eq(municipalSchools.id, schoolId),
-          eq(contracts.companyId, userCompanyId)
-        ))
+        .where(eq(municipalSchools.id, schoolId))
         .limit(1);
+      
+      console.log('🔍 [DEBUG] Escola encontrada:', schoolData);
 
-      if (!existingSchool) {
+      if (schoolData.length === 0) {
         return res.status(404).json({ 
-          error: 'Escola não encontrada ou acesso negado' 
+          error: 'Escola não encontrada' 
         });
       }
 
-      // Verificar se há dependências (usuários associados, etc.)
-      const dependencyChecks = await Promise.all([
-        // Verificar se há usuários associados à escola
-        db.select({ count: count() }).from(users).where(eq(users.schoolId, schoolId)),
-        // Verificar se há registros de atividades
-        db.select({ count: count() }).from(notifications).where(eq(notifications.schoolId, schoolId))
-      ]);
+      const school = schoolData[0];
+      const schoolName = school.name || school.school_name || 'Escola';
 
-      const [usersCount, notificationsCount] = dependencyChecks;
-      
-      if (usersCount[0].count > 0) {
+      // Se a escola tem contract_id, verificar se pertence à empresa do usuário
+      if (school.contract_id) {
+        const contractData = await db
+          .select({ companyId: contracts.companyId })
+          .from(contracts)
+          .where(eq(contracts.id, school.contract_id))
+          .limit(1);
+
+        if (contractData.length === 0 || contractData[0].companyId !== userCompanyId) {
+          return res.status(403).json({ 
+            error: 'Acesso negado à esta escola' 
+          });
+        }
+
+        // Verificar se há usuários vinculados ao contrato
+        const [usersCount] = await db
+          .select({ count: count() })
+          .from(users)
+          .where(eq(users.contractId, school.contract_id));
+        
+        if (usersCount.count > 0) {
+          return res.status(400).json({ 
+            error: `Não é possível excluir a escola "${schoolName}" pois há ${usersCount.count} usuários associados ao contrato.` 
+          });
+        }
+      }
+
+      // Verificar se há usuários diretamente vinculados à escola
+      if (school.director_user_id) {
         return res.status(400).json({ 
-          error: `Não é possível excluir a escola "${existingSchool.name}" pois há ${usersCount[0].count} usuários associados.` 
+          error: `Não é possível excluir a escola "${schoolName}" pois há um diretor vinculado.` 
         });
       }
 
@@ -1257,7 +1303,7 @@ export function registerMunicipalRoutes(app: Express) {
         .delete(municipalSchools)
         .where(eq(municipalSchools.id, schoolId));
 
-      console.log(`✅ [DELETE_SCHOOL] Escola "${existingSchool.name}" (ID: ${schoolId}) excluída com sucesso`);
+      console.log(`✅ [DELETE_SCHOOL] Escola "${schoolName}" (ID: ${schoolId}) excluída com sucesso`);
 
       // Invalidar caches relacionados
       CacheManager.invalidateUserCache(userId);
@@ -1265,7 +1311,7 @@ export function registerMunicipalRoutes(app: Express) {
 
       res.json({ 
         success: true,
-        message: `Escola "${existingSchool.name}" excluída com sucesso`
+        message: `Escola "${schoolName}" excluída com sucesso`
       });
     } catch (error) {
       console.error('❌ [DELETE_SCHOOL] Erro ao excluir escola:', error);
@@ -1347,13 +1393,14 @@ export function registerMunicipalRoutes(app: Express) {
       }
 
       // Verificar se o diretor existe e pertence à empresa do usuário
-      const [existingDirector] = await db
+      const existingDirectors = await db
         .select({
           id: users.id,
-          firstName: users.first_name,
-          lastName: users.last_name,
+          firstName: users.firstName,
+          lastName: users.lastName,
           email: users.email,
-          companyId: users.companyId
+          companyId: users.companyId,
+          role: users.role
         })
         .from(users)
         .where(and(
@@ -1363,17 +1410,19 @@ export function registerMunicipalRoutes(app: Express) {
         ))
         .limit(1);
 
-      if (!existingDirector) {
+      if (existingDirectors.length === 0) {
         return res.status(404).json({ 
           error: 'Diretor não encontrado ou acesso negado' 
         });
       }
 
+      const existingDirector = existingDirectors[0];
+
       // Verificar se o diretor está vinculado a alguma escola
       const [schoolsCount] = await db
         .select({ count: count() })
         .from(municipalSchools)
-        .where(eq(municipalSchools.directorUserId, directorId));
+        .where(eq(municipalSchools.director_user_id, directorId));
 
       if (schoolsCount.count > 0) {
         return res.status(400).json({ 
