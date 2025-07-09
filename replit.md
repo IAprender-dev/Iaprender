@@ -143,6 +143,25 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 9, 2025: ✅ CONCLUÍDO - Função verificarTipoUsuario() Implementada com Sistema de Autorização Hierárquico
+  - ✅ Função verificarTipoUsuario(tiposPermitidos) criada para verificação de tipo de usuário
+  - ✅ Suporte a string única ou array de tipos permitidos
+  - ✅ Validação automática: req.user.tipo_usuario deve estar em tiposPermitidos
+  - ✅ 13 middlewares pré-configurados criados para combinações comuns:
+    • apenasAdmin, apenasGestor, apenasDiretor, apenasProfessor, apenasAluno
+    • adminOuGestor, gestorOuDiretor, diretorOuProfessor, professorOuAluno
+    • adminGestorOuDiretor, gestorDiretorOuProfessor, todosExcetoAluno, qualquerTipo
+  - ✅ Tratamento de erros específicos: USER_NOT_AUTHENTICATED, USER_TYPE_UNDEFINED, INSUFFICIENT_USER_TYPE
+  - ✅ Logging detalhado de autorizações e negações de acesso
+  - ✅ Retorno estruturado com tipo atual e tipos requeridos
+  - ✅ 9 exemplos adicionais no arquivo autorizar-examples.js:
+    • Rotas com verificação de tipo específico
+    • Combinação de verificação de tipo e empresa
+    • Hierarquia de permissões com validação customizada
+    • Promoção de usuários com controle hierárquico
+  - ✅ 2 funções de teste criadas: testarVerificacaoTipoUsuario() e testarMiddlewaresPreConfigurados()
+  - ✅ Integração completa com sistema existente de autorização empresarial
+  - ✅ Status: Sistema de autorização por tipo de usuário completo e pronto para produção
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 4: Controle de Acesso por Empresa Implementado Completamente
   - ✅ Arquivo /src/middleware/autorizar.js criado com sistema completo de autorização empresarial
   - ✅ Função verificarEmpresa() implementada com validação flexível baseada em empresa_id

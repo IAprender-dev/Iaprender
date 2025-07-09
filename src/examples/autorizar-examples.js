@@ -1,6 +1,20 @@
 import express from 'express';
 import { autenticar } from '../middleware/auth.js';
 import { 
+  verificarTipoUsuario,
+  apenasAdmin,
+  apenasGestor,
+  apenasDiretor,
+  apenasProfessor,
+  apenasAluno,
+  adminOuGestor,
+  gestorOuDiretor,
+  diretorOuProfessor,
+  professorOuAluno,
+  adminGestorOuDiretor,
+  gestorDiretorOuProfessor,
+  todosExcetoAluno,
+  qualquerTipo,
   verificarEmpresa,
   verificarEmpresaContrato,
   verificarEmpresaEscola,
@@ -17,6 +31,211 @@ import {
 
 const app = express();
 app.use(express.json());
+
+// ============================================================================
+// EXEMPLOS DE VERIFICAÇÃO DE TIPO DE USUÁRIO
+// ============================================================================
+
+// EXEMPLO 1: Rota apenas para administradores
+app.get('/api/admin/configuracoes', 
+  autenticar, 
+  apenasAdmin,
+  auditarAcessoEmpresa('ACESSAR_CONFIGURACOES_ADMIN'),
+  (req, res) => {
+    res.json({
+      message: 'Configurações do sistema',
+      user: {
+        nome: req.user.nome,
+        tipo_usuario: req.user.tipo_usuario
+      },
+      configuracoes: {
+        sistema: 'IAprender',
+        versao: '1.0.0',
+        manutencao: false
+      }
+    });
+  }
+);
+
+// EXEMPLO 2: Rota apenas para gestores
+app.get('/api/gestores/dashboard', 
+  autenticar, 
+  apenasGestor,
+  (req, res) => {
+    res.json({
+      message: 'Dashboard do gestor',
+      gestor: {
+        nome: req.user.nome,
+        empresa_id: req.user.empresa_id
+      }
+    });
+  }
+);
+
+// EXEMPLO 3: Rota para admin ou gestor
+app.get('/api/relatorios/financeiros', 
+  autenticar, 
+  adminOuGestor,
+  auditarAcessoEmpresa('VISUALIZAR_RELATORIO_FINANCEIRO'),
+  (req, res) => {
+    res.json({
+      message: 'Relatórios financeiros',
+      user: {
+        nome: req.user.nome,
+        tipo_usuario: req.user.tipo_usuario,
+        acesso: req.user.tipo_usuario === 'admin' ? 'Total' : 'Empresa específica'
+      }
+    });
+  }
+);
+
+// EXEMPLO 4: Rota para gestores, diretores ou professores
+app.get('/api/pedagogico/materiais', 
+  autenticar, 
+  gestorDiretorOuProfessor,
+  (req, res) => {
+    res.json({
+      message: 'Materiais pedagógicos',
+      user: {
+        nome: req.user.nome,
+        tipo_usuario: req.user.tipo_usuario
+      },
+      materiais: [
+        { id: 1, titulo: 'Plano de Aula - Matemática', tipo: 'PDF' },
+        { id: 2, titulo: 'Atividade - Português', tipo: 'DOCX' }
+      ]
+    });
+  }
+);
+
+// EXEMPLO 5: Rota com verificação customizada de múltiplos tipos
+app.post('/api/notificacoes', 
+  autenticar, 
+  verificarTipoUsuario(['admin', 'gestor', 'diretor']),
+  auditarAcessoEmpresa('ENVIAR_NOTIFICACAO'),
+  (req, res) => {
+    res.json({
+      message: 'Notificação enviada',
+      enviado_por: {
+        nome: req.user.nome,
+        tipo_usuario: req.user.tipo_usuario
+      },
+      notificacao: req.body
+    });
+  }
+);
+
+// EXEMPLO 6: Rota para todos exceto alunos
+app.get('/api/administrativo/usuarios', 
+  autenticar, 
+  todosExcetoAluno,
+  filtrarPorEmpresa(),
+  (req, res) => {
+    res.json({
+      message: 'Lista de usuários administrativos',
+      user: {
+        nome: req.user.nome,
+        tipo_usuario: req.user.tipo_usuario
+      },
+      filtro_empresa: req.filtroEmpresa
+    });
+  }
+);
+
+// EXEMPLO 7: Rota combinando verificação de tipo e empresa
+app.put('/api/escolas/:id/configuracoes', 
+  autenticar,
+  gestorOuDiretor, // Primeiro verifica o tipo
+  verificarEmpresaEscola, // Depois verifica a empresa
+  auditarAcessoEmpresa('ATUALIZAR_CONFIGURACOES_ESCOLA'),
+  (req, res) => {
+    res.json({
+      message: 'Configurações da escola atualizadas',
+      escola_id: req.params.id,
+      user: {
+        nome: req.user.nome,
+        tipo_usuario: req.user.tipo_usuario,
+        empresa_id: req.user.empresa_id
+      },
+      configuracoes: req.body
+    });
+  }
+);
+
+// EXEMPLO 8: Rota com hierarquia de permissões
+app.delete('/api/usuarios/:id', 
+  autenticar,
+  adminGestorOuDiretor,
+  verificarEmpresaUsuario,
+  auditarAcessoEmpresa('DELETAR_USUARIO'),
+  (req, res) => {
+    const canDelete = 
+      req.user.tipo_usuario === 'admin' || 
+      (req.user.tipo_usuario === 'gestor' && ['diretor', 'professor', 'aluno'].includes(req.targetUser?.tipo_usuario)) ||
+      (req.user.tipo_usuario === 'diretor' && ['professor', 'aluno'].includes(req.targetUser?.tipo_usuario));
+    
+    if (!canDelete) {
+      return res.status(403).json({
+        message: 'Não é possível deletar usuário de nível superior ou igual',
+        error: 'HIERARCHICAL_PERMISSION_DENIED'
+      });
+    }
+    
+    res.json({
+      message: 'Usuário deletado com sucesso',
+      deleted_user_id: req.params.id,
+      deleted_by: req.user.nome
+    });
+  }
+);
+
+// EXEMPLO 9: Rota com verificação dinâmica de tipo
+app.post('/api/usuarios/:id/promover', 
+  autenticar,
+  (req, res, next) => {
+    const { novo_tipo } = req.body;
+    
+    // Definir tipos permitidos baseado no tipo do usuário atual
+    let tiposPermitidos = [];
+    
+    switch (req.user.tipo_usuario) {
+      case 'admin':
+        tiposPermitidos = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+        break;
+      case 'gestor':
+        tiposPermitidos = ['diretor', 'professor', 'aluno'];
+        break;
+      case 'diretor':
+        tiposPermitidos = ['professor', 'aluno'];
+        break;
+      default:
+        return res.status(403).json({
+          message: 'Sem permissão para promover usuários',
+          error: 'NO_PROMOTION_PERMISSION'
+        });
+    }
+    
+    if (!tiposPermitidos.includes(novo_tipo)) {
+      return res.status(403).json({
+        message: `Não é possível promover para ${novo_tipo}`,
+        error: 'INVALID_PROMOTION_TYPE',
+        tipos_permitidos: tiposPermitidos
+      });
+    }
+    
+    next();
+  },
+  verificarEmpresaUsuario,
+  auditarAcessoEmpresa('PROMOVER_USUARIO'),
+  (req, res) => {
+    res.json({
+      message: 'Usuário promovido com sucesso',
+      usuario_id: req.params.id,
+      novo_tipo: req.body.novo_tipo,
+      promovido_por: req.user.nome
+    });
+  }
+);
 
 // EXEMPLO 1: Rota para listar contratos (apenas da empresa do usuário)
 app.get('/api/contratos', 
@@ -383,13 +602,176 @@ export function testarFiltrosEmpresa() {
   });
 }
 
-// EXEMPLO 15: Executar todos os testes
+// EXEMPLO 15: Função para testar verificação de tipo de usuário
+export function testarVerificacaoTipoUsuario() {
+  console.log('🧪 Testando verificação de tipo de usuário...\n');
+  
+  const cenarios = [
+    {
+      nome: 'Admin acessando rota apenas para admins',
+      user: { id: 1, nome: 'Admin', tipo_usuario: 'admin', empresa_id: null },
+      middleware: apenasAdmin,
+      esperado: 'success'
+    },
+    {
+      nome: 'Gestor tentando acessar rota apenas para admins',
+      user: { id: 2, nome: 'Gestor', tipo_usuario: 'gestor', empresa_id: 1 },
+      middleware: apenasAdmin,
+      esperado: 'error'
+    },
+    {
+      nome: 'Gestor acessando rota para admin ou gestor',
+      user: { id: 2, nome: 'Gestor', tipo_usuario: 'gestor', empresa_id: 1 },
+      middleware: adminOuGestor,
+      esperado: 'success'
+    },
+    {
+      nome: 'Professor acessando rota para gestor, diretor ou professor',
+      user: { id: 4, nome: 'Professor', tipo_usuario: 'professor', empresa_id: 1 },
+      middleware: gestorDiretorOuProfessor,
+      esperado: 'success'
+    },
+    {
+      nome: 'Aluno tentando acessar rota para todos exceto alunos',
+      user: { id: 5, nome: 'Aluno', tipo_usuario: 'aluno', empresa_id: 1 },
+      middleware: todosExcetoAluno,
+      esperado: 'error'
+    },
+    {
+      nome: 'Diretor acessando rota para diretor ou professor',
+      user: { id: 3, nome: 'Diretor', tipo_usuario: 'diretor', empresa_id: 1 },
+      middleware: diretorOuProfessor,
+      esperado: 'success'
+    },
+    {
+      nome: 'Usuario sem tipo_usuario definido',
+      user: { id: 6, nome: 'Sem Tipo', tipo_usuario: null, empresa_id: 1 },
+      middleware: qualquerTipo,
+      esperado: 'error'
+    },
+    {
+      nome: 'Professor acessando rota para qualquer tipo',
+      user: { id: 4, nome: 'Professor', tipo_usuario: 'professor', empresa_id: 1 },
+      middleware: qualquerTipo,
+      esperado: 'success'
+    }
+  ];
+  
+  console.log('📋 Executando cenários de teste:\n');
+  
+  cenarios.forEach((cenario, index) => {
+    console.log(`${index + 1}. ${cenario.nome}`);
+    
+    const req = { user: cenario.user };
+    const res = {
+      status: (code) => ({
+        json: (data) => {
+          const resultado = code === 403 || code === 401 ? 'error' : 'success';
+          const status = resultado === cenario.esperado ? '✅' : '❌';
+          
+          console.log(`   ${status} Status: ${code} | Esperado: ${cenario.esperado} | Resultado: ${resultado}`);
+          if (data.message) {
+            console.log(`   Mensagem: ${data.message}`);
+          }
+          console.log('');
+        }
+      })
+    };
+    const next = () => {
+      const status = cenario.esperado === 'success' ? '✅' : '❌';
+      console.log(`   ${status} Acesso autorizado | Esperado: ${cenario.esperado} | Resultado: success\n`);
+    };
+    
+    try {
+      cenario.middleware(req, res, next);
+    } catch (error) {
+      console.log(`   ❌ Erro: ${error.message}\n`);
+    }
+  });
+}
+
+// EXEMPLO 16: Testar middlewares pré-configurados
+export function testarMiddlewaresPreConfigurados() {
+  console.log('🧪 Testando middlewares pré-configurados...\n');
+  
+  const middlewares = [
+    { nome: 'apenasAdmin', middleware: apenasAdmin, tipos: ['admin'] },
+    { nome: 'apenasGestor', middleware: apenasGestor, tipos: ['gestor'] },
+    { nome: 'apenasDiretor', middleware: apenasDiretor, tipos: ['diretor'] },
+    { nome: 'apenasProfessor', middleware: apenasProfessor, tipos: ['professor'] },
+    { nome: 'apenasAluno', middleware: apenasAluno, tipos: ['aluno'] },
+    { nome: 'adminOuGestor', middleware: adminOuGestor, tipos: ['admin', 'gestor'] },
+    { nome: 'gestorOuDiretor', middleware: gestorOuDiretor, tipos: ['gestor', 'diretor'] },
+    { nome: 'diretorOuProfessor', middleware: diretorOuProfessor, tipos: ['diretor', 'professor'] },
+    { nome: 'professorOuAluno', middleware: professorOuAluno, tipos: ['professor', 'aluno'] },
+    { nome: 'adminGestorOuDiretor', middleware: adminGestorOuDiretor, tipos: ['admin', 'gestor', 'diretor'] },
+    { nome: 'gestorDiretorOuProfessor', middleware: gestorDiretorOuProfessor, tipos: ['gestor', 'diretor', 'professor'] },
+    { nome: 'todosExcetoAluno', middleware: todosExcetoAluno, tipos: ['admin', 'gestor', 'diretor', 'professor'] },
+    { nome: 'qualquerTipo', middleware: qualquerTipo, tipos: ['admin', 'gestor', 'diretor', 'professor', 'aluno'] }
+  ];
+  
+  const tiposUsuario = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+  
+  middlewares.forEach(item => {
+    console.log(`🔍 Testando ${item.nome} (permite: ${item.tipos.join(', ')})`);
+    
+    tiposUsuario.forEach(tipo => {
+      const user = { id: 1, nome: `Teste ${tipo}`, tipo_usuario: tipo, empresa_id: 1 };
+      const esperado = item.tipos.includes(tipo) ? 'success' : 'error';
+      
+      const req = { user };
+      let resultado = 'error';
+      
+      const res = {
+        status: () => ({
+          json: () => {
+            resultado = 'error';
+          }
+        })
+      };
+      
+      const next = () => {
+        resultado = 'success';
+      };
+      
+      try {
+        item.middleware(req, res, next);
+        const status = resultado === esperado ? '✅' : '❌';
+        console.log(`   ${status} ${tipo}: ${resultado} (esperado: ${esperado})`);
+      } catch (error) {
+        console.log(`   ❌ ${tipo}: erro (${error.message})`);
+      }
+    });
+    
+    console.log('');
+  });
+}
+
+// EXEMPLO 17: Executar todos os testes
 export async function executarTodosOsTestesAutorizacao() {
   console.log('🧪 Executando todos os testes de autorização...\n');
   
   try {
+    console.log('='.repeat(80));
+    console.log('TESTES DE VERIFICAÇÃO DE TIPO DE USUÁRIO');
+    console.log('='.repeat(80));
+    testarVerificacaoTipoUsuario();
+    
+    console.log('='.repeat(80));
+    console.log('TESTES DE MIDDLEWARES PRÉ-CONFIGURADOS');
+    console.log('='.repeat(80));
+    testarMiddlewaresPreConfigurados();
+    
+    console.log('='.repeat(80));
+    console.log('TESTES DE VERIFICAÇÃO DE EMPRESA');
+    console.log('='.repeat(80));
     await testarVerificacaoEmpresa();
+    
+    console.log('='.repeat(80));
+    console.log('TESTES DE FILTROS DE EMPRESA');
+    console.log('='.repeat(80));
     testarFiltrosEmpresa();
+    
     console.log('✅ Todos os testes de autorização executados!');
   } catch (error) {
     console.error('❌ Erro nos testes de autorização:', error.message);

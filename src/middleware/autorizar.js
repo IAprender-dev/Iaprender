@@ -1,5 +1,70 @@
 import { executeQuery } from '../config/database.js';
 
+// Função para verificar tipo de usuário
+export const verificarTipoUsuario = (tiposPermitidos) => {
+  return (req, res, next) => {
+    try {
+      // Verificar se o usuário está autenticado
+      if (!req.user) {
+        return res.status(401).json({
+          message: 'Usuário não autenticado',
+          error: 'USER_NOT_AUTHENTICATED'
+        });
+      }
+
+      // Verificar se tipo_usuario existe
+      if (!req.user.tipo_usuario) {
+        return res.status(403).json({
+          message: 'Tipo de usuário não definido',
+          error: 'USER_TYPE_UNDEFINED'
+        });
+      }
+
+      // Normalizar tipos permitidos para array
+      const tipos = Array.isArray(tiposPermitidos) ? tiposPermitidos : [tiposPermitidos];
+
+      // Verificar se o tipo do usuário está nos tipos permitidos
+      if (!tipos.includes(req.user.tipo_usuario)) {
+        console.log(`❌ Acesso negado: ${req.user.nome} (${req.user.tipo_usuario}) tentou acessar recurso que requer ${tipos.join(' ou ')}`);
+        
+        return res.status(403).json({
+          message: `Acesso restrito a: ${tipos.join(', ')}`,
+          error: 'INSUFFICIENT_USER_TYPE',
+          user_type: req.user.tipo_usuario,
+          required_types: tipos
+        });
+      }
+
+      console.log(`✅ Tipo autorizado: ${req.user.nome} (${req.user.tipo_usuario}) - requer ${tipos.join(' ou ')}`);
+      next();
+
+    } catch (error) {
+      console.error('❌ Erro na verificação de tipo de usuário:', error.message);
+      return res.status(500).json({
+        message: 'Erro interno na verificação de tipo de usuário',
+        error: 'USER_TYPE_VERIFICATION_ERROR'
+      });
+    }
+  };
+};
+
+// Middlewares pré-configurados para tipos específicos
+export const apenasAdmin = verificarTipoUsuario(['admin']);
+export const apenasGestor = verificarTipoUsuario(['gestor']);
+export const apenasDiretor = verificarTipoUsuario(['diretor']);
+export const apenasProfessor = verificarTipoUsuario(['professor']);
+export const apenasAluno = verificarTipoUsuario(['aluno']);
+
+// Middlewares para combinações comuns
+export const adminOuGestor = verificarTipoUsuario(['admin', 'gestor']);
+export const gestorOuDiretor = verificarTipoUsuario(['gestor', 'diretor']);
+export const diretorOuProfessor = verificarTipoUsuario(['diretor', 'professor']);
+export const professorOuAluno = verificarTipoUsuario(['professor', 'aluno']);
+export const adminGestorOuDiretor = verificarTipoUsuario(['admin', 'gestor', 'diretor']);
+export const gestorDiretorOuProfessor = verificarTipoUsuario(['gestor', 'diretor', 'professor']);
+export const todosExcetoAluno = verificarTipoUsuario(['admin', 'gestor', 'diretor', 'professor']);
+export const qualquerTipo = verificarTipoUsuario(['admin', 'gestor', 'diretor', 'professor', 'aluno']);
+
 // Função para verificar acesso baseado em empresa
 export const verificarEmpresa = (options = {}) => {
   return async (req, res, next) => {
@@ -278,6 +343,20 @@ export const auditarAcessoEmpresa = (acao) => {
 };
 
 export default {
+  verificarTipoUsuario,
+  apenasAdmin,
+  apenasGestor,
+  apenasDiretor,
+  apenasProfessor,
+  apenasAluno,
+  adminOuGestor,
+  gestorOuDiretor,
+  diretorOuProfessor,
+  professorOuAluno,
+  adminGestorOuDiretor,
+  gestorDiretorOuProfessor,
+  todosExcetoAluno,
+  qualquerTipo,
   verificarEmpresa,
   verificarEmpresaContrato,
   verificarEmpresaEscola,
