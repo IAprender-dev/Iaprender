@@ -1,5 +1,5 @@
 import { db } from "../db";
-import { tokenUsage, users, contracts } from "@shared/schema";
+// Tables removed - will be reimplemented with new hierarchical structure
 import { eq, and, gte, lte, sum, desc, sql } from "drizzle-orm";
 
 // Tipos para monitoramento de tokens

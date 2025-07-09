@@ -1,7 +1,7 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { BedrockClient, ListFoundationModelsCommand } from '@aws-sdk/client-bedrock';
 import { db } from "../../db";
-import { tokenUsage, aiTools } from "@shared/schema";
+// Tables removed - will be reimplemented with new hierarchical structure
 
 // Inicializar clientes AWS Bedrock com verificação de credenciais
 let bedrockRuntime: BedrockRuntimeClient | null = null;

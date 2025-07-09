@@ -1,7 +1,6 @@
 import { db } from "../../../db";
-import { userTokenLimits, tokenUsageLogs, users } from "@shared/schema";
+// Tables removed - will be reimplemented with new hierarchical structure
 import { eq, sql, and, gte } from "drizzle-orm";
-import type { InsertUserTokenLimit, InsertTokenUsageLog, UserTokenLimit } from "@shared/schema";
 
 export interface TokenLimitCheck {
   canProceed: boolean;

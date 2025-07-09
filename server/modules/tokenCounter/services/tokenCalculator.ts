@@ -1,4 +1,4 @@
-import { TokenProviderRate } from "@shared/schema";
+// Tables removed - will be reimplemented with new hierarchical structure
 
 export interface TokenCalculationResult {
   promptTokens: number;

@@ -1,6 +1,6 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
-import { users, companies, contracts, municipalSchools } from '../../shared/schema';
+// All table imports removed - will be reimplemented with new hierarchical structure
 import { eq, inArray, and } from 'drizzle-orm';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';

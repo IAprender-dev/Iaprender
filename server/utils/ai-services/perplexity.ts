@@ -1,5 +1,5 @@
 import { db } from "../../db";
-import { tokenUsage, aiTools } from "@shared/schema";
+// Tables removed - will be reimplemented with new hierarchical structure
 import { eq } from "drizzle-orm";
 
 // Tipos para solicitações
