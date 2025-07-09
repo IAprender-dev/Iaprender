@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (userData.role === 'admin') {
         setLocation('/admin/master'); // Admin users redirected to master dashboard
       } else if (userData.role === 'municipal_manager') {
-        setLocation('/municipal/dashboard'); // Municipal managers redirected to municipal dashboard
+        setLocation('/gestor/dashboard'); // Municipal managers redirected to gestor dashboard
       } else if (userData.role === 'school_director') {
         setLocation('/school/dashboard'); // School directors redirected to school dashboard
       } else if (userData.role === 'teacher') {
@@ -156,9 +156,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Mutation para logout
   const logoutMutation = useMutation<void, Error, void>({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/auth/logout");
-      if (!res.ok) {
+      try {
+        const res = await apiRequest("POST", "/api/auth/logout");
+        // Não falha se retornar 200, mesmo com body empty
+        if (res.status === 200 || res.ok) {
+          return;
+        }
         throw new Error("Logout failed");
+      } catch (error) {
+        // Se o logout falhar no servidor, limpa localmente mesmo assim
+        console.log("Logout failed on server, clearing local session");
+        return;
       }
     },
     onSuccess: () => {

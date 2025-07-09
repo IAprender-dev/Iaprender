@@ -834,13 +834,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Logout
   app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: "Error logging out" });
+    try {
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('Erro ao destruir sessão:', err);
+            res.clearCookie('connect.sid');
+            return res.status(200).json({ message: "Logged out successfully" });
+          }
+          res.clearCookie('connect.sid');
+          res.status(200).json({ message: "Logged out successfully" });
+        });
+      } else {
+        res.clearCookie('connect.sid');
+        res.status(200).json({ message: "Logged out successfully" });
       }
+    } catch (error) {
+      console.error('Erro no logout:', error);
       res.clearCookie('connect.sid');
-      return res.status(200).json({ message: "Logged out successfully" });
-    });
+      res.status(200).json({ message: "Logged out successfully" });
+    }
   });
 
   // Get current user
