@@ -129,6 +129,25 @@ router.post('/',
 );
 
 /**
+ * PUT /api/usuarios/:id
+ * Atualizar dados de usuário específico (método PUT)
+ * 
+ * MIDDLEWARE: autenticar, verificarProprioUsuario
+ * PERMISSÕES: Apenas próprios dados do usuário
+ * RATE LIMIT: 15 requests/min
+ * 
+ * CAMPOS PROTEGIDOS (não podem ser alterados):
+ * - id, cognito_sub, criado_em, atualizado_em
+ * 
+ * VALIDAÇÃO: req.user.id == req.params.id obrigatória
+ */
+router.put('/:id', 
+  autenticar, 
+  verificarProprioUsuario, 
+  UsuarioController.atualizarUsuario
+);
+
+/**
  * PATCH /api/usuarios/:id
  * Atualizar dados de usuário específico
  * 

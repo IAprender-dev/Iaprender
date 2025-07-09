@@ -237,6 +237,16 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ Validação: req.user.id == req.params.id obrigatória
   - ✅ Segurança: Usuários podem acessar apenas seus próprios dados por ID
   - ✅ Status: ROTA GET /:id CONFIGURADA PARA DADOS PRÓPRIOS
+- July 9, 2025: ✅ CONCLUÍDO - Configuração da Rota PUT /:id para Atualizar Usuário
+  - ✅ Configurada rota PUT /api/usuarios/:id com middlewares corretos
+  - ✅ Middleware aplicado: autenticar + verificarProprioUsuario
+  - ✅ Controller configurado: UsuarioController.atualizarUsuario
+  - ✅ Rate limiting de 15 requests/min aplicado
+  - ✅ Permissões: Apenas próprios dados do usuário
+  - ✅ Validação: req.user.id == req.params.id obrigatória
+  - ✅ Campos protegidos: id, cognito_sub, criado_em, atualizado_em não podem ser alterados
+  - ✅ Segurança: Usuários podem atualizar apenas seus próprios dados por ID
+  - ✅ Status: ROTA PUT /:id CONFIGURADA PARA ATUALIZAÇÃO DE DADOS PRÓPRIOS
 - July 9, 2025: ✅ CONCLUÍDO - Função listarUsuarios() Implementada com Sistema Completo de Filtros e Paginação
   - ✅ Função listarUsuarios(req, res) criada com sistema avançado de filtros por empresa
   - ✅ Controle de acesso hierárquico: admin (qualquer empresa) vs gestor (própria empresa)
