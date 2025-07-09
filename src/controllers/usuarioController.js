@@ -110,6 +110,253 @@ export class UsuarioController {
     }
   }
 
+  /**
+   * Validação e sanitização de ID
+   * @param {string|number} id - ID a ser validado
+   * @param {string} fieldName - Nome do campo para mensagem de erro
+   * @returns {number} ID validado
+   */
+  static validateAndSanitizeId(id, fieldName = 'ID') {
+    if (!id) {
+      const error = new Error(`${fieldName} é obrigatório`);
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    const numericId = parseInt(id);
+    if (isNaN(numericId) || numericId <= 0) {
+      const error = new Error(`${fieldName} deve ser um número válido maior que zero`);
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    return numericId;
+  }
+
+  /**
+   * Validação e sanitização de email
+   * @param {string} email - Email a ser validado
+   * @returns {string} Email limpo e validado
+   */
+  static validateAndSanitizeEmail(email) {
+    if (!email || typeof email !== 'string') {
+      const error = new Error('Email é obrigatório');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    const emailLimpo = email.toLowerCase().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!emailRegex.test(emailLimpo)) {
+      const error = new Error('Formato de email inválido');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    // Validar tamanho
+    if (emailLimpo.length > 255) {
+      const error = new Error('Email muito longo (máximo 255 caracteres)');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    return emailLimpo;
+  }
+
+  /**
+   * Validação de string genérica
+   * @param {string} value - Valor a ser validado
+   * @param {string} fieldName - Nome do campo
+   * @param {Object} options - Opções de validação
+   * @returns {string} String limpa
+   */
+  static validateAndSanitizeString(value, fieldName, options = {}) {
+    const { required = false, minLength = 0, maxLength = 255, allowEmpty = false } = options;
+
+    if (required && (!value || (typeof value === 'string' && value.trim().length === 0))) {
+      const error = new Error(`${fieldName} é obrigatório`);
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    if (!value) {
+      return allowEmpty ? '' : null;
+    }
+
+    if (typeof value !== 'string') {
+      const error = new Error(`${fieldName} deve ser uma string`);
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    const cleanValue = value.trim();
+
+    if (cleanValue.length < minLength) {
+      const error = new Error(`${fieldName} deve ter pelo menos ${minLength} caracteres`);
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    if (cleanValue.length > maxLength) {
+      const error = new Error(`${fieldName} deve ter no máximo ${maxLength} caracteres`);
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    // Sanitizar caracteres perigosos básicos
+    return cleanValue.replace(/[<>\"']/g, '');
+  }
+
+  /**
+   * Validação de parâmetros de paginação
+   * @param {Object} query - Query parameters
+   * @returns {Object} Parâmetros validados
+   */
+  static validatePaginationParams(query) {
+    const { page = 1, limit = 20 } = query;
+
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+
+    if (isNaN(pageNum) || pageNum < 1) {
+      const error = new Error('Página deve ser um número maior que zero');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    if (isNaN(limitNum) || limitNum < 1) {
+      const error = new Error('Limite deve ser um número maior que zero');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    if (limitNum > 100) {
+      const error = new Error('Limite máximo de 100 registros por página');
+      error.code = 'VALIDATION_ERROR';
+      throw error;
+    }
+
+    return { page: pageNum, limit: limitNum };
+  }
+
+  /**
+   * Validação de acesso a dados do usuário
+   * @param {Object} requestUser - Usuário da requisição
+   * @param {number} targetUserId - ID do usuário alvo
+   * @returns {boolean} True se acesso permitido
+   */
+  static validateUserAccess(requestUser, targetUserId) {
+    // Admin tem acesso total
+    if (requestUser.tipo_usuario === 'admin') {
+      return true;
+    }
+
+    // Próprios dados sempre permitidos
+    if (requestUser.id === targetUserId) {
+      return true;
+    }
+
+    // Gestor pode acessar usuários da mesma empresa
+    if (requestUser.tipo_usuario === 'gestor' && requestUser.empresa_id) {
+      // Esta validação precisa consultar o banco para verificar a empresa do usuário alvo
+      // Por ora, retornamos false e deixamos a validação específica para cada endpoint
+      return false;
+    }
+
+    return false;
+  }
+
+  /**
+   * Validação de dados específicos por tipo de usuário
+   * @param {string} tipoUsuario - Tipo do usuário
+   * @param {Object} dados - Dados a serem validados
+   * @returns {Array} Array de erros encontrados
+   */
+  static validateUserTypeSpecificData(tipoUsuario, dados) {
+    const errors = [];
+
+    switch (tipoUsuario) {
+      case 'professor':
+        if (dados.disciplinas && !Array.isArray(dados.disciplinas)) {
+          errors.push('Disciplinas deve ser um array');
+        }
+        if (dados.disciplinas && dados.disciplinas.length === 0) {
+          errors.push('Professor deve ter pelo menos uma disciplina');
+        }
+        break;
+
+      case 'aluno':
+        if (dados.serie && typeof dados.serie !== 'string') {
+          errors.push('Série deve ser uma string');
+        }
+        if (dados.turma && typeof dados.turma !== 'string') {
+          errors.push('Turma deve ser uma string');
+        }
+        break;
+
+      case 'diretor':
+        if (dados.escola_id && (isNaN(parseInt(dados.escola_id)) || parseInt(dados.escola_id) <= 0)) {
+          errors.push('ID da escola deve ser um número válido');
+        }
+        break;
+
+      case 'gestor':
+        if (dados.cargo && typeof dados.cargo !== 'string') {
+          errors.push('Cargo deve ser uma string');
+        }
+        break;
+    }
+
+    return errors;
+  }
+
+  /**
+   * Rate limiting simples baseado em memória
+   * @param {string} identifier - Identificador único (IP, user ID, etc.)
+   * @param {number} maxRequests - Máximo de requisições permitidas
+   * @param {number} windowMs - Janela de tempo em milissegundos
+   * @returns {boolean} True se dentro do limite
+   */
+  static rateLimitCheck(identifier, maxRequests = 100, windowMs = 60000) {
+    if (!this.rateLimitStore) {
+      this.rateLimitStore = new Map();
+    }
+
+    const now = Date.now();
+    const key = `${identifier}_${Math.floor(now / windowMs)}`;
+    
+    const current = this.rateLimitStore.get(key) || 0;
+    
+    if (current >= maxRequests) {
+      return false;
+    }
+
+    this.rateLimitStore.set(key, current + 1);
+
+    // Limpeza periódica da store
+    if (Math.random() < 0.01) { // 1% de chance
+      this.cleanupRateLimitStore(now, windowMs);
+    }
+
+    return true;
+  }
+
+  /**
+   * Limpeza da store de rate limiting
+   */
+  static cleanupRateLimitStore(now, windowMs) {
+    if (!this.rateLimitStore) return;
+
+    const cutoff = now - (windowMs * 2);
+    for (const [key] of this.rateLimitStore) {
+      const timestamp = parseInt(key.split('_').pop()) * windowMs;
+      if (timestamp < cutoff) {
+        this.rateLimitStore.delete(key);
+      }
+    }
+  }
+
   // ============================================================================
   // ENDPOINTS PRINCIPAIS DO CRUD
   // ============================================================================
@@ -120,18 +367,33 @@ export class UsuarioController {
    */
   static async buscarPorId(req, res) {
     try {
-      console.log('🔍 UsuarioController.buscarPorId - ID:', req.params.id);
+      console.log('🔍 UsuarioController.buscarPorId - User:', req.user.id, 'Target ID:', req.params.id);
 
-      const { id } = req.params;
-      
-      if (!id || isNaN(parseInt(id))) {
-        return this.sendResponse(res, 400, null, 'ID do usuário inválido');
+      // Rate limiting por usuário
+      const rateLimitKey = `buscarPorId_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 50, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas requisições. Tente novamente em alguns instantes.');
       }
 
-      const usuario = await Usuario.findById(parseInt(id));
+      // Validação e sanitização do ID
+      const userId = this.validateAndSanitizeId(req.params.id, 'ID do usuário');
+
+      // Validação de acesso (já feita pelo middleware, mas revalidamos por segurança)
+      if (!this.validateUserAccess(req.user, userId)) {
+        console.warn(`⚠️ Tentativa de acesso negado: user ${req.user.id} tentando acessar ${userId}`);
+        return this.sendResponse(res, 403, null, 'Acesso negado a este usuário');
+      }
+
+      const usuario = await Usuario.findById(userId);
       
       if (!usuario) {
+        console.warn(`⚠️ Usuário não encontrado: ID ${userId} solicitado por ${req.user.id}`);
         return this.sendResponse(res, 404, null, 'Usuário não encontrado');
+      }
+
+      // Log de auditoria para acesso a dados de outros usuários
+      if (req.user.id !== userId) {
+        console.log(`🔍 Acesso a dados de terceiro: ${req.user.tipo_usuario} ${req.user.id} acessou dados do usuário ${userId}`);
       }
 
       // Retornar dados limpos via toJSON()
@@ -148,18 +410,33 @@ export class UsuarioController {
    */
   static async buscarPorEmail(req, res) {
     try {
-      console.log('🔍 UsuarioController.buscarPorEmail - Email:', req.params.email);
+      console.log('🔍 UsuarioController.buscarPorEmail - User:', req.user.id, 'Target Email:', req.params.email);
 
-      const { email } = req.params;
-      
-      if (!email || !email.includes('@')) {
-        return this.sendResponse(res, 400, null, 'Email inválido');
+      // Rate limiting por usuário
+      const rateLimitKey = `buscarPorEmail_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 30, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas requisições. Tente novamente em alguns instantes.');
       }
 
-      const usuario = await Usuario.findByEmail(email);
+      // Validação e sanitização do email
+      const emailLimpo = this.validateAndSanitizeEmail(req.params.email);
+
+      // Log de auditoria para busca por email
+      console.log(`🔍 Busca por email: ${req.user.tipo_usuario} ${req.user.id} buscando ${emailLimpo}`);
+
+      const usuario = await Usuario.findByEmail(emailLimpo);
       
       if (!usuario) {
+        console.warn(`⚠️ Usuário não encontrado por email: ${emailLimpo} solicitado por ${req.user.id}`);
         return this.sendResponse(res, 404, null, 'Usuário não encontrado');
+      }
+
+      // Validação adicional de acesso baseada na empresa (para gestores)
+      if (req.user.tipo_usuario === 'gestor' && req.user.empresa_id) {
+        if (usuario.empresa_id !== req.user.empresa_id) {
+          console.warn(`⚠️ Acesso negado por empresa: gestor ${req.user.id} (empresa ${req.user.empresa_id}) tentando acessar usuário da empresa ${usuario.empresa_id}`);
+          return this.sendResponse(res, 403, null, 'Acesso negado a usuários de outras empresas');
+        }
       }
 
       this.sendResponse(res, 200, usuario.toJSON(), 'Usuário encontrado com sucesso');
@@ -175,18 +452,37 @@ export class UsuarioController {
    */
   static async buscarPorCognitoSub(req, res) {
     try {
-      console.log('🔍 UsuarioController.buscarPorCognitoSub - Sub:', req.params.sub);
+      console.log('🔍 UsuarioController.buscarPorCognitoSub - User:', req.user.id, 'Target Sub:', req.params.sub);
 
-      const { sub } = req.params;
-      
-      if (!sub) {
-        return this.sendResponse(res, 400, null, 'Cognito Sub inválido');
+      // Rate limiting por usuário
+      const rateLimitKey = `buscarPorCognitoSub_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 20, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas requisições. Tente novamente em alguns instantes.');
       }
 
-      const usuario = await Usuario.findByCognitoSub(sub);
+      // Validação e sanitização do Cognito Sub
+      const cognitoSub = this.validateAndSanitizeString(req.params.sub, 'Cognito Sub', {
+        required: true,
+        minLength: 10,
+        maxLength: 255
+      });
+
+      // Log de auditoria para busca por Cognito Sub
+      console.log(`🔍 Busca por Cognito Sub: ${req.user.tipo_usuario} ${req.user.id} buscando ${cognitoSub}`);
+
+      const usuario = await Usuario.findByCognitoSub(cognitoSub);
       
       if (!usuario) {
+        console.warn(`⚠️ Usuário não encontrado por Cognito Sub: ${cognitoSub} solicitado por ${req.user.id}`);
         return this.sendResponse(res, 404, null, 'Usuário não encontrado');
+      }
+
+      // Validação adicional de acesso baseada na empresa (para gestores)
+      if (req.user.tipo_usuario === 'gestor' && req.user.empresa_id) {
+        if (usuario.empresa_id !== req.user.empresa_id) {
+          console.warn(`⚠️ Acesso negado por empresa: gestor ${req.user.id} (empresa ${req.user.empresa_id}) tentando acessar usuário da empresa ${usuario.empresa_id}`);
+          return this.sendResponse(res, 403, null, 'Acesso negado a usuários de outras empresas');
+        }
       }
 
       this.sendResponse(res, 200, usuario.toJSON(), 'Usuário encontrado com sucesso');
@@ -202,11 +498,19 @@ export class UsuarioController {
    */
   static async listarUsuarios(req, res) {
     try {
-      console.log('📋 UsuarioController.listarUsuarios - Query:', req.query);
+      console.log('📋 UsuarioController.listarUsuarios - User:', req.user.id, 'Query:', req.query);
 
+      // Rate limiting por usuário
+      const rateLimitKey = `listarUsuarios_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 20, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas requisições. Tente novamente em alguns instantes.');
+      }
+
+      // Validação de parâmetros de paginação
+      const paginationParams = this.validatePaginationParams(req.query);
+
+      // Sanitização e validação de parâmetros de filtro
       const {
-        page = 1,
-        limit = 10,
         tipo_usuario,
         empresa_id,
         status = 'ativo',
@@ -215,32 +519,73 @@ export class UsuarioController {
         orderDirection = 'ASC'
       } = req.query;
 
+      // Validar e sanitizar campos de busca
+      const searchTerm = search ? this.validateAndSanitizeString(search, 'Termo de busca', {
+        maxLength: 100,
+        allowEmpty: true
+      }) : null;
+
+      // Validar orderBy contra lista permitida
+      const allowedOrderBy = ['nome', 'email', 'tipo_usuario', 'criado_em', 'ultimo_login'];
+      const validOrderBy = allowedOrderBy.includes(orderBy) ? orderBy : 'nome';
+
+      // Validar orderDirection
+      const validOrderDirection = ['ASC', 'DESC'].includes(orderDirection.toUpperCase()) 
+        ? orderDirection.toUpperCase() 
+        : 'ASC';
+
       // Filtros baseados no usuário logado
-      const filters = { status };
+      const filters = { 
+        status: this.validateAndSanitizeString(status, 'Status', { 
+          required: false,
+          allowEmpty: true 
+        }) || 'ativo'
+      };
       
-      // Se não for admin, filtrar por empresa do usuário
-      if (req.user.tipo_usuario !== 'admin' && req.user.empresa_id) {
-        filters.empresa_id = req.user.empresa_id;
+      // Controle rigoroso de acesso por empresa
+      if (req.user.tipo_usuario !== 'admin') {
+        // Gestores só veem usuários da própria empresa
+        if (req.user.empresa_id) {
+          filters.empresa_id = req.user.empresa_id;
+          console.log(`🔒 Gestor ${req.user.id} limitado à empresa ${req.user.empresa_id}`);
+        } else {
+          console.warn(`⚠️ Gestor ${req.user.id} sem empresa_id definida - acesso negado`);
+          return this.sendResponse(res, 403, null, 'Gestor deve estar vinculado a uma empresa');
+        }
       } else if (empresa_id) {
-        filters.empresa_id = parseInt(empresa_id);
+        // Admin pode especificar empresa específica
+        const empresaIdValidada = this.validateAndSanitizeId(empresa_id, 'ID da empresa');
+        filters.empresa_id = empresaIdValidada;
       }
 
+      // Validar tipo_usuario contra lista permitida
       if (tipo_usuario) {
-        filters.tipo_usuario = tipo_usuario;
+        const allowedTypes = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+        if (allowedTypes.includes(tipo_usuario)) {
+          filters.tipo_usuario = tipo_usuario;
+        } else {
+          return this.sendResponse(res, 400, null, `Tipo de usuário inválido. Tipos permitidos: ${allowedTypes.join(', ')}`);
+        }
       }
 
-      if (search) {
-        filters.search = search;
+      if (searchTerm) {
+        filters.search = searchTerm;
       }
 
       const options = {
-        page: parseInt(page),
-        limit: Math.min(parseInt(limit), 100), // Máximo 100 por página
-        orderBy,
-        orderDirection: orderDirection.toUpperCase()
+        page: paginationParams.page,
+        limit: paginationParams.limit,
+        orderBy: validOrderBy,
+        orderDirection: validOrderDirection
       };
 
+      // Log de auditoria da consulta
+      console.log(`📋 Listagem de usuários: ${req.user.tipo_usuario} ${req.user.id} - Filtros:`, filters, 'Opções:', options);
+
       const resultado = await Usuario.findAll(filters, options);
+
+      // Log de resultado
+      console.log(`✅ Listagem retornou ${resultado.usuarios.length} de ${resultado.total} usuários`);
 
       this.sendResponse(res, 200, {
         usuarios: resultado.usuarios.map(u => u.toJSON()),
@@ -248,7 +593,15 @@ export class UsuarioController {
           page: options.page,
           limit: options.limit,
           total: resultado.total,
-          pages: Math.ceil(resultado.total / options.limit)
+          pages: Math.ceil(resultado.total / options.limit),
+          hasNext: options.page < Math.ceil(resultado.total / options.limit),
+          hasPrev: options.page > 1
+        },
+        filters: filters, // Retornar filtros aplicados para transparência
+        metadata: {
+          requested_by: req.user.id,
+          request_timestamp: new Date().toISOString(),
+          user_type: req.user.tipo_usuario
         }
       }, 'Usuários listados com sucesso');
 
@@ -263,26 +616,158 @@ export class UsuarioController {
    */
   static async criarUsuario(req, res) {
     try {
-      console.log('📝 UsuarioController.criarUsuario - Dados:', req.body);
+      console.log('📝 UsuarioController.criarUsuario - User:', req.user.id, 'Tipo:', req.user.tipo_usuario);
+
+      // Rate limiting rigoroso para criação de usuários
+      const rateLimitKey = `criarUsuario_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 10, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas tentativas de criação. Aguarde antes de tentar novamente.');
+      }
 
       // Validar campos obrigatórios
       this.validateRequiredFields(req.body, [
         'cognito_sub', 'email', 'nome', 'tipo_usuario'
       ]);
 
-      const dadosUsuario = {
-        ...req.body,
-        // Se não for admin, forçar empresa do usuário logado
-        empresa_id: req.user.tipo_usuario === 'admin' 
-          ? req.body.empresa_id 
-          : req.user.empresa_id
+      // Validação e sanitização rigorosa dos dados de entrada
+      const dadosLimpos = {};
+
+      // Campos obrigatórios com validação específica
+      dadosLimpos.cognito_sub = this.validateAndSanitizeString(req.body.cognito_sub, 'Cognito Sub', {
+        required: true,
+        minLength: 10,
+        maxLength: 255
+      });
+
+      dadosLimpos.email = this.validateAndSanitizeEmail(req.body.email);
+
+      dadosLimpos.nome = this.validateAndSanitizeString(req.body.nome, 'Nome', {
+        required: true,
+        minLength: 2,
+        maxLength: 100
+      });
+
+      // Validar tipo_usuario contra lista permitida
+      const allowedTypes = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+      if (!allowedTypes.includes(req.body.tipo_usuario)) {
+        return this.sendResponse(res, 400, null, `Tipo de usuário inválido. Tipos permitidos: ${allowedTypes.join(', ')}`);
+      }
+      dadosLimpos.tipo_usuario = req.body.tipo_usuario;
+
+      // Validação de hierarquia de criação
+      const tiposPermitidosPorUsuario = {
+        admin: ['admin', 'gestor', 'diretor', 'professor', 'aluno'],
+        gestor: ['diretor', 'professor', 'aluno']
       };
 
-      const usuario = await Usuario.criar(dadosUsuario);
+      const tiposPermitidos = tiposPermitidosPorUsuario[req.user.tipo_usuario] || [];
+      if (!tiposPermitidos.includes(req.body.tipo_usuario)) {
+        console.warn(`⚠️ Tentativa de criação não autorizada: ${req.user.tipo_usuario} tentando criar ${req.body.tipo_usuario}`);
+        return this.sendResponse(res, 403, null, `${req.user.tipo_usuario}s podem criar apenas: ${tiposPermitidos.join(', ')}`);
+      }
 
-      this.sendResponse(res, 201, usuario.toJSON(), 'Usuário criado com sucesso');
+      // Campos opcionais com validação
+      if (req.body.telefone) {
+        dadosLimpos.telefone = this.validateAndSanitizeString(req.body.telefone, 'Telefone', {
+          maxLength: 20
+        });
+      }
+
+      if (req.body.documento) {
+        // Sanitizar documento removendo pontuação
+        const documentoLimpo = req.body.documento.replace(/\D/g, '');
+        if (documentoLimpo.length !== 11 && documentoLimpo.length !== 14) {
+          return this.sendResponse(res, 400, null, 'Documento deve ter 11 dígitos (CPF) ou 14 dígitos (CNPJ)');
+        }
+        dadosLimpos.documento = documentoLimpo;
+      }
+
+      if (req.body.endereco) {
+        dadosLimpos.endereco = this.validateAndSanitizeString(req.body.endereco, 'Endereço', {
+          maxLength: 255
+        });
+      }
+
+      if (req.body.cidade) {
+        dadosLimpos.cidade = this.validateAndSanitizeString(req.body.cidade, 'Cidade', {
+          maxLength: 100
+        });
+      }
+
+      if (req.body.estado) {
+        dadosLimpos.estado = this.validateAndSanitizeString(req.body.estado, 'Estado', {
+          maxLength: 2
+        });
+      }
+
+      // Controle rigoroso de empresa_id
+      if (req.user.tipo_usuario === 'admin') {
+        // Admin pode especificar empresa ou deixar null
+        if (req.body.empresa_id) {
+          dadosLimpos.empresa_id = this.validateAndSanitizeId(req.body.empresa_id, 'ID da empresa');
+        }
+      } else {
+        // Gestor: usuário deve ser criado na mesma empresa
+        if (!req.user.empresa_id) {
+          return this.sendResponse(res, 403, null, 'Gestor deve estar vinculado a uma empresa para criar usuários');
+        }
+        dadosLimpos.empresa_id = req.user.empresa_id;
+        console.log(`🔒 Gestor ${req.user.id} criando usuário na empresa ${req.user.empresa_id}`);
+      }
+
+      // Validação específica por tipo de usuário
+      const validationErrors = this.validateUserTypeSpecificData(req.body.tipo_usuario, req.body);
+      if (validationErrors.length > 0) {
+        return this.sendResponse(res, 400, { errors: validationErrors }, 'Dados específicos inválidos');
+      }
+
+      // Adicionar campos específicos por tipo (se fornecidos)
+      const camposEspecificosPorTipo = {
+        professor: ['disciplinas', 'formacao', 'escola_id', 'data_admissao'],
+        aluno: ['matricula', 'turma', 'serie', 'turno', 'nome_responsavel', 'contato_responsavel', 'escola_id', 'data_matricula'],
+        diretor: ['escola_id', 'cargo', 'data_inicio'],
+        gestor: ['cargo', 'data_admissao']
+      };
+
+      const camposEspecificos = camposEspecificosPorTipo[req.body.tipo_usuario] || [];
+      camposEspecificos.forEach(campo => {
+        if (req.body[campo] !== undefined) {
+          if (campo === 'escola_id' && req.body[campo]) {
+            dadosLimpos[campo] = this.validateAndSanitizeId(req.body[campo], 'ID da escola');
+          } else if (typeof req.body[campo] === 'string') {
+            dadosLimpos[campo] = this.validateAndSanitizeString(req.body[campo], campo, {
+              maxLength: 255
+            });
+          } else {
+            dadosLimpos[campo] = req.body[campo];
+          }
+        }
+      });
+
+      // Log de auditoria da tentativa de criação
+      console.log(`📝 Tentativa de criação de usuário: ${req.user.tipo_usuario} ${req.user.id} criando ${dadosLimpos.tipo_usuario} (${dadosLimpos.email})`);
+
+      const usuario = await Usuario.criar(dadosLimpos);
+
+      // Log de sucesso
+      console.log(`✅ Usuário criado com sucesso: ID ${usuario.id} (${usuario.email}) por ${req.user.id}`);
+
+      // Preparar resposta com metadata de segurança
+      const resposta = {
+        usuario: usuario.toJSON(),
+        metadata: {
+          criado_por: req.user.id,
+          tipo_criador: req.user.tipo_usuario,
+          empresa_atribuida: dadosLimpos.empresa_id,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      this.sendResponse(res, 201, resposta, 'Usuário criado com sucesso');
 
     } catch (error) {
+      // Log de erro na criação
+      console.error(`❌ Erro ao criar usuário: ${req.user.id} tentando criar ${req.body?.email}:`, error.message);
       this.handleError(res, error, 'criarUsuario');
     }
   }
@@ -293,32 +778,200 @@ export class UsuarioController {
    */
   static async atualizarUsuario(req, res) {
     try {
-      console.log('📝 UsuarioController.atualizarUsuario - ID:', req.params.id, 'Dados:', req.body);
+      console.log('📝 UsuarioController.atualizarUsuario - User:', req.user.id, 'Target ID:', req.params.id);
 
-      const { id } = req.params;
-      
-      if (!id || isNaN(parseInt(id))) {
-        return this.sendResponse(res, 400, null, 'ID do usuário inválido');
+      // Rate limiting para atualizações
+      const rateLimitKey = `atualizarUsuario_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 15, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas tentativas de atualização. Aguarde antes de tentar novamente.');
       }
 
-      // Campos que não podem ser alterados
+      // Validação e sanitização do ID
+      const userId = this.validateAndSanitizeId(req.params.id, 'ID do usuário');
+
+      // Verificar se há dados para atualizar
+      if (!req.body || Object.keys(req.body).length === 0) {
+        return this.sendResponse(res, 400, null, 'Nenhum dado fornecido para atualização');
+      }
+
+      // Buscar usuário atual para validações
+      const usuarioAtual = await Usuario.findById(userId);
+      if (!usuarioAtual) {
+        return this.sendResponse(res, 404, null, 'Usuário não encontrado');
+      }
+
+      // Validação de acesso adicional (validar se pode editar este usuário)
+      if (!this.validateUserAccess(req.user, userId) && req.user.id !== userId) {
+        console.warn(`⚠️ Tentativa de atualização não autorizada: ${req.user.id} tentando atualizar ${userId}`);
+        return this.sendResponse(res, 403, null, 'Acesso negado para atualizar este usuário');
+      }
+
+      // Campos que não podem ser alterados nunca
       const camposProtegidos = ['id', 'cognito_sub', 'criado_em', 'atualizado_em'];
-      const dadosLimpos = { ...req.body };
-      
-      camposProtegidos.forEach(campo => delete dadosLimpos[campo]);
+      const dadosLimpos = {};
 
-      // Se não for admin, não pode alterar empresa_id ou tipo_usuario
-      if (req.user.tipo_usuario !== 'admin') {
-        delete dadosLimpos.empresa_id;
-        delete dadosLimpos.tipo_usuario;
-        delete dadosLimpos.status;
+      // Filtrar e validar cada campo
+      Object.keys(req.body).forEach(campo => {
+        if (camposProtegidos.includes(campo)) {
+          console.warn(`⚠️ Tentativa de alterar campo protegido: ${campo} por usuário ${req.user.id}`);
+          return; // Ignora campo protegido
+        }
+
+        const valor = req.body[campo];
+
+        // Validação específica por campo
+        try {
+          switch (campo) {
+            case 'email':
+              // Só admin pode alterar email
+              if (req.user.tipo_usuario !== 'admin') {
+                console.warn(`⚠️ Tentativa de alterar email por não-admin: ${req.user.id}`);
+                return;
+              }
+              dadosLimpos.email = this.validateAndSanitizeEmail(valor);
+              break;
+
+            case 'nome':
+              dadosLimpos.nome = this.validateAndSanitizeString(valor, 'Nome', {
+                required: true,
+                minLength: 2,
+                maxLength: 100
+              });
+              break;
+
+            case 'telefone':
+              if (valor) {
+                dadosLimpos.telefone = this.validateAndSanitizeString(valor, 'Telefone', {
+                  maxLength: 20
+                });
+              }
+              break;
+
+            case 'documento':
+              if (valor) {
+                const documentoLimpo = valor.replace(/\D/g, '');
+                if (documentoLimpo.length !== 11 && documentoLimpo.length !== 14) {
+                  throw new Error('Documento deve ter 11 dígitos (CPF) ou 14 dígitos (CNPJ)');
+                }
+                dadosLimpos.documento = documentoLimpo;
+              }
+              break;
+
+            case 'endereco':
+              if (valor) {
+                dadosLimpos.endereco = this.validateAndSanitizeString(valor, 'Endereço', {
+                  maxLength: 255
+                });
+              }
+              break;
+
+            case 'cidade':
+              if (valor) {
+                dadosLimpos.cidade = this.validateAndSanitizeString(valor, 'Cidade', {
+                  maxLength: 100
+                });
+              }
+              break;
+
+            case 'estado':
+              if (valor) {
+                dadosLimpos.estado = this.validateAndSanitizeString(valor, 'Estado', {
+                  maxLength: 2
+                });
+              }
+              break;
+
+            case 'tipo_usuario':
+              // Só admin pode alterar tipo_usuario
+              if (req.user.tipo_usuario !== 'admin') {
+                console.warn(`⚠️ Tentativa de alterar tipo_usuario por não-admin: ${req.user.id}`);
+                return;
+              }
+              const allowedTypes = ['admin', 'gestor', 'diretor', 'professor', 'aluno'];
+              if (!allowedTypes.includes(valor)) {
+                throw new Error(`Tipo de usuário inválido. Tipos permitidos: ${allowedTypes.join(', ')}`);
+              }
+              dadosLimpos.tipo_usuario = valor;
+              break;
+
+            case 'empresa_id':
+              // Só admin pode alterar empresa_id
+              if (req.user.tipo_usuario !== 'admin') {
+                console.warn(`⚠️ Tentativa de alterar empresa_id por não-admin: ${req.user.id}`);
+                return;
+              }
+              if (valor) {
+                dadosLimpos.empresa_id = this.validateAndSanitizeId(valor, 'ID da empresa');
+              }
+              break;
+
+            case 'status':
+              // Só admin pode alterar status
+              if (req.user.tipo_usuario !== 'admin') {
+                console.warn(`⚠️ Tentativa de alterar status por não-admin: ${req.user.id}`);
+                return;
+              }
+              if (valor) {
+                dadosLimpos.status = this.validateAndSanitizeString(valor, 'Status', {
+                  maxLength: 20
+                });
+              }
+              break;
+
+            case 'configuracoes':
+              // Validar se é um objeto JSON válido
+              if (valor && typeof valor === 'object') {
+                dadosLimpos.configuracoes = valor;
+              }
+              break;
+
+            default:
+              // Campo genérico - sanitizar como string se não for null
+              if (valor !== null && valor !== undefined) {
+                dadosLimpos[campo] = this.validateAndSanitizeString(valor, campo, {
+                  maxLength: 255,
+                  allowEmpty: true
+                });
+              }
+          }
+        } catch (fieldError) {
+          console.warn(`⚠️ Erro ao validar campo ${campo}:`, fieldError.message);
+          throw new Error(`Erro no campo ${campo}: ${fieldError.message}`);
+        }
+      });
+
+      // Verificar se há dados válidos para atualizar
+      if (Object.keys(dadosLimpos).length === 0) {
+        return this.sendResponse(res, 400, null, 'Nenhum campo válido fornecido para atualização');
       }
 
-      const usuario = await Usuario.atualizar(parseInt(id), dadosLimpos);
+      // Log de auditoria da atualização
+      console.log(`📝 Atualização de usuário: ${req.user.tipo_usuario} ${req.user.id} atualizando ${userId} - Campos: ${Object.keys(dadosLimpos).join(', ')}`);
 
-      this.sendResponse(res, 200, usuario.toJSON(), 'Usuário atualizado com sucesso');
+      const usuario = await Usuario.atualizar(userId, dadosLimpos);
+
+      if (!usuario) {
+        return this.sendResponse(res, 500, null, 'Erro ao atualizar usuário');
+      }
+
+      // Log de sucesso
+      console.log(`✅ Usuário atualizado com sucesso: ID ${userId} por ${req.user.id}`);
+
+      // Preparar resposta com metadata
+      const resposta = {
+        usuario: usuario.toJSON(),
+        metadata: {
+          atualizado_por: req.user.id,
+          tipo_atualizador: req.user.tipo_usuario,
+          campos_atualizados: Object.keys(dadosLimpos),
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      this.sendResponse(res, 200, resposta, 'Usuário atualizado com sucesso');
 
     } catch (error) {
+      console.error(`❌ Erro ao atualizar usuário: ${req.user.id} tentando atualizar ${req.params.id}:`, error.message);
       this.handleError(res, error, 'atualizarUsuario');
     }
   }
@@ -329,23 +982,71 @@ export class UsuarioController {
    */
   static async removerUsuario(req, res) {
     try {
-      console.log('🗑️ UsuarioController.removerUsuario - ID:', req.params.id);
+      console.log('🗑️ UsuarioController.removerUsuario - Admin:', req.user.id, 'Target ID:', req.params.id);
 
-      const { id } = req.params;
-      
-      if (!id || isNaN(parseInt(id))) {
-        return this.sendResponse(res, 400, null, 'ID do usuário inválido');
+      // Rate limiting rigoroso para remoção (operação crítica)
+      const rateLimitKey = `removerUsuario_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 5, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas tentativas de remoção. Aguarde antes de tentar novamente.');
       }
 
-      const sucesso = await Usuario.deletar(parseInt(id));
+      // Validação e sanitização do ID
+      const userId = this.validateAndSanitizeId(req.params.id, 'ID do usuário');
+
+      // Buscar usuário antes da remoção para logs de auditoria
+      const usuarioParaRemover = await Usuario.findById(userId);
+      if (!usuarioParaRemover) {
+        console.warn(`⚠️ Tentativa de remoção de usuário inexistente: ID ${userId} por admin ${req.user.id}`);
+        return this.sendResponse(res, 404, null, 'Usuário não encontrado para remoção');
+      }
+
+      // Validação de proteção: admin não pode remover a si mesmo
+      if (req.user.id === userId) {
+        console.warn(`⚠️ Admin ${req.user.id} tentou remover a si mesmo - operação bloqueada`);
+        return this.sendResponse(res, 403, null, 'Não é possível remover seu próprio usuário');
+      }
+
+      // Validação adicional: verificar se é último admin do sistema
+      if (usuarioParaRemover.tipo_usuario === 'admin') {
+        const totalAdmins = await Usuario.countByType('admin');
+        if (totalAdmins <= 1) {
+          console.warn(`⚠️ Tentativa de remoção do último admin do sistema por ${req.user.id}`);
+          return this.sendResponse(res, 403, null, 'Não é possível remover o último administrador do sistema');
+        }
+      }
+
+      // Log de auditoria ANTES da remoção
+      console.log(`🗑️ REMOÇÃO DE USUÁRIO: Admin ${req.user.id} removendo usuário ${userId} (${usuarioParaRemover.email}, ${usuarioParaRemover.tipo_usuario})`);
+
+      const sucesso = await Usuario.deletar(userId);
 
       if (sucesso) {
-        this.sendResponse(res, 200, null, 'Usuário removido com sucesso');
+        // Log de auditoria de sucesso
+        console.log(`✅ Usuário removido com sucesso: ID ${userId} (${usuarioParaRemover.email}) por admin ${req.user.id}`);
+
+        // Preparar resposta com metadata de segurança
+        const resposta = {
+          usuario_removido: {
+            id: usuarioParaRemover.id,
+            email: usuarioParaRemover.email,
+            nome: usuarioParaRemover.nome,
+            tipo_usuario: usuarioParaRemover.tipo_usuario
+          },
+          metadata: {
+            removido_por: req.user.id,
+            timestamp: new Date().toISOString(),
+            ip_origem: req.ip || req.connection.remoteAddress
+          }
+        };
+
+        this.sendResponse(res, 200, resposta, 'Usuário removido com sucesso');
       } else {
-        this.sendResponse(res, 404, null, 'Usuário não encontrado para remoção');
+        console.error(`❌ Falha na remoção: Usuário ${userId} não foi removido por razões desconhecidas`);
+        this.sendResponse(res, 500, null, 'Erro interno ao remover usuário');
       }
 
     } catch (error) {
+      console.error(`❌ Erro ao remover usuário: Admin ${req.user.id} tentando remover ${req.params.id}:`, error.message);
       this.handleError(res, error, 'removerUsuario');
     }
   }
@@ -360,17 +1061,45 @@ export class UsuarioController {
    */
   static async meuPerfil(req, res) {
     try {
-      console.log('👤 UsuarioController.meuPerfil - User:', req.user.id);
+      console.log('👤 UsuarioController.meuPerfil - User:', req.user.id, 'Tipo:', req.user.tipo_usuario);
 
+      // Rate limiting básico para perfil
+      const rateLimitKey = `meuPerfil_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 60, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas requisições de perfil. Aguarde antes de tentar novamente.');
+      }
+
+      // Buscar dados atualizados do usuário no banco
       const usuario = await Usuario.findById(req.user.id);
       
       if (!usuario) {
-        return this.sendResponse(res, 404, null, 'Perfil do usuário não encontrado');
+        console.warn(`⚠️ Perfil não encontrado no banco: user ${req.user.id} autenticado mas sem registro local`);
+        return this.sendResponse(res, 404, null, 'Perfil do usuário não encontrado no banco de dados');
       }
 
-      this.sendResponse(res, 200, usuario.toJSON(), 'Perfil obtido com sucesso');
+      // Validação de consistência entre token e banco
+      if (usuario.email !== req.user.email) {
+        console.warn(`⚠️ Inconsistência de dados: token email=${req.user.email}, banco email=${usuario.email} para user ${req.user.id}`);
+        // Não bloquear, mas registrar para investigação
+      }
+
+      // Log de acesso ao próprio perfil
+      console.log(`👤 Acesso ao próprio perfil: ${req.user.tipo_usuario} ${req.user.id} (${usuario.email})`);
+
+      // Preparar resposta com dados do banco + timestamp de acesso
+      const perfilComMetadata = {
+        ...usuario.toJSON(),
+        metadata: {
+          ultimo_acesso_perfil: new Date().toISOString(),
+          fonte_dados: 'banco_local',
+          token_exp: req.user.exp ? new Date(req.user.exp * 1000).toISOString() : null
+        }
+      };
+
+      this.sendResponse(res, 200, perfilComMetadata, 'Perfil obtido com sucesso');
 
     } catch (error) {
+      console.error(`❌ Erro ao obter perfil: user ${req.user.id}:`, error.message);
       this.handleError(res, error, 'meuPerfil');
     }
   }
@@ -383,6 +1112,12 @@ export class UsuarioController {
   static async obterPerfil(req, res) {
     try {
       console.log('👤 UsuarioController.obterPerfil - User:', req.user.id, 'Tipo:', req.user.tipo_usuario);
+
+      // Rate limiting para perfil completo
+      const rateLimitKey = `obterPerfil_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 30, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas requisições de perfil completo. Aguarde antes de tentar novamente.');
+      }
 
       // Dados básicos do usuário do token JWT
       const perfilBasico = {
@@ -554,10 +1289,22 @@ export class UsuarioController {
     try {
       console.log('✏️ UsuarioController.atualizarPerfil - User:', req.user.id, 'Tipo:', req.user.tipo_usuario);
 
+      // Rate limiting para atualizações de perfil
+      const rateLimitKey = `atualizarPerfil_${req.user.id}`;
+      if (!this.rateLimitCheck(rateLimitKey, 10, 60000)) {
+        return this.sendResponse(res, 429, null, 'Muitas tentativas de atualização de perfil. Aguarde antes de tentar novamente.');
+      }
+
+      // Verificar se há dados para atualizar
+      if (!req.body || Object.keys(req.body).length === 0) {
+        return this.sendResponse(res, 400, null, 'Nenhum dado fornecido para atualização');
+      }
+
       // Buscar usuário atual
       const usuarioAtual = await Usuario.findById(req.user.id);
       
       if (!usuarioAtual) {
+        console.warn(`⚠️ Usuário não encontrado ao atualizar perfil: ${req.user.id}`);
         return this.sendResponse(res, 404, null, 'Usuário não encontrado');
       }
 
