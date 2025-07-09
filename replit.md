@@ -143,6 +143,46 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 9, 2025: ✅ CONCLUÍDO - TAREFA 9: Controller de Alunos Implementado com Sistema Hierárquico Completo
+  - ✅ Criado arquivo /src/controllers/alunoController.js com classe AlunoController completa
+  - ✅ Implementadas 5 funções principais: listarAlunos(), buscarPorId(), criarAluno(), atualizarAluno(), obterEstatisticas()
+  - ✅ Sistema de controle de acesso hierárquico por tipo de usuário:
+    • Admin: Acesso total a todos os alunos do sistema
+    • Gestor: Gerencia alunos da própria empresa (empresa_id automático)
+    • Diretor: Acesso apenas aos alunos da própria escola
+    • Professor: Visualização dos alunos das escolas vinculadas
+    • Aluno: Acesso apenas aos próprios dados (campos limitados)
+  - ✅ Função listarAlunos() com filtros avançados:
+    • Filtros por escola_id, empresa_id, turma, série, turno, status, search
+    • Paginação com limite máximo de 100 registros
+    • Ordenação por nome, matricula, turma, serie, data_matricula, criado_em
+    • Filtragem automática baseada no tipo de usuário
+  - ✅ Sistema de validações e segurança:
+    • Prepared statements para proteção contra SQL injection
+    • Validação de escola-empresa (escola deve pertencer à empresa)
+    • Geração automática de matrícula única por escola
+    • Controle de campos permitidos por tipo de usuário
+  - ✅ Enriquecimento de dados com informações relacionadas:
+    • Dados da escola (nome, código INEP, tipo, localização)
+    • Dados da empresa (nome, CNPJ, localização)
+    • Informações de contato e responsáveis
+  - ✅ Arquivo /src/examples/aluno-controller-examples.js criado com 11 exemplos detalhados:
+    • Exemplos para cada tipo de usuário (admin, gestor, diretor, professor, aluno)
+    • Casos de uso práticos (dashboard, relatórios, matrícula online)
+    • Controle de acesso documentado por função e tipo de usuário
+    • Respostas esperadas com estrutura completa dos dados
+    • 4 casos de uso práticos: dashboard diretor, relatório gestor, consulta professor, matrícula online
+  - ✅ Sistema de permissões hierárquico implementado:
+    • _verificarAcessoAluno() - Verifica acesso a aluno específico
+    • _verificarPermissaoCriacao() - Controla criação por tipo de usuário
+    • _verificarPermissaoEdicao() - Controla edição baseada em hierarquia
+    • _filtrarCamposPermitidos() - Filtra campos editáveis por tipo
+  - ✅ Funcionalidades auxiliares implementadas:
+    • _construirFiltrosUsuario() - Aplica filtros automáticos por hierarquia
+    • _validarEscolaEmpresa() - Valida relacionamento escola-empresa
+    • _gerarMatricula() - Gera matrícula única automática
+    • _enriquecerDadosAluno() - Adiciona dados relacionados
+  - ✅ Status: Controller de alunos completo e pronto para integração com rotas de API
 - July 9, 2025: ✅ CONCLUÍDO - IMPLEMENTAÇÃO COMPLETA DE SEGURANÇA ENTERPRISE-LEVEL NO USUARIOCONTROLLER
   - ✅ Aplicadas validações de segurança em TODOS os 10 endpoints do UsuarioController
   - ✅ Rate limiting personalizado por endpoint: buscarPorId (50/min), listarUsuarios (20/min), criarUsuario (10/min), atualizarUsuario (15/min), removerUsuario (5/min), perfis (30-60/min)
