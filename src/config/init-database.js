@@ -55,7 +55,8 @@ export async function checkTablesExist() {
     logger.info('📋 Tabelas existentes:', existingTables);
     
     return {
-      usuarios: existingTables.includes('usuarios')
+      usuarios: existingTables.includes('usuarios'),
+      empresas: existingTables.includes('empresas')
     };
     
   } catch (error) {
@@ -75,6 +76,7 @@ export async function resetSchema() {
     logger.warn('⚠️ RESETANDO SCHEMA - TODOS OS DADOS SERÃO PERDIDOS!');
     
     // Dropar tabelas em ordem reversa devido às foreign keys
+    await client.query('DROP TABLE IF EXISTS empresas CASCADE;');
     await client.query('DROP TABLE IF EXISTS usuarios CASCADE;');
     
     logger.info('🗑️ Schema resetado com sucesso');
@@ -95,7 +97,7 @@ export async function validateSchema() {
   
   try {
     // Verificar se a tabela usuarios tem a estrutura correta
-    const result = await client.query(`
+    const usuariosResult = await client.query(`
       SELECT column_name, data_type, is_nullable, column_default
       FROM information_schema.columns 
       WHERE table_name = 'usuarios' 
@@ -103,19 +105,43 @@ export async function validateSchema() {
       ORDER BY ordinal_position
     `);
     
-    const expectedColumns = [
+    const expectedUsuariosColumns = [
       'id', 'cognito_sub', 'email', 'nome', 'tipo_usuario', 
       'empresa_id', 'telefone', 'documento_identidade', 
       'data_nascimento', 'genero', 'endereco', 'cidade', 
       'estado', 'foto_perfil', 'criado_em', 'atualizado_em'
     ];
     
-    const actualColumns = result.rows.map(row => row.column_name);
-    const missingColumns = expectedColumns.filter(col => !actualColumns.includes(col));
+    const actualUsuariosColumns = usuariosResult.rows.map(row => row.column_name);
+    const missingUsuariosColumns = expectedUsuariosColumns.filter(col => !actualUsuariosColumns.includes(col));
     
-    if (missingColumns.length > 0) {
-      logger.error('❌ Colunas faltando na tabela usuarios:', missingColumns);
+    if (missingUsuariosColumns.length > 0) {
+      logger.error('❌ Colunas faltando na tabela usuarios:', missingUsuariosColumns);
       return false;
+    }
+    
+    // Verificar se a tabela empresas tem a estrutura correta (se existir)
+    const empresasResult = await client.query(`
+      SELECT column_name, data_type, is_nullable, column_default
+      FROM information_schema.columns 
+      WHERE table_name = 'empresas' 
+      AND table_schema = 'public'
+      ORDER BY ordinal_position
+    `);
+    
+    if (empresasResult.rows.length > 0) {
+      const expectedEmpresasColumns = [
+        'id', 'nome', 'cnpj', 'telefone', 'email_contato',
+        'endereco', 'cidade', 'estado', 'logo', 'criado_por', 'criado_em'
+      ];
+      
+      const actualEmpresasColumns = empresasResult.rows.map(row => row.column_name);
+      const missingEmpresasColumns = expectedEmpresasColumns.filter(col => !actualEmpresasColumns.includes(col));
+      
+      if (missingEmpresasColumns.length > 0) {
+        logger.error('❌ Colunas faltando na tabela empresas:', missingEmpresasColumns);
+        return false;
+      }
     }
     
     logger.info('✅ Schema validado com sucesso');

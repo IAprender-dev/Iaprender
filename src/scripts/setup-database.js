@@ -21,11 +21,11 @@ async function setupDatabase() {
     logger.info('📊 Status das tabelas:', tablesStatus);
     
     // Inicializar schema se necessário
-    if (!tablesStatus.usuarios) {
-      logger.info('🔨 Criando tabela usuarios...');
+    if (!tablesStatus.usuarios || !tablesStatus.empresas) {
+      logger.info('🔨 Criando/atualizando schema do banco...');
       await initializeSchema();
     } else {
-      logger.info('✅ Tabela usuarios já existe');
+      logger.info('✅ Todas as tabelas já existem');
     }
     
     // Validar schema

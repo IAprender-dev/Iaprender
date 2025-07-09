@@ -53,10 +53,46 @@ CREATE TRIGGER trigger_usuarios_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+-- ✅ ETAPA 2: CRIAR A TABELA DE EMPRESAS
+-- Cada empresa representa uma organização no sistema (cliente).
+
+CREATE TABLE empresas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(20) UNIQUE,
+    telefone VARCHAR(20),
+    email_contato VARCHAR(100),
+    endereco TEXT,
+    cidade VARCHAR(50),
+    estado VARCHAR(2),
+    logo TEXT,
+    criado_por INTEGER REFERENCES usuarios(id),  -- quem cadastrou a empresa
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para otimização de consultas
+CREATE INDEX idx_empresas_cnpj ON empresas(cnpj);
+CREATE INDEX idx_empresas_nome ON empresas(nome);
+CREATE INDEX idx_empresas_criado_por ON empresas(criado_por);
+
+-- Agora que empresas existem, conectamos a coluna empresa_id da tabela de usuarios
+-- com a tabela empresas:
+ALTER TABLE usuarios
+ADD CONSTRAINT fk_empresa_usuarios FOREIGN KEY (empresa_id)
+REFERENCES empresas(id) ON DELETE SET NULL;
+
+-- Comentários nas colunas para documentação
+COMMENT ON TABLE empresas IS 'Tabela de empresas/organizações clientes do sistema';
+COMMENT ON COLUMN empresas.cnpj IS 'CNPJ da empresa (único no sistema)';
+COMMENT ON COLUMN empresas.criado_por IS 'Usuário que cadastrou a empresa (FK para usuarios)';
+
+-- Trigger para atualizar timestamp (caso precise de atualizado_em futuramente)
+-- Por enquanto não implementado pois não há campo atualizado_em na especificação
+
 -- =====================================================================
 -- PRÓXIMAS ETAPAS (a serem implementadas):
--- ETAPA 2: Tabela de empresas/organizações
--- ETAPA 3: Tabela de contratos
--- ETAPA 4: Tabela de escolas
--- ETAPA 5: Relacionamentos e foreign keys
+-- ETAPA 3: Tabela de gestores
+-- ETAPA 4: Tabela de contratos
+-- ETAPA 5: Tabela de escolas
+-- ETAPA 6: Relacionamentos finais
 -- =====================================================================
