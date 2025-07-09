@@ -1,7 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { municipalManagers, municipalSchools, municipalPolicies, users, companies, contracts, schools } from '../../shared/schema';
-import { eq, and, count, sum, isNull, or, inArray, isNotNull } from 'drizzle-orm';
+import { eq, count, sum, isNull, or, inArray, isNotNull } from 'drizzle-orm';
 import { performanceMonitor, performanceMiddleware } from '../utils/performance-monitor';
 import { CognitoService } from '../utils/cognito-service';
 import { CacheManager } from '../utils/cache-manager';
@@ -160,10 +160,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [activeSchools] = await db
         .select({ count: count() })
         .from(municipalSchools)
-        .where(and(
-          eq(municipalSchools.municipalManagerId, manager.id),
-          eq(municipalSchools.status, 'active')
-        ));
+        .where(eq(municipalSchools.municipalManagerId, manager.id));
 
       const stats = {
         totalSchools: schoolStats?.totalSchools || 0,
@@ -344,10 +341,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [contract] = await db
         .select()
         .from(contracts)
-        .where(and(
-          eq(contracts.id, parseInt(contractId)),
-          eq(contracts.companyId, manager.companyId)
-        ));
+        .where(eq(contracts.id, parseInt(contractId)));
 
       if (!contract) {
         return res.status(400).json({ message: "Invalid contract for this company" });
@@ -415,11 +409,7 @@ export function registerMunicipalRoutes(app: Express) {
         const [existingDirector] = await db
           .select()
           .from(users)
-          .where(and(
-            eq(users.id, parseInt(existingDirectorId)),
-            eq(users.companyId, manager.companyId),
-            eq(users.role, 'school_director')
-          ));
+          .where(eq(users.id, parseInt(existingDirectorId)));
 
         if (!existingDirector) {
           return res.status(400).json({ message: "Invalid director selection" });
@@ -511,7 +501,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [school] = await db
         .select()
         .from(municipalSchools)
-        .where(and(
+        .where(eq(
           eq(municipalSchools.id, schoolId),
           eq(municipalSchools.municipalManagerId, manager.id)
         ));
@@ -557,7 +547,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [sourceSchool] = await db
         .select()
         .from(municipalSchools)
-        .where(and(
+        .where(eq(
           eq(municipalSchools.id, sourceSchoolId),
           eq(municipalSchools.municipalManagerId, manager.id)
         ));
@@ -565,7 +555,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [targetSchool] = await db
         .select()
         .from(municipalSchools)
-        .where(and(
+        .where(eq(
           eq(municipalSchools.id, targetSchoolId),
           eq(municipalSchools.municipalManagerId, manager.id)
         ));
@@ -698,7 +688,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [policy] = await db
         .select()
         .from(municipalPolicies)
-        .where(and(
+        .where(eq(
           eq(municipalPolicies.id, policyId),
           eq(municipalPolicies.municipalManagerId, manager.id)
         ));
@@ -810,7 +800,7 @@ export function registerMunicipalRoutes(app: Express) {
           contractId: users.contractId,
         })
         .from(users)
-        .where(and(
+        .where(eq(
           eq(users.role, 'school_director'),
           eq(users.companyId, userCompany.companyId)
         ));
@@ -898,7 +888,7 @@ export function registerMunicipalRoutes(app: Express) {
           companyId: contracts.companyId,
         })
         .from(contracts)
-        .where(and(
+        .where(eq(
           eq(contracts.companyId, userCompany.companyId),
           eq(contracts.status, 'active')
         ));
@@ -1044,7 +1034,7 @@ export function registerMunicipalRoutes(app: Express) {
       const directorsList = await db
         .select()
         .from(users)
-        .where(and(
+        .where(eq(
           eq(users.company_id, userCompanyId),
           eq(users.cognito_group, 'Diretores')
         ))
@@ -1214,7 +1204,7 @@ export function registerMunicipalRoutes(app: Express) {
         .select({ contractId: schools.contract_id })
         .from(schools)
         .innerJoin(contracts, eq(schools.contract_id, contracts.id))
-        .where(and(
+        .where(eq(
           eq(schools.id, schoolId),
           eq(contracts.company_id, userCompanyId)
         ))
@@ -1282,7 +1272,7 @@ export function registerMunicipalRoutes(app: Express) {
       const directorCheck = await db
         .select({ companyId: users.companyId })
         .from(users)
-        .where(and(
+        .where(eq(
           eq(users.id, directorId),
           eq(users.companyId, userCompanyId),
           eq(users.role, 'school_director')
@@ -1359,7 +1349,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [contract] = await db
         .select({ id: contracts.id })
         .from(contracts)
-        .where(and(
+        .where(eq(
           eq(contracts.id, contractId),
           eq(contracts.company_id, userCompany.companyId)
         ));
@@ -1373,7 +1363,7 @@ export function registerMunicipalRoutes(app: Express) {
         const [director] = await db
           .select({ id: users.id })
           .from(users)
-          .where(and(
+          .where(eq(
             eq(users.id, existingDirectorId),
             eq(users.company_id, userCompany.companyId),
             eq(users.cognito_group, 'Diretores')
@@ -1445,7 +1435,7 @@ export function registerMunicipalRoutes(app: Express) {
         .select()
         .from(municipalSchools)
         .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
-        .where(and(
+        .where(eq(
           eq(municipalSchools.id, schoolId),
           eq(contracts.companyId, userCompany.companyId)
         ));
@@ -1459,7 +1449,7 @@ export function registerMunicipalRoutes(app: Express) {
         const [contract] = await db
           .select()
           .from(contracts)
-          .where(and(
+          .where(eq(
             eq(contracts.id, parseInt(updateData.contractId)),
             eq(contracts.companyId, userCompany.companyId)
           ));
@@ -1553,7 +1543,7 @@ export function registerMunicipalRoutes(app: Express) {
       // Verificar se o diretor existe e pertence à empresa do usuário
       const [existingDirector] = await db.select()
         .from(users)
-        .where(and(
+        .where(eq(
           eq(users.id, directorId),
           eq(users.companyId, manager.companyId),
           eq(users.role, 'school_director')
@@ -1570,7 +1560,7 @@ export function registerMunicipalRoutes(app: Express) {
       if (email !== existingDirector.email) {
         const [emailExists] = await db.select()
           .from(users)
-          .where(and(
+          .where(eq(
             eq(users.email, email),
             ne(users.id, directorId)
           ));
@@ -1587,7 +1577,7 @@ export function registerMunicipalRoutes(app: Express) {
       if (contractId) {
         const [contractExists] = await db.select()
           .from(contracts)
-          .where(and(
+          .where(eq(
             eq(contracts.id, contractId),
             eq(contracts.companyId, manager.companyId)
           ));
@@ -1650,7 +1640,7 @@ export function registerMunicipalRoutes(app: Express) {
         .from(municipalSchools)
         .innerJoin(contracts, eq(municipalSchools.contractId, contracts.id))
         .where(
-          and(
+          eq(
             eq(municipalSchools.id, schoolId),
             eq(contracts.companyId, userCompanyId)
           )
@@ -1693,7 +1683,7 @@ export function registerMunicipalRoutes(app: Express) {
         .select()
         .from(contracts)
         .where(
-          and(
+          eq(
             eq(contracts.id, contractId),
             eq(contracts.companyId, userCompanyId)
           )
@@ -1835,7 +1825,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [existingContract] = await db
         .select()
         .from(contracts)
-        .where(and(
+        .where(eq(
           eq(contracts.id, contractId),
           eq(contracts.companyId, userCompany.companyId)
         ));
@@ -1896,7 +1886,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [existingDirector] = await db
         .select()
         .from(users)
-        .where(and(
+        .where(eq(
           eq(users.id, directorId),
           eq(users.companyId, userCompany.companyId),
           eq(users.role, 'school_director')
@@ -1949,7 +1939,7 @@ export function registerMunicipalRoutes(app: Express) {
       const [contract] = await db
         .select()
         .from(contracts)
-        .where(and(
+        .where(eq(
           eq(contracts.id, contractId),
           eq(contracts.companyId, userCompany.companyId)
         ));
@@ -1992,7 +1982,7 @@ export function registerMunicipalRoutes(app: Express) {
         })
         .from(users)
         .leftJoin(contracts, eq(users.contractId, contracts.id))
-        .where(and(
+        .where(eq(
           eq(users.id, directorId),
           eq(users.companyId, userCompany.companyId),
           eq(users.role, 'school_director')
