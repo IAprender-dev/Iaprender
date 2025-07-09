@@ -183,6 +183,34 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ 2 funções de teste: testarVerificacaoProprioUsuario() e testarVerificacaoAcessoUsuario()
   - ✅ Estrutura de exportação completa organizada por categorias
   - ✅ Status: Sistema de controle de acesso a dados próprios completo e pronto para produção
+- July 9, 2025: ✅ CONCLUÍDO - TAREFA 5: Modelo de Dados Usuario.js Implementado
+  - ✅ Arquivo /src/models/Usuario.js criado com classe completa de usuário
+  - ✅ Importação da conexão de banco de dados via executeQuery e executeTransaction
+  - ✅ Constructor com todos os campos da tabela usuarios (16 campos)
+  - ✅ Sistema de validação completo com 5 métodos de validação específicos:
+    • validate() - Validação geral dos dados
+    • isValidEmail() - Formato de email
+    • isValidPhone() - Telefone brasileiro
+    • isValidDocument() - CPF/CNPJ
+    • isValidDate() - Formato de data
+  - ✅ Métodos CRUD completos: create(), update(), delete() com validações
+  - ✅ Métodos estáticos de busca: findById(), findByEmail(), findByCognitoSub(), findAll(), findByEmpresa()
+  - ✅ Métodos de utilidade: updateLastLogin(), updateConfiguracoes(), canAccessEmpresa(), canManageUser()
+  - ✅ Método toJSON() para serialização de dados
+  - ✅ Método estático getStats() para estatísticas dos usuários
+  - ✅ Tratamento de JSON para campo configuracoes (parse/stringify automático)
+  - ✅ Prevenção de duplicatas: email único, cognito_sub único
+  - ✅ Sistema de permissões hierárquico integrado ao modelo
+  - ✅ Logging detalhado de todas as operações
+  - ✅ Arquivo /src/examples/usuario-model-examples.js criado com 17 exemplos práticos:
+    • 5 exemplos de criação (admin, gestor, diretor, professor, aluno)
+    • 5 exemplos de busca e consulta
+    • 3 exemplos de atualização
+    • 2 exemplos de validação e permissões
+    • 1 exemplo de estatísticas
+    • 1 exemplo de exclusão
+  - ✅ Função executarTodosExemplosUsuario() para testes completos
+  - ✅ Status: Modelo Usuario.js completo e pronto para produção
 - July 9, 2025: ✅ CONCLUÍDO - TAREFA 4: Controle de Acesso por Empresa Implementado Completamente
   - ✅ Arquivo /src/middleware/autorizar.js criado com sistema completo de autorização empresarial
   - ✅ Função verificarEmpresa() implementada com validação flexível baseada em empresa_id
