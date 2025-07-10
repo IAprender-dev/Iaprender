@@ -195,7 +195,22 @@ export function registerAdminCRUDEndpoints(app: Express) {
   // GET /api/admin/companies/:id - Buscar empresa por ID
   app.get('/api/admin/companies/:id', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
+      // Verificar se é request de stats antes de tentar converter para número
+      if (req.params.id === 'stats') {
+        return res.status(404).json({
+          success: false,
+          message: 'Route específica não encontrada. Use /api/admin/companies/stats'
+        });
+      }
+      
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID deve ser um número válido'
+        });
+      }
+      
       const empresa = await storage.getEmpresa(id);
 
       if (!empresa) {
@@ -387,7 +402,22 @@ export function registerAdminCRUDEndpoints(app: Express) {
   // GET /api/admin/contracts/:id - Buscar contrato por ID
   app.get('/api/admin/contracts/:id', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
+      // Verificar se é request de stats antes de tentar converter para número
+      if (req.params.id === 'stats') {
+        return res.status(404).json({
+          success: false,
+          message: 'Route específica não encontrada. Use /api/admin/contracts/stats'
+        });
+      }
+      
       const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID deve ser um número válido'
+        });
+      }
+      
       const contrato = await storage.getContrato(id);
 
       if (!contrato) {
