@@ -34,6 +34,7 @@ import ContractManagement from "@/pages/admin/ContractManagement";
 import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
 
 import AdminUnifiedDashboard from "@/pages/admin/AdminUnifiedDashboard";
+import AdminCRUDDashboard from "@/pages/admin/AdminCRUDDashboard";
 import CreateUser from "@/pages/admin/CreateUser";
 import ExecutiveDashboard from "@/pages/admin/ExecutiveDashboard";
 import AdvancedToolsDashboard from "@/pages/admin/AdvancedToolsDashboard";
@@ -194,6 +195,7 @@ function Router() {
       <Route path="/admin/companies-contracts" component={CompanyContractManagement} />
 
       <Route path="/admin/users" component={AdminUnifiedDashboard} />
+      <Route path="/admin/crud" component={AdminCRUDDashboard} />
       <Route path="/admin/create-user" component={CreateUser} />
 
       <Route path="/admin/cognito-users" component={CognitoUserManagement} />
