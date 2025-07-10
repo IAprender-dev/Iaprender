@@ -1,899 +1,575 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { 
-  Plus, 
-  Edit, 
-  Pause, 
-  Play, 
-  Trash2, 
-  CalendarIcon, 
-  Users, 
-  CreditCard, 
-  Settings, 
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Building,
-  DollarSign,
-  Activity,
-  Target,
-  ArrowLeft
-} from "lucide-react";
-import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { FileText, Plus, Edit, Eye, Calendar, DollarSign } from "lucide-react";
+import { Contrato, InsertContrato, Empresa } from "@shared/schema";
 
-interface Contract {
-  id: string;
-  companyName: string;
-  clientName: string;
-  email: string;
-  phone: string;
-  planType: 'basic' | 'standard' | 'premium' | 'enterprise';
-  status: 'active' | 'pending' | 'expired' | 'cancelled' | 'suspended';
-  startDate: string;
-  endDate: string;
-  totalLicenses: number;
-  availableLicenses: number;
-  usedLicenses: number;
-  pricePerLicense: number;
-  monthlyRevenue: number;
-  tokenLimits: {
-    teacher: number;
-    student: number;
-  };
-  enabledModels: string[];
-  autoRenewal: boolean;
-  createdAt: string;
+interface ContractFormData {
+  numero: string;
+  nome: string;
+  empresaId: number | null;
+  dataInicio: string;
+  dataFim: string;
+  valor: string;
+  moeda: string;
+  descricao?: string;
+  objeto?: string;
+  status: string;
+  observacoes?: string;
 }
 
-const ContractManagement = () => {
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [filteredContracts, setFilteredContracts] = useState<Contract[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedContract, setSelectedContract] = useState<Contract | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [newContract, setNewContract] = useState<Partial<Contract>>({
-    planType: 'basic',
-    status: 'active',
-    totalLicenses: 10,
-    pricePerLicense: 29.90,
-    tokenLimits: { teacher: 10000, student: 5000 },
-    enabledModels: ['openai-gpt-4', 'anthropic-claude'],
-    autoRenewal: true
+export default function ContractManagement() {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [selectedContract, setSelectedContract] = useState<Contrato | null>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [formData, setFormData] = useState<ContractFormData>({
+    numero: "",
+    nome: "",
+    empresaId: null,
+    dataInicio: "",
+    dataFim: "",
+    valor: "",
+    moeda: "BRL",
+    descricao: "",
+    objeto: "",
+    status: "active",
+    observacoes: ""
   });
 
-  // Fetch real contracts from database
-  useEffect(() => {
-    const fetchContracts = async () => {
-      try {
-        const response = await fetch('/api/admin/contracts');
-        if (response.ok) {
-          const data = await response.json();
-          setContracts(data.contracts);
-          setFilteredContracts(data.contracts);
-        } else {
-          console.error('Erro ao buscar contratos:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Erro na requisição de contratos:', error);
-      }
-    };
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-    fetchContracts();
-  }, []);
+  // Buscar empresas para o select
+  const { data: empresas } = useQuery({
+    queryKey: ['/api/empresas'],
+    queryFn: async () => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token não encontrado');
 
-  // Filter contracts based on search and status
-  useEffect(() => {
-    let filtered = contracts.filter(contract => 
-      contract.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contract.id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(contract => contract.status === statusFilter);
-    }
-
-    setFilteredContracts(filtered);
-  }, [contracts, searchTerm, statusFilter]);
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      active: { color: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: CheckCircle, label: "Ativo" },
-      pending: { color: "bg-amber-100 text-amber-800 border-amber-200", icon: Clock, label: "Pendente" },
-      expired: { color: "bg-red-100 text-red-800 border-red-200", icon: XCircle, label: "Expirado" },
-      cancelled: { color: "bg-gray-100 text-gray-800 border-gray-200", icon: XCircle, label: "Cancelado" },
-      suspended: { color: "bg-orange-100 text-orange-800 border-orange-200", icon: Pause, label: "Suspenso" }
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig];
-    const Icon = config.icon;
-
-    return (
-      <Badge variant="outline" className={`${config.color} border font-medium`}>
-        <Icon className="w-3 h-3 mr-1" />
-        {config.label}
-      </Badge>
-    );
-  };
-
-  const getPlanBadge = (plan: string) => {
-    const planConfig = {
-      basic: { color: "bg-blue-100 text-blue-800", label: "Básico" },
-      standard: { color: "bg-purple-100 text-purple-800", label: "Padrão" },
-      premium: { color: "bg-indigo-100 text-indigo-800", label: "Premium" },
-      enterprise: { color: "bg-slate-100 text-slate-800", label: "Enterprise" }
-    };
-
-    const config = planConfig[plan as keyof typeof planConfig] || planConfig.basic;
-    return (
-      <Badge className={`${config.color} font-medium`}>
-        {config.label}
-      </Badge>
-    );
-  };
-
-  const toggleContractStatus = (contractId: string) => {
-    setContracts(prev => prev.map(contract => {
-      if (contract.id === contractId) {
-        const newStatus = contract.status === 'active' ? 'suspended' : 'active';
-        return { ...contract, status: newStatus };
-      }
-      return contract;
-    }));
-  };
-
-  const handleCreateContract = async () => {
-    try {
-      const contractData = {
-        companyName: newContract.companyName || '',
-        clientName: newContract.clientName || '',
-        email: newContract.email || '',
-        phone: newContract.phone || '',
-        planType: newContract.planType || 'basic',
-        status: newContract.status || 'active',
-        startDate: newContract.startDate || new Date().toISOString().split('T')[0],
-        endDate: newContract.endDate || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        totalLicenses: newContract.totalLicenses || 10,
-        pricePerLicense: newContract.pricePerLicense || 29.90,
-        tokenLimits: newContract.tokenLimits || { teacher: 10000, student: 5000 },
-        enabledModels: newContract.enabledModels || ['openai-gpt-4'],
-        autoRenewal: newContract.autoRenewal ?? true
-      };
-
-      const response = await fetch('/api/admin/contracts', {
-        method: 'POST',
+      const response = await fetch('/api/empresas', {
         headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(contractData)
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Atualizar lista de contratos
-        setContracts(prev => [result.contract, ...prev]);
-        setFilteredContracts(prev => [result.contract, ...prev]);
-        
-        // Fechar modal e resetar formulário
-        setIsCreateModalOpen(false);
-        setNewContract({
-          planType: 'basic',
-          status: 'active',
-          totalLicenses: 10,
-          pricePerLicense: 29.90,
-          tokenLimits: { teacher: 10000, student: 5000 },
-          enabledModels: ['openai-gpt-4'],
-          autoRenewal: true
-        });
-
-        console.log('✅ Contrato criado com sucesso:', result.contract);
-      } else {
-        const error = await response.json();
-        console.error('❌ Erro ao criar contrato:', error);
-        alert('Erro ao criar contrato: ' + (error.error || 'Erro desconhecido'));
-      }
-    } catch (error) {
-      console.error('❌ Erro na requisição:', error);
-      alert('Erro na requisição. Verifique os dados e tente novamente.');
+      if (!response.ok) throw new Error('Erro ao buscar empresas');
+      const result = await response.json();
+      return result.data as Empresa[];
     }
-  };
+  });
 
-  const handleEditContract = () => {
-    if (!selectedContract) return;
+  // Buscar contratos
+  const { data: contratos, isLoading, error } = useQuery({
+    queryKey: ['/api/contratos'],
+    queryFn: async () => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token não encontrado');
 
-    setContracts(prev => prev.map(contract => {
-      if (contract.id === selectedContract.id) {
-        return {
-          ...selectedContract,
-          monthlyRevenue: selectedContract.totalLicenses * selectedContract.pricePerLicense
-        };
+      const response = await fetch('/api/contratos', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Erro ao buscar contratos');
+      const result = await response.json();
+      return result.data as Contrato[];
+    }
+  });
+
+  // Criar contrato
+  const createMutation = useMutation({
+    mutationFn: async (data: InsertContrato) => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token não encontrado');
+
+      const response = await fetch('/api/contratos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao criar contrato');
       }
-      return contract;
-    }));
 
-    setIsEditModalOpen(false);
-    setSelectedContract(null);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/contratos'] });
+      setIsCreateOpen(false);
+      resetForm();
+      toast({
+        title: "Sucesso",
+        description: "Contrato criado com sucesso!"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const resetForm = () => {
+    setFormData({
+      numero: "",
+      nome: "",
+      empresaId: null,
+      dataInicio: "",
+      dataFim: "",
+      valor: "",
+      moeda: "BRL",
+      descricao: "",
+      objeto: "",
+      status: "active",
+      observacoes: ""
+    });
   };
 
-  const openEditModal = (contract: Contract) => {
-    setSelectedContract({ ...contract });
-    setIsEditModalOpen(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.numero || !formData.nome || !formData.empresaId || 
+        !formData.dataInicio || !formData.dataFim || !formData.valor) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validar datas
+    const dataInicio = new Date(formData.dataInicio);
+    const dataFim = new Date(formData.dataFim);
+    if (dataFim <= dataInicio) {
+      toast({
+        title: "Erro",
+        description: "Data de fim deve ser posterior à data de início",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    createMutation.mutate({
+      ...formData,
+      empresaId: formData.empresaId!,
+      valor: parseFloat(formData.valor.replace(/[^\d.,]/g, '').replace(',', '.'))
+    });
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number, currency: string = 'BRL') => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: currency
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('pt-BR');
   };
 
-  const getDaysUntilExpiry = (endDate: string) => {
-    const today = new Date();
-    const expiry = new Date(endDate);
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'default';
+      case 'pending': return 'secondary';
+      case 'expired': return 'destructive';
+      case 'cancelled': return 'outline';
+      default: return 'secondary';
+    }
   };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'active': return 'Ativo';
+      case 'pending': return 'Pendente';
+      case 'expired': return 'Expirado';
+      case 'cancelled': return 'Cancelado';
+      default: return status;
+    }
+  };
+
+  const getEmpresaNome = (empresaId: number) => {
+    const empresa = empresas?.find(e => e.id === empresaId);
+    return empresa?.nome || 'Empresa não encontrada';
+  };
+
+  const viewContract = (contrato: Contrato) => {
+    setSelectedContract(contrato);
+    setIsViewOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-red-500">Erro ao carregar contratos</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50">
-      <div className="container mx-auto p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Link href="/admin/master">
-              <Button variant="ghost" size="sm" className="text-slate-600 hover:text-slate-900">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
-                <div className="relative z-10">
-                  <span className="text-white font-bold text-sm">IA</span>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <FileText className="h-6 w-6 text-emerald-600" />
+          <h1 className="text-2xl font-bold text-gray-900">Gestão de Contratos</h1>
+        </div>
+        
+        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-emerald-600 hover:bg-emerald-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Contrato
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Cadastrar Novo Contrato</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="numero">Número do Contrato *</Label>
+                  <Input
+                    id="numero"
+                    value={formData.numero}
+                    onChange={(e) => setFormData(prev => ({ ...prev, numero: e.target.value }))}
+                    placeholder="Ex: 001/2025"
+                    required
+                  />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-xl"></div>
+                <div>
+                  <Label htmlFor="nome">Nome do Contrato *</Label>
+                  <Input
+                    id="nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+                    placeholder="Ex: Prestação de Serviços Educacionais"
+                    required
+                  />
+                </div>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                IAprender
-              </span>
-            </div>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">Gestão de Contratos</h1>
-              <p className="text-slate-600 mt-1">Gerencie contratos, licenças e configurações</p>
-            </div>
-          </div>
-          
-          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg">
-                <Plus className="w-4 h-4 mr-2" />
-                Novo Contrato
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Criar Novo Contrato</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados para criar um novo contrato
-                </DialogDescription>
-              </DialogHeader>
-              
-              <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
-                  <TabsTrigger value="licenses">Licenças</TabsTrigger>
-                  <TabsTrigger value="config">Configurações</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="basic" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="companyName">Nome da Empresa</Label>
-                      <Input
-                        id="companyName"
-                        value={newContract.companyName || ''}
-                        onChange={(e) => setNewContract(prev => ({ ...prev, companyName: e.target.value }))}
-                        placeholder="Nome da instituição"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="clientName">Nome do Responsável</Label>
-                      <Input
-                        id="clientName"
-                        value={newContract.clientName || ''}
-                        onChange={(e) => setNewContract(prev => ({ ...prev, clientName: e.target.value }))}
-                        placeholder="Nome do contato principal"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={newContract.email || ''}
-                        onChange={(e) => setNewContract(prev => ({ ...prev, email: e.target.value }))}
-                        placeholder="contato@escola.edu.br"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone">Telefone</Label>
-                      <Input
-                        id="phone"
-                        value={newContract.phone || ''}
-                        onChange={(e) => setNewContract(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="(11) 99999-9999"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="planType">Tipo de Plano</Label>
-                      <Select value={newContract.planType} onValueChange={(value) => setNewContract(prev => ({ ...prev, planType: value as any }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o plano" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="basic">Básico</SelectItem>
-                          <SelectItem value="standard">Padrão</SelectItem>
-                          <SelectItem value="premium">Premium</SelectItem>
-                          <SelectItem value="enterprise">Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="status">Status</Label>
-                      <Select value={newContract.status} onValueChange={(value) => setNewContract(prev => ({ ...prev, status: value as any }))}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Ativo</SelectItem>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="suspended">Suspenso</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="licenses" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="totalLicenses">Total de Licenças</Label>
-                      <Input
-                        id="totalLicenses"
-                        type="number"
-                        value={newContract.totalLicenses || 0}
-                        onChange={(e) => setNewContract(prev => ({ ...prev, totalLicenses: parseInt(e.target.value) }))}
-                        placeholder="10"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="pricePerLicense">Preço por Licença (R$)</Label>
-                      <Input
-                        id="pricePerLicense"
-                        type="number"
-                        step="0.01"
-                        value={newContract.pricePerLicense || 0}
-                        onChange={(e) => setNewContract(prev => ({ ...prev, pricePerLicense: parseFloat(e.target.value) }))}
-                        placeholder="29.90"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="teacherTokens">Limite Mensal - Professores</Label>
-                      <Input
-                        id="teacherTokens"
-                        type="number"
-                        value={newContract.tokenLimits?.teacher || 0}
-                        onChange={(e) => setNewContract(prev => ({ 
-                          ...prev, 
-                          tokenLimits: { teacher: parseInt(e.target.value) || 10000, student: prev.tokenLimits?.student || 5000 } 
-                        }))}
-                        placeholder="10000"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="studentTokens">Limite Mensal - Alunos</Label>
-                      <Input
-                        id="studentTokens"
-                        type="number"
-                        value={newContract.tokenLimits?.student || 0}
-                        onChange={(e) => setNewContract(prev => ({ 
-                          ...prev, 
-                          tokenLimits: { teacher: prev.tokenLimits?.teacher || 10000, student: parseInt(e.target.value) || 5000 } 
-                        }))}
-                        placeholder="5000"
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="config" className="space-y-4">
-                  <div>
-                    <Label>Modelos Habilitados</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {['openai-gpt-4', 'anthropic-claude', 'perplexity', 'bedrock'].map(model => (
-                        <div key={model} className="flex items-center space-x-2">
-                          <Switch
-                            checked={newContract.enabledModels?.includes(model)}
-                            onCheckedChange={(checked) => {
-                              setNewContract(prev => ({
-                                ...prev,
-                                enabledModels: checked 
-                                  ? [...(prev.enabledModels || []), model]
-                                  : (prev.enabledModels || []).filter(m => m !== model)
-                              }));
-                            }}
-                          />
-                          <Label className="text-sm">{model}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={newContract.autoRenewal}
-                      onCheckedChange={(checked) => setNewContract(prev => ({ ...prev, autoRenewal: checked }))}
-                    />
-                    <Label>Renovação Automática</Label>
-                  </div>
-                </TabsContent>
-              </Tabs>
-              
-              <div className="flex justify-end space-x-2 pt-4 border-t">
-                <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+
+              <div>
+                <Label htmlFor="empresaId">Empresa Contratante *</Label>
+                <Select 
+                  value={formData.empresaId?.toString() || ""} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, empresaId: parseInt(value) }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {empresas?.map((empresa) => (
+                      <SelectItem key={empresa.id} value={empresa.id.toString()}>
+                        {empresa.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="dataInicio">Data de Início *</Label>
+                  <Input
+                    id="dataInicio"
+                    type="date"
+                    value={formData.dataInicio}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dataInicio: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="dataFim">Data de Fim *</Label>
+                  <Input
+                    id="dataFim"
+                    type="date"
+                    value={formData.dataFim}
+                    onChange={(e) => setFormData(prev => ({ ...prev, dataFim: e.target.value }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="valor">Valor Total *</Label>
+                  <Input
+                    id="valor"
+                    value={formData.valor}
+                    onChange={(e) => setFormData(prev => ({ ...prev, valor: e.target.value }))}
+                    placeholder="Ex: 150000.00"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="moeda">Moeda</Label>
+                  <Select 
+                    value={formData.moeda} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, moeda: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BRL">Real (BRL)</SelectItem>
+                      <SelectItem value="USD">Dólar (USD)</SelectItem>
+                      <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="status">Status</Label>
+                  <Select 
+                    value={formData.status} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Ativo</SelectItem>
+                      <SelectItem value="pending">Pendente</SelectItem>
+                      <SelectItem value="expired">Expirado</SelectItem>
+                      <SelectItem value="cancelled">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="objeto">Objeto do Contrato</Label>
+                <Input
+                  id="objeto"
+                  value={formData.objeto}
+                  onChange={(e) => setFormData(prev => ({ ...prev, objeto: e.target.value }))}
+                  placeholder="Ex: Prestação de serviços de tecnologia educacional"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="descricao">Descrição</Label>
+                <Textarea
+                  id="descricao"
+                  value={formData.descricao}
+                  onChange={(e) => setFormData(prev => ({ ...prev, descricao: e.target.value }))}
+                  placeholder="Descrição detalhada do contrato..."
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="observacoes">Observações</Label>
+                <Textarea
+                  id="observacoes"
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, observacoes: e.target.value }))}
+                  placeholder="Observações adicionais..."
+                  rows={2}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleCreateContract} className="bg-gradient-to-r from-emerald-600 to-teal-600">
-                  Criar Contrato
+                <Button type="submit" disabled={createMutation.isPending}>
+                  {createMutation.isPending ? "Criando..." : "Criar Contrato"}
                 </Button>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-8">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Input
-                placeholder="Buscar por empresa, responsável, email ou ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="h-11"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] h-11">
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Status</SelectItem>
-                <SelectItem value="active">Ativos</SelectItem>
-                <SelectItem value="pending">Pendentes</SelectItem>
-                <SelectItem value="suspended">Suspensos</SelectItem>
-                <SelectItem value="expired">Expirados</SelectItem>
-                <SelectItem value="cancelled">Cancelados</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Contracts Grid */}
-        <div className="grid gap-6">
-          {filteredContracts.map((contract) => {
-            const daysUntilExpiry = getDaysUntilExpiry(contract.endDate);
-            const isExpiringSoon = daysUntilExpiry <= 30 && daysUntilExpiry > 0;
-            
-            return (
-              <Card key={contract.id} className="bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all duration-200">
-                <CardHeader className="border-b border-slate-100">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <CardTitle className="text-xl text-slate-900">{contract.companyName}</CardTitle>
-                        {getStatusBadge(contract.status)}
-                        {getPlanBadge(contract.planType)}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-slate-600">
-                        <span className="flex items-center gap-1">
-                          <Building className="w-4 h-4" />
-                          {contract.clientName}
-                        </span>
-                        <span>{contract.email}</span>
-                        <span>{contract.phone}</span>
-                      </div>
-                      <CardDescription className="mt-2 text-slate-500">
-                        ID: {contract.id} • Criado em {formatDate(contract.createdAt)}
-                      </CardDescription>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditModal(contract)}
-                        className="text-slate-600 hover:text-slate-900"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => toggleContractStatus(contract.id)}
-                        className={contract.status === 'active' 
-                          ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" 
-                          : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                        }
-                      >
-                        {contract.status === 'active' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Contract Duration */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <CalendarIcon className="w-4 h-4" />
-                        Vigência
-                      </div>
-                      <div className="text-sm text-slate-600">
-                        <div>{formatDate(contract.startDate)} até</div>
-                        <div>{formatDate(contract.endDate)}</div>
-                        {isExpiringSoon && (
-                          <div className="flex items-center gap-1 text-amber-600 mt-1">
-                            <AlertTriangle className="w-3 h-3" />
-                            <span className="text-xs">Expira em {daysUntilExpiry} dias</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Licenses */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <Users className="w-4 h-4" />
-                        Licenças
-                      </div>
-                      <div className="text-sm text-slate-600">
-                        <div>{contract.usedLicenses} / {contract.totalLicenses} usadas</div>
-                        <div className="w-full bg-slate-200 rounded-full h-2 mt-1">
-                          <div 
-                            className="bg-gradient-to-r from-blue-500 to-indigo-500 h-2 rounded-full" 
-                            style={{ width: `${(contract.usedLicenses / contract.totalLicenses) * 100}%` }}
-                          ></div>
-                        </div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          {contract.availableLicenses} disponíveis
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Revenue */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <DollarSign className="w-4 h-4" />
-                        Receita Mensal
-                      </div>
-                      <div className="text-sm text-slate-600">
-                        <div className="text-lg font-semibold text-emerald-600">
-                          {formatCurrency(contract.monthlyRevenue)}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {formatCurrency(contract.pricePerLicense)} por licença
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Token Limits */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                        <Activity className="w-4 h-4" />
-                        Limites de Token
-                      </div>
-                      <div className="text-sm text-slate-600">
-                        <div>Prof: {contract.tokenLimits.teacher.toLocaleString()}</div>
-                        <div>Aluno: {contract.tokenLimits.student.toLocaleString()}</div>
-                        <div className="text-xs text-slate-500 mt-1">
-                          {contract.enabledModels.length} modelos ativos
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {filteredContracts.length === 0 && (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-slate-100 flex items-center justify-center">
-              <Building className="w-12 h-12 text-slate-400" />
-            </div>
-            <h3 className="text-lg font-medium text-slate-900 mb-2">Nenhum contrato encontrado</h3>
-            <p className="text-slate-600 mb-4">
-              {searchTerm || statusFilter !== "all" 
-                ? "Tente ajustar os filtros de busca"
-                : "Crie seu primeiro contrato para começar"
-              }
-            </p>
-            {!searchTerm && statusFilter === "all" && (
-              <Button onClick={() => setIsCreateModalOpen(true)} className="bg-gradient-to-r from-emerald-600 to-teal-600">
-                <Plus className="w-4 h-4 mr-2" />
-                Criar Primeiro Contrato
-              </Button>
-            )}
-          </div>
-        )}
-
-        {/* Edit Contract Modal */}
-        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Editar Contrato</DialogTitle>
-              <DialogDescription>
-                Altere as configurações do contrato
-              </DialogDescription>
-            </DialogHeader>
-            
-            {selectedContract && (
-              <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
-                  <TabsTrigger value="licenses">Licenças</TabsTrigger>
-                  <TabsTrigger value="config">Configurações</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="basic" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-companyName">Nome da Empresa</Label>
-                      <Input
-                        id="edit-companyName"
-                        value={selectedContract.companyName}
-                        onChange={(e) => setSelectedContract(prev => prev ? { ...prev, companyName: e.target.value } : null)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-clientName">Nome do Responsável</Label>
-                      <Input
-                        id="edit-clientName"
-                        value={selectedContract.clientName}
-                        onChange={(e) => setSelectedContract(prev => prev ? { ...prev, clientName: e.target.value } : null)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-email">Email</Label>
-                      <Input
-                        id="edit-email"
-                        type="email"
-                        value={selectedContract.email}
-                        onChange={(e) => setSelectedContract(prev => prev ? { ...prev, email: e.target.value } : null)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-phone">Telefone</Label>
-                      <Input
-                        id="edit-phone"
-                        value={selectedContract.phone}
-                        onChange={(e) => setSelectedContract(prev => prev ? { ...prev, phone: e.target.value } : null)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-planType">Tipo de Plano</Label>
-                      <Select 
-                        value={selectedContract.planType} 
-                        onValueChange={(value) => setSelectedContract(prev => prev ? { ...prev, planType: value as any } : null)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="basic">Básico</SelectItem>
-                          <SelectItem value="standard">Padrão</SelectItem>
-                          <SelectItem value="premium">Premium</SelectItem>
-                          <SelectItem value="enterprise">Enterprise</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-status">Status</Label>
-                      <Select 
-                        value={selectedContract.status} 
-                        onValueChange={(value) => setSelectedContract(prev => prev ? { ...prev, status: value as any } : null)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Ativo</SelectItem>
-                          <SelectItem value="pending">Pendente</SelectItem>
-                          <SelectItem value="suspended">Suspenso</SelectItem>
-                          <SelectItem value="expired">Expirado</SelectItem>
-                          <SelectItem value="cancelled">Cancelado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="licenses" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-totalLicenses">Total de Licenças</Label>
-                      <Input
-                        id="edit-totalLicenses"
-                        type="number"
-                        value={selectedContract.totalLicenses}
-                        onChange={(e) => {
-                          const newTotal = parseInt(e.target.value);
-                          setSelectedContract(prev => prev ? { 
-                            ...prev, 
-                            totalLicenses: newTotal,
-                            availableLicenses: newTotal - prev.usedLicenses
-                          } : null);
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-pricePerLicense">Preço por Licença (R$)</Label>
-                      <Input
-                        id="edit-pricePerLicense"
-                        type="number"
-                        step="0.01"
-                        value={selectedContract.pricePerLicense}
-                        onChange={(e) => setSelectedContract(prev => prev ? { ...prev, pricePerLicense: parseFloat(e.target.value) } : null)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-teacherTokens">Limite Mensal - Professores</Label>
-                      <Input
-                        id="edit-teacherTokens"
-                        type="number"
-                        value={selectedContract.tokenLimits.teacher}
-                        onChange={(e) => setSelectedContract(prev => prev ? { 
-                          ...prev, 
-                          tokenLimits: { ...prev.tokenLimits, teacher: parseInt(e.target.value) } 
-                        } : null)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-studentTokens">Limite Mensal - Alunos</Label>
-                      <Input
-                        id="edit-studentTokens"
-                        type="number"
-                        value={selectedContract.tokenLimits.student}
-                        onChange={(e) => setSelectedContract(prev => prev ? { 
-                          ...prev, 
-                          tokenLimits: { ...prev.tokenLimits, student: parseInt(e.target.value) } 
-                        } : null)}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-slate-50 rounded-lg">
-                    <div className="text-sm font-medium text-slate-700 mb-2">Uso Atual de Licenças</div>
-                    <div className="flex justify-between text-sm text-slate-600">
-                      <span>Usadas: {selectedContract.usedLicenses}</span>
-                      <span>Disponíveis: {selectedContract.availableLicenses}</span>
-                      <span>Total: {selectedContract.totalLicenses}</span>
-                    </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="config" className="space-y-4">
-                  <div>
-                    <Label>Modelos Habilitados</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      {['openai-gpt-4', 'anthropic-claude', 'perplexity', 'bedrock'].map(model => (
-                        <div key={model} className="flex items-center space-x-2">
-                          <Switch
-                            checked={selectedContract.enabledModels.includes(model)}
-                            onCheckedChange={(checked) => {
-                              setSelectedContract(prev => prev ? ({
-                                ...prev,
-                                enabledModels: checked 
-                                  ? [...prev.enabledModels, model]
-                                  : prev.enabledModels.filter(m => m !== model)
-                              }) : null);
-                            }}
-                          />
-                          <Label className="text-sm">{model}</Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={selectedContract.autoRenewal}
-                      onCheckedChange={(checked) => setSelectedContract(prev => prev ? { ...prev, autoRenewal: checked } : null)}
-                    />
-                    <Label>Renovação Automática</Label>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="edit-startDate">Data de Início</Label>
-                      <Input
-                        id="edit-startDate"
-                        type="date"
-                        value={selectedContract.startDate}
-                        onChange={(e) => setSelectedContract(prev => prev ? { ...prev, startDate: e.target.value } : null)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-endDate">Data de Fim</Label>
-                      <Input
-                        id="edit-endDate"
-                        type="date"
-                        value={selectedContract.endDate}
-                        onChange={(e) => setSelectedContract(prev => prev ? { ...prev, endDate: e.target.value } : null)}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            )}
-            
-            <div className="flex justify-end space-x-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleEditContract} className="bg-gradient-to-r from-blue-600 to-indigo-600">
-                Salvar Alterações
-              </Button>
-            </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Contratos Cadastrados ({contratos?.length || 0})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {contratos && contratos.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Número/Nome</TableHead>
+                  <TableHead>Empresa</TableHead>
+                  <TableHead>Período</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {contratos.map((contrato) => (
+                  <TableRow key={contrato.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{contrato.numero}</div>
+                        <div className="text-sm text-gray-500">{contrato.nome}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getEmpresaNome(contrato.empresaId)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-sm">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {formatDate(contrato.dataInicio)} - {formatDate(contrato.dataFim)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-sm font-medium">
+                        <DollarSign className="h-3 w-3 mr-1" />
+                        {formatCurrency(contrato.valor, contrato.moeda)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusColor(contrato.status)}>
+                        {getStatusLabel(contrato.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => viewContract(contrato)}
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-8">
+              <FileText className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum contrato cadastrado</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Comece criando seu primeiro contrato.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal de Visualização */}
+      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Contrato</DialogTitle>
+          </DialogHeader>
+          {selectedContract && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Número</Label>
+                  <p className="text-sm font-mono">{selectedContract.numero}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Nome</Label>
+                  <p className="text-sm">{selectedContract.nome}</p>
+                </div>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Empresa Contratante</Label>
+                <p className="text-sm">{getEmpresaNome(selectedContract.empresaId)}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Data de Início</Label>
+                  <p className="text-sm">{formatDate(selectedContract.dataInicio)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Data de Fim</Label>
+                  <p className="text-sm">{formatDate(selectedContract.dataFim)}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Valor Total</Label>
+                  <p className="text-sm font-semibold text-emerald-600">
+                    {formatCurrency(selectedContract.valor, selectedContract.moeda)}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Status</Label>
+                  <Badge variant={getStatusColor(selectedContract.status)}>
+                    {getStatusLabel(selectedContract.status)}
+                  </Badge>
+                </div>
+              </div>
+
+              {selectedContract.objeto && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Objeto</Label>
+                  <p className="text-sm">{selectedContract.objeto}</p>
+                </div>
+              )}
+
+              {selectedContract.descricao && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Descrição</Label>
+                  <p className="text-sm">{selectedContract.descricao}</p>
+                </div>
+              )}
+
+              {selectedContract.observacoes && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Observações</Label>
+                  <p className="text-sm">{selectedContract.observacoes}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Criado em</Label>
+                  <p className="text-sm">{formatDate(selectedContract.criadoEm)}</p>
+                </div>
+                {selectedContract.atualizadoEm && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Atualizado em</Label>
+                    <p className="text-sm">{formatDate(selectedContract.atualizadoEm)}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
-export default ContractManagement;
+}

@@ -1,43 +1,39 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, 
+  UserPlus, 
+  Building, 
+  FileText, 
+  Shield, 
+  UserCheck, 
+  AlertTriangle, 
+  RefreshCw, 
   Search, 
   Filter, 
-  RefreshCw, 
-  Edit,
-  Shield,
-  Clock,
-  Mail,
-  Calendar,
+  Eye, 
+  Edit, 
+  X, 
+  Save,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  ChevronUp,
-  UserCheck,
-  UserX,
-  UserPlus,
-  AlertTriangle,
-  CheckCircle,
-  LogOut,
-  Building,
-  Save,
-  Eye,
-  X
+  UserX
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
-import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import iaprenderLogo from "@assets/iaprender-logo.png";
+import { useAuth } from "@/hooks/useAuth";
+import { Link } from "wouter";
 
+import CompanyManagement from "./CompanyManagement";
+import ContractManagement from "./ContractManagement";
+
+// Interfaces reutilizadas do sistema existente
 interface CognitoUser {
   cognitoId: string;
   email: string;
@@ -83,99 +79,178 @@ interface PaginationInfo {
 }
 
 export default function UserManagement() {
+  const [activeMainTab, setActiveMainTab] = useState("usuarios");
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <img 
+                  src="/assets/iaprender-logo.png" 
+                  alt="IAprender" 
+                  className="h-8 w-auto"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling!.style.display = 'block';
+                  }}
+                />
+                <div className="h-8 w-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
+                  <span className="text-white font-bold text-lg">IA</span>
+                </div>
+              </div>
+              <div className="ml-4">
+                <h1 className="text-2xl font-bold text-gray-900">Painel Administrativo</h1>
+                <p className="text-sm text-gray-600">Sistema de gestão educacional IAprender</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link href="/logout">
+                <Button variant="outline" size="sm">
+                  Sair
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
+            <TabsTrigger 
+              value="usuarios" 
+              className="flex items-center space-x-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white"
+            >
+              <Users className="h-4 w-4" />
+              <span>Gestão de Usuários</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="empresas" 
+              className="flex items-center space-x-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white"
+            >
+              <Building className="h-4 w-4" />
+              <span>Gestão de Empresas</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="contratos" 
+              className="flex items-center space-x-2 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
+            >
+              <FileText className="h-4 w-4" />
+              <span>Gestão de Contratos</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Aba Gestão de Usuários */}
+          <TabsContent value="usuarios">
+            <div className="space-y-6">
+              <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
+                <CardHeader>
+                  <CardTitle className="text-indigo-900">Gestão de Usuários</CardTitle>
+                  <CardDescription className="text-indigo-700">
+                    Administre usuários do sistema AWS Cognito com controle hierárquico completo
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <UserManagementContent />
+            </div>
+          </TabsContent>
+
+          {/* Aba Gestão de Empresas */}
+          <TabsContent value="empresas">
+            <div className="space-y-6">
+              <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200">
+                <CardHeader>
+                  <CardTitle className="text-emerald-900">Gestão de Empresas</CardTitle>
+                  <CardDescription className="text-emerald-700">
+                    Administre empresas parceiras e instituições educacionais
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <CompanyManagement />
+            </div>
+          </TabsContent>
+
+          {/* Aba Gestão de Contratos */}
+          <TabsContent value="contratos">
+            <div className="space-y-6">
+              <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200">
+                <CardHeader>
+                  <CardTitle className="text-orange-900">Gestão de Contratos</CardTitle>
+                  <CardDescription className="text-orange-700">
+                    Administre contratos comerciais e acordos educacionais
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              <ContractManagement />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+// Componente específico para gestão de usuários
+function UserManagementContent() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Estados do componente original de gestão de usuários
+  const [activeTab, setActiveTab] = useState("todos");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState<CognitoUser | null>(null);
+  const [editingUser, setEditingUser] = useState<CognitoUser | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("none");
+  const [selectedContractId, setSelectedContractId] = useState<string>("none");
 
   // Capturar token JWT da URL após callback do Cognito
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-    const authStatus = urlParams.get('auth');
-    const userType = urlParams.get('type');
-    const email = urlParams.get('email');
-
-    if (token && authStatus === 'success') {
-      console.log('🔐 Token JWT capturado da URL, salvando no localStorage');
+    
+    if (token) {
+      console.log('🔑 [FRONTEND] Token JWT encontrado na URL:', token.substring(0, 50) + '...');
       localStorage.setItem('token', token);
       
-      // Limpar a URL removendo os parâmetros
+      // Limpar URL após salvar o token
       const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
+      window.history.replaceState({}, '', newUrl);
       
       toast({
-        title: "Login realizado com sucesso!",
-        description: `Bem-vindo(a) ao sistema, ${email}`,
-        duration: 3000,
+        title: "Autenticação realizada",
+        description: "Token JWT salvo com sucesso.",
       });
     }
   }, [toast]);
-  
-  // Filtros e paginação
-  const [activeTab, setActiveTab] = useState<string>("todos");
-  const [selectedGroup, setSelectedGroup] = useState<string>("all");
-  const [selectedStatus, setSelectedStatus] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [selectedUser, setSelectedUser] = useState<CognitoUser | null>(null);
-  const [editingUser, setEditingUser] = useState<CognitoUser | null>(null);
-  const [companies, setCompanies] = useState<any[]>([]);
-  const [contracts, setContracts] = useState<any[]>([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("none");
-  const [selectedContractId, setSelectedContractId] = useState<string>("none");
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
-  // Mapear tab para group
-  const getGroupFromTab = (tab: string) => {
-    switch (tab) {
-      case 'admin': return 'Admin';
-      case 'gestores': return 'Gestores';
-      case 'diretores': return 'Diretores';
-      default: return 'all';
-    }
-  };
-
-  // Buscar usuários
+  // Buscar usuários do AWS Cognito
   const { data: usersData, isLoading, error, refetch } = useQuery({
     queryKey: ['/api/admin/users/list', {
-      group: getGroupFromTab(activeTab) === 'all' ? '' : getGroupFromTab(activeTab),
       page: currentPage,
-      limit: 10,
       search: searchTerm,
-      status: selectedStatus
+      status: selectedStatus,
+      activeTab: activeTab
     }],
     refetchInterval: 30000, // Atualizar a cada 30 segundos
   });
 
-  // Buscar estatísticas
-  const { data: statistics } = useQuery({
-    queryKey: ['/api/admin/users/statistics'],
-    refetchInterval: 60000, // Atualizar a cada minuto
-  });
-
   // Buscar empresas para o dropdown de edição
-  const { data: companiesData, error: companiesError } = useQuery({
-    queryKey: ['/api/admin/companies'],
+  const { data: companiesData } = useQuery({
+    queryKey: ['/api/empresas'],
     enabled: !!editingUser, // Só carregar quando estiver editando
   });
 
   // Buscar contratos da empresa selecionada
-  const { data: contractsData, isLoading: contractsLoading, error: contractsError } = useQuery({
-    queryKey: ['/api/admin/companies', selectedCompanyId, 'contracts'],
-    queryFn: async () => {
-      if (!selectedCompanyId || selectedCompanyId === "none") return { contracts: [] };
-      console.log('🔍 [CONTRACTS] Buscando contratos para empresa:', selectedCompanyId);
-      const response = await fetch(`/api/admin/companies/${selectedCompanyId}/contracts`, {
-        credentials: 'include'
-      });
-      if (!response.ok) {
-        console.error('❌ [CONTRACTS] Erro ao buscar contratos:', response.status, response.statusText);
-        throw new Error(`Failed to fetch contracts: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('📋 [CONTRACTS] Contratos recebidos:', data);
-      return data;
-    },
+  const { data: contractsData, isLoading: contractsLoading } = useQuery({
+    queryKey: ['/api/contratos', { empresaId: selectedCompanyId }],
     enabled: !!selectedCompanyId && selectedCompanyId !== "none",
   });
 
@@ -195,30 +270,14 @@ export default function UserManagement() {
     inactive: 0
   };
 
-  // Log dos dados para debug
-  if (editingUser) {
-    console.log('🔍 [DEBUG] EditingUser:', editingUser);
-    console.log('🔍 [DEBUG] Companies data:', companiesData);
-    console.log('🔍 [DEBUG] Companies error:', companiesError);
-    console.log('🔍 [DEBUG] Contracts data:', contractsData);
-    console.log('🔍 [DEBUG] Contracts error:', contractsError);
-    console.log('🔍 [DEBUG] Selected company ID:', selectedCompanyId);
-    console.log('🔍 [DEBUG] Selected contract ID:', selectedContractId);
-  }
-
   // Funções de manipulação
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(1); // Reset para primeira página
+    setCurrentPage(1);
   };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    setCurrentPage(1); // Reset para primeira página quando mudar de aba
-  };
-
-  const handleGroupFilter = (value: string) => {
-    setSelectedGroup(value);
     setCurrentPage(1);
   };
 
@@ -257,9 +316,8 @@ export default function UserManagement() {
     return <Badge variant="outline">Sem Grupo</Badge>;
   };
 
-  // Funções auxiliares para edição - apenas para Diretores
+  // Funções auxiliares para edição
   const openEditModal = (user: CognitoUser) => {
-    // Permite edição para Gestores e Diretores
     if (!user.groups.includes('Gestores') && !user.groups.includes('Diretores')) {
       return;
     }
@@ -276,25 +334,12 @@ export default function UserManagement() {
 
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompanyId(companyId);
-    setSelectedContractId("none"); // Reset contract quando empresa muda
-  };
-
-  // Função para gerenciar expansão dos cards
-  const toggleCardExpansion = (userId: string) => {
-    const newExpanded = new Set(expandedCards);
-    if (newExpanded.has(userId)) {
-      newExpanded.delete(userId);
-    } else {
-      newExpanded.add(userId);
-    }
-    setExpandedCards(newExpanded);
+    setSelectedContractId("none");
   };
 
   // Mutation para atualizar vínculos
   const updateContractMutation = useMutation({
     mutationFn: async ({ cognitoId, email, contractId, companyId }: { cognitoId: string; email: string; contractId: string | null; companyId: string | null }) => {
-      console.log('🚀 [FRONTEND] Executando mutation com:', { cognitoId, email, contractId, companyId });
-      
       const response = await fetch(`/api/admin/users/${cognitoId}/update-contract`, {
         method: 'PATCH',
         headers: {
@@ -304,83 +349,36 @@ export default function UserManagement() {
         body: JSON.stringify({ cognitoId, email, contractId, companyId })
       });
       
-      console.log('📡 [FRONTEND] Response status:', response.status);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
-        console.log('❌ [FRONTEND] Error response:', errorData);
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
-      const result = await response.json();
-      console.log('✅ [FRONTEND] Success response:', result);
-      return result;
+      return response.json();
     },
-    onSuccess: async (data) => {
-      console.log('✅ [FRONTEND] Mutation success response:', data);
-      
-      // Fechar modal primeiro
+    onSuccess: async () => {
       closeEditModal();
-      
-      // Mostrar toast de sucesso
       toast({
         title: "Vínculos atualizados",
         description: "Os vínculos de empresa e contrato foram atualizados com sucesso.",
       });
       
-      console.log('🔄 [FRONTEND] Invalidando cache e fazendo refetch completo...');
-      
-      // Invalidar TODOS os caches relacionados
       await queryClient.invalidateQueries({ queryKey: ['/api/admin/users/list'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/admin/users/statistics'] });
-      await queryClient.invalidateQueries({ queryKey: ['/api/admin/companies'] });
-      
-      // Aguardar um momento para o backend processar
-      setTimeout(() => {
-        console.log('🔄 [FRONTEND] Fazendo refetch forçado após delay...');
-        refetch();
-      }, 500);
-      
-      // Forçar refetch imediato também
       refetch();
     },
     onError: (error: any) => {
-      console.error('❌ [FRONTEND] Mutation error:', error);
-      console.error('❌ [FRONTEND] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
       toast({
         title: "Erro ao atualizar vínculos",
-        description: error.message || "Ocorreu um erro ao atualizar os vínculos.",
+        description: error.message || "Erro desconhecido ao atualizar vínculos.",
         variant: "destructive",
       });
     }
   });
 
-  const handleSaveContract = () => {
-    console.log('🎯 [FRONTEND] handleSaveContract chamado');
-    console.log('🔍 [FRONTEND] Estado atual:', {
-      editingUser: editingUser,
-      selectedCompanyId,
-      selectedContractId,
-      hasEditingUser: !!editingUser
-    });
+  const handleUpdateContract = () => {
+    if (!editingUser) return;
     
-    if (!editingUser) {
-      console.log('❌ [FRONTEND] editingUser não encontrado');
-      toast({
-        title: "Erro",
-        description: "Nenhum usuário selecionado para edição.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    // Verificar se é Gestor ou Diretor
     if (!editingUser.groups.includes('Gestores') && !editingUser.groups.includes('Diretores')) {
-      console.log('❌ [FRONTEND] Usuário não é Gestor nem Diretor, grupos:', editingUser.groups);
       toast({
         title: "Erro",
         description: "Apenas Gestores e Diretores podem ter vínculos editados.",
@@ -389,34 +387,16 @@ export default function UserManagement() {
       return;
     }
     
-    // Para Gestores: apenas empresa (contractId sempre null)
-    // Para Diretores: empresa + contrato específico
     let contractId = null;
     
     if (editingUser.groups.includes('Diretores')) {
-      // Diretores precisam de empresa E contrato
       if (selectedCompanyId === "none" || selectedContractId === "none") {
         contractId = null;
       } else {
         contractId = selectedContractId;
       }
-      console.log('📝 [FRONTEND] Processando Diretor - empresa:', selectedCompanyId, 'contrato:', selectedContractId);
-    } else if (editingUser.groups.includes('Gestores')) {
-      // Para Gestores, contractId permanece null mas pode ter empresa
-      contractId = null;
-      console.log('📝 [FRONTEND] Processando Gestor - empresa:', selectedCompanyId, 'contractId sempre null');
     }
     
-    console.log('🎯 [FRONTEND] Dados finais para envio:', {
-      cognitoId: editingUser.cognitoId,
-      email: editingUser.email,
-      contractId,
-      selectedCompanyId,
-      selectedContractId,
-      userType: editingUser.groups.includes('Diretores') ? 'Diretor' : 'Gestor'
-    });
-    
-    console.log('🚀 [FRONTEND] Iniciando mutation...');
     updateContractMutation.mutate({
       cognitoId: editingUser.cognitoId,
       email: editingUser.email,
@@ -426,847 +406,565 @@ export default function UserManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Link href="/admin/master">
-                <Button variant="ghost" size="sm">
-                  ← Voltar
-                </Button>
-              </Link>
-              <div className="flex items-center space-x-3">
-                <div className="relative">
-                  <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">
-                    <img 
-                      src={iaprenderLogo} 
-                      alt="IAprender Logo" 
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  IAprender
-                </span>
-              </div>
-              <div className="h-6 w-px bg-gray-300"></div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Gestão de Usuários AWS Cognito
-              </h1>
-              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                Admin, Gestores e Diretores
-              </Badge>
+    <div className="space-y-6">
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-blue-800">Total de Usuários</CardTitle>
+            <Users className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-900">{userStats.total}</div>
+            <p className="text-xs text-blue-700">Admin, Gestores e Diretores</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-green-800">Usuários Ativos</CardTitle>
+            <UserCheck className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-900">{userStats.active}</div>
+            <p className="text-xs text-green-700">Status confirmado</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-yellow-800">Senha Temporária</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-900">{userStats.pending}</div>
+            <p className="text-xs text-yellow-700">Aguardando primeiro acesso</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-800">Inativos</CardTitle>
+            <UserX className="h-4 w-4 text-gray-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-gray-900">{userStats.inactive}</div>
+            <p className="text-xs text-gray-700">Desabilitados ou não confirmados</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Abas de Filtro por Tipo de Usuário */}
+      <Card>
+        <CardContent className="pt-6">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="todos" className="flex items-center space-x-2">
+                <Users className="h-4 w-4" />
+                <span>Todos</span>
+              </TabsTrigger>
+              <TabsTrigger value="admin" className="flex items-center space-x-2">
+                <Shield className="h-4 w-4" />
+                <span>Admin</span>
+              </TabsTrigger>
+              <TabsTrigger value="gestores" className="flex items-center space-x-2">
+                <Building className="h-4 w-4" />
+                <span>Gestores</span>
+              </TabsTrigger>
+              <TabsTrigger value="diretores" className="flex items-center space-x-2">
+                <UserCheck className="h-4 w-4" />
+                <span>Diretores</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Filtros */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Filter className="h-5 w-5 mr-2" />
+            Filtros e Busca
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Buscar por email ou nome..."
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
+            <Select value={selectedStatus} onValueChange={handleStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="Filtrar por status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os status</SelectItem>
+                <SelectItem value="CONFIRMED">Ativo</SelectItem>
+                <SelectItem value="FORCE_CHANGE_PASSWORD">Senha Temporária</SelectItem>
+                <SelectItem value="UNCONFIRMED">Não Confirmado</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => refetch()}
+              variant="outline"
+              size="icon"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Lista de Usuários */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>Usuários Cadastrados</CardTitle>
+              <CardDescription>
+                {pagination.totalUsers} usuários encontrados
+              </CardDescription>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Bem-vindo, <span className="font-medium">{user?.firstName || 'Admin'}</span>
-              </span>
+              <Badge variant="outline">
+                Página {pagination.currentPage} de {pagination.totalPages}
+              </Badge>
               <Link href="/admin/cognito-users">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm">
+                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" size="sm">
                   <UserPlus className="h-4 w-4 mr-2" />
                   Criar Usuário
                 </Button>
               </Link>
-              <Button
-                onClick={logout}
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-300 hover:bg-red-50"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-800">Total de Usuários</CardTitle>
-              <Users className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-900">{userStats.total}</div>
-              <p className="text-xs text-blue-700">Admin, Gestores e Diretores</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-800">Usuários Ativos</CardTitle>
-              <UserCheck className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-900">{userStats.active}</div>
-              <p className="text-xs text-green-700">Status confirmado</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-yellow-800">Senha Temporária</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-yellow-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-900">{userStats.pending}</div>
-              <p className="text-xs text-yellow-700">Aguardando primeiro acesso</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-800">Inativos</CardTitle>
-              <UserX className="h-4 w-4 text-gray-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{userStats.inactive}</div>
-              <p className="text-xs text-gray-700">Desabilitados ou não confirmados</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Abas de Filtro por Tipo de Usuário */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="todos" className="flex items-center space-x-2">
-                  <Users className="h-4 w-4" />
-                  <span>Todos</span>
-                </TabsTrigger>
-                <TabsTrigger value="admin" className="flex items-center space-x-2">
-                  <Shield className="h-4 w-4" />
-                  <span>Admin</span>
-                </TabsTrigger>
-                <TabsTrigger value="gestores" className="flex items-center space-x-2">
-                  <Building className="h-4 w-4" />
-                  <span>Gestores</span>
-                </TabsTrigger>
-                <TabsTrigger value="diretores" className="flex items-center space-x-2">
-                  <UserCheck className="h-4 w-4" />
-                  <span>Diretores</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        {/* Filtros */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Filter className="h-5 w-5 mr-2" />
-              Filtros e Busca
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="Buscar por email ou nome..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              <Select value={selectedStatus} onValueChange={handleStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filtrar por status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos os status</SelectItem>
-                  <SelectItem value="CONFIRMED">Ativo</SelectItem>
-                  <SelectItem value="FORCE_CHANGE_PASSWORD">Senha Temporária</SelectItem>
-                  <SelectItem value="UNCONFIRMED">Não Confirmado</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                onClick={() => refetch()}
-                variant="outline"
-                size="icon"
-              >
-                <RefreshCw className="h-4 w-4" />
-              </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-500">Carregando usuários...</p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Lista de Usuários */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle>Usuários Cadastrados</CardTitle>
-                <CardDescription>
-                  {pagination.totalUsers} usuários encontrados
-                </CardDescription>
-              </div>
-              <Badge variant="outline">
-                Página {pagination.currentPage} de {pagination.totalPages}
-              </Badge>
+          ) : error ? (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                Erro ao carregar usuários. Verifique suas permissões AWS Cognito.
+              </AlertDescription>
+            </Alert>
+          ) : users.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-500">Nenhum usuário encontrado com os filtros aplicados.</p>
             </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8">
-                <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-500">Carregando usuários...</p>
-              </div>
-            ) : error ? (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">
-                  Erro ao carregar usuários. Verifique suas permissões AWS Cognito.
-                </AlertDescription>
-              </Alert>
-            ) : users.length === 0 ? (
-              <div className="text-center py-8">
-                <Users className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-500">Nenhum usuário encontrado com os filtros aplicados.</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Seção de Administradores - Layout em Grid */}
-                {users.filter(user => user.groups.includes('Admin')).length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Shield className="h-5 w-5 mr-2 text-red-600" />
-                      Administradores do Sistema
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {users.filter(user => user.groups.includes('Admin')).map((user) => (
-                        <div
-                          key={user.cognitoId}
-                          className="p-4 border border-red-200 rounded-lg bg-gradient-to-br from-red-50 to-red-100 hover:shadow-md transition-all duration-200"
-                        >
-                          <div className="flex items-center space-x-3 mb-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
-                              <span className="text-white font-semibold text-xs">
-                                {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
+          ) : (
+            <div className="space-y-6">
+              {/* Seção de Administradores */}
+              {users.filter(user => user.groups.includes('Admin')).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Shield className="h-5 w-5 mr-2 text-red-600" />
+                    Administradores do Sistema
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {users.filter(user => user.groups.includes('Admin')).map((userItem) => (
+                      <div
+                        key={userItem.cognitoId}
+                        className="p-4 border border-red-200 rounded-lg bg-gradient-to-br from-red-50 to-red-100 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-center space-x-3 mb-3">
+                          <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold text-xs">
+                              {userItem.firstName?.charAt(0)}{userItem.lastName?.charAt(0)}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-gray-900 text-sm truncate">
+                              {userItem.firstName} {userItem.lastName}
+                            </h4>
+                            <p className="text-xs text-gray-600 truncate">{userItem.email}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mb-3">
+                          {getStatusBadge(userItem.status, userItem.enabled)}
+                          <Badge className="bg-red-100 text-red-800 text-xs">Admin</Badge>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedUser(userItem)}
+                            className="flex-1"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Ver
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Seção de Gestores */}
+              {users.filter(user => user.groups.includes('Gestores')).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Building className="h-5 w-5 mr-2 text-blue-600" />
+                    Gestores Municipais
+                  </h3>
+                  <div className="space-y-3">
+                    {users.filter(user => user.groups.includes('Gestores')).map((userItem) => (
+                      <div
+                        key={userItem.cognitoId}
+                        className="p-4 border border-blue-200 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold">
+                                {userItem.firstName?.charAt(0)}{userItem.lastName?.charAt(0)}
                               </span>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-gray-900 text-sm truncate">
-                                {user.firstName} {user.lastName}
+                            <div>
+                              <h4 className="font-medium text-gray-900">
+                                {userItem.firstName} {userItem.lastName}
                               </h4>
-                              <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                              <p className="text-sm text-gray-600">{userItem.email}</p>
+                              {userItem.contractInfo && (
+                                <p className="text-xs text-blue-700 font-medium">
+                                  {userItem.contractInfo.companyName}
+                                </p>
+                              )}
                             </div>
                           </div>
                           
-                          <div className="flex items-center justify-between mb-3">
-                            {getStatusBadge(user.status, user.enabled)}
-                            <Badge className="bg-red-100 text-red-800 text-xs">Admin</Badge>
-                          </div>
-                          
-                          <div className="flex space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedUser(user)}
-                              className="text-red-600 border-red-300 hover:bg-red-50 text-xs flex-1"
-                            >
-                              <Eye className="h-3 w-3 mr-1" />
-                              Ver
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Seção de Gestores Municipais - Lista Expansível */}
-                {users.filter(user => user.groups.includes('Gestores')).length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <Building className="h-5 w-5 mr-2 text-emerald-600" />
-                      Gestores Municipais
-                    </h3>
-                    <div className="space-y-3">
-                      {users.filter(user => user.groups.includes('Gestores')).map((user) => {
-                        const isExpanded = expandedCards.has(user.cognitoId);
-                        return (
-                          <div
-                            key={user.cognitoId}
-                            className="border border-emerald-200 rounded-lg bg-gradient-to-r from-emerald-50 to-emerald-100 overflow-hidden"
-                          >
-                            {/* Header Compacto */}
-                            <div 
-                              className="p-4 cursor-pointer hover:bg-emerald-200/50 transition-colors"
-                              onClick={() => toggleCardExpansion(user.cognitoId)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
-                                    <span className="text-white font-semibold text-sm">
-                                      {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium text-gray-900">
-                                      {user.firstName} {user.lastName}
-                                    </h4>
-                                    <p className="text-sm text-gray-600">{user.email}</p>
-                                    {user.contractInfo && (
-                                      <p className="text-xs text-emerald-700 font-medium">
-                                        {user.contractInfo.companyName}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
-                                  {getStatusBadge(user.status, user.enabled)}
-                                  <Badge className="bg-emerald-100 text-emerald-800">Gestor</Badge>
-                                  {isExpanded ? (
-                                    <ChevronUp className="h-5 w-5 text-emerald-600" />
-                                  ) : (
-                                    <ChevronDown className="h-5 w-5 text-emerald-600" />
-                                  )}
-                                </div>
-                              </div>
+                          <div className="flex items-center space-x-3">
+                            {getStatusBadge(userItem.status, userItem.enabled)}
+                            <Badge className="bg-blue-100 text-blue-800">Gestor</Badge>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedUser(userItem)}
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Ver
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditModal(userItem)}
+                                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Editar
+                              </Button>
                             </div>
-
-                            {/* Conteúdo Expandido */}
-                            {isExpanded && (
-                              <div className="px-4 pb-4 border-t border-emerald-200">
-                                <div className="pt-4 space-y-4">
-                                  {/* Informações detalhadas */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <span className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Data de Criação</span>
-                                      <p className="text-gray-900">{new Date(user.createdDate).toLocaleDateString('pt-BR')}</p>
-                                    </div>
-                                    {user.localData?.lastLoginAt && (
-                                      <div>
-                                        <span className="text-xs font-medium text-emerald-700 uppercase tracking-wide">Último Acesso</span>
-                                        <p className="text-gray-900">{new Date(user.localData.lastLoginAt).toLocaleDateString('pt-BR')}</p>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Informações da empresa */}
-                                  {user.contractInfo ? (
-                                    <div className="bg-white/60 p-3 rounded-lg">
-                                      <h5 className="font-medium text-emerald-800 mb-2">Informações da Empresa</h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                        <div>
-                                          <span className="text-xs font-medium text-emerald-700">Email</span>
-                                          <p className="text-gray-900">{user.contractInfo.companyEmail}</p>
-                                        </div>
-                                        <div>
-                                          <span className="text-xs font-medium text-emerald-700">Telefone</span>
-                                          <p className="text-gray-900">{user.contractInfo.companyPhone || 'Não informado'}</p>
-                                        </div>
-                                      </div>
-                                      <div className="mt-2">
-                                        <span className="text-xs font-medium text-emerald-700">Nível de Acesso</span>
-                                        <p className="text-sm text-emerald-800">Gestão completa da empresa</p>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-                                      <div className="flex items-center space-x-2">
-                                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                        <span className="text-sm text-yellow-800 font-medium">
-                                          Gestor sem empresa vinculada - Acesso limitado até configuração
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Botões de ação */}
-                                  <div className="flex space-x-2 pt-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => setSelectedUser(user)}
-                                      className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
-                                    >
-                                      <Eye className="h-4 w-4 mr-2" />
-                                      Visualizar Detalhes
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => openEditModal(user)}
-                                      className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
-                                    >
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Alterar Empresa
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Seção de Diretores - Lista Expansível */}
-                {users.filter(user => user.groups.includes('Diretores')).length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                      <UserCheck className="h-5 w-5 mr-2 text-blue-600" />
-                      Diretores Escolares
-                    </h3>
-                    <div className="space-y-3">
-                      {users.filter(user => user.groups.includes('Diretores')).map((user) => {
-                        const isExpanded = expandedCards.has(user.cognitoId);
-                        return (
-                          <div
-                            key={user.cognitoId}
-                            className="border border-blue-200 rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 overflow-hidden"
-                          >
-                            {/* Header Compacto */}
-                            <div 
-                              className="p-4 cursor-pointer hover:bg-blue-200/50 transition-colors"
-                              onClick={() => toggleCardExpansion(user.cognitoId)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center space-x-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                                    <span className="text-white font-semibold text-sm">
-                                      {user.firstName?.charAt(0)}{user.lastName?.charAt(0)}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-medium text-gray-900">
-                                      {user.firstName} {user.lastName}
-                                    </h4>
-                                    <p className="text-sm text-gray-600">{user.email}</p>
-                                    {user.contractInfo && (
-                                      <div className="text-xs text-blue-700">
-                                        <p className="font-medium">{user.contractInfo.companyName}</p>
-                                        <p>{user.contractInfo.contractName}</p>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center space-x-3">
-                                  {getStatusBadge(user.status, user.enabled)}
-                                  <Badge className="bg-blue-100 text-blue-800">Diretor</Badge>
-                                  {isExpanded ? (
-                                    <ChevronUp className="h-5 w-5 text-blue-600" />
-                                  ) : (
-                                    <ChevronDown className="h-5 w-5 text-blue-600" />
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Conteúdo Expandido */}
-                            {isExpanded && (
-                              <div className="px-4 pb-4 border-t border-blue-200">
-                                <div className="pt-4 space-y-4">
-                                  {/* Informações detalhadas */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Data de Criação</span>
-                                      <p className="text-gray-900">{new Date(user.createdDate).toLocaleDateString('pt-BR')}</p>
-                                    </div>
-                                    {user.localData?.lastLoginAt && (
-                                      <div>
-                                        <span className="text-xs font-medium text-blue-700 uppercase tracking-wide">Último Acesso</span>
-                                        <p className="text-gray-900">{new Date(user.localData.lastLoginAt).toLocaleDateString('pt-BR')}</p>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Informações da empresa e contrato */}
-                                  {user.contractInfo ? (
-                                    <div className="bg-white/60 p-3 rounded-lg">
-                                      <h5 className="font-medium text-blue-800 mb-2">Empresa e Contrato Específico</h5>
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                        <div>
-                                          <span className="text-xs font-medium text-blue-700">Empresa</span>
-                                          <p className="text-gray-900 font-medium">{user.contractInfo.companyName}</p>
-                                        </div>
-                                        <div>
-                                          <span className="text-xs font-medium text-blue-700">Contrato</span>
-                                          <p className="text-gray-900 font-medium">{user.contractInfo.contractName || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                          <span className="text-xs font-medium text-blue-700">Email da Empresa</span>
-                                          <p className="text-gray-900">{user.contractInfo.companyEmail}</p>
-                                        </div>
-                                        <div>
-                                          <span className="text-xs font-medium text-blue-700">Telefone</span>
-                                          <p className="text-gray-900">{user.contractInfo.companyPhone || 'Não informado'}</p>
-                                        </div>
-                                      </div>
-                                      <div className="mt-2 pt-2 border-t border-blue-200">
-                                        <span className="text-xs font-medium text-blue-700">Nível de Acesso</span>
-                                        <p className="text-sm text-blue-800">Acesso restrito apenas ao contrato específico</p>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-                                      <div className="flex items-center space-x-2">
-                                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                        <span className="text-sm text-yellow-800 font-medium">
-                                          Diretor sem empresa/contrato vinculado - Acesso limitado até configuração
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Botões de ação */}
-                                  <div className="flex space-x-2 pt-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => setSelectedUser(user)}
-                                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                                    >
-                                      <Eye className="h-4 w-4 mr-2" />
-                                      Visualizar Detalhes
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => openEditModal(user)}
-                                      className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                                    >
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Editar Vínculos
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Paginação */}
-            {users.length > 0 && (
-              <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                <div className="text-sm text-gray-500">
-                  Mostrando {((pagination.currentPage - 1) * pagination.limit) + 1} até{' '}
-                  {Math.min(pagination.currentPage * pagination.limit, pagination.totalUsers)} de{' '}
-                  {pagination.totalUsers} usuários
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={!pagination.hasPrevPage}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    Anterior
-                  </Button>
-                  <span className="text-sm font-medium px-3 py-1 bg-gray-100 rounded">
-                    {pagination.currentPage}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(currentPage + 1)}
-                    disabled={!pagination.hasNextPage}
-                  >
-                    Próximo
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Modal de Detalhes */}
-        {selectedUser && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <span>Detalhes do Usuário</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Informações Básicas */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Nome Completo</label>
-                      <p className="text-sm text-gray-900">{selectedUser.firstName} {selectedUser.lastName}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Email</label>
-                      <p className="text-sm text-gray-900">{selectedUser.email}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">ID Cognito</label>
-                      <p className="text-sm text-gray-900 font-mono text-xs">{selectedUser.cognitoId}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Data de Criação</label>
-                      <p className="text-sm text-gray-900">{new Date(selectedUser.createdDate).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                  </div>
-
-                  {/* Status e Grupos */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Status</label>
-                      <div className="mt-1">{getStatusBadge(selectedUser.status, selectedUser.enabled)}</div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700">Grupos</label>
-                      <div className="mt-1">{getGroupBadge(selectedUser.groups)}</div>
-                    </div>
-                  </div>
-
-                  {/* Informações de Empresa e Contrato - apenas para Diretores */}
-                  {selectedUser.groups.includes('Diretores') && (
-                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h3 className="text-sm font-medium text-blue-900 mb-3 flex items-center">
-                        <Building className="h-4 w-4 mr-2" />
-                        Informações de Empresa e Contrato
-                      </h3>
-                      {selectedUser.contractInfo ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs font-medium text-blue-800">Empresa</label>
-                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.companyName}</p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-blue-800">Contrato</label>
-                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.contractNumber}</p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-blue-800">Email da Empresa</label>
-                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.companyEmail}</p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-blue-800">Telefone</label>
-                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.companyPhone || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-blue-800">Nome do Contrato</label>
-                            <p className="text-sm text-blue-900">{selectedUser.contractInfo.contractName}</p>
-                          </div>
-                          <div>
-                            <label className="text-xs font-medium text-blue-800">ID do Contrato</label>
-                            <p className="text-sm text-blue-900 font-mono">{selectedUser.contractInfo.contractId}</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-2 text-yellow-800">
-                          <AlertTriangle className="h-4 w-4" />
-                          <span className="text-sm">Diretor sem empresa/contrato vinculado</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Informações Locais */}
-                  {selectedUser.localData && (
-                    <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-900 mb-3">Informações Locais</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="text-xs font-medium text-gray-700">ID Local</label>
-                          <p className="text-sm text-gray-900">{selectedUser.localData.id}</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-gray-700">Role</label>
-                          <p className="text-sm text-gray-900">{selectedUser.localData.role}</p>
-                        </div>
-                        {selectedUser.localData.lastLoginAt && (
-                          <div>
-                            <label className="text-xs font-medium text-gray-700">Último Login</label>
-                            <p className="text-sm text-gray-900">{new Date(selectedUser.localData.lastLoginAt).toLocaleString('pt-BR')}</p>
-                          </div>
-                        )}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700">Primeiro Login</label>
-                          <p className="text-sm text-gray-900">{selectedUser.localData.firstLogin ? 'Sim' : 'Não'}</p>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                <div className="flex justify-end space-x-2 mt-6">
-                  {selectedUser.groups.includes('Diretores') && (
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedUser(null);
-                        openEditModal(selectedUser);
-                      }}
-                      className="text-green-600 border-green-300 hover:bg-green-50"
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      ✏️ Editar Vínculos
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    onClick={() => setSelectedUser(null)}
-                  >
-                    Fechar
-                  </Button>
+              {/* Seção de Diretores */}
+              {users.filter(user => user.groups.includes('Diretores')).length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <UserCheck className="h-5 w-5 mr-2 text-green-600" />
+                    Diretores Escolares
+                  </h3>
+                  <div className="space-y-3">
+                    {users.filter(user => user.groups.includes('Diretores')).map((userItem) => (
+                      <div
+                        key={userItem.cognitoId}
+                        className="p-4 border border-green-200 rounded-lg bg-gradient-to-br from-green-50 to-green-100 hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold">
+                                {userItem.firstName?.charAt(0)}{userItem.lastName?.charAt(0)}
+                              </span>
+                            </div>
+                            <div>
+                              <h4 className="font-medium text-gray-900">
+                                {userItem.firstName} {userItem.lastName}
+                              </h4>
+                              <p className="text-sm text-gray-600">{userItem.email}</p>
+                              {userItem.contractInfo && (
+                                <div className="text-xs text-green-700">
+                                  <p className="font-medium">{userItem.contractInfo.companyName}</p>
+                                  <p>Contrato: {userItem.contractInfo.contractName}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center space-x-3">
+                            {getStatusBadge(userItem.status, userItem.enabled)}
+                            <Badge className="bg-green-100 text-green-800">Diretor</Badge>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedUser(userItem)}
+                              >
+                                <Eye className="h-3 w-3 mr-1" />
+                                Ver
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => openEditModal(userItem)}
+                                className="text-green-600 border-green-300 hover:bg-green-50"
+                              >
+                                <Edit className="h-3 w-3 mr-1" />
+                                Editar
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </div>
+          )}
+
+          {/* Paginação */}
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={!pagination.hasPrevPage}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Anterior
+                </Button>
+                <span className="text-sm text-gray-600">
+                  Página {pagination.currentPage} de {pagination.totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                  disabled={!pagination.hasNextPage}
+                >
+                  Próxima
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+              <div className="text-sm text-gray-500">
+                Total: {pagination.totalUsers} usuários
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modal de Visualização Detalhada */}
+      {selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Detalhes do Usuário
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedUser(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Informações Básicas */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Informações Básicas</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600">Nome:</span>
+                    <p className="font-medium">{selectedUser.firstName} {selectedUser.lastName}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Email:</span>
+                    <p className="font-medium">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Status:</span>
+                    <div className="mt-1">{getStatusBadge(selectedUser.status, selectedUser.enabled)}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Tipo:</span>
+                    <div className="mt-1">{getGroupBadge(selectedUser.groups)}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Criado em:</span>
+                    <p className="font-medium">{new Date(selectedUser.createdDate).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Última modificação:</span>
+                    <p className="font-medium">{new Date(selectedUser.lastModifiedDate).toLocaleDateString('pt-BR')}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Informações de Contrato (se houver) */}
+              {selectedUser.contractInfo && (
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-3">Vínculos Empresariais</h4>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-gray-600">Empresa:</span>
+                        <p className="font-medium">{selectedUser.contractInfo.companyName}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Contrato:</span>
+                        <p className="font-medium">{selectedUser.contractInfo.contractName || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Telefone da Empresa:</span>
+                        <p className="font-medium">{selectedUser.contractInfo.companyPhone}</p>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">Email da Empresa:</span>
+                        <p className="font-medium">{selectedUser.contractInfo.companyEmail}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Modal de Edição de Vínculos - para Gestores e Diretores */}
-        {editingUser && (editingUser.groups.includes('Gestores') || editingUser.groups.includes('Diretores')) && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <Card className="max-w-lg w-full">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Edit className="h-5 w-5 text-green-600" />
-                  <span>
-                    {editingUser.groups.includes('Gestores') ? 'Alterar Empresa' : 'Alterar Empresa e Contrato'}
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  {editingUser.firstName} {editingUser.lastName} - {editingUser.email}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Explicação baseada no tipo de usuário */}
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                    <h4 className="text-sm font-medium text-slate-900 mb-2">
-                      {editingUser.groups.includes('Gestores') ? 'Gestor Municipal' : 'Diretor de Escola'}
-                    </h4>
-                    <p className="text-xs text-slate-600">
-                      {editingUser.groups.includes('Gestores') 
-                        ? 'Gestores gerenciam uma empresa completa e todos os seus contratos. Selecione apenas a empresa.'
-                        : 'Diretores gerenciam um contrato específico dentro de uma empresa. Selecione empresa e contrato.'
-                      }
-                    </p>
-                  </div>
-                  
-                  {/* Informações atuais */}
-                  {editingUser.contractInfo && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="text-sm font-medium text-blue-900 mb-2">Vínculos Atuais:</h4>
-                      <div className="text-xs text-blue-800">
-                        <p><strong>Empresa:</strong> {editingUser.contractInfo.companyName}</p>
-                        <p><strong>Contrato:</strong> {editingUser.contractInfo.contractNumber}</p>
-                      </div>
-                    </div>
-                  )}
+      {/* Modal de Edição de Vínculos */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Editar Vínculos
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={closeEditModal}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">
+                  {editingUser.firstName} {editingUser.lastName}
+                </h4>
+                <p className="text-sm text-gray-600">{editingUser.email}</p>
+                <div className="mt-2">{getGroupBadge(editingUser.groups)}</div>
+              </div>
 
-                  {/* Seleção de Empresa */}
+              <div className="space-y-4">
+                {/* Seleção de Empresa */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Empresa
+                  </label>
+                  <Select value={selectedCompanyId} onValueChange={handleCompanyChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma empresa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhuma empresa</SelectItem>
+                      {companiesData?.companies?.map((company: any) => (
+                        <SelectItem key={company.id} value={company.id.toString()}>
+                          {company.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Seleção de Contrato (apenas para Diretores) */}
+                {editingUser.groups.includes('Diretores') && (
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">
-                      Selecionar Empresa:
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Contrato
                     </label>
-                    <Select value={selectedCompanyId} onValueChange={handleCompanyChange}>
+                    <Select 
+                      value={selectedContractId} 
+                      onValueChange={setSelectedContractId}
+                      disabled={selectedCompanyId === "none" || contractsLoading}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Escolha uma empresa..." />
+                        <SelectValue placeholder="Selecione um contrato" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">Nenhuma empresa</SelectItem>
-                        {companiesData?.companies?.map((company: any) => (
-                          <SelectItem key={company.id} value={company.id.toString()}>
-                            {company.name}
+                        <SelectItem value="none">Nenhum contrato</SelectItem>
+                        {contractsData?.contratos?.map((contract: any) => (
+                          <SelectItem key={contract.id} value={contract.id.toString()}>
+                            {contract.nome} - {contract.numero}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                    {contractsLoading && (
+                      <p className="text-xs text-gray-600 mt-1">
+                        Carregando contratos...
+                      </p>
+                    )}
                   </div>
+                )}
+              </div>
 
-                  {/* Seleção de Contrato - apenas para Diretores */}
-                  {editingUser.groups.includes('Diretores') && selectedCompanyId && selectedCompanyId !== "none" && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">
-                        Selecionar Contrato:
-                      </label>
-                      {contractsLoading ? (
-                        <div className="text-sm text-gray-500">Carregando contratos...</div>
-                      ) : (
-                        <Select value={selectedContractId} onValueChange={setSelectedContractId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Escolha um contrato..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Nenhum contrato</SelectItem>
-                            {contractsData?.contracts?.map((contract: any) => (
-                              <SelectItem key={contract.id} value={contract.id.toString()}>
-                                {contract.contract_number} - {contract.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                      {contractsData?.contracts && contractsData.contracts.length === 0 && !contractsLoading && (
-                        <div className="text-sm text-amber-600 mt-2">
-                          ⚠️ Nenhum contrato ativo encontrado para esta empresa
-                        </div>
-                      )}
-                    </div>
+              <div className="flex space-x-3 pt-4">
+                <Button
+                  onClick={handleUpdateContract}
+                  disabled={updateContractMutation.isPending}
+                  className="flex-1"
+                >
+                  {updateContractMutation.isPending ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Salvar
+                    </>
                   )}
-
-                  {/* Informações do contrato selecionado - apenas para Diretores */}
-                  {editingUser.groups.includes('Diretores') && selectedContractId && contractsData?.contracts && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <h4 className="text-sm font-medium text-green-900 mb-2">Novo Vínculo:</h4>
-                      {(() => {
-                        const selectedContract = contractsData.contracts.find(
-                          (c: any) => c.id.toString() === selectedContractId
-                        );
-                        return selectedContract ? (
-                          <div className="text-xs text-green-800">
-                            <p><strong>Contrato:</strong> {selectedContract.contract_number}</p>
-                            <p><strong>Nome:</strong> {selectedContract.name}</p>
-                          </div>
-                        ) : null;
-                      })()}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-end space-x-2 mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={closeEditModal}
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleSaveContract}
-                    disabled={updateContractMutation.isPending}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Save className="h-4 w-4 mr-1" />
-                    {updateContractMutation.isPending ? 'Salvando...' : 
-                      editingUser.groups.includes('Gestores') ? 'Salvar Empresa' : 'Salvar Vínculos'
-                    }
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={closeEditModal}
+                  disabled={updateContractMutation.isPending}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
