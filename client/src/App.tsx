@@ -70,7 +70,8 @@ import NotFound from "@/pages/not-found";
 // AWS Cognito Dashboards
 import AdminMaster from "@/pages/AdminMaster";
 import GestorDashboardNew from "@/pages/GestorDashboard";
-import GestorDashboardCallback from "@/pages/GestorDashboard";
+import AdminFormRoutes from "@/pages/AdminFormRoutes";
+import GestorFormRoutes from "@/pages/GestorFormRoutes";
 import SchoolDashboard from "@/pages/SchoolDashboard";
 import TeacherDashboardNew from "@/pages/TeacherDashboard";
 import StudentDashboardNew from "@/pages/StudentDashboard";
@@ -168,7 +169,8 @@ function Router() {
       
       {/* AWS Cognito Dashboards */}
       <Route path="/admin/master" component={AdminMaster} />
-      <Route path="/gestor/dashboard" component={GestorDashboardCallback} />
+      <Route path="/admin/user-management" component={AdminFormRoutes} />
+      <Route path="/gestor/dashboard" component={GestorFormRoutes} />
       <Route path="/diretor/dashboard" component={SchoolDashboard} />
       <Route path="/professor/dashboard" component={TeacherDashboardNew} />
       <Route path="/aluno/dashboard" component={StudentDashboardNew} />

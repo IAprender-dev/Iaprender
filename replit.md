@@ -143,6 +143,34 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 10, 2025: ✅ CONCLUÍDO - Sistema de Gestão de Acessos Admin e Gestor Implementado
+  - ✅ Interface AdminFormRoutes criada para administradores (`/admin/user-management`):
+    • Dashboard com estatísticas globais do sistema
+    • Acesso aos 3 formulários funcionais principais
+    • Sistema de abas (Municipal, Administração, Configuração)
+    • Design system azul/indigo para identidade administrativa
+    • Controle de permissões e status por formulário
+  - ✅ Interface GestorFormRoutes criada para gestores municipais (`/gestor/dashboard`):
+    • Dashboard com estatísticas municipais específicas
+    • Formulários focados na gestão municipal
+    • Sistema de abas (Formulários, Relatórios, Configurações)
+    • Design system emerald/teal para identidade municipal
+    • Indicadores de prioridade por formulário
+  - ✅ Integração completa com callback AWS Cognito:
+    • Processamento automático de parâmetros de autenticação
+    • Limpeza da URL após carregamento
+    • Manutenção da sessão durante transições
+    • Logout funcional em ambas as interfaces
+  - ✅ Formulários funcionais integrados:
+    • escola-criar.html - Cadastro de escolas com validação brasileira
+    • diretor-criar.html - Designação de diretores escolares
+    • usuario-criar.html - Sistema hierárquico de usuários
+    • Abertura em nova aba mantendo sessão ativa
+  - ✅ Sistema de rotas atualizado:
+    • Admin: /admin/user-management com AdminFormRoutes
+    • Gestor: /gestor/dashboard com GestorFormRoutes
+    • Redirecionamento automático baseado em grupos Cognito
+  - ✅ Documentação completa criada (GESTAO_ADMIN_GESTOR_ROUTES.md)
 - July 10, 2025: ✅ CONCLUÍDO - Sistema de Callback AWS Cognito Corrigido e Aprimorado
   - ✅ Corrigidas rotas de callback para redirecionamento hierárquico adequado:
     • Admin/AdminMaster → `/admin/user-management`
