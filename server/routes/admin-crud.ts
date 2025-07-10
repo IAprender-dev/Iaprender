@@ -108,6 +108,25 @@ export function registerAdminCRUDEndpoints(app: Express) {
 
   // ==================== EMPRESAS ====================
   
+  // GET /api/admin/companies/stats - Estatísticas de empresas (DEVE VIR ANTES DO :id)
+  app.get('/api/admin/companies/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const stats = await storage.getEmpresaStats();
+      res.json({
+        success: true,
+        data: stats,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
   // GET /api/admin/companies - Listar empresas
   app.get('/api/admin/companies', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
@@ -133,25 +152,6 @@ export function registerAdminCRUDEndpoints(app: Express) {
       res.status(500).json({
         success: false,
         message: 'Erro ao buscar empresas',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-    }
-  });
-
-  // GET /api/admin/companies/stats - Estatísticas de empresas
-  app.get('/api/admin/companies/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
-    try {
-      const stats = await storage.getEmpresaStats();
-      res.json({
-        success: true,
-        data: stats,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('❌ Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar estatísticas',
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }
@@ -290,6 +290,25 @@ export function registerAdminCRUDEndpoints(app: Express) {
 
   // ==================== CONTRATOS ====================
 
+  // GET /api/admin/contracts/stats - Estatísticas de contratos (DEVE VIR ANTES DO :id)
+  app.get('/api/admin/contracts/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const stats = await storage.getContratoStats();
+      res.json({
+        success: true,
+        data: stats,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
   // GET /api/admin/contracts - Listar contratos
   app.get('/api/admin/contracts', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
@@ -315,25 +334,6 @@ export function registerAdminCRUDEndpoints(app: Express) {
       res.status(500).json({
         success: false,
         message: 'Erro ao buscar contratos',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-    }
-  });
-
-  // GET /api/admin/contracts/stats - Estatísticas de contratos
-  app.get('/api/admin/contracts/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
-    try {
-      const stats = await storage.getContratoStats();
-      res.json({
-        success: true,
-        data: stats,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('❌ Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar estatísticas',
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }
@@ -482,6 +482,25 @@ export function registerAdminCRUDEndpoints(app: Express) {
 
   // ==================== USUÁRIOS ====================
 
+  // GET /api/admin/users/stats - Estatísticas de usuários (DEVE VIR ANTES DO :id)
+  app.get('/api/admin/users/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const stats = await storage.getUserStats();
+      res.json({
+        success: true,
+        data: stats,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
   // GET /api/admin/users - Listar usuários
   app.get('/api/admin/users', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
@@ -507,25 +526,6 @@ export function registerAdminCRUDEndpoints(app: Express) {
       res.status(500).json({
         success: false,
         message: 'Erro ao buscar usuários',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-    }
-  });
-
-  // GET /api/admin/users/stats - Estatísticas de usuários
-  app.get('/api/admin/users/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
-    try {
-      const stats = await storage.getUserStats();
-      res.json({
-        success: true,
-        data: stats,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('❌ Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar estatísticas',
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }
