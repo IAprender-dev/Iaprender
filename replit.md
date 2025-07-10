@@ -143,19 +143,26 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 10, 2025: ✅ CONCLUÍDO - Interface de Contratos Melhorada com Layout Vertical Otimizado
-  - ✅ **COLUNA EMPRESA REMOVIDA**: Eliminada conforme solicitação do usuário para melhor visualização
-  - ✅ **LAYOUT REORGANIZADO**: Dados empilhados verticalmente em estrutura hierárquica:
-    • Identificação: Número do contrato destacado em azul + tipo em badge
-    • Detalhes: Nome, datas (início/fim), licenças organizados em linhas separadas
-    • Valor: Formatação monetária destacada em verde com moeda
-    • Status: Badge colorido com estados (Ativo, Pendente, Expirado, Cancelado)
-  - ✅ **MELHORIAS VISUAIS**: 
+- July 10, 2025: ✅ CONCLUÍDO - Interfaces de Contratos e Empresas Melhoradas com Layout Vertical Otimizado
+  - ✅ **INTERFACE DE CONTRATOS APRIMORADA**:
+    • Coluna "Empresa" removida para melhor visualização
+    • Número do contrato destacado em azul + tipo em badge
+    • Datas (início/fim) e licenças organizados em linhas separadas
+    • Valor monetário destacado em verde com suporte a `valorTotal` e `numeroLicencas`
+    • Status com badges coloridos (Ativo, Pendente, Expirado, Cancelado)
+  - ✅ **INTERFACE DE EMPRESAS APRIMORADA**:
+    • Layout reorganizado com dados empilhados verticalmente
+    • Nome da empresa destacado em azul como identificador principal
+    • Razão social em itálico abaixo do nome
+    • CNPJ em badge pequeno com fonte mono
+    • Contatos organizados com ícones (email, telefone, localização)
+    • Informações do responsável com cargo quando disponível
+  - ✅ **MELHORIAS VISUAIS APLICADAS EM AMBAS**:
     • Colunas com larguras fixas para melhor alinhamento
     • Espaçamento otimizado entre elementos
     • Tipografia diferenciada para hierarquia de informações
-    • Suporte a `valorTotal` e `numeroLicencas` dos dados reais
-  - ✅ **RESPONSIVIDADE MANTIDA**: Layout adaptável para diferentes tamanhos de tela
+    • Ícones contextuais (Mail, Phone, MapPin, Users)
+    • Responsividade mantida para diferentes tamanhos de tela
   - ✅ **INTEGRIDADE DE DADOS**: Compatibilidade com campos existentes e novos do banco
 - July 10, 2025: ✅ CONCLUÍDO - ANÁLISE COMPLETA DOS RELACIONAMENTOS E CORREÇÃO DE INTEGRIDADE DAS TABELAS
   - ✅ **ANÁLISE DE RELACIONAMENTOS CONCLUÍDA**: Mapeamento completo das tabelas empresas, contratos e usuários

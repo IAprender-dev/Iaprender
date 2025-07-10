@@ -595,33 +595,77 @@ function EmpresasTab({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>CNPJ</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Cidade/Estado</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Ações</TableHead>
+                    <TableHead className="w-[250px]">Identificação</TableHead>
+                    <TableHead>Detalhes da Empresa</TableHead>
+                    <TableHead className="w-[120px]">Status</TableHead>
+                    <TableHead className="w-[120px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {empresas.map((empresa: Empresa) => (
                     <TableRow key={empresa.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{empresa.nome}</div>
-                          <div className="text-sm text-gray-500">{empresa.razaoSocial}</div>
+                        <div className="space-y-2">
+                          <div className="font-bold text-blue-600 text-lg leading-tight">
+                            {empresa.nome}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {empresa.razaoSocial && (
+                              <div className="italic">{empresa.razaoSocial}</div>
+                            )}
+                          </div>
+                          {empresa.cnpj && (
+                            <div className="text-xs bg-gray-100 px-2 py-1 rounded-full font-mono inline-block">
+                              CNPJ: {empresa.cnpj}
+                            </div>
+                          )}
                         </div>
                       </TableCell>
-                      <TableCell>{empresa.cnpj}</TableCell>
-                      <TableCell>{empresa.emailContato}</TableCell>
-                      <TableCell>{empresa.cidade && empresa.estado ? `${empresa.cidade}/${empresa.estado}` : '-'}</TableCell>
+                      <TableCell>
+                        <div className="space-y-2">
+                          {empresa.emailContato && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Mail className="h-3 w-3 mr-2 text-gray-400" />
+                              <span>{empresa.emailContato}</span>
+                            </div>
+                          )}
+                          {empresa.telefone && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <Phone className="h-3 w-3 mr-2 text-gray-400" />
+                              <span>{empresa.telefone}</span>
+                            </div>
+                          )}
+                          {(empresa.cidade || empresa.estado) && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <MapPin className="h-3 w-3 mr-2 text-gray-400" />
+                              <span>
+                                {empresa.cidade && empresa.estado 
+                                  ? `${empresa.cidade}, ${empresa.estado}`
+                                  : empresa.cidade || empresa.estado || '-'
+                                }
+                              </span>
+                            </div>
+                          )}
+                          {empresa.responsavel && (
+                            <div className="flex items-start text-sm text-gray-600">
+                              <Users className="h-3 w-3 mr-2 text-gray-400 mt-0.5" />
+                              <div>
+                                <div className="font-medium">{empresa.responsavel}</div>
+                                {empresa.cargoResponsavel && (
+                                  <div className="text-xs text-gray-500">{empresa.cargoResponsavel}</div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge variant={empresa.ativo ? "default" : "secondary"}>
                           {empresa.ativo ? "Ativa" : "Inativa"}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1">
                           <Button variant="ghost" size="sm" onClick={() => openView(empresa)}>
                             <Eye className="h-4 w-4" />
                           </Button>
