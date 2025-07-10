@@ -86,6 +86,30 @@ export default function UserManagement() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Capturar token JWT da URL após callback do Cognito
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    const authStatus = urlParams.get('auth');
+    const userType = urlParams.get('type');
+    const email = urlParams.get('email');
+
+    if (token && authStatus === 'success') {
+      console.log('🔐 Token JWT capturado da URL, salvando no localStorage');
+      localStorage.setItem('token', token);
+      
+      // Limpar a URL removendo os parâmetros
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      toast({
+        title: "Login realizado com sucesso!",
+        description: `Bem-vindo(a) ao sistema, ${email}`,
+        duration: 3000,
+      });
+    }
+  }, [toast]);
   
   // Filtros e paginação
   const [activeTab, setActiveTab] = useState<string>("todos");

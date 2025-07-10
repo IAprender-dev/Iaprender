@@ -774,6 +774,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         redirectPath = "/auth?error=tipo_nao_identificado";
       }
 
+      // Criar token JWT do sistema com informações do usuário
+      const jwtPayload = {
+        id: 1, // Por enquanto usamos ID fixo, depois será integrado com DB
+        email: decoded.email,
+        tipo_usuario: userType,
+        empresa_id: 1, // Por enquanto fixo
+        escola_id: null,
+        cognito_sub: decoded.sub,
+        groups: userGroups
+      };
+
+      const systemJwtToken = jwt.sign(
+        jwtPayload,
+        process.env.JWT_SECRET || 'test_secret_key_iaprender_2025',
+        { expiresIn: '24h' }
+      );
+
+      console.log("🔐 Token JWT do sistema criado para:", decoded.email);
+
       // Armazenar informações do usuário na sessão (temporário para auth)
       const sessionData = {
         cognitoSub: decoded.sub,
@@ -782,12 +801,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         groups: userGroups,
         accessToken: tokens.access_token,
         idToken: tokens.id_token,
+        systemJwtToken: systemJwtToken,
         loginTime: new Date().toISOString()
       };
 
-      // TODO: Implementar sincronização com banco de dados local
-      // Por enquanto apenas redirecionar com parâmetros de sessão
-      const redirectUrl = `${redirectPath}?auth=success&type=${userType}&email=${encodeURIComponent(decoded.email)}`;
+      // Criar URL de redirecionamento com token JWT do sistema
+      const redirectUrl = `${redirectPath}?auth=success&type=${userType}&email=${encodeURIComponent(decoded.email)}&token=${encodeURIComponent(systemJwtToken)}`;
       console.log("🔗 URL final de redirecionamento:", redirectUrl);
 
       // Redirecionar para o dashboard/formulário correto

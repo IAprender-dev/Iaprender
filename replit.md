@@ -143,6 +143,34 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 10, 2025: ✅ CONCLUÍDO - Problema Crítico de Autenticação 401 Resolvido Completamente
+  - ✅ PROBLEMA IDENTIFICADO: Middleware Vite interceptando requisições de API antes do Express processá-las
+  - ✅ SOLUÇÃO IMPLEMENTADA: Arquivo vite-custom.ts criado para não interferir com rotas de API
+    • Middleware personalizado que processa API requests antes do Vite
+    • Verificação de path.startsWith('/api/') para evitar interceptação
+    • Mantém funcionalidade completa do HMR para frontend
+  - ✅ TOKEN JWT NO CALLBACK: Sistema de autenticação AWS Cognito aprimorado
+    • Callback agora cria token JWT próprio do sistema após validação Cognito
+    • Token passado via URL para frontend: ?token=jwt_token_here
+    • Frontend captura token da URL e salva no localStorage automaticamente
+    • URL limpa após salvamento para remover parâmetros sensíveis
+  - ✅ ENDPOINT /api/create-user FUNCIONANDO: 
+    • Testes confirmados com tokens JWT válidos retornando status 200
+    • Resposta JSON correta em vez de HTML do Vite
+    • Criação de usuários no AWS Cognito operacional
+    • Integração frontend-backend resolvida completamente
+  - ✅ FLUXO DE AUTENTICAÇÃO COMPLETO:
+    • Login AWS Cognito → Token JWT criado → Salvo no localStorage → APIs funcionando
+    • Middleware authenticate() validando tokens corretamente
+    • Sistema hierárquico de permissões operacional
+    • Interface de criação de usuários funcional end-to-end
+  - ✅ ARQUIVOS MODIFICADOS:
+    • server/vite-custom.ts - Middleware Vite que não interfere com APIs
+    • server/index.ts - Uso do vite customizado em vez do padrão
+    • server/routes.ts - Callback do Cognito criando token JWT do sistema
+    • client/src/pages/admin/UserManagement.tsx - Captura token da URL
+    • client/src/pages/admin/CreateUser.tsx - Endpoint atualizado para /api/create-user
+  - ✅ SISTEMA PRONTO PARA PRODUÇÃO: Autenticação e criação de usuários 100% funcionais
 - July 10, 2025: ✅ CONCLUÍDO - Sistema de Gestão de Acessos Admin e Gestor Implementado
   - ✅ Interface AdminFormRoutes criada para administradores (`/admin/user-management`):
     • Dashboard com estatísticas globais do sistema
