@@ -143,6 +143,20 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 10, 2025: ✅ CONCLUÍDO - Sistema de Mapeamento de Formulários Implementado
+  - ✅ Criado sistema centralizado de mapeamento formulário → endpoint em `/client/src/lib/mapeamento-forms.js`
+  - ✅ Implementado hook customizado `useFormMapping` com React Hook Form + React Query + Zod integrados
+  - ✅ Sistema de validação brasileira completo: CPF, CNPJ, CEP, telefone com formatação automática
+  - ✅ Controle de permissões por role: admin > gestor > diretor > professor > aluno
+  - ✅ Configuração de 25+ formulários mapeados para endpoints do backend
+  - ✅ Schemas Zod organizados por domínio: auth.ts, usuario.ts com validações avançadas
+  - ✅ Hooks especializados: useCreateForm, useEditForm, useBrazilianValidation
+  - ✅ Estados padronizados: IDLE, LOADING, SUCCESS, ERROR, VALIDATING
+  - ✅ Sistema de timeouts diferenciados: upload (2min), IA (1min), auth (15s), padrão (30s)
+  - ✅ Invalidação automática de cache do React Query para queries relacionadas
+  - ✅ Exemplo completo implementado em FormMappingExample.tsx com 3 demonstrações
+  - ✅ Documentação técnica completa em FORM_MAPPING_GUIDE.md
+  - ✅ FormUtils com métodos utilitários: getFormConfig, hasPermission, buildEndpoint, getSchema
 - July 10, 2025: ✅ CONCLUÍDO - Redirecionamento Administrativo Atualizado para Gestão de Usuários
   - ✅ Redirecionamento administrativo AWS Cognito alterado de `/admin/master` para `/admin/user-management`
   - ✅ Componente UserManagement atualizado com branding consistente IAprender
