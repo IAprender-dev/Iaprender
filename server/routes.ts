@@ -504,8 +504,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Callback route for AWS Cognito
+  // Callback route for AWS Cognito - suporte a ambos os endpoints
   app.get("/callback", async (req: Request, res: Response) => {
+    await processAuthCallback(req, res);
+  });
+
+  app.get("/auth/callback", async (req: Request, res: Response) => {
+    await processAuthCallback(req, res);
+  });
+
+  async function processAuthCallback(req: Request, res: Response) {
     console.log("🔄 Callback do AWS Cognito recebido");
     
     const { code, error } = req.query;
@@ -521,16 +529,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     
     try {
-      // Processar o código de autorização aqui
       console.log("✅ Código de autorização recebido:", code);
       
-      // Por enquanto, redirecionar para a página principal
-      res.redirect("/");
+      // Configuração do Cognito das secrets
+      const cognitoConfig = {
+        domain: process.env.COGNITO_DOMAIN,
+        clientId: process.env.COGNITO_CLIENT_ID,
+        clientSecret: process.env.COGNITO_CLIENT_SECRET,
+        redirectUri: process.env.COGNITO_REDIRECT_URI
+      };
+
+      // Trocar código por tokens
+      const tokenResponse = await fetch(`${cognitoConfig.domain}/oauth2/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          client_id: cognitoConfig.clientId!,
+          client_secret: cognitoConfig.clientSecret!,
+          redirect_uri: cognitoConfig.redirectUri!,
+          code: code as string
+        }).toString()
+      });
+
+      if (!tokenResponse.ok) {
+        throw new Error(`Token exchange failed: ${tokenResponse.status}`);
+      }
+
+      const tokens = await tokenResponse.json();
+      console.log("✅ Tokens obtidos com sucesso");
+
+      // Decodificar ID token para obter informações do usuário
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.decode(tokens.id_token) as any;
+      
+      if (!decoded) {
+        throw new Error('Token inválido');
+      }
+
+      console.log("👤 Informações do usuário:", {
+        email: decoded.email,
+        sub: decoded.sub,
+        groups: decoded['cognito:groups']
+      });
+
+      const userGroups = decoded['cognito:groups'] || [];
+      
+      // Determinar tipo de usuário e redirecionar para dashboard correto
+      let redirectPath = "/";
+      
+      if (userGroups.includes('Admin') || userGroups.includes('AdminMaster') || userGroups.includes('Administrador')) {
+        redirectPath = "/admin/master";
+        console.log("🎯 Redirecionando ADMIN para:", redirectPath);
+      } else if (userGroups.includes('Gestores') || userGroups.includes('GestorMunicipal')) {
+        redirectPath = "/gestor/dashboard";
+        console.log("🎯 Redirecionando GESTOR para:", redirectPath);
+      } else if (userGroups.includes('Diretores') || userGroups.includes('Diretor')) {
+        redirectPath = "/school/director";
+        console.log("🎯 Redirecionando DIRETOR para:", redirectPath);
+      } else if (userGroups.includes('Professores') || userGroups.includes('Professor')) {
+        redirectPath = "/teacher/dashboard";
+        console.log("🎯 Redirecionando PROFESSOR para:", redirectPath);
+      } else if (userGroups.includes('Alunos') || userGroups.includes('Aluno')) {
+        redirectPath = "/student/dashboard";
+        console.log("🎯 Redirecionando ALUNO para:", redirectPath);
+      }
+
+      // Criar sessão ou JWT local se necessário
+      // Por enquanto, apenas redirecionar
+      res.redirect(redirectPath);
+      
     } catch (error) {
       console.error("❌ Erro ao processar callback:", error);
       res.redirect("/auth?error=callback_error");
     }
-  });
+  }
 
   // Placeholder routes that will be implemented with new database structure
   app.get("/api/placeholder", (req: Request, res: Response) => {
