@@ -630,29 +630,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userGroups = decoded['cognito:groups'] || [];
       
-      // Determinar tipo de usuário e redirecionar para dashboard correto
-      let redirectPath = "/";
+      // Determinar tipo de usuário e redirecionar para dashboard/formulário correto
+      let redirectPath = "/auth";
+      let userType = "desconhecido";
       
+      // Identificar tipo de usuário com base nos grupos Cognito
       if (userGroups.includes('Admin') || userGroups.includes('AdminMaster') || userGroups.includes('Administrador')) {
+        userType = "admin";
         redirectPath = "/admin/user-management";
         console.log("🎯 Redirecionando ADMIN para:", redirectPath);
       } else if (userGroups.includes('Gestores') || userGroups.includes('GestorMunicipal')) {
+        userType = "gestor";
         redirectPath = "/gestor/dashboard";
         console.log("🎯 Redirecionando GESTOR para:", redirectPath);
       } else if (userGroups.includes('Diretores') || userGroups.includes('Diretor')) {
-        redirectPath = "/school/director";
+        userType = "diretor";
+        redirectPath = "/diretor/dashboard";
         console.log("🎯 Redirecionando DIRETOR para:", redirectPath);
       } else if (userGroups.includes('Professores') || userGroups.includes('Professor')) {
-        redirectPath = "/teacher/dashboard";
+        userType = "professor";
+        redirectPath = "/professor/dashboard";
         console.log("🎯 Redirecionando PROFESSOR para:", redirectPath);
       } else if (userGroups.includes('Alunos') || userGroups.includes('Aluno')) {
-        redirectPath = "/student/dashboard";
+        userType = "aluno";
+        redirectPath = "/aluno/dashboard";
         console.log("🎯 Redirecionando ALUNO para:", redirectPath);
+      } else {
+        console.log("⚠️ Tipo de usuário não identificado, grupos:", userGroups);
+        redirectPath = "/auth?error=tipo_nao_identificado";
       }
 
-      // Criar sessão ou JWT local se necessário
-      // Por enquanto, apenas redirecionar
-      res.redirect(redirectPath);
+      // Armazenar informações do usuário na sessão (temporário para auth)
+      const sessionData = {
+        cognitoSub: decoded.sub,
+        email: decoded.email,
+        userType: userType,
+        groups: userGroups,
+        accessToken: tokens.access_token,
+        idToken: tokens.id_token,
+        loginTime: new Date().toISOString()
+      };
+
+      // TODO: Implementar sincronização com banco de dados local
+      // Por enquanto apenas redirecionar com parâmetros de sessão
+      const redirectUrl = `${redirectPath}?auth=success&type=${userType}&email=${encodeURIComponent(decoded.email)}`;
+      console.log("🔗 URL final de redirecionamento:", redirectUrl);
+
+      // Redirecionar para o dashboard/formulário correto
+      res.redirect(redirectUrl);
       
     } catch (error) {
       console.error("❌ Erro ao processar callback:", error);

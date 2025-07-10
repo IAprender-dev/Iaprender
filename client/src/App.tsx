@@ -70,6 +70,7 @@ import NotFound from "@/pages/not-found";
 // AWS Cognito Dashboards
 import AdminMaster from "@/pages/AdminMaster";
 import GestorDashboardNew from "@/pages/GestorDashboard";
+import GestorDashboardCallback from "@/pages/GestorDashboard";
 import SchoolDashboard from "@/pages/SchoolDashboard";
 import TeacherDashboardNew from "@/pages/TeacherDashboard";
 import StudentDashboardNew from "@/pages/StudentDashboard";
@@ -167,10 +168,10 @@ function Router() {
       
       {/* AWS Cognito Dashboards */}
       <Route path="/admin/master" component={AdminMaster} />
-      <Route path="/gestor/dashboard" component={GestorDashboardNew} />
-      <Route path="/school/dashboard" component={SchoolDashboard} />
-      <Route path="/teacher/dashboard" component={TeacherDashboardNew} />
-      <Route path="/student/dashboard" component={StudentDashboardNew} />
+      <Route path="/gestor/dashboard" component={GestorDashboardCallback} />
+      <Route path="/diretor/dashboard" component={SchoolDashboard} />
+      <Route path="/professor/dashboard" component={TeacherDashboardNew} />
+      <Route path="/aluno/dashboard" component={StudentDashboardNew} />
 
       {/* Admin Master Dashboard */}
       <Route path="/admin/master-old" component={AdminMasterDashboard} />
@@ -192,7 +193,6 @@ function Router() {
       
       {/* Municipal Manager Dashboard */}
       <Route path="/municipal/dashboard" component={MunicipalDashboardNew} />
-      <Route path="/gestor/dashboard" component={GestorDashboard} />
       <Route path="/municipal/data-management" component={MunicipalDataManagement} />
       <Route path="/municipal/schools/new" component={SchoolManagementNew} />
       <Route path="/municipal/contracts" component={MunicipalContractManagement} />
