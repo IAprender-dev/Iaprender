@@ -4,6 +4,7 @@ import { empresas, contratos, users } from "../../shared/schema";
 import { eq, sql, desc, and, or, like, isNull, isNotNull } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
+import { storage } from "../storage";
 
 // Middleware de autenticação JWT
 const authenticate = (req: Request, res: Response, next: any) => {
@@ -57,8 +58,8 @@ const requireAdminOrGestor = (req: Request, res: Response, next: any) => {
 const createEmpresaSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
   cnpj: z.string().min(14, 'CNPJ deve ter pelo menos 14 caracteres'),
-  razaoSocial: z.string().min(1, 'Razão social é obrigatória'),
-  email: z.string().email('Email deve ser válido'),
+  razaoSocial: z.string().optional(),
+  emailContato: z.string().email('Email deve ser válido'),
   telefone: z.string().optional(),
   endereco: z.string().optional(),
   cidade: z.string().optional(),
@@ -75,88 +76,61 @@ const createContratoSchema = z.object({
   empresaId: z.number().positive('ID da empresa deve ser positivo'),
   dataInicio: z.string().min(1, 'Data de início é obrigatória'),
   dataFim: z.string().min(1, 'Data de fim é obrigatória'),
-  valor: z.number().positive('Valor deve ser positivo'),
+  valor: z.union([z.number(), z.string()]).transform((val) => typeof val === 'string' ? parseFloat(val) : val),
   moeda: z.string().optional().default('BRL'),
   status: z.enum(['active', 'pending', 'expired', 'cancelled']).optional().default('active'),
   tipoContrato: z.string().optional(),
   descricao: z.string().optional(),
+  objeto: z.string().optional(),
   observacoes: z.string().optional(),
   responsavelContrato: z.string().optional(),
-  emailResponsavel: z.string().email().optional(),
+  emailResponsavel: z.string().email().optional().or(z.literal('')),
   telefoneResponsavel: z.string().optional()
 });
 
+const createUsuarioSchema = z.object({
+  email: z.string().email('Email deve ser válido'),
+  firstName: z.string().min(1, 'Nome é obrigatório'),
+  lastName: z.string().min(1, 'Sobrenome é obrigatório'),
+  role: z.string().min(1, 'Tipo de usuário é obrigatório'),
+  status: z.enum(['active', 'inactive', 'suspended', 'blocked']).optional().default('active'),
+  companyId: z.number().optional(),
+  contractId: z.number().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  isMinor: z.boolean().optional().default(false),
+  parentName: z.string().optional(),
+  parentEmail: z.string().email().optional().or(z.literal('')),
+  parentPhone: z.string().optional(),
+  emergencyContact: z.string().optional()
+});
+
 export function registerAdminEndpoints(app: Express) {
-  console.log('📝 Registrando endpoints administrativos...');
+  console.log('📝 Registrando endpoints administrativos CRUD...');
 
   // ==================== EMPRESAS ====================
   
-  // Listar empresas
-  app.get('/api/admin/companies', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+  // Listar empresas (com paginação e filtros)
+  app.get('/api/empresas', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
       const { page = 1, search = '', status = 'all' } = req.query;
+      const pageNum = parseInt(page as string);
       const limit = 20;
-      const offset = (parseInt(page as string) - 1) * limit;
 
       console.log(`🔍 Listando empresas - Página: ${page}, Busca: "${search}"`);
 
-      // Construir query
-      let whereClause = undefined;
+      const result = await storage.getEmpresasByPage(pageNum, limit, search as string, status as string);
       
-      if (search) {
-        whereClause = or(
-          like(empresas.nome, `%${search}%`),
-          like(empresas.razaoSocial, `%${search}%`),
-          like(empresas.cnpj, `%${search}%`)
-        );
-      }
-
-      if (status !== 'all') {
-        const statusFilter = status === 'active' ? eq(empresas.ativo, true) : eq(empresas.ativo, false);
-        whereClause = whereClause ? and(whereClause, statusFilter) : statusFilter;
-      }
-
-      // Buscar empresas
-      const empresasList = await db.query.empresas.findMany({
-        where: whereClause,
-        limit: limit,
-        offset: offset,
-        orderBy: [desc(empresas.criadoEm)],
-        with: {
-          contratos: {
-            limit: 5,
-            orderBy: [desc(contratos.criadoEm)]
-          }
-        }
-      });
-
-      // Contar total
-      const totalResult = await db.select({ count: sql<number>`count(*)` }).from(empresas).where(whereClause);
-      const total = totalResult[0]?.count || 0;
-
-      // Estatísticas
-      const statsResult = await db.select({
-        total: sql<number>`count(*)`,
-        ativas: sql<number>`count(*) filter (where ativo = true)`,
-        inativas: sql<number>`count(*) filter (where ativo = false)`
-      }).from(empresas);
-
-      const stats = statsResult[0] || { total: 0, ativas: 0, inativas: 0 };
-
-      console.log(`✅ Encontradas ${empresasList.length} empresas`);
-
       res.json({
         success: true,
-        empresas: empresasList,
+        empresas: result.empresas,
         pagination: {
-          currentPage: parseInt(page as string),
-          totalPages: Math.ceil(total / limit),
-          totalItems: total,
-          limit,
-          hasNextPage: offset + limit < total,
-          hasPrevPage: offset > 0
+          currentPage: pageNum,
+          totalPages: Math.ceil(result.total / limit),
+          total: result.total,
+          limit
         },
-        statistics: stats,
         timestamp: new Date().toISOString()
       });
 
@@ -165,6 +139,25 @@ export function registerAdminEndpoints(app: Express) {
       res.status(500).json({
         success: false,
         message: 'Erro ao buscar empresas',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // Estatísticas de empresas
+  app.get('/api/empresas/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const stats = await storage.getEmpresaStats();
+      res.json({
+        success: true,
+        stats,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas',
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }

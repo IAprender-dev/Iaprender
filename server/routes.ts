@@ -40,6 +40,7 @@ import { registerPerformanceRoutes } from "./routes/performance-routes";
 import { registerSchoolRoutes } from "./routes/school-routes";
 import { registerAdminCognitoRoutes } from "./routes/admin-cognito-routes";
 import { registerAdminEndpoints } from "./routes/admin-endpoints";
+import { registerAdminCRUDEndpoints } from "./routes/admin-crud";
 
 // Define login schema
 const loginSchema = z.object({
@@ -849,6 +850,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registrar endpoints administrativos para empresas e contratos
   registerAdminEndpoints(app);
+  
+  // Registrar endpoints CRUD administrativos
+  registerAdminCRUDEndpoints(app);
   
   // Registrar rotas de autenticação unificadas
   const { registerAuthRoutes } = await import('./routes/auth-routes.js');
