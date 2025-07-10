@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - IAprender Sistema Educacional</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <style>
+    /* Animações customizadas */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .loading-pulse {
+      animation: pulse 1.5s infinite;
+    }
+    
+    /* Glassmorphism */
+    .glass {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen">
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center">
+      <div class="loading-pulse mb-4">
+        <div class="w-16 h-16 bg-blue-600 rounded-full mx-auto"></div>
+      </div>
+      <h2 class="text-xl font-semibold text-gray-700">Carregando Dashboard...</h2>
+      <p class="text-gray-500 mt-2">Conectando ao sistema IAprender</p>
+    </div>
+  </div>
+
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="glass shadow-lg sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+            </div>
+            <div>
+              <h1 class="text-xl font-bold text-gray-900">IAprender Dashboard</h1>
+              <p class="text-sm text-gray-600">Sistema Educacional Inteligente</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center space-x-4">
+            <div class="hidden md:flex items-center space-x-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+              <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Online</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="text-right">
+                <span id="user-name" class="block text-sm font-medium text-gray-900">Carregando...</span>
+                <span id="user-type" class="block text-xs text-gray-500">Verificando permissões...</span>
+              </div>
+              <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <i data-lucide="user" class="w-4 h-4 text-gray-600"></i>
+              </div>
+            </div>
+            <button onclick="handleLogout()" class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors">
+              <i data-lucide="log-out" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="glass rounded-xl shadow-lg p-6 card-hover fade-in">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Total de Alunos</h3>
+              <p id="total-alunos" class="text-3xl font-bold text-blue-600 mt-2">
+                <span class="loading-pulse">-</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center text-sm">
+            <span class="text-green-600 font-medium">+12%</span>
+            <span class="text-gray-500 ml-2">vs mês anterior</span>
+          </div>
+        </div>
+
+        <div class="glass rounded-xl shadow-lg p-6 card-hover fade-in" style="animation-delay: 0.1s">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Total de Professores</h3>
+              <p id="total-professores" class="text-3xl font-bold text-green-600 mt-2">
+                <span class="loading-pulse">-</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <i data-lucide="user-check" class="w-6 h-6 text-green-600"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center text-sm">
+            <span class="text-green-600 font-medium">+8%</span>
+            <span class="text-gray-500 ml-2">vs mês anterior</span>
+          </div>
+        </div>
+
+        <div class="glass rounded-xl shadow-lg p-6 card-hover fade-in" style="animation-delay: 0.2s">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Total de Escolas</h3>
+              <p id="total-escolas" class="text-3xl font-bold text-purple-600 mt-2">
+                <span class="loading-pulse">-</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <i data-lucide="building" class="w-6 h-6 text-purple-600"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center text-sm">
+            <span class="text-green-600 font-medium">+5%</span>
+            <span class="text-gray-500 ml-2">vs mês anterior</span>
+          </div>
+        </div>
+
+        <div class="glass rounded-xl shadow-lg p-6 card-hover fade-in" style="animation-delay: 0.3s">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-medium text-gray-900">Taxa de Aprovação</h3>
+              <p id="taxa-aprovacao" class="text-3xl font-bold text-emerald-600 mt-2">
+                <span class="loading-pulse">-</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <i data-lucide="trending-up" class="w-6 h-6 text-emerald-600"></i>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center text-sm">
+            <span class="text-green-600 font-medium">+3%</span>
+            <span class="text-gray-500 ml-2">vs mês anterior</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="glass rounded-xl shadow-lg p-6 mb-8 fade-in" style="animation-delay: 0.4s">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+          <i data-lucide="zap" class="w-5 h-5 mr-2 text-yellow-500"></i>
+          Ações Rápidas
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button onclick="openModal('modal-escola')" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <div class="flex items-center justify-center mb-2">
+              <i data-lucide="building-2" class="w-6 h-6"></i>
+            </div>
+            <span class="font-medium">Cadastrar Escola</span>
+          </button>
+
+          <button onclick="openModal('modal-aluno')" class="bg-gradient-to-r from-green-600 to-green-700 text-white p-4 rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <div class="flex items-center justify-center mb-2">
+              <i data-lucide="user-plus" class="w-6 h-6"></i>
+            </div>
+            <span class="font-medium">Cadastrar Aluno</span>
+          </button>
+
+          <button onclick="openModal('modal-professor')" class="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-4 rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <div class="flex items-center justify-center mb-2">
+              <i data-lucide="user-check" class="w-6 h-6"></i>
+            </div>
+            <span class="font-medium">Cadastrar Professor</span>
+          </button>
+
+          <button onclick="openModal('modal-relatorio')" class="bg-gradient-to-r from-orange-600 to-orange-700 text-white p-4 rounded-lg hover:from-orange-700 hover:to-orange-800 transition-all duration-300 transform hover:scale-105 shadow-lg">
+            <div class="flex items-center justify-center mb-2">
+              <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+            </div>
+            <span class="font-medium">Gerar Relatório</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Gráfico de Matrículas -->
+        <div class="glass rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.5s">
+          <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <i data-lucide="line-chart" class="w-5 h-5 mr-2 text-blue-600"></i>
+            Matrículas por Mês
+          </h3>
+          <canvas id="chart-matriculas" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Gráfico de Distribuição por Série -->
+        <div class="glass rounded-xl shadow-lg p-6 fade-in" style="animation-delay: 0.6s">
+          <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <i data-lucide="pie-chart" class="w-5 h-5 mr-2 text-purple-600"></i>
+            Distribuição por Série
+          </h3>
+          <canvas id="chart-series" width="400" height="200"></canvas>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="glass rounded-xl shadow-lg fade-in" style="animation-delay: 0.7s">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-gray-900 flex items-center">
+              <i data-lucide="table" class="w-5 h-5 mr-2 text-gray-600"></i>
+              Dados Recentes
+            </h3>
+            <div class="flex space-x-2">
+              <button onclick="refreshData()" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors flex items-center">
+                <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                Atualizar
+              </button>
+              <select id="data-filter" onchange="filterData()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                <option value="all">Todos os Dados</option>
+                <option value="alunos">Alunos</option>
+                <option value="professores">Professores</option>
+                <option value="escolas">Escolas</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="data-table" class="overflow-x-auto">
+            <div class="flex items-center justify-center py-8">
+              <div class="loading-pulse">
+                <div class="w-8 h-8 bg-gray-300 rounded-full"></div>
+              </div>
+              <span class="ml-3 text-gray-500">Carregando dados...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <!-- Modal Escola -->
+  <div id="modal-escola" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="glass rounded-xl w-full max-w-2xl max-h-screen overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-bold text-gray-900 flex items-center">
+            <i data-lucide="building-2" class="w-5 h-5 mr-2 text-blue-600"></i>
+            Cadastrar Escola
+          </h3>
+          <button onclick="closeModal('modal-escola')" class="text-gray-400 hover:text-gray-600 p-1">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        <div id="form-escola-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Aluno -->
+  <div id="modal-aluno" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="glass rounded-xl w-full max-w-2xl max-h-screen overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-bold text-gray-900 flex items-center">
+            <i data-lucide="user-plus" class="w-5 h-5 mr-2 text-green-600"></i>
+            Cadastrar Aluno
+          </h3>
+          <button onclick="closeModal('modal-aluno')" class="text-gray-400 hover:text-gray-600 p-1">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        <div id="form-aluno-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Professor -->
+  <div id="modal-professor" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="glass rounded-xl w-full max-w-2xl max-h-screen overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-bold text-gray-900 flex items-center">
+            <i data-lucide="user-check" class="w-5 h-5 mr-2 text-purple-600"></i>
+            Cadastrar Professor
+          </h3>
+          <button onclick="closeModal('modal-professor')" class="text-gray-400 hover:text-gray-600 p-1">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        <div id="form-professor-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Relatório -->
+  <div id="modal-relatorio" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+    <div class="glass rounded-xl w-full max-w-lg">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-xl font-bold text-gray-900 flex items-center">
+            <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-orange-600"></i>
+            Gerar Relatório
+          </h3>
+          <button onclick="closeModal('modal-relatorio')" class="text-gray-400 hover:text-gray-600 p-1">
+            <i data-lucide="x" class="w-6 h-6"></i>
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Relatório</label>
+            <select id="report-type" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <option value="alunos">Relatório de Alunos</option>
+              <option value="professores">Relatório de Professores</option>
+              <option value="escolas">Relatório de Escolas</option>
+              <option value="geral">Relatório Geral</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Período</label>
+            <select id="report-period" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+              <option value="30">Últimos 30 dias</option>
+              <option value="90">Últimos 3 meses</option>
+              <option value="180">Últimos 6 meses</option>
+              <option value="365">Último ano</option>
+            </select>
+          </div>
+          
+          <button onclick="generateReport()" class="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white py-3 px-4 rounded-lg hover:from-orange-700 hover:to-orange-800 transition-all duration-300 font-medium">
+            <i data-lucide="download" class="w-4 h-4 mr-2 inline"></i>
+            Gerar e Baixar Relatório
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="fixed top-4 right-4 z-60 space-y-2"></div>
+
+  <!-- Scripts -->
+  <script type="module">
+    // Inicializar ícones Lucide
+    lucide.createIcons();
+    
+    // Esconder loading screen quando página carregar
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loading-screen').style.display = 'none';
+      }, 1000);
+    });
+  </script>
+  
+  <script src="utils/auth.js"></script>
+  <script src="utils/formHandler.js"></script>
+  <script src="utils/formGenerator.js"></script>
+  <script src="config/forms.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

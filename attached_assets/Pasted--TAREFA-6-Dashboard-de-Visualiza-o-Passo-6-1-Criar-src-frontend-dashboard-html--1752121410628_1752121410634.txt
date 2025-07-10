@@ -1,0 +1,89 @@
+## 📋 **TAREFA 6: Dashboard de Visualização**
+
+### Passo 6.1: Criar `/src/frontend/dashboard.html`
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Sistema Escolar</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center py-4">
+          <h1 class="text-xl font-semibold text-gray-900">Dashboard</h1>
+          <div class="flex items-center space-x-4">
+            <span id="user-name" class="text-gray-700"></span>
+            <button onclick="auth.logout()" class="text-red-600 hover:text-red-800">Sair</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-medium text-gray-900">Total de Alunos</h3>
+          <p id="total-alunos" class="text-3xl font-bold text-blue-600">-</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-medium text-gray-900">Total de Professores</h3>
+          <p id="total-professores" class="text-3xl font-bold text-green-600">-</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-medium text-gray-900">Total de Escolas</h3>
+          <p id="total-escolas" class="text-3xl font-bold text-purple-600">-</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <button onclick="openModal('modal-escola')" class="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700">
+          Cadastrar Escola
+        </button>
+        <button onclick="openModal('modal-aluno')" class="bg-green-600 text-white p-4 rounded-lg hover:bg-green-700">
+          Cadastrar Aluno
+        </button>
+        <button onclick="openModal('modal-professor')" class="bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700">
+          Cadastrar Professor
+        </button>
+      </div>
+
+      <!-- Data Tables -->
+      <div class="bg-white rounded-lg shadow">
+        <div class="p-6">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Dados Recentes</h3>
+          <div id="data-table" class="overflow-x-auto">
+            <!-- Tabela será carregada dinamicamente -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="modal-escola" class="fixed inset-0 bg-black bg-opacity-50 hidden">
+    <div class="flex items-center justify-center min-h-screen">
+      <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <h3 class="text-lg font-medium mb-4">Cadastrar Escola</h3>
+        <div id="form-escola-container"></div>
+        <button onclick="closeModal('modal-escola')" class="mt-4 text-gray-600 hover:text-gray-800">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/utils/auth.js"></script>
+  <script src="/utils/formHandler.js"></script>
+  <script src="/utils/formGenerator.js"></script>
+  <script src="/config/forms.js"></script>
+  <script src="/dashboard.js"></script>
+</body>
+</html>
+```
