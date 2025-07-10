@@ -849,6 +849,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Registrar endpoints administrativos para empresas e contratos
   registerAdminEndpoints(app);
+  
+  // Registrar rotas de autenticação unificadas
+  const { registerAuthRoutes } = await import('./routes/auth-routes.js');
+  registerAuthRoutes(app);
 
   console.log("✅ All routes registered successfully (placeholder mode)");
   

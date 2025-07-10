@@ -139,10 +139,37 @@ const GestorFormRoutes: React.FC = () => {
     window.open(formulario.url, '_blank', 'noopener,noreferrer');
   };
 
-  const logout = () => {
-    // Limpar dados de sessão e redirecionar
-    localStorage.removeItem('auth_token');
-    window.location.href = '/auth';
+  const logout = async () => {
+    console.log('🚪 GestorFormRoutes: Iniciando logout...');
+    
+    try {
+      // Usar AuthManager global se disponível
+      if (window.auth && typeof window.auth.logout === 'function') {
+        await window.auth.logout();
+        return;
+      }
+
+      // Fallback manual
+      const keysToRemove = [
+        'auth_token', 'cognito_token', 'access_token', 'id_token', 
+        'refresh_token', 'user_data', 'auth_user', 'cognito_user',
+        'sistema_token', 'jwt_token', 'authToken', 'user_info', 'userInfo'
+      ];
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+
+      window.dispatchEvent(new CustomEvent('auth:logout', {
+        detail: { source: 'GestorFormRoutes' }
+      }));
+
+      window.location.replace('/');
+    } catch (error) {
+      console.error('❌ Erro no logout GestorFormRoutes:', error);
+      window.location.replace('/');
+    }
   };
 
   const getStatusBadge = (status: string) => {

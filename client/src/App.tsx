@@ -73,6 +73,7 @@ import AdminMaster from "@/pages/AdminMaster";
 import GestorDashboardNew from "@/pages/GestorDashboard";
 import AdminFormRoutes from "@/pages/AdminFormRoutes";
 import GestorFormRoutes from "@/pages/GestorFormRoutes";
+import TestLogout from "@/pages/TestLogout";
 import SchoolDashboard from "@/pages/SchoolDashboard";
 import TeacherDashboardNew from "@/pages/TeacherDashboard";
 import StudentDashboardNew from "@/pages/StudentDashboard";
@@ -175,6 +176,9 @@ function Router() {
       <Route path="/diretor/dashboard" component={SchoolDashboard} />
       <Route path="/professor/dashboard" component={TeacherDashboardNew} />
       <Route path="/aluno/dashboard" component={StudentDashboardNew} />
+      
+      {/* Página de Teste de Logout */}
+      <Route path="/test-logout" component={TestLogout} />
 
       {/* Admin Master Dashboard */}
       <Route path="/admin/master-old" component={AdminMasterDashboard} />

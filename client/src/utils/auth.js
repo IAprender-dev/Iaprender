@@ -164,24 +164,64 @@ class AuthManager {
    * Logout completo
    */
   async logout() {
+    console.log('🚪 Iniciando processo de logout...');
+    
     try {
-      // Tentar fazer logout no servidor
+      // 1. Tentar fazer logout no servidor se houver token
       if (this.token) {
+        console.log('📡 Fazendo logout no servidor...');
         await this.makeRequest('/api/auth/logout', {
           method: 'POST'
         });
+        console.log('✅ Logout no servidor concluído');
       }
     } catch (error) {
-      console.warn('Erro no logout do servidor:', error);
-    } finally {
-      // Limpar dados locais
+      console.warn('⚠️ Erro no logout do servidor (continuando com limpeza local):', error);
+    }
+    
+    try {
+      // 2. Limpar dados locais
+      console.log('🧹 Limpando dados de autenticação...');
       this.clearAuthData();
       
-      // Disparar evento de logout
-      window.dispatchEvent(new CustomEvent('auth:logout'));
+      // 3. Limpar todos os possíveis tokens do localStorage/sessionStorage
+      const keysToRemove = [
+        'auth_token', 'cognito_token', 'access_token', 'id_token', 
+        'refresh_token', 'user_data', 'auth_user', 'cognito_user',
+        'sistema_token', 'jwt_token'
+      ];
       
-      // Redirecionar para login
-      window.location.href = '/login.html';
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+      
+      // 4. Limpar cookies de autenticação
+      document.cookie.split(";").forEach(c => {
+        const eqPos = c.indexOf("=");
+        const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim();
+        if (name.includes('auth') || name.includes('cognito') || name.includes('token')) {
+          document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        }
+      });
+      
+      console.log('✅ Dados locais limpos');
+      
+      // 5. Disparar evento de logout para outros componentes
+      window.dispatchEvent(new CustomEvent('auth:logout', {
+        detail: { timestamp: new Date().toISOString() }
+      }));
+      
+      console.log('✅ Evento de logout disparado');
+      
+    } catch (error) {
+      console.error('❌ Erro durante limpeza local:', error);
+    } finally {
+      // 6. Redirecionar sempre, mesmo em caso de erro
+      console.log('🔄 Redirecionando para página de login...');
+      
+      // Força recarga completa da página para garantir limpeza total
+      window.location.replace('/');
     }
   }
 
