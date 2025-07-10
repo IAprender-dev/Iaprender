@@ -580,7 +580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let redirectPath = "/";
       
       if (userGroups.includes('Admin') || userGroups.includes('AdminMaster') || userGroups.includes('Administrador')) {
-        redirectPath = "/admin/master";
+        redirectPath = "/admin/user-management";
         console.log("🎯 Redirecionando ADMIN para:", redirectPath);
       } else if (userGroups.includes('Gestores') || userGroups.includes('GestorMunicipal')) {
         redirectPath = "/gestor/dashboard";

@@ -36,7 +36,7 @@ import {
 import { useAuth } from "@/lib/AuthContext";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 
 interface CognitoUser {
   cognitoId: string;
@@ -417,7 +417,7 @@ export default function UserManagement() {
                 <div className="relative">
                   <div className="w-10 h-10 bg-white rounded-xl shadow-lg flex items-center justify-center p-1">
                     <img 
-                      src={IAprender_Logo} 
+                      src={iaprenderLogo} 
                       alt="IAprender Logo" 
                       className="w-full h-full object-contain"
                     />
