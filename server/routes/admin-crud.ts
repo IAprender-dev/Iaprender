@@ -119,7 +119,7 @@ export function registerAdminCRUDEndpoints(app: Express) {
       
       res.json({
         success: true,
-        data: result.empresas,
+        empresas: result.empresas,
         pagination: {
           currentPage: pageNum,
           totalPages: Math.ceil(result.total / limit),
