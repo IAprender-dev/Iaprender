@@ -25,7 +25,6 @@ import {
   AlertCircle,
   Clock,
   BarChart3,
-  PieChart,
   TrendingUp,
   Activity,
   Target,
@@ -39,23 +38,6 @@ import {
   Award,
   Zap
 } from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  AreaChart,
-  Area
-} from 'recharts';
-
 interface FormularioFuncional {
   id: string;
   nome: string;
@@ -168,13 +150,6 @@ const AdminFormRoutes: React.FC = () => {
     sistemaStatus: 'online'
   });
 
-  const [dadosGraficos, setDadosGraficos] = useState({
-    matriculasPorMes: [],
-    usuariosPorTipo: [],
-    atividadeMensal: [],
-    performanceEscolas: []
-  });
-
   useEffect(() => {
     carregarInformacoesUsuario();
     carregarEstatisticas();
@@ -219,41 +194,6 @@ const AdminFormRoutes: React.FC = () => {
           matriculasRecentes: 89,
           taxaCrescimento: 12.5,
           sistemaStatus: 'online'
-        });
-
-        // Dados para gráficos baseados em APIs reais
-        setDadosGraficos({
-          matriculasPorMes: [
-            { mes: 'Jan', valor: 156 },
-            { mes: 'Fev', valor: 143 },
-            { mes: 'Mar', valor: 189 },
-            { mes: 'Abr', valor: 167 },
-            { mes: 'Mai', valor: 198 },
-            { mes: 'Jun', valor: 234 },
-            { mes: 'Jul', valor: 289 }
-          ],
-          usuariosPorTipo: [
-            { tipo: 'Alunos', valor: 856, cor: '#3b82f6' },
-            { tipo: 'Professores', valor: 234, cor: '#10b981' },
-            { tipo: 'Diretores', valor: 189, cor: '#f59e0b' },
-            { tipo: 'Gestores', valor: 89, cor: '#ef4444' },
-            { tipo: 'Admins', valor: 12, cor: '#8b5cf6' }
-          ],
-          atividadeMensal: [
-            { mes: 'Jan', formularios: 45, aprovacoes: 39, rejeicoes: 6 },
-            { mes: 'Fev', formularios: 52, aprovacoes: 47, rejeicoes: 5 },
-            { mes: 'Mar', formularios: 68, aprovacoes: 61, rejeicoes: 7 },
-            { mes: 'Abr', formularios: 59, aprovacoes: 53, rejeicoes: 6 },
-            { mes: 'Mai', formularios: 73, aprovacoes: 67, rejeicoes: 6 },
-            { mes: 'Jun', formularios: 81, aprovacoes: 74, rejeicoes: 7 }
-          ],
-          performanceEscolas: [
-            { escola: 'EMEF João Paulo II', score: 95, alunos: 456 },
-            { escola: 'EMEF Santa Maria', score: 92, alunos: 378 },
-            { escola: 'EMEF Dom Pedro I', score: 89, alunos: 523 },
-            { escola: 'EMEF Vila Nova', score: 87, alunos: 234 },
-            { escola: 'EMEF Centro', score: 84, alunos: 567 }
-          ]
         });
       }, 1000);
     } catch (error) {
@@ -415,162 +355,6 @@ const AdminFormRoutes: React.FC = () => {
             </CardContent>
           </Card>
         </div>
-
-        {/* Seção de Gráficos e Análises */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Gráfico de Matrículas por Mês */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5 text-indigo-600" />
-                Matrículas por Mês
-              </CardTitle>
-              <CardDescription>Tendência de crescimento nas matrículas escolares</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={dadosGraficos.matriculasPorMes}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Bar dataKey="valor" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Gráfico de Usuários por Tipo */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="h-5 w-5 text-purple-600" />
-                Distribuição de Usuários
-              </CardTitle>
-              <CardDescription>Composição do sistema por tipo de usuário</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Pie
-                    data={dadosGraficos.usuariosPorTipo}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="valor"
-                    label={({ tipo, valor }) => `${tipo}: ${valor}`}
-                  >
-                    {dadosGraficos.usuariosPorTipo.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.cor} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Gráfico de Atividade Mensal */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              Atividade de Formulários
-            </CardTitle>
-            <CardDescription>Análise mensal de submissões, aprovações e rejeições</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <AreaChart data={dadosGraficos.atividadeMensal}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
-                <YAxis />
-                <Tooltip />
-                <Area 
-                  type="monotone" 
-                  dataKey="formularios" 
-                  stackId="1" 
-                  stroke="#3b82f6" 
-                  fill="#3b82f6" 
-                  fillOpacity={0.7}
-                  name="Total Formulários"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="aprovacoes" 
-                  stackId="2" 
-                  stroke="#10b981" 
-                  fill="#10b981" 
-                  fillOpacity={0.7}
-                  name="Aprovações"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="rejeicoes" 
-                  stackId="3" 
-                  stroke="#ef4444" 
-                  fill="#ef4444" 
-                  fillOpacity={0.7}
-                  name="Rejeições"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Ações Rápidas */}
-        <Card className="mb-8 bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-indigo-600" />
-              Ações Rápidas do Administrador
-            </CardTitle>
-            <CardDescription>
-              Acesse rapidamente as funcionalidades mais utilizadas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button 
-                onClick={() => setLocation('/admin/user-management')}
-                className="h-20 flex flex-col gap-2 bg-indigo-600 hover:bg-indigo-700"
-              >
-                <Users className="h-6 w-6" />
-                <span className="text-sm">Gestão de Usuários</span>
-              </Button>
-              
-              <Button 
-                onClick={() => window.open('/generated-forms/escola-criar.html', '_blank')}
-                className="h-20 flex flex-col gap-2 bg-green-600 hover:bg-green-700"
-              >
-                <School className="h-6 w-6" />
-                <span className="text-sm">Nova Escola</span>
-              </Button>
-              
-              <Button 
-                className="h-20 flex flex-col gap-2 bg-purple-600 hover:bg-purple-700"
-              >
-                <BarChart3 className="h-6 w-6" />
-                <span className="text-sm">Relatórios</span>
-              </Button>
-              
-              <Button 
-                className="h-20 flex flex-col gap-2 bg-orange-600 hover:bg-orange-700"
-              >
-                <Settings className="h-6 w-6" />
-                <span className="text-sm">Configurações</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Formulários Disponíveis */}
         <div className="space-y-6">
           <div className="flex items-center justify-between">
