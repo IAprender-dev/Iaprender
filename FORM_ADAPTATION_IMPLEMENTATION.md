@@ -28,7 +28,19 @@ Sistema completo de autenticação integrado com AWS Cognito e backend PostgreSQ
 - Verificação de permissões hierárquicas
 ```
 
-### **3. Formulários HTML Adaptados**
+### **3. FormHandler TypeScript Atualizado**
+```typescript
+// Arquivo: client/src/utils/formHandler.ts
+- Integração completa com AuthManager
+- Verificação automática de autenticação na inicialização
+- Método submitData() usa AuthManager.makeRequest()
+- Fallback para sistema legado se AuthManager não disponível
+- Métodos públicos: isAuthenticated(), refreshAuthState()
+- Desabilita formulário automaticamente se não autenticado
+- Retry automático com renovação de token
+```
+
+### **4. Formulários HTML Adaptados**
 ```html
 <!-- Arquivos: generated-forms/escola-criar.html, diretor-criar.html -->
 - Verificação de autenticação na inicialização
@@ -180,6 +192,34 @@ const Component = () => {
 
     return <Dashboard user={user} />;
 };
+```
+
+### **4. Uso do FormHandler com AuthManager**
+```typescript
+import { createFormHandler } from '../utils/formHandler';
+
+// Criar FormHandler com autenticação integrada
+const formHandler = createFormHandler('meu-form', {
+    endpoint: '/api/endpoint',
+    method: 'POST',
+    debug: true,
+    onSuccess: (response) => {
+        console.log('Sucesso:', response);
+    },
+    onError: (error) => {
+        console.error('Erro:', error);
+    }
+});
+
+// Verificar autenticação
+if (formHandler.isAuthenticated()) {
+    // Usuário está logado
+} else {
+    // Usuário precisa fazer login
+}
+
+// Atualizar estado após login/logout
+formHandler.refreshAuthState();
 ```
 
 ## 🎛️ **Configuração de Ambiente**

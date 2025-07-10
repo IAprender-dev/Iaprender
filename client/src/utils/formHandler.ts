@@ -80,11 +80,29 @@ export class FormHandler {
     this.setupTokenRefresh();
     this.setupFieldValidation();
     
+    // Verificação inicial de autenticação
+    if (typeof window !== 'undefined' && (window as any).auth) {
+      const auth = (window as any).auth;
+      
+      if (!auth.isAuthenticated()) {
+        console.warn('⚠️ FormHandler: Usuário não está autenticado');
+        this.displayError('Você precisa estar logado para usar este formulário');
+        
+        // Desabilita o formulário se não estiver autenticado
+        const submitButton = this.form.querySelector('button[type="submit"]') as HTMLButtonElement;
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = 'Login Necessário';
+        }
+      }
+    }
+    
     if (this.options.debug) {
       console.log('🎯 FormHandler inicializado:', {
         formId: this.form.id,
         endpoint: this.options.endpoint,
-        method: this.options.method
+        method: this.options.method,
+        authenticated: typeof window !== 'undefined' && (window as any).auth ? (window as any).auth.isAuthenticated() : 'N/A'
       });
     }
   }
@@ -157,24 +175,38 @@ export class FormHandler {
   }
 
   /**
-   * Configura renovação automática de token
+   * Configura renovação automática de token usando AuthManager
    */
   private setupTokenRefresh(): void {
-    // Verifica se o token está próximo do vencimento
-    const token = localStorage.getItem('cognito_token');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const expirationTime = payload.exp * 1000;
-        const currentTime = Date.now();
-        const timeUntilExpiry = expirationTime - currentTime;
-        
-        // Se expira em menos de 5 minutos, tenta renovar
-        if (timeUntilExpiry < 5 * 60 * 1000) {
-          this.refreshToken();
+    // Verifica se AuthManager está disponível
+    if (typeof window !== 'undefined' && (window as any).auth) {
+      const auth = (window as any).auth;
+      if (!auth.isAuthenticated()) {
+        console.warn('⚠️ FormHandler: Usuário não autenticado');
+        return;
+      }
+      
+      // AuthManager já gerencia refresh automático
+      if (this.options.debug) {
+        console.log('🔐 FormHandler: AuthManager configurado');
+      }
+    } else {
+      // Fallback para sistema legado
+      const token = localStorage.getItem('cognito_token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const expirationTime = payload.exp * 1000;
+          const currentTime = Date.now();
+          const timeUntilExpiry = expirationTime - currentTime;
+          
+          // Se expira em menos de 5 minutos, tenta renovar
+          if (timeUntilExpiry < 5 * 60 * 1000) {
+            this.refreshToken();
+          }
+        } catch (error) {
+          console.warn('⚠️ Erro ao verificar token:', error);
         }
-      } catch (error) {
-        console.warn('⚠️ Erro ao verificar token:', error);
       }
     }
   }
@@ -186,6 +218,16 @@ export class FormHandler {
     e.preventDefault();
     
     if (!this.form) return;
+
+    // Verificação de autenticação antes do envio
+    if (typeof window !== 'undefined' && (window as any).auth) {
+      const auth = (window as any).auth;
+      
+      if (!auth.isAuthenticated()) {
+        this.displayError('Você precisa estar logado para enviar o formulário');
+        return;
+      }
+    }
 
     // Validação antes do envio
     if (this.options.validateOnSubmit) {
@@ -250,9 +292,48 @@ export class FormHandler {
   }
 
   /**
-   * Envia dados para a API
+   * Envia dados para a API usando AuthManager
    */
   private async submitData(data: Record<string, any>): Promise<any> {
+    // Verifica se AuthManager está disponível
+    if (typeof window !== 'undefined' && (window as any).auth) {
+      const auth = (window as any).auth;
+      
+      if (!auth.isAuthenticated()) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      try {
+        // Usa AuthManager para fazer a requisição
+        const response = await auth.makeRequest(this.options.endpoint, {
+          method: this.options.method,
+          body: JSON.stringify(data)
+        });
+
+        this.retryCount = 0; // Reset contador de tentativas
+        return response;
+
+      } catch (error) {
+        // Retry logic
+        if (this.retryCount < this.options.retries && this.shouldRetry(error as Error)) {
+          this.retryCount++;
+          console.warn(`⚠️ Tentativa ${this.retryCount}/${this.options.retries} falhou. Tentando novamente...`);
+          await this.delay(1000 * this.retryCount); // Backoff exponencial
+          return this.submitData(data);
+        }
+
+        throw error;
+      }
+    } else {
+      // Fallback para sistema legado
+      return this.submitDataLegacy(data);
+    }
+  }
+
+  /**
+   * Envia dados para a API (sistema legado)
+   */
+  private async submitDataLegacy(data: Record<string, any>): Promise<any> {
     const token = localStorage.getItem('cognito_token');
     
     if (!token) {
@@ -302,7 +383,7 @@ export class FormHandler {
         this.retryCount++;
         console.warn(`⚠️ Tentativa ${this.retryCount}/${this.options.retries} falhou. Tentando novamente...`);
         await this.delay(1000 * this.retryCount); // Backoff exponencial
-        return this.submitData(data);
+        return this.submitDataLegacy(data);
       }
 
       throw error;
@@ -684,6 +765,51 @@ export class FormHandler {
     if (this.form) {
       this.form.removeEventListener('submit', (e) => this.handleSubmit(e));
       this.clearAllErrors();
+    }
+  }
+
+  /**
+   * Verifica se o usuário está autenticado
+   */
+  public isAuthenticated(): boolean {
+    if (typeof window !== 'undefined' && (window as any).auth) {
+      return (window as any).auth.isAuthenticated();
+    }
+    
+    // Fallback para sistema legado
+    const token = localStorage.getItem('cognito_token');
+    if (!token) return false;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 > Date.now();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Força atualização do estado de autenticação
+   */
+  public refreshAuthState(): void {
+    if (!this.form) return;
+    
+    const submitButton = this.form.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const isAuth = this.isAuthenticated();
+    
+    if (submitButton) {
+      submitButton.disabled = !isAuth;
+      submitButton.textContent = isAuth ? 'Enviar' : 'Login Necessário';
+    }
+    
+    if (!isAuth) {
+      this.displayError('Você precisa estar logado para usar este formulário');
+    } else {
+      // Remove erro de autenticação se existir
+      const authError = this.form.querySelector('.form-error');
+      if (authError && authError.textContent?.includes('logado')) {
+        authError.remove();
+      }
     }
   }
 }
