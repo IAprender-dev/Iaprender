@@ -143,6 +143,21 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 10, 2025: ✅ CONCLUÍDO - ANÁLISE COMPLETA DOS RELACIONAMENTOS E CORREÇÃO DE INTEGRIDADE DAS TABELAS
+  - ✅ **ANÁLISE DE RELACIONAMENTOS CONCLUÍDA**: Mapeamento completo das tabelas empresas, contratos e usuários
+  - ✅ **CORREÇÃO DE FOREIGN KEYS**: Adicionadas todas as foreign keys ausentes no banco de dados:
+    • empresas.criado_por → usuarios.id 
+    • empresas.atualizado_por → usuarios.id
+    • contratos.criado_por → usuarios.id
+    • contratos.atualizado_por → usuarios.id  
+    • usuarios.contrato_id → contratos.id
+    • usuarios.criado_por → usuarios.id
+    • usuarios.atualizado_por → usuarios.id
+  - ✅ **INTEGRIDADE REFERENCIAL PERFEITA**: Relacionamentos implementados com CASCADE e SET NULL apropriados
+  - ✅ **SCHEMA SINCRONIZADO**: Estrutura do Drizzle ajustada para corresponder exatamente ao banco real
+  - ✅ **CAMPOS ADICIONADOS**: Colunas ausentes criadas (razao_social, numero, nome, objeto, etc.)
+  - ✅ **AUDITORIA COMPLETA**: Sistema de rastreamento de criação/atualização em todas as tabelas
+  - ✅ **DASHBOARD EMPRESAS CORRIGIDO**: Endpoints funcionando corretamente após correção das inconsistências
 - July 10, 2025: ✅ CONCLUÍDO - Sistema Completo de CRUD Administrativo Implementado e Configurado
   - ✅ AdminCRUDDashboard.tsx finalizado com gestão hierárquica de três tabelas (Empresas, Contratos, Usuários)
   - ✅ Todos os endpoints corrigidos sistematicamente para usar padrão `/api/admin/`:

@@ -138,25 +138,6 @@ export function registerAdminCRUDEndpoints(app: Express) {
     }
   });
 
-  // GET /api/admin/companies/stats - Estatísticas de empresas
-  app.get('/api/admin/companies/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
-    try {
-      const stats = await storage.getEmpresaStats();
-      res.json({
-        success: true,
-        data: stats,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('❌ Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar estatísticas',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-    }
-  });
-
   // POST /api/admin/companies - Criar empresa
   app.post('/api/admin/companies', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
@@ -187,6 +168,25 @@ export function registerAdminCRUDEndpoints(app: Express) {
       res.status(500).json({
         success: false,
         message: 'Erro interno ao criar empresa',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // GET /api/admin/companies/stats - Estatísticas de empresas (antes da rota com parâmetro)
+  app.get('/api/admin/companies/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const stats = await storage.getEmpresaStats();
+      res.json({
+        success: true,
+        data: stats,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas',
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }
@@ -320,7 +320,52 @@ export function registerAdminCRUDEndpoints(app: Express) {
     }
   });
 
-  // GET /api/admin/contracts/stats - Estatísticas de contratos
+  // POST /api/admin/contracts - Criar contrato (movido antes de stats)
+  app.post('/api/admin/contracts', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const validatedData = createContratoSchema.parse(req.body);
+      
+      // Verificar se empresa existe
+      const empresa = await storage.getEmpresa(validatedData.empresaId);
+      if (!empresa) {
+        return res.status(400).json({
+          success: false,
+          message: 'Empresa não encontrada',
+          field: 'empresaId'
+        });
+      }
+
+      const contrato = await storage.createContrato({
+        ...validatedData,
+        ativo: true
+      } as InsertContrato);
+
+      res.status(201).json({
+        success: true,
+        message: 'Contrato criado com sucesso',
+        data: contrato,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao criar contrato:', error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dados inválidos',
+          errors: error.errors
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno ao criar contrato',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // GET /api/admin/contracts/stats - Estatísticas de contratos (movido antes da rota com parâmetro)
   app.get('/api/admin/contracts/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
       const stats = await storage.getContratoStats();

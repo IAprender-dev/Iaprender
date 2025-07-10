@@ -9,92 +9,74 @@ export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'susp
 export const contractStatusEnum = pgEnum('contract_status', ['active', 'pending', 'expired', 'cancelled']);
 export const cognitoGroupEnum = pgEnum('cognito_group', ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos']);
 
-// Tabela de Empresas (estrutura corrigida para integridade perfeita)
+// Tabela de Empresas (estrutura baseada no banco real)
 export const empresas = pgTable('empresas', {
   id: serial('id').primaryKey(),
-  nome: text('nome').notNull(),
-  cnpj: varchar('cnpj', { length: 18 }).notNull().unique(),
+  nome: varchar('nome').notNull(),
+  cnpj: varchar('cnpj', { length: 18 }),
   razaoSocial: text('razao_social'),
   telefone: varchar('telefone', { length: 20 }),
-  emailContato: text('email_contato').notNull(),
+  emailContato: varchar('email_contato'),
   endereco: text('endereco'),
-  cidade: text('cidade'),
+  cidade: varchar('cidade'),
   estado: varchar('estado', { length: 2 }),
   cep: varchar('cep', { length: 10 }),
   logo: text('logo'),
   responsavel: text('responsavel'),
   cargoResponsavel: text('cargo_responsavel'),
   observacoes: text('observacoes'),
-  ativo: boolean('ativo').default(true),
-  criadoPor: integer('criado_por'), // Será relacionado após criação da tabela usuários
+  criadoPor: integer('criado_por'),
   atualizadoPor: integer('atualizado_por'),
   criadoEm: timestamp('criado_em').defaultNow(),
   atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
 
-// Tabela de Contratos (estrutura corrigida para integridade perfeita)
+// Tabela de Contratos (estrutura baseada no banco real)
 export const contratos = pgTable('contratos', {
   id: serial('id').primaryKey(),
-  numero: varchar('numero', { length: 50 }).notNull().unique(),
-  nome: text('nome').notNull(),
-  empresaId: integer('empresa_id').notNull().references(() => empresas.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
+  numero: varchar('numero', { length: 50 }),
+  nome: text('nome'),
+  empresaId: integer('empresa_id'),
   descricao: text('descricao'),
   objeto: text('objeto'),
   tipoContrato: varchar('tipo_contrato', { length: 100 }),
   dataInicio: date('data_inicio').notNull(),
   dataFim: date('data_fim').notNull(),
-  valor: doublePrecision('valor_total').notNull(),
+  valorTotal: doublePrecision('valor_total'),
   moeda: varchar('moeda', { length: 3 }).default('BRL'),
-  numeroLicencas: integer('numero_licencas').default(0),
+  numeroLicencas: integer('numero_licencas'),
   documentoPdf: text('documento_pdf'),
-  status: contractStatusEnum('status').default('active'),
+  status: varchar('status').default('ativo'),
   responsavelContrato: text('responsavel_contrato'),
   emailResponsavel: text('email_responsavel'),
   telefoneResponsavel: varchar('telefone_responsavel', { length: 20 }),
   observacoes: text('observacoes'),
-  criadoPor: integer('criado_por'), // Relacionamento com usuários
+  criadoPor: integer('criado_por'),
   atualizadoPor: integer('atualizado_por'),
   criadoEm: timestamp('criado_em').defaultNow(),
   atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
 
-// Tabela de Usuários (estrutura corrigida para integridade perfeita)
+// Tabela de Usuários (estrutura baseada no banco real)
 export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
   cognitoSub: text('cognito_sub').unique(),
-  email: text('email').notNull().unique(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
-  nome: text('nome').notNull(), // Campo computed firstName + lastName
-  tipoUsuario: userRoleEnum('tipo_usuario').notNull(),
-  status: userStatusEnum('status').default('active'),
-  
-  // Relacionamentos organizacionais
-  empresaId: integer('empresa_id').references(() => empresas.id, { onDelete: 'set null', onUpdate: 'cascade' }),
-  contratoId: integer('contrato_id').references(() => contratos.id, { onDelete: 'set null', onUpdate: 'cascade' }),
-  
-  // Dados pessoais
-  telefone: varchar('telefone', { length: 20 }),
-  documentoIdentidade: varchar('documento_identidade', { length: 20 }),
+  email: varchar('email').notNull(),
+  nome: varchar('nome').notNull(),
+  tipoUsuario: varchar('tipo_usuario').notNull(),
+  empresaId: integer('empresa_id'),
+  contratoId: integer('contrato_id'),
+  telefone: varchar('telefone'),
+  documentoIdentidade: varchar('documento_identidade'),
   dataNascimento: date('data_nascimento'),
-  genero: varchar('genero', { length: 20 }),
+  genero: varchar('genero'),
   endereco: text('endereco'),
-  cidade: text('cidade'),
-  estado: varchar('estado', { length: 2 }),
-  cep: varchar('cep', { length: 10 }),
+  cidade: varchar('cidade'),
+  estado: varchar('estado'),
   fotoPerfil: text('foto_perfil'),
-  
-  // Dados para menores de idade
-  isMenor: boolean('is_menor').default(false),
-  nomeResponsavel: text('nome_responsavel'),
-  emailResponsavel: text('email_responsavel'),
-  telefoneResponsavel: varchar('telefone_responsavel', { length: 20 }),
-  contatoEmergencia: text('contato_emergencia'),
-  
-  // Campos de auditoria
+  status: varchar('status').default('active'),
   criadoPor: integer('criado_por'),
   atualizadoPor: integer('atualizado_por'),
-  ultimoLogin: timestamp('ultimo_login'),
   criadoEm: timestamp('criado_em').defaultNow(),
   atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });

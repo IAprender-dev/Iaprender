@@ -278,6 +278,88 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(contratos).where(eq(contratos.id, id));
     return result.rowCount > 0;
   }
+
+  // Usuários
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getUsersByPage(page: number, limit: number, search?: string, tipo?: string): Promise<{users: User[], total: number}> {
+    const offset = (page - 1) * limit;
+    
+    let whereClause = undefined;
+    
+    if (search) {
+      whereClause = or(
+        like(users.nome, `%${search}%`),
+        like(users.email, `%${search}%`)
+      );
+    }
+
+    if (tipo && tipo !== 'all') {
+      const tipoFilter = eq(users.tipoUsuario, tipo);
+      whereClause = whereClause ? and(whereClause, tipoFilter) : tipoFilter;
+    }
+
+    const usersList = await db.select().from(users)
+      .where(whereClause)
+      .limit(limit)
+      .offset(offset);
+
+    const totalResult = await db.select({ count: sql<number>`count(*)` }).from(users).where(whereClause);
+    const total = totalResult[0]?.count || 0;
+
+    return { users: usersList, total };
+  }
+
+  async getUserStats(): Promise<any> {
+    try {
+      const query = `
+        SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN tipo_usuario = 'admin' THEN 1 END) as admins,
+          COUNT(CASE WHEN tipo_usuario = 'gestor' THEN 1 END) as gestores,
+          COUNT(CASE WHEN tipo_usuario = 'diretor' THEN 1 END) as diretores,
+          COUNT(CASE WHEN tipo_usuario = 'professor' THEN 1 END) as professores,
+          COUNT(CASE WHEN tipo_usuario = 'aluno' THEN 1 END) as alunos,
+          COUNT(CASE WHEN status = 'active' THEN 1 END) as ativos
+        FROM usuarios
+      `;
+      
+      const result = await db.execute(sql.raw(query));
+      return result.rows[0] || { total: 0, admins: 0, gestores: 0, diretores: 0, professores: 0, alunos: 0, ativos: 0 };
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas dos usuários:', error);
+      return { total: 0, admins: 0, gestores: 0, diretores: 0, professores: 0, alunos: 0, ativos: 0 };
+    }
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updateData: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount > 0;
+  }
 }
 
 export const storage = new DatabaseStorage();

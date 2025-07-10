@@ -217,50 +217,8 @@ export function registerAdminEndpoints(app: Express) {
     }
   });
 
-  // Buscar empresa por ID
-  app.get('/api/admin/companies/:id', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      
-      console.log(`🔍 Buscando empresa ID: ${id}`);
-
-      const empresa = await db.query.empresas.findFirst({
-        where: eq(empresas.id, parseInt(id)),
-        with: {
-          contratos: {
-            orderBy: [desc(contratos.criadoEm)]
-          },
-          usuarios: {
-            limit: 10,
-            orderBy: [desc(users.criadoEm)]
-          }
-        }
-      });
-
-      if (!empresa) {
-        return res.status(404).json({
-          success: false,
-          message: 'Empresa não encontrada'
-        });
-      }
-
-      console.log(`✅ Empresa encontrada: ${empresa.nome}`);
-
-      res.json({
-        success: true,
-        empresa,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('❌ Erro ao buscar empresa:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar empresa',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-    }
-  });
+  // ROTA REMOVIDA - Duplicada em admin-crud.ts
+  // Comentários removidos para evitar erro de sintaxe
 
   // ==================== CONTRATOS ====================
 
