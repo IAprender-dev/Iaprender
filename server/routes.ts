@@ -776,7 +776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("🎯 Redirecionando GESTOR para:", redirectPath);
       } else if (userGroups.includes('Diretores') || userGroups.includes('Diretor')) {
         userType = "diretor";
-        redirectPath = "/diretor/dashboard";
+        redirectPath = "/diretor/crud";
         console.log("🎯 Redirecionando DIRETOR para:", redirectPath);
       } else if (userGroups.includes('Professores') || userGroups.includes('Professor')) {
         userType = "professor";
@@ -857,6 +857,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registrar endpoints CRUD de gestores
   const gestorCrudRoutes = await import('./routes/gestor-crud.js');
   app.use('/api/gestor', gestorCrudRoutes.default);
+  
+  // Registrar endpoints CRUD de diretores
+  const diretorCrudRoutes = await import('./routes/diretor-crud.js');
+  app.use('/api/diretor', diretorCrudRoutes.default);
   
   // Registrar rotas de autenticação unificadas
   const { registerAuthRoutes } = await import('./routes/auth-routes.js');
