@@ -66,7 +66,7 @@ export const initializeDatabase = async () => {
     console.error('❌ Erro ao conectar com banco de dados:', error);
     
     // Check if it's a WebSocket connection error
-    if (error?.message?.includes('WebSocket')) {
+    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('WebSocket')) {
       console.error('💡 Dica: Erro de WebSocket detectado. Tentando reconexão...');
       
       // Try to reconnect with a fresh pool
