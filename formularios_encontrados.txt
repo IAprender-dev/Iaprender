@@ -1,0 +1,67 @@
+# FORMULÁRIOS ENCONTRADOS - Thu Jul 10 02:50:20 AM UTC 2025
+
+## ARQUIVOS COM useForm:
+- ./client/src/components/ui/form.tsx
+  useFormContext,
+- ./client/src/components/auth/LoginForm.tsx
+  import { useForm } from react-hook-form;
+- ./client/src/components/auth/RegisterForm.tsx
+  import { useForm } from react-hook-form;
+- ./client/src/components/ai/AIAssistant.tsx
+  import { useForm } from react-hook-form;
+- ./client/src/pages/teacher/TeacherPlanning.tsx
+  import { useForm } from react-hook-form;
+- ./client/src/pages/CognitoAuth.tsx
+  import { useForm } from react-hook-form;
+- ./client/src/pages/Auth.tsx
+  import { useForm } from react-hook-form;
+
+## COMPONENTES FORM:
+- ./client/src/components/ui/form.tsx
+- ./client/src/components/ui/form-examples.tsx
+- ./client/src/components/ui/form-template.tsx
+- ./client/src/components/ui/form-examples-pt.tsx
+- ./client/src/components/auth/LoginForm.tsx
+- ./client/src/components/auth/RegisterForm.tsx
+
+## SCHEMAS DE VALIDAÇÃO:
+- ./client/src/components/auth/LoginForm.tsx
+- ./client/src/components/auth/RegisterForm.tsx
+- ./client/src/pages/teacher/ferramentas/MateriaisDidaticos.tsx
+- ./client/src/pages/teacher/TeacherPlanning.tsx
+- ./client/src/pages/student/VoiceTutorWebRTC.tsx
+- ./client/src/pages/student/VoiceTutorChat.tsx
+- ./client/src/pages/CognitoAuth.tsx
+- ./client/src/pages/Auth.tsx
+
+## FORMULÁRIOS DE CADASTRO/CRIAÇÃO:
+- ./client/src/lib/AuthContext.tsx
+- ./client/src/pages/teacher/ferramentas/ModelosPlanejamento.tsx
+- ./client/src/pages/admin/AdvancedToolsDashboard.tsx
+- ./client/src/pages/admin/SecurityComplianceDashboard.tsx
+- ./client/src/pages/municipal/MunicipalDataManagement.tsx
+- ./client/src/pages/municipal/GestorDashboard.tsx
+
+## MUTAÇÕES DE FORMULÁRIO:
+- ./client/src/components/notifications/NotificationCenter.tsx
+- ./client/src/lib/AuthContext.tsx
+- ./client/src/pages/teacher/TeacherPlanning.tsx
+- ./client/src/pages/teacher/TeacherProfile.tsx
+- ./client/src/pages/teacher/NotificationCenter.tsx
+- ./client/src/pages/student/StudentProfile.tsx
+- ./client/src/pages/student/AITutorChat.tsx
+- ./client/src/pages/admin/AdminMasterDashboard_backup.tsx
+- ./client/src/pages/admin/LiteLLMManagement.tsx
+- ./client/src/pages/admin/CompanyContractManagement.tsx
+- ./client/src/pages/admin/AIManagementDashboard.tsx
+- ./client/src/pages/admin/SecurityComplianceDashboard.tsx
+- ./client/src/pages/admin/AdvancedAdminDashboard.tsx
+- ./client/src/pages/admin/UserManagement.tsx
+- ./client/src/pages/municipal/MunicipalManagerDashboard.tsx
+- ./client/src/pages/municipal/MunicipalDataManagement.tsx
+- ./client/src/pages/municipal/SchoolManagement.tsx
+- ./client/src/pages/municipal/ContractManagement.tsx
+- ./client/src/pages/municipal/SchoolManagementNew.tsx
+- ./client/src/pages/performance/PerformanceDashboard.tsx
+- ./client/src/pages/Auth.tsx
+
