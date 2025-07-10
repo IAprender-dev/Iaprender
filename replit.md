@@ -164,6 +164,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Ícones contextuais (Mail, Phone, MapPin, Users)
     • Responsividade mantida para diferentes tamanhos de tela
   - ✅ **INTEGRIDADE DE DADOS**: Compatibilidade com campos existentes e novos do banco
+  - ✅ **ALTERAÇÃO DE NAVEGAÇÃO**: Botão "Voltar" alterado para "Sair" com ícone LogOut conforme solicitação
 - July 10, 2025: ✅ CONCLUÍDO - ANÁLISE COMPLETA DOS RELACIONAMENTOS E CORREÇÃO DE INTEGRIDADE DAS TABELAS
   - ✅ **ANÁLISE DE RELACIONAMENTOS CONCLUÍDA**: Mapeamento completo das tabelas empresas, contratos e usuários
   - ✅ **CORREÇÃO DE FOREIGN KEYS**: Adicionadas todas as foreign keys ausentes no banco de dados:

@@ -31,7 +31,7 @@ import {
   Phone,
   CreditCard,
   Archive,
-  ArrowLeft
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -214,8 +214,8 @@ export default function AdminCRUDDashboard() {
             <div className="flex items-center space-x-4">
               <Link href="/admin/user-management">
                 <Button variant="outline" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
                 </Button>
               </Link>
               <Button variant="outline" size="sm">
