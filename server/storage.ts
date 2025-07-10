@@ -126,15 +126,16 @@ export class DatabaseStorage implements IStorage {
     if (search) {
       whereClause = or(
         like(empresas.nome, `%${search}%`),
-        like(empresas.razaoSocial, `%${search}%`),
-        like(empresas.cnpj, `%${search}%`)
+        like(empresas.cnpj, `%${search}%`),
+        like(empresas.emailContato, `%${search}%`)
       );
     }
 
-    if (status && status !== 'all') {
-      const statusFilter = status === 'active' ? eq(empresas.ativo, true) : eq(empresas.ativo, false);
-      whereClause = whereClause ? and(whereClause, statusFilter) : statusFilter;
-    }
+    // Remover filtro de status por enquanto, pois a tabela não tem campo ativo
+    // if (status && status !== 'all') {
+    //   const statusFilter = status === 'active' ? eq(empresas.ativo, true) : eq(empresas.ativo, false);
+    //   whereClause = whereClause ? and(whereClause, statusFilter) : statusFilter;
+    // }
 
     const empresasList = await db.select().from(empresas)
       .where(whereClause)
@@ -150,14 +151,13 @@ export class DatabaseStorage implements IStorage {
 
   async getEmpresaStats(): Promise<any> {
     const statsResult = await db.select({
-      total: sql<number>`count(*)`,
-      ativas: sql<number>`count(*) filter (where ativo = true)`,
-      inativas: sql<number>`count(*) filter (where ativo = false or ativo is null)`,
-      comContratos: sql<number>`count(distinct e.id) filter (where c.id is not null)`
+      total: sql<number>`count(distinct ${empresas.id})`,
+      comContratos: sql<number>`count(distinct case when ${contratos.id} is not null then ${empresas.id} end)`,
+      semContratos: sql<number>`count(distinct case when ${contratos.id} is null then ${empresas.id} end)`
     }).from(empresas)
     .leftJoin(contratos, eq(empresas.id, contratos.empresaId));
 
-    return statsResult[0] || { total: 0, ativas: 0, inativas: 0, comContratos: 0 };
+    return statsResult[0] || { total: 0, comContratos: 0, semContratos: 0 };
   }
 
   async createEmpresa(insertEmpresa: InsertEmpresa): Promise<Empresa> {
@@ -171,7 +171,7 @@ export class DatabaseStorage implements IStorage {
   async updateEmpresa(id: number, updateData: Partial<Empresa>): Promise<Empresa | undefined> {
     const [empresa] = await db
       .update(empresas)
-      .set({ ...updateData, atualizadoEm: new Date() })
+      .set(updateData)
       .where(eq(empresas.id, id))
       .returning();
     return empresa || undefined;
