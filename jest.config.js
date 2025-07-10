@@ -27,9 +27,15 @@ export default {
   coverageDirectory: 'coverage',
   collectCoverageFrom: [
     'src/**/*.js',
+    'server/**/*.{js,ts}',
+    'client/src/**/*.{js,ts,tsx}',
     '!src/**/*.test.js',
     '!src/examples/**/*.js',
-    '!src/config/**/*.js'
+    '!src/config/**/*.js',
+    '!**/*.d.ts',
+    '!**/node_modules/**',
+    '!**/coverage/**',
+    '!**/test/**'
   ],
 
   // Relatórios de cobertura
