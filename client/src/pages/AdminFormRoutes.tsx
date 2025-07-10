@@ -98,7 +98,7 @@ const AdminFormRoutes: React.FC = () => {
       id: 'usuario-criar',
       nome: 'Gestão de Usuários',
       descricao: 'Sistema completo de cadastro e gestão de usuários com AWS Cognito',
-      url: '/admin/user-management',
+      url: '/admin/create-user',
       status: 'ativo',
       permissoes: ['admin'],
       icon: <Users className="h-5 w-5" />,
@@ -748,8 +748,17 @@ const AdminFormRoutes: React.FC = () => {
                             className="w-full bg-purple-600 hover:bg-purple-700"
                             disabled={formulario.status === 'manutencao'}
                           >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Acessar Sistema
+                            {formulario.id === 'usuario-criar' ? (
+                              <>
+                                <Users className="h-4 w-4 mr-2" />
+                                Criar novo Usuário
+                              </>
+                            ) : (
+                              <>
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Acessar Sistema
+                              </>
+                            )}
                           </Button>
                         </div>
                       </CardContent>
