@@ -120,19 +120,52 @@ export default function AdminUnifiedDashboard() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
+    const authSuccess = urlParams.get('auth');
+    const userType = urlParams.get('type');
+    const userEmail = urlParams.get('email');
+    
+    console.log('🔍 AdminUnifiedDashboard: Verificando parâmetros da URL...', {
+      token: token ? 'presente' : 'ausente',
+      authSuccess,
+      userType,
+      userEmail
+    });
     
     if (token) {
       console.log('🔑 [FRONTEND] Token JWT encontrado na URL:', token.substring(0, 50) + '...');
+      
+      // Salvar token em múltiplos locais para compatibilidade máxima
       localStorage.setItem('token', token);
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('cognito_token', token);
+      localStorage.setItem('sistema_token', token);
+      localStorage.setItem('authToken', token);
+      
+      // Salvar informações do usuário se disponíveis
+      if (userEmail && userType) {
+        const userData = {
+          email: decodeURIComponent(userEmail),
+          tipo_usuario: userType,
+          authenticated: true,
+          login_source: 'aws_cognito',
+          timestamp: new Date().toISOString()
+        };
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+        console.log('👤 Dados do usuário salvos:', userData);
+      }
       
       // Limpar URL após salvar o token
       const newUrl = window.location.pathname;
       window.history.replaceState({}, '', newUrl);
       
       toast({
-        title: "Autenticação realizada",
-        description: "Token JWT salvo com sucesso.",
+        title: "✅ Autenticação realizada",
+        description: "Sistema pronto para carregar usuários.",
+        duration: 3000
       });
+      
+      console.log('✅ Token JWT salvo em todos os locais de armazenamento');
     }
   }, [toast]);
 

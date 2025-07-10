@@ -29,11 +29,18 @@ export const apiRequest = async (
     requestOptions = options;
   }
   
+  // Buscar token de autenticação do localStorage
+  const token = localStorage.getItem('token') || 
+                localStorage.getItem('auth_token') || 
+                localStorage.getItem('authToken') || 
+                localStorage.getItem('sistema_token');
+  
   const requestConfig: RequestInit = {
     method,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
     },
     ...requestOptions
   };
@@ -42,7 +49,14 @@ export const apiRequest = async (
     requestConfig.body = JSON.stringify(data);
   }
   
-  console.log('🎯 API Request:', { method, endpoint, data });
+  console.log('🎯 API Request:', { 
+    method, 
+    endpoint, 
+    data, 
+    hasToken: !!token,
+    token: token ? `${token.substring(0, 20)}...` : 'none',
+    headers: requestConfig.headers
+  });
   
   try {
     const response = await fetch(endpoint, requestConfig);
