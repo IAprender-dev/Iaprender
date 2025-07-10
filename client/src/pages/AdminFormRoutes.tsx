@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,6 +37,7 @@ interface FormularioFuncional {
 }
 
 const AdminFormRoutes: React.FC = () => {
+  const [location, setLocation] = useLocation();
   const [userInfo, setUserInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -129,7 +131,14 @@ const AdminFormRoutes: React.FC = () => {
   };
 
   const abrirFormulario = (formulario: FormularioFuncional) => {
-    // Abrir formulário em nova aba mantendo a sessão
+    // Tratamento especial para formulário de usuário
+    if (formulario.id === 'usuario-criar') {
+      // Navegar internamente para a página de gestão de usuários
+      setLocation('/admin/user-management');
+      return;
+    }
+    
+    // Para outros formulários, abrir em nova aba mantendo a sessão
     window.open(formulario.url, '_blank', 'noopener,noreferrer');
   };
 
