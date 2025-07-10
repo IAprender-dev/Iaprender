@@ -1,0 +1,539 @@
+<!-- COMPONENTES DE CAMPOS PARA FORMULÁRIOS -->
+
+<!-- Campo de Texto Padrão -->
+<template id="text-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      {{FIELD_LABEL}}
+      {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="{{INPUT_TYPE:text}}"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME}}"
+        {{#if REQUIRED}}required{{/if}}
+        {{#if MIN_LENGTH}}minlength="{{MIN_LENGTH}}"{{/if}}
+        {{#if MAX_LENGTH}}maxlength="{{MAX_LENGTH}}"{{/if}}
+        {{#if PATTERN}}pattern="{{PATTERN}}"{{/if}}
+        {{#if VALIDATION}}data-validate="{{VALIDATION}}"{{/if}}
+        {{#if FORMAT}}data-format="{{FORMAT}}"{{/if}}
+        {{#if LABEL}}data-label="{{LABEL}}"{{/if}}
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 {{EXTRA_CLASSES}}"
+        placeholder="{{PLACEHOLDER}}"
+        {{#if VALUE}}value="{{VALUE}}"{{/if}}
+        {{#if READONLY}}readonly{{/if}}
+        {{#if DISABLED}}disabled{{/if}}
+      >
+      {{#if ICON}}
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="{{ICON}}" class="w-5 h-5 text-gray-400"></i>
+      </div>
+      {{/if}}
+    </div>
+    {{#if HELP_TEXT}}
+    <p class="mt-1 text-sm text-gray-500">{{HELP_TEXT}}</p>
+    {{/if}}
+  </div>
+</template>
+
+<!-- Campo CPF -->
+<template id="cpf-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      CPF {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="text"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME:cpf}}"
+        {{#if REQUIRED}}required{{/if}}
+        data-validate="{{#if REQUIRED}}required|{{/if}}cpf"
+        data-format="cpf"
+        data-label="CPF"
+        maxlength="14"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        placeholder="000.000.000-00"
+        {{#if VALUE}}value="{{VALUE}}"{{/if}}
+      >
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+    <p class="mt-1 text-sm text-gray-500">Digite apenas os números, a formatação é automática</p>
+  </div>
+</template>
+
+<!-- Campo CNPJ -->
+<template id="cnpj-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      CNPJ {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="text"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME:cnpj}}"
+        {{#if REQUIRED}}required{{/if}}
+        data-validate="{{#if REQUIRED}}required|{{/if}}cnpj"
+        data-format="cnpj"
+        data-label="CNPJ"
+        maxlength="18"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        placeholder="00.000.000/0000-00"
+        {{#if VALUE}}value="{{VALUE}}"{{/if}}
+      >
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="building" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+    <p class="mt-1 text-sm text-gray-500">Digite apenas os números, a formatação é automática</p>
+  </div>
+</template>
+
+<!-- Campo Telefone -->
+<template id="phone-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      Telefone {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="tel"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME:telefone}}"
+        {{#if REQUIRED}}required{{/if}}
+        data-validate="{{#if REQUIRED}}required|{{/if}}telefone"
+        data-format="telefone"
+        data-label="Telefone"
+        maxlength="15"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        placeholder="(11) 99999-9999"
+        {{#if VALUE}}value="{{VALUE}}"{{/if}}
+      >
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="phone" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+    <p class="mt-1 text-sm text-gray-500">Digite com DDD brasileiro</p>
+  </div>
+</template>
+
+<!-- Campo Email -->
+<template id="email-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      Email {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="email"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME:email}}"
+        {{#if REQUIRED}}required{{/if}}
+        data-validate="{{#if REQUIRED}}required|{{/if}}email"
+        data-label="Email"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        placeholder="seu@email.com"
+        {{#if VALUE}}value="{{VALUE}}"{{/if}}
+      >
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="mail" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+    {{#if HELP_TEXT}}
+    <p class="mt-1 text-sm text-gray-500">{{HELP_TEXT}}</p>
+    {{/if}}
+  </div>
+</template>
+
+<!-- Campo Select -->
+<template id="select-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      {{FIELD_LABEL}}
+      {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <select
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME}}"
+        {{#if REQUIRED}}required{{/if}}
+        {{#if VALIDATION}}data-validate="{{VALIDATION}}"{{/if}}
+        {{#if LABEL}}data-label="{{LABEL}}"{{/if}}
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+        {{#if DISABLED}}disabled{{/if}}
+      >
+        <option value="">{{PLACEHOLDER:Selecione uma opção}}</option>
+        {{OPTIONS}}
+      </select>
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+    {{#if HELP_TEXT}}
+    <p class="mt-1 text-sm text-gray-500">{{HELP_TEXT}}</p>
+    {{/if}}
+  </div>
+</template>
+
+<!-- Campo Textarea -->
+<template id="textarea-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      {{FIELD_LABEL}}
+      {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <textarea
+      id="{{FIELD_ID}}"
+      name="{{FIELD_NAME}}"
+      {{#if REQUIRED}}required{{/if}}
+      {{#if MIN_LENGTH}}minlength="{{MIN_LENGTH}}"{{/if}}
+      {{#if MAX_LENGTH}}maxlength="{{MAX_LENGTH}}"{{/if}}
+      {{#if VALIDATION}}data-validate="{{VALIDATION}}"{{/if}}
+      {{#if LABEL}}data-label="{{LABEL}}"{{/if}}
+      rows="{{ROWS:4}}"
+      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-y"
+      placeholder="{{PLACEHOLDER}}"
+      {{#if READONLY}}readonly{{/if}}
+      {{#if DISABLED}}disabled{{/if}}
+    >{{VALUE}}</textarea>
+    <div class="flex justify-between items-center mt-1">
+      {{#if HELP_TEXT}}
+      <p class="text-sm text-gray-500">{{HELP_TEXT}}</p>
+      {{/if}}
+      {{#if MAX_LENGTH}}
+      <p class="text-xs text-gray-400">
+        <span id="{{FIELD_ID}}-count">0</span>/{{MAX_LENGTH}}
+      </p>
+      <script>
+        document.getElementById('{{FIELD_ID}}').addEventListener('input', function() {
+          document.getElementById('{{FIELD_ID}}-count').textContent = this.value.length;
+        });
+      </script>
+      {{/if}}
+    </div>
+  </div>
+</template>
+
+<!-- Campo Data -->
+<template id="date-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      {{FIELD_LABEL}}
+      {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="date"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME}}"
+        {{#if REQUIRED}}required{{/if}}
+        {{#if MIN_DATE}}min="{{MIN_DATE}}"{{/if}}
+        {{#if MAX_DATE}}max="{{MAX_DATE}}"{{/if}}
+        {{#if VALIDATION}}data-validate="{{VALIDATION}}"{{/if}}
+        {{#if LABEL}}data-label="{{LABEL}}"{{/if}}
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        {{#if VALUE}}value="{{VALUE}}"{{/if}}
+        {{#if READONLY}}readonly{{/if}}
+        {{#if DISABLED}}disabled{{/if}}
+      >
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="calendar" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+    {{#if HELP_TEXT}}
+    <p class="mt-1 text-sm text-gray-500">{{HELP_TEXT}}</p>
+    {{/if}}
+  </div>
+</template>
+
+<!-- Campo CEP com Auto-complete -->
+<template id="cep-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      CEP {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="text"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME:cep}}"
+        {{#if REQUIRED}}required{{/if}}
+        data-validate="{{#if REQUIRED}}required|{{/if}}cep"
+        data-format="cep"
+        data-label="CEP"
+        maxlength="9"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        placeholder="00000-000"
+        {{#if VALUE}}value="{{VALUE}}"{{/if}}
+      >
+      <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+        <i data-lucide="map-pin" class="w-5 h-5 text-gray-400"></i>
+      </div>
+    </div>
+    <p class="mt-1 text-sm text-gray-500">Digite o CEP para buscar o endereço automaticamente</p>
+    
+    <script>
+      // Auto-complete de endereço via ViaCEP
+      document.getElementById('{{FIELD_ID}}').addEventListener('blur', async function() {
+        const cep = this.value.replace(/\D/g, '');
+        if (cep.length === 8) {
+          try {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+            
+            if (!data.erro) {
+              // Preencher campos relacionados se existirem
+              const enderecoField = document.querySelector('[name="endereco"], [name="logradouro"]');
+              const bairroField = document.querySelector('[name="bairro"]');
+              const cidadeField = document.querySelector('[name="cidade"], [name="localidade"]');
+              const estadoField = document.querySelector('[name="estado"], [name="uf"]');
+              
+              if (enderecoField && data.logradouro) enderecoField.value = data.logradouro;
+              if (bairroField && data.bairro) bairroField.value = data.bairro;
+              if (cidadeField && data.localidade) cidadeField.value = data.localidade;
+              if (estadoField && data.uf) estadoField.value = data.uf;
+            }
+          } catch (error) {
+            console.warn('Erro ao buscar CEP:', error);
+          }
+        }
+      });
+    </script>
+  </div>
+</template>
+
+<!-- Campo Password com Indicador de Força -->
+<template id="password-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      {{FIELD_LABEL:Senha}}
+      {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="password"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME:senha}}"
+        {{#if REQUIRED}}required{{/if}}
+        {{#if MIN_LENGTH}}minlength="{{MIN_LENGTH}}"{{/if}}
+        {{#if VALIDATION}}data-validate="{{VALIDATION}}"{{/if}}
+        {{#if LABEL}}data-label="{{LABEL}}"{{/if}}
+        class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+        placeholder="{{PLACEHOLDER:Digite sua senha}}"
+      >
+      <button
+        type="button"
+        id="{{FIELD_ID}}-toggle"
+        class="absolute inset-y-0 right-0 pr-3 flex items-center"
+        onclick="togglePassword('{{FIELD_ID}}')"
+      >
+        <i data-lucide="eye" class="w-5 h-5 text-gray-400"></i>
+      </button>
+    </div>
+    
+    {{#if SHOW_STRENGTH}}
+    <div class="mt-2">
+      <div class="flex justify-between text-xs mb-1">
+        <span>Força da senha</span>
+        <span id="{{FIELD_ID}}-strength-text">Fraca</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="{{FIELD_ID}}-strength-bar" class="bg-red-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+    {{/if}}
+    
+    {{#if HELP_TEXT}}
+    <p class="mt-1 text-sm text-gray-500">{{HELP_TEXT}}</p>
+    {{/if}}
+    
+    <script>
+      function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const button = document.getElementById(fieldId + '-toggle');
+        const icon = button.querySelector('[data-lucide]');
+        
+        if (field.type === 'password') {
+          field.type = 'text';
+          icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+          field.type = 'password';
+          icon.setAttribute('data-lucide', 'eye');
+        }
+        
+        lucide.createIcons();
+      }
+      
+      {{#if SHOW_STRENGTH}}
+      document.getElementById('{{FIELD_ID}}').addEventListener('input', function() {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrength('{{FIELD_ID}}', strength);
+      });
+      
+      function calculatePasswordStrength(password) {
+        let score = 0;
+        
+        if (password.length >= 8) score++;
+        if (password.length >= 12) score++;
+        if (/[a-z]/.test(password)) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        
+        return Math.min(score, 5);
+      }
+      
+      function updatePasswordStrength(fieldId, strength) {
+        const bar = document.getElementById(fieldId + '-strength-bar');
+        const text = document.getElementById(fieldId + '-strength-text');
+        
+        const levels = [
+          { width: 0, color: 'bg-gray-300', text: 'Muito fraca' },
+          { width: 20, color: 'bg-red-500', text: 'Fraca' },
+          { width: 40, color: 'bg-orange-500', text: 'Regular' },
+          { width: 60, color: 'bg-yellow-500', text: 'Boa' },
+          { width: 80, color: 'bg-green-500', text: 'Forte' },
+          { width: 100, color: 'bg-green-600', text: 'Muito forte' }
+        ];
+        
+        const level = levels[strength] || levels[0];
+        
+        bar.className = `h-2 rounded-full transition-all duration-300 ${level.color}`;
+        bar.style.width = level.width + '%';
+        text.textContent = level.text;
+      }
+      {{/if}}
+    </script>
+  </div>
+</template>
+
+<!-- Campo File Upload -->
+<template id="file-field-template">
+  <div class="form-field-group">
+    <label for="{{FIELD_ID}}" class="block text-sm font-medium text-gray-700 mb-2">
+      {{FIELD_LABEL}}
+      {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+    </label>
+    <div class="relative">
+      <input
+        type="file"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME}}"
+        {{#if REQUIRED}}required{{/if}}
+        {{#if ACCEPT}}accept="{{ACCEPT}}"{{/if}}
+        {{#if MULTIPLE}}multiple{{/if}}
+        class="hidden"
+        {{#if VALIDATION}}data-validate="{{VALIDATION}}"{{/if}}
+        {{#if LABEL}}data-label="{{LABEL}}"{{/if}}
+      >
+      <div 
+        class="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer"
+        onclick="document.getElementById('{{FIELD_ID}}').click()"
+      >
+        <i data-lucide="upload" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+        <p class="text-sm text-gray-600">
+          Clique para selecionar {{#if MULTIPLE}}arquivos{{else}}arquivo{{/if}}
+        </p>
+        {{#if ACCEPT}}
+        <p class="text-xs text-gray-500 mt-1">Formatos aceitos: {{ACCEPT}}</p>
+        {{/if}}
+      </div>
+      <div id="{{FIELD_ID}}-preview" class="mt-2 hidden">
+        <p class="text-sm font-medium text-gray-700 mb-2">Arquivo(s) selecionado(s):</p>
+        <div id="{{FIELD_ID}}-list" class="space-y-1"></div>
+      </div>
+    </div>
+    {{#if HELP_TEXT}}
+    <p class="mt-1 text-sm text-gray-500">{{HELP_TEXT}}</p>
+    {{/if}}
+    
+    <script>
+      document.getElementById('{{FIELD_ID}}').addEventListener('change', function() {
+        const preview = document.getElementById('{{FIELD_ID}}-preview');
+        const list = document.getElementById('{{FIELD_ID}}-list');
+        
+        if (this.files.length > 0) {
+          preview.classList.remove('hidden');
+          list.innerHTML = '';
+          
+          Array.from(this.files).forEach(file => {
+            const item = document.createElement('div');
+            item.className = 'flex items-center text-sm text-gray-600';
+            item.innerHTML = `
+              <i data-lucide="file" class="w-4 h-4 mr-2"></i>
+              <span>${file.name}</span>
+              <span class="ml-auto text-xs">${(file.size / 1024).toFixed(1)} KB</span>
+            `;
+            list.appendChild(item);
+          });
+          
+          lucide.createIcons();
+        } else {
+          preview.classList.add('hidden');
+        }
+      });
+    </script>
+  </div>
+</template>
+
+<!-- Campo Checkbox -->
+<template id="checkbox-field-template">
+  <div class="form-field-group">
+    <div class="flex items-start">
+      <input
+        type="checkbox"
+        id="{{FIELD_ID}}"
+        name="{{FIELD_NAME}}"
+        {{#if REQUIRED}}required{{/if}}
+        {{#if CHECKED}}checked{{/if}}
+        {{#if VALIDATION}}data-validate="{{VALIDATION}}"{{/if}}
+        {{#if LABEL}}data-label="{{LABEL}}"{{/if}}
+        value="{{VALUE:true}}"
+        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+        {{#if DISABLED}}disabled{{/if}}
+      >
+      <div class="ml-3">
+        <label for="{{FIELD_ID}}" class="text-sm font-medium text-gray-700">
+          {{FIELD_LABEL}}
+          {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+        </label>
+        {{#if HELP_TEXT}}
+        <p class="text-sm text-gray-500">{{HELP_TEXT}}</p>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Campo Radio Group -->
+<template id="radio-group-template">
+  <div class="form-field-group">
+    <fieldset>
+      <legend class="block text-sm font-medium text-gray-700 mb-3">
+        {{FIELD_LABEL}}
+        {{#if REQUIRED}}<span class="text-red-500">*</span>{{/if}}
+      </legend>
+      <div class="space-y-2">
+        {{OPTIONS}}
+      </div>
+    </fieldset>
+    {{#if HELP_TEXT}}
+    <p class="mt-1 text-sm text-gray-500">{{HELP_TEXT}}</p>
+    {{/if}}
+  </div>
+</template>
+
+<!-- Campo Hidden -->
+<template id="hidden-field-template">
+  <input
+    type="hidden"
+    id="{{FIELD_ID}}"
+    name="{{FIELD_NAME}}"
+    value="{{VALUE}}"
+  >
+</template>

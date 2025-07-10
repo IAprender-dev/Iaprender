@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{FORM_TITLE}} - IAprender</title>
+  <meta name="description" content="{{FORM_DESCRIPTION}}">
+  
+  <!-- CSS Framework -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Ícones Lucide -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <!-- Custom Styles -->
+  <style>
+    .form-field-group {
+      transition: all 0.2s ease;
+    }
+    
+    .form-field-group:focus-within {
+      transform: translateY(-1px);
+    }
+    
+    .error {
+      animation: shake 0.3s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .loading {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: loading 1.5s infinite;
+    }
+    
+    @keyframes loading {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    .glass-effect {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen flex items-center justify-center p-4">
+  <!-- Background Pattern -->
+  <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
+  
+  <!-- Main Container -->
+  <div class="relative max-w-md w-full glass-effect rounded-2xl shadow-xl p-8 z-10">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="{{FORM_ICON}}" class="w-8 h-8 text-white"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">{{FORM_TITLE}}</h1>
+      <p class="text-gray-600 text-sm">{{FORM_DESCRIPTION}}</p>
+    </div>
+    
+    <!-- Progress Bar (se aplicável) -->
+    <div id="progress-container" class="hidden mb-6">
+      <div class="flex justify-between text-xs text-gray-500 mb-2">
+        <span>Progresso</span>
+        <span id="progress-text">0%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+    
+    <!-- Alert Container -->
+    <div id="alert-container" class="mb-6 hidden">
+      <div id="alert" class="p-4 rounded-lg border-l-4 flex items-center space-x-3">
+        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        <div>
+          <p id="alert-title" class="font-medium"></p>
+          <p id="alert-message" class="text-sm"></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Form -->
+    <form id="{{FORM_ID}}" class="space-y-6" novalidate>
+      {{FORM_FIELDS}}
+      
+      <!-- Submit Section -->
+      <div class="pt-4">
+        <button 
+          type="submit" 
+          id="submit-btn"
+          class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <span id="submit-text">{{SUBMIT_TEXT}}</span>
+          <i data-lucide="loader" class="w-5 h-5 ml-2 animate-spin hidden" id="submit-loader"></i>
+        </button>
+        
+        <!-- Secondary Actions -->
+        <div id="secondary-actions" class="mt-4 text-center space-y-2">
+          {{SECONDARY_ACTIONS}}
+        </div>
+      </div>
+    </form>
+    
+    <!-- Footer -->
+    <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+      <p class="text-xs text-gray-500">
+        Powered by <span class="font-semibold text-blue-600">IAprender</span>
+      </p>
+    </div>
+  </div>
+  
+  <!-- Scripts -->
+  <script type="module">
+    // Importar utils (adaptado para módulos ES6)
+    import { FormHandler } from '/src/utils/formHandler.js';
+    import { addRealTimeValidation, addAutoFormatting } from '/src/utils/validation.js';
+    
+    // Configuração do formulário
+    const formConfig = {
+      id: '{{FORM_ID}}',
+      endpoint: '{{ENDPOINT}}',
+      method: '{{METHOD}}',
+      timeout: {{TIMEOUT || 30000}},
+      retries: {{RETRIES || 3}},
+      debug: {{DEBUG || false}}
+    };
+    
+    // Inicialização quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', function() {
+      // Inicializar ícones Lucide
+      lucide.createIcons();
+      
+      // Configurar formulário
+      const form = document.getElementById(formConfig.id);
+      if (!form) {
+        console.error(`Formulário ${formConfig.id} não encontrado`);
+        return;
+      }
+      
+      // Adicionar validação e formatação automática
+      addRealTimeValidation(form);
+      addAutoFormatting(form);
+      
+      // Inicializar FormHandler
+      const formHandler = new FormHandler(formConfig.id, {
+        endpoint: formConfig.endpoint,
+        method: formConfig.method,
+        timeout: formConfig.timeout,
+        retries: formConfig.retries,
+        debug: formConfig.debug,
+        showLoading: true,
+        validateOnSubmit: true,
+        autoReset: {{AUTO_RESET || false}},
+        
+        onSuccess: (response) => {
+          showAlert('success', 'Sucesso!', '{{SUCCESS_MESSAGE}}');
+          updateProgress(100);
+          
+          // Callback personalizado
+          {{ON_SUCCESS_CALLBACK}}
+          
+          // Redirecionamento opcional
+          const redirectUrl = '{{REDIRECT_URL}}';
+          if (redirectUrl && redirectUrl !== '{{REDIRECT_URL}}') {
+            setTimeout(() => {
+              window.location.href = redirectUrl;
+            }, 2000);
+          }
+        },
+        
+        onError: (error) => {
+          showAlert('error', 'Erro!', error.message || '{{ERROR_MESSAGE}}');
+          console.error('Erro no formulário:', error);
+          
+          // Callback personalizado de erro
+          {{ON_ERROR_CALLBACK}}
+        },
+        
+        onValidationError: (errors) => {
+          const errorCount = Object.keys(errors).length;
+          showAlert('warning', 'Atenção!', `${errorCount} campo(s) com erro. Verifique os dados informados.`);
+        },
+        
+        customValidation: (data) => {
+          // Validações customizadas específicas do formulário
+          {{CUSTOM_VALIDATION}}
+          return null;
+        }
+      });
+      
+      // Monitorar progresso do formulário
+      if ({{SHOW_PROGRESS || false}}) {
+        monitorFormProgress(form);
+      }
+      
+      // Configurações adicionais específicas
+      {{ADDITIONAL_CONFIG}}
+    });
+    
+    // Funções auxiliares
+    function showAlert(type, title, message) {
+      const container = document.getElementById('alert-container');
+      const alert = document.getElementById('alert');
+      const alertTitle = document.getElementById('alert-title');
+      const alertMessage = document.getElementById('alert-message');
+      const icon = alert.querySelector('[data-lucide]');
+      
+      // Configurar cores e ícones por tipo
+      let classes = '';
+      let iconName = '';
+      
+      switch (type) {
+        case 'success':
+          classes = 'bg-green-50 border-green-500 text-green-700';
+          iconName = 'check-circle';
+          break;
+        case 'error':
+          classes = 'bg-red-50 border-red-500 text-red-700';
+          iconName = 'x-circle';
+          break;
+        case 'warning':
+          classes = 'bg-yellow-50 border-yellow-500 text-yellow-700';
+          iconName = 'alert-triangle';
+          break;
+        case 'info':
+          classes = 'bg-blue-50 border-blue-500 text-blue-700';
+          iconName = 'info';
+          break;
+      }
+      
+      // Aplicar estilos
+      alert.className = `p-4 rounded-lg border-l-4 flex items-center space-x-3 ${classes}`;
+      icon.setAttribute('data-lucide', iconName);
+      
+      // Definir conteúdo
+      alertTitle.textContent = title;
+      alertMessage.textContent = message;
+      
+      // Mostrar alert
+      container.classList.remove('hidden');
+      
+      // Atualizar ícone
+      lucide.createIcons();
+      
+      // Auto-ocultar após alguns segundos (exceto erros)
+      if (type !== 'error') {
+        setTimeout(() => {
+          container.classList.add('hidden');
+        }, 5000);
+      }
+    }
+    
+    function updateProgress(percentage) {
+      const progressContainer = document.getElementById('progress-container');
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      
+      if (progressContainer && !progressContainer.classList.contains('hidden')) {
+        progressBar.style.width = `${percentage}%`;
+        progressText.textContent = `${percentage}%`;
+      }
+    }
+    
+    function monitorFormProgress(form) {
+      const progressContainer = document.getElementById('progress-container');
+      progressContainer.classList.remove('hidden');
+      
+      const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+      const totalFields = inputs.length;
+      
+      inputs.forEach(input => {
+        input.addEventListener('input', () => {
+          const filledFields = Array.from(inputs).filter(inp => {
+            return inp.value.trim() !== '';
+          }).length;
+          
+          const progress = Math.round((filledFields / totalFields) * 100);
+          updateProgress(progress);
+        });
+      });
+    }
+    
+    // Melhorias de UX
+    function enhanceUX() {
+      // Auto-focus no primeiro campo
+      const firstInput = document.querySelector('#{{FORM_ID}} input, #{{FORM_ID}} select, #{{FORM_ID}} textarea');
+      if (firstInput) {
+        firstInput.focus();
+      }
+      
+      // Navegação por Enter entre campos
+      const formInputs = document.querySelectorAll('#{{FORM_ID}} input, #{{FORM_ID}} select, #{{FORM_ID}} textarea');
+      formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && input.type !== 'textarea') {
+            e.preventDefault();
+            const nextInput = formInputs[index + 1];
+            if (nextInput) {
+              nextInput.focus();
+            } else {
+              // Se é o último campo, submeter o form
+              document.getElementById('submit-btn').click();
+            }
+          }
+        });
+      });
+    }
+    
+    // Executar melhorias quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', enhanceUX);
+  </script>
+  
+  <!-- Custom Scripts -->
+  {{CUSTOM_SCRIPTS}}
+</body>
+</html>

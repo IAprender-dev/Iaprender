@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar Usuário - IAprender</title>
+  <meta name="description" content="Cadastre um novo usuário no sistema">
+  
+  <!-- CSS Framework -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Ícones Lucide -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  
+  <!-- Custom Styles -->
+  <style>
+    .form-field-group {
+      transition: all 0.2s ease;
+    }
+    
+    .form-field-group:focus-within {
+      transform: translateY(-1px);
+    }
+    
+    .error {
+      animation: shake 0.3s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .loading {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .loading::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: loading 1.5s infinite;
+    }
+    
+    @keyframes loading {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    
+    .glass-effect {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen flex items-center justify-center p-4">
+  <!-- Background Pattern -->
+  <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="1"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40"></div>
+  
+  <!-- Main Container -->
+  <div class="relative max-w-md w-full glass-effect rounded-2xl shadow-xl p-8 z-10">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="user-plus" class="w-8 h-8 text-white"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">Criar Usuário</h1>
+      <p class="text-gray-600 text-sm">Cadastre um novo usuário no sistema</p>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div id="progress-container" class="mb-6">
+      <div class="flex justify-between text-xs text-gray-500 mb-2">
+        <span>Progresso</span>
+        <span id="progress-text">0%</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+    </div>
+    
+    <!-- Alert Container -->
+    <div id="alert-container" class="mb-6 hidden">
+      <div id="alert" class="p-4 rounded-lg border-l-4 flex items-center space-x-3">
+        <i data-lucide="alert-circle" class="w-5 h-5"></i>
+        <div>
+          <p id="alert-title" class="font-medium"></p>
+          <p id="alert-message" class="text-sm"></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Form -->
+    <form id="form-usuario-criar" class="space-y-6" novalidate>
+      <!-- Nome Completo -->
+      <div class="form-field-group">
+        <label for="nome" class="block text-sm font-medium text-gray-700 mb-2">
+          Nome Completo
+          <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            id="nome"
+            name="nome"
+            required
+            minlength="2"
+            maxlength="100"
+            data-validate="required|minLength:2|maxLength:100"
+            data-label="Nome completo"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            placeholder="Digite o nome completo"
+          >
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-field-group">
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+          Email
+          <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            data-validate="required|email"
+            data-label="Email"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            placeholder="usuario@email.com"
+          >
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <i data-lucide="mail" class="w-5 h-5 text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- CPF -->
+      <div class="form-field-group">
+        <label for="cpf" class="block text-sm font-medium text-gray-700 mb-2">
+          CPF <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            type="text"
+            id="cpf"
+            name="documento"
+            required
+            data-validate="required|cpf"
+            data-format="cpf"
+            data-label="CPF"
+            maxlength="14"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            placeholder="000.000.000-00"
+          >
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
+          </div>
+        </div>
+        <p class="mt-1 text-sm text-gray-500">Digite apenas os números, a formatação é automática</p>
+      </div>
+
+      <!-- Telefone -->
+      <div class="form-field-group">
+        <label for="telefone" class="block text-sm font-medium text-gray-700 mb-2">
+          Telefone
+        </label>
+        <div class="relative">
+          <input
+            type="tel"
+            id="telefone"
+            name="telefone"
+            data-validate="telefone"
+            data-format="telefone"
+            data-label="Telefone"
+            maxlength="15"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            placeholder="(11) 99999-9999"
+          >
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <i data-lucide="phone" class="w-5 h-5 text-gray-400"></i>
+          </div>
+        </div>
+        <p class="mt-1 text-sm text-gray-500">Digite com DDD brasileiro</p>
+      </div>
+
+      <!-- Tipo de Usuário -->
+      <div class="form-field-group">
+        <label for="tipo_usuario" class="block text-sm font-medium text-gray-700 mb-2">
+          Tipo de Usuário
+          <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <select
+            id="tipo_usuario"
+            name="tipo_usuario"
+            required
+            data-validate="required"
+            data-label="Tipo de Usuário"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+          >
+            <option value="">Selecione uma opção</option>
+            <option value="admin">Administrador</option>
+            <option value="gestor">Gestor</option>
+            <option value="diretor">Diretor</option>
+            <option value="professor">Professor</option>
+            <option value="aluno">Aluno</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <i data-lucide="chevron-down" class="w-5 h-5 text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Senha -->
+      <div class="form-field-group">
+        <label for="senha" class="block text-sm font-medium text-gray-700 mb-2">
+          Senha
+          <span class="text-red-500">*</span>
+        </label>
+        <div class="relative">
+          <input
+            type="password"
+            id="senha"
+            name="senha"
+            required
+            minlength="8"
+            data-validate="required|minLength:8"
+            data-label="Senha"
+            class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+            placeholder="Mínimo 8 caracteres"
+          >
+          <button
+            type="button"
+            id="senha-toggle"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+            onclick="togglePassword('senha')"
+          >
+            <i data-lucide="eye" class="w-5 h-5 text-gray-400"></i>
+          </button>
+        </div>
+        
+        <div class="mt-2">
+          <div class="flex justify-between text-xs mb-1">
+            <span>Força da senha</span>
+            <span id="senha-strength-text">Fraca</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="senha-strength-bar" class="bg-red-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Submit Section -->
+      <div class="pt-4">
+        <button 
+          type="submit" 
+          id="submit-btn"
+          class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform transition-all duration-200 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <span id="submit-text">Criar Usuário</span>
+          <i data-lucide="loader" class="w-5 h-5 ml-2 animate-spin hidden" id="submit-loader"></i>
+        </button>
+      </div>
+    </form>
+    
+    <!-- Footer -->
+    <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+      <p class="text-xs text-gray-500">
+        Powered by <span class="font-semibold text-blue-600">IAprender</span>
+      </p>
+    </div>
+  </div>
+  
+  <!-- Scripts -->
+  <script type="module">
+    // Configuração do formulário
+    const formConfig = {
+      id: 'form-usuario-criar',
+      endpoint: '/api/usuarios',
+      method: 'POST',
+      timeout: 30000,
+      retries: 3,
+      debug: false
+    };
+    
+    // Inicialização quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', function() {
+      // Inicializar ícones Lucide
+      lucide.createIcons();
+      
+      // Configurar formulário
+      const form = document.getElementById(formConfig.id);
+      if (!form) {
+        console.error(`Formulário ${formConfig.id} não encontrado`);
+        return;
+      }
+      
+      // Adicionar validação e formatação automática
+      addRealTimeValidation(form);
+      addAutoFormatting(form);
+      
+      // Monitorar progresso do formulário
+      monitorFormProgress(form);
+      
+      // Configurar força da senha
+      document.getElementById('senha').addEventListener('input', function() {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrength('senha', strength);
+      });
+      
+      // Configurar submissão do formulário
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Validar formulário
+        const isValid = validateAndDisplayErrors(form);
+        if (!isValid) {
+          showAlert('warning', 'Atenção!', 'Corrija os erros antes de continuar.');
+          return;
+        }
+        
+        // Mostrar loading
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const submitLoader = document.getElementById('submit-loader');
+        
+        submitBtn.disabled = true;
+        submitText.textContent = 'Criando...';
+        submitLoader.classList.remove('hidden');
+        
+        try {
+          // Coletar dados do formulário
+          const formData = new FormData(form);
+          const data = Object.fromEntries(formData.entries());
+          
+          // Enviar para API
+          const response = await fetch(formConfig.endpoint, {
+            method: formConfig.method,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+            },
+            body: JSON.stringify(data)
+          });
+          
+          if (response.ok) {
+            showAlert('success', 'Sucesso!', 'Usuário criado com sucesso!');
+            updateProgress(100);
+            form.reset();
+            updateProgress(0);
+          } else {
+            const error = await response.json();
+            throw new Error(error.message || 'Erro ao criar usuário');
+          }
+          
+        } catch (error) {
+          showAlert('error', 'Erro!', error.message || 'Ocorreu um erro. Tente novamente.');
+          console.error('Erro no formulário:', error);
+        } finally {
+          // Restaurar botão
+          submitBtn.disabled = false;
+          submitText.textContent = 'Criar Usuário';
+          submitLoader.classList.add('hidden');
+        }
+      });
+    });
+    
+    // Funções auxiliares
+    function showAlert(type, title, message) {
+      const container = document.getElementById('alert-container');
+      const alert = document.getElementById('alert');
+      const alertTitle = document.getElementById('alert-title');
+      const alertMessage = document.getElementById('alert-message');
+      const icon = alert.querySelector('[data-lucide]');
+      
+      // Configurar cores e ícones por tipo
+      let classes = '';
+      let iconName = '';
+      
+      switch (type) {
+        case 'success':
+          classes = 'bg-green-50 border-green-500 text-green-700';
+          iconName = 'check-circle';
+          break;
+        case 'error':
+          classes = 'bg-red-50 border-red-500 text-red-700';
+          iconName = 'x-circle';
+          break;
+        case 'warning':
+          classes = 'bg-yellow-50 border-yellow-500 text-yellow-700';
+          iconName = 'alert-triangle';
+          break;
+        case 'info':
+          classes = 'bg-blue-50 border-blue-500 text-blue-700';
+          iconName = 'info';
+          break;
+      }
+      
+      // Aplicar estilos
+      alert.className = `p-4 rounded-lg border-l-4 flex items-center space-x-3 ${classes}`;
+      icon.setAttribute('data-lucide', iconName);
+      
+      // Definir conteúdo
+      alertTitle.textContent = title;
+      alertMessage.textContent = message;
+      
+      // Mostrar alert
+      container.classList.remove('hidden');
+      
+      // Atualizar ícone
+      lucide.createIcons();
+      
+      // Auto-ocultar após alguns segundos (exceto erros)
+      if (type !== 'error') {
+        setTimeout(() => {
+          container.classList.add('hidden');
+        }, 5000);
+      }
+    }
+    
+    function updateProgress(percentage) {
+      const progressBar = document.getElementById('progress-bar');
+      const progressText = document.getElementById('progress-text');
+      
+      progressBar.style.width = `${percentage}%`;
+      progressText.textContent = `${percentage}%`;
+    }
+    
+    function monitorFormProgress(form) {
+      const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+      const totalFields = inputs.length;
+      
+      inputs.forEach(input => {
+        input.addEventListener('input', () => {
+          const filledFields = Array.from(inputs).filter(inp => {
+            return inp.value.trim() !== '';
+          }).length;
+          
+          const progress = Math.round((filledFields / totalFields) * 100);
+          updateProgress(progress);
+        });
+      });
+    }
+    
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      const button = document.getElementById(fieldId + '-toggle');
+      const icon = button.querySelector('[data-lucide]');
+      
+      if (field.type === 'password') {
+        field.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        field.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      
+      lucide.createIcons();
+    }
+    
+    function calculatePasswordStrength(password) {
+      let score = 0;
+      
+      if (password.length >= 8) score++;
+      if (password.length >= 12) score++;
+      if (/[a-z]/.test(password)) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^A-Za-z0-9]/.test(password)) score++;
+      
+      return Math.min(score, 5);
+    }
+    
+    function updatePasswordStrength(fieldId, strength) {
+      const bar = document.getElementById(fieldId + '-strength-bar');
+      const text = document.getElementById(fieldId + '-strength-text');
+      
+      const levels = [
+        { width: 0, color: 'bg-gray-300', text: 'Muito fraca' },
+        { width: 20, color: 'bg-red-500', text: 'Fraca' },
+        { width: 40, color: 'bg-orange-500', text: 'Regular' },
+        { width: 60, color: 'bg-yellow-500', text: 'Boa' },
+        { width: 80, color: 'bg-green-500', text: 'Forte' },
+        { width: 100, color: 'bg-green-600', text: 'Muito forte' }
+      ];
+      
+      const level = levels[strength] || levels[0];
+      
+      bar.className = `h-2 rounded-full transition-all duration-300 ${level.color}`;
+      bar.style.width = level.width + '%';
+      text.textContent = level.text;
+    }
+    
+    // Incluir sistema de validação inline
+    ${getValidationSystem()}
+  </script>
+</body>
+</html>
+
+<script>
+// Sistema de validação inline (incluído diretamente)
+function getValidationSystem() {
+  return `
+    // Validadores
+    const validators = {
+      required: (value) => {
+        if (typeof value === 'string') return value.trim() !== '';
+        if (typeof value === 'number') return !isNaN(value);
+        if (Array.isArray(value)) return value.length > 0;
+        return value !== null && value !== undefined && value !== '';
+      },
+      
+      email: (value) => {
+        if (!value) return true;
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_\`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        return emailRegex.test(value);
+      },
+      
+      cpf: (value) => {
+        if (!value) return true;
+        const cleanCPF = value.replace(/\\D/g, '');
+        if (cleanCPF.length !== 11) return false;
+        if (/^(\\d)\\1{10}$/.test(cleanCPF)) return false;
+        
+        let sum = 0;
+        for (let i = 0; i < 9; i++) {
+          sum += parseInt(cleanCPF[i]) * (10 - i);
+        }
+        let digit1 = 11 - (sum % 11);
+        if (digit1 > 9) digit1 = 0;
+        
+        sum = 0;
+        for (let i = 0; i < 10; i++) {
+          sum += parseInt(cleanCPF[i]) * (11 - i);
+        }
+        let digit2 = 11 - (sum % 11);
+        if (digit2 > 9) digit2 = 0;
+        
+        return digit1 === parseInt(cleanCPF[9]) && digit2 === parseInt(cleanCPF[10]);
+      },
+      
+      telefone: (value) => {
+        if (!value) return true;
+        const cleanPhone = value.replace(/\\D/g, '');
+        if (cleanPhone.length !== 10 && cleanPhone.length !== 11) return false;
+        
+        const validDDDs = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '21', '22', '24', '27', '28', '31', '32', '33', '34', '35', '37', '38', '41', '42', '43', '44', '45', '46', '47', '48', '49', '51', '53', '54', '55', '61', '62', '64', '63', '65', '66', '67', '68', '69', '71', '73', '74', '75', '77', '79', '81', '87', '82', '83', '84', '85', '88', '86', '89', '91', '93', '94', '92', '97', '95', '96', '98', '99'];
+        
+        const ddd = cleanPhone.substring(0, 2);
+        return validDDDs.includes(ddd);
+      },
+      
+      minLength: (value, min) => {
+        if (!value) return true;
+        return value.toString().length >= min;
+      },
+      
+      maxLength: (value, max) => {
+        if (!value) return true;
+        return value.toString().length <= max;
+      }
+    };
+    
+    // Formatadores
+    const formatters = {
+      cpf: (value) => {
+        const clean = value.replace(/\\D/g, '');
+        if (clean.length <= 11) {
+          return clean.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{2})/, '$1.$2.$3-$4');
+        }
+        return value;
+      },
+      
+      telefone: (value) => {
+        const clean = value.replace(/\\D/g, '');
+        if (clean.length <= 10) {
+          return clean.replace(/(\\d{2})(\\d{4})(\\d{4})/, '($1) $2-$3');
+        } else if (clean.length <= 11) {
+          return clean.replace(/(\\d{2})(\\d{5})(\\d{4})/, '($1) $2-$3');
+        }
+        return value;
+      }
+    };
+    
+    // Adicionar validação em tempo real
+    function addRealTimeValidation(form) {
+      const inputs = form.querySelectorAll('[data-validate]');
+      
+      inputs.forEach(input => {
+        input.addEventListener('blur', () => {
+          validateField(input);
+        });
+        
+        input.addEventListener('input', () => {
+          if (input.classList.contains('error')) {
+            clearFieldError(input);
+          }
+        });
+      });
+    }
+    
+    // Adicionar formatação automática
+    function addAutoFormatting(form) {
+      const inputs = form.querySelectorAll('[data-format]');
+      
+      inputs.forEach(input => {
+        const formatType = input.dataset.format;
+        const formatter = formatters[formatType];
+        
+        if (formatter) {
+          input.addEventListener('input', (e) => {
+            const target = e.target;
+            const cursorPosition = target.selectionStart;
+            const oldLength = target.value.length;
+            
+            target.value = formatter(target.value);
+            
+            const newLength = target.value.length;
+            const lengthDiff = newLength - oldLength;
+            
+            if (cursorPosition !== null) {
+              target.setSelectionRange(
+                cursorPosition + lengthDiff,
+                cursorPosition + lengthDiff
+              );
+            }
+          });
+        }
+      });
+    }
+    
+    // Validar campo individual
+    function validateField(input) {
+      const rules = parseValidationRules(input.dataset.validate || '');
+      const value = getInputValue(input);
+      const fieldName = input.name || input.id;
+      const label = input.dataset.label || input.getAttribute('placeholder') || fieldName;
+      
+      for (const [ruleName, ruleValue] of Object.entries(rules)) {
+        const validator = validators[ruleName];
+        
+        if (!validator) continue;
+        
+        let isValid = false;
+        
+        if (ruleName === 'minLength' || ruleName === 'maxLength') {
+          isValid = validator(value, ruleValue);
+        } else {
+          isValid = validator(value);
+        }
+        
+        if (!isValid) {
+          const message = getErrorMessage(ruleName, ruleValue, label);
+          displayFieldError(input, message);
+          return false;
+        }
+      }
+      
+      clearFieldError(input);
+      return true;
+    }
+    
+    // Validar formulário completo
+    function validateAndDisplayErrors(form) {
+      const inputs = form.querySelectorAll('[data-validate]');
+      let isValid = true;
+      
+      clearFormErrors(form);
+      
+      inputs.forEach(input => {
+        if (!validateField(input)) {
+          isValid = false;
+        }
+      });
+      
+      return isValid;
+    }
+    
+    // Parsear regras de validação
+    function parseValidationRules(rulesString) {
+      const rules = {};
+      const rulesList = rulesString.split('|').filter(rule => rule.trim());
+      
+      rulesList.forEach(rule => {
+        const [ruleName, param] = rule.split(':');
+        
+        switch (ruleName.trim()) {
+          case 'required':
+            rules.required = true;
+            break;
+          case 'email':
+            rules.email = true;
+            break;
+          case 'cpf':
+            rules.cpf = true;
+            break;
+          case 'telefone':
+            rules.telefone = true;
+            break;
+          case 'minLength':
+            rules.minLength = param ? parseInt(param) : 1;
+            break;
+          case 'maxLength':
+            rules.maxLength = param ? parseInt(param) : 255;
+            break;
+        }
+      });
+      
+      return rules;
+    }
+    
+    // Obter valor do input
+    function getInputValue(input) {
+      switch (input.type) {
+        case 'checkbox':
+          return input.checked;
+        case 'radio':
+          const form = input.closest('form');
+          if (form) {
+            const checked = form.querySelector(\`input[name="\${input.name}"]:checked\`);
+            return checked?.value || null;
+          }
+          return input.checked ? input.value : null;
+        case 'number':
+        case 'range':
+          return input.value ? parseFloat(input.value) : null;
+        case 'file':
+          return input.files;
+        default:
+          return input.value;
+      }
+    }
+    
+    // Mensagens de erro
+    function getErrorMessage(ruleName, param, fieldName) {
+      const messages = {
+        required: \`\${fieldName} é obrigatório\`,
+        email: 'Email deve ter um formato válido',
+        cpf: 'CPF deve ter um formato válido',
+        telefone: 'Telefone deve ter um formato válido com DDD',
+        minLength: \`Deve ter pelo menos \${param} caracteres\`,
+        maxLength: \`Deve ter no máximo \${param} caracteres\`
+      };
+      
+      return messages[ruleName] || \`\${fieldName} é inválido\`;
+    }
+    
+    // Exibir erro em campo
+    function displayFieldError(field, message) {
+      clearFieldError(field);
+      
+      field.classList.add('error', 'border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+      
+      const errorElement = document.createElement('div');
+      errorElement.className = 'error-message text-red-500 text-sm mt-1';
+      errorElement.textContent = message;
+      errorElement.setAttribute('data-error-for', field.name || field.id);
+      
+      const container = field.parentElement;
+      if (container) {
+        container.appendChild(errorElement);
+      }
+    }
+    
+    // Limpar erro de campo
+    function clearFieldError(field) {
+      field.classList.remove('error', 'border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+      
+      const fieldName = field.name || field.id;
+      const errorElement = document.querySelector(\`[data-error-for="\${fieldName}"]\`);
+      if (errorElement) {
+        errorElement.remove();
+      }
+    }
+    
+    // Limpar todos os erros
+    function clearFormErrors(form) {
+      const errorFields = form.querySelectorAll('.error');
+      errorFields.forEach(field => {
+        field.classList.remove('error', 'border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+      });
+      
+      const errorMessages = form.querySelectorAll('.error-message');
+      errorMessages.forEach(message => message.remove());
+    }
+  `;
+}
+</script>
