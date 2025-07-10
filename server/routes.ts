@@ -194,6 +194,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Middleware para admin ou gestor
   const requireAdminOrGestor = requireUserType(['admin', 'gestor']);
 
+  // Dashboard routes - High priority routes to avoid conflict with frontend routing
+  app.get("/api/dashboard/health", async (req: Request, res: Response) => {
+    try {
+      // Import dinâmico para evitar problemas de cache
+      const { default: dashboardController } = await import('./controllers/dashboardController.js');
+      return dashboardController.healthCheck(req, res);
+    } catch (error) {
+      console.error('Erro ao carregar dashboard controller:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get("/api/dashboard/stats", authenticate, async (req: Request, res: Response) => {
+    try {
+      const { default: dashboardController } = await import('./controllers/dashboardController.js');
+      return dashboardController.obterEstatisticas(req as any, res);
+    } catch (error) {
+      console.error('Erro ao carregar dashboard controller:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get("/api/dashboard/recents", authenticate, async (req: Request, res: Response) => {
+    try {
+      const { default: dashboardController } = await import('./controllers/dashboardController.js');
+      return dashboardController.obterDadosRecentes(req as any, res);
+    } catch (error) {
+      console.error('Erro ao carregar dashboard controller:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get("/api/dashboard/charts", authenticate, async (req: Request, res: Response) => {
+    try {
+      const { default: dashboardController } = await import('./controllers/dashboardController.js');
+      return dashboardController.obterDadosGraficos(req as any, res);
+    } catch (error) {
+      console.error('Erro ao carregar dashboard controller:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
+  app.get("/api/dashboard/activity", authenticate, async (req: Request, res: Response) => {
+    try {
+      const { default: dashboardController } = await import('./controllers/dashboardController.js');
+      return dashboardController.obterResumoAtividade(req as any, res);
+    } catch (error) {
+      console.error('Erro ao carregar dashboard controller:', error);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  });
+
   // API para obter configuração do Cognito das secrets
   app.get("/api/auth/cognito-config", (req: Request, res: Response) => {
     try {
@@ -442,6 +494,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+
 
   // WebSocket setup
   const httpServer = createServer(app);
