@@ -89,6 +89,7 @@ import CalculatorDashboard from "@/pages/teacher/CalculatorDashboard";
 
 import AnalyticsDashboard from "@/pages/teacher/AnalyticsDashboard";
 import TokenDashboard from "@/pages/TokenDashboard";
+import OptimizationsPage from "@/pages/OptimizationsPage";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -160,6 +161,9 @@ function Router() {
       
       {/* Token Dashboard */}
       <Route path="/tokens" component={TokenDashboard} />
+      
+      {/* Optimizations Dashboard */}
+      <Route path="/otimizacoes" component={OptimizationsPage} />
       
       {/* AWS Cognito Dashboards */}
       <Route path="/admin/master" component={AdminMaster} />
