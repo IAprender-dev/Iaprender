@@ -81,6 +81,66 @@ export const usuarios = pgTable('usuarios', {
   atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
 
+// Tabela de Escolas (baseada na estrutura do banco real)
+export const escolas = pgTable('escolas', {
+  id: serial('id').primaryKey(),
+  contratoId: integer('contrato_id'),
+  empresaId: integer('empresa_id'),
+  nome: varchar('nome').notNull(),
+  codigoInep: varchar('codigo_inep'),
+  tipoEscola: varchar('tipo_escola'),
+  telefone: varchar('telefone'),
+  email: varchar('email'),
+  endereco: text('endereco'),
+  cidade: varchar('cidade'),
+  estado: varchar('estado'),
+  status: varchar('status').default('ativa'),
+  criadoEm: timestamp('criado_em').defaultNow(),
+});
+
+// Tabela de Diretores (baseada na estrutura do banco real)
+export const diretores = pgTable('diretores', {
+  id: serial('id').primaryKey(),
+  usrId: integer('usr_id'),
+  escolaId: integer('escola_id'),
+  empresaId: integer('empresa_id'),
+  nome: varchar('nome'),
+  cargo: varchar('cargo'),
+  dataInicio: date('data_inicio'),
+  status: varchar('status').default('ativo'),
+});
+
+// Tabela de Professores (baseada na estrutura do banco real)
+export const professores = pgTable('professores', {
+  id: serial('id').primaryKey(),
+  usrId: integer('usr_id'),
+  escolaId: integer('escola_id'),
+  empresaId: integer('empresa_id'),
+  nome: varchar('nome'),
+  disciplinas: text('disciplinas'),
+  formacao: text('formacao'),
+  dataAdmissao: date('data_admissao'),
+  status: varchar('status').default('ativo'),
+});
+
+// Tabela de Alunos (baseada na estrutura do banco real)
+export const alunos = pgTable('alunos', {
+  id: serial('id').primaryKey(),
+  usrId: integer('usr_id'),
+  escolaId: integer('escola_id'),
+  empresaId: integer('empresa_id'),
+  matricula: varchar('matricula').notNull(),
+  nome: varchar('nome'),
+  turma: varchar('turma'),
+  serie: varchar('serie'),
+  turno: varchar('turno'),
+  nomeResponsavel: varchar('nome_responsavel'),
+  contatoResponsavel: varchar('contato_responsavel'),
+  dataMatricula: date('data_matricula'),
+  status: varchar('status').default('ativo'),
+  criadoEm: timestamp('criado_em').defaultNow(),
+});
+
 // Manter compatibilidade com sistema anterior
 export const users = usuarios;
 
@@ -165,6 +225,129 @@ export const usuariosRelations = relations(usuarios, ({ one, many }) => ({
   usuariosAtualizados: many(usuarios, { relationName: 'usuario_atualizador' }),
 }));
 
+// Relacionamentos das Escolas
+export const escolasRelations = relations(escolas, ({ one, many }) => ({
+  // Uma escola pertence a uma empresa
+  empresa: one(empresas, {
+    fields: [escolas.empresaId],
+    references: [empresas.id],
+    relationName: 'empresa_escolas'
+  }),
+  
+  // Uma escola pertence a um contrato
+  contrato: one(contratos, {
+    fields: [escolas.contratoId],
+    references: [contratos.id],
+    relationName: 'contrato_escolas'
+  }),
+  
+  // Uma escola pode ter muitos diretores
+  diretores: many(diretores, { relationName: 'escola_diretores' }),
+  
+  // Uma escola pode ter muitos professores
+  professores: many(professores, { relationName: 'escola_professores' }),
+  
+  // Uma escola pode ter muitos alunos
+  alunos: many(alunos, { relationName: 'escola_alunos' }),
+}));
+
+// Relacionamentos dos Diretores
+export const diretoresRelations = relations(diretores, ({ one }) => ({
+  // Um diretor pertence a um usuário
+  usuario: one(usuarios, {
+    fields: [diretores.usrId],
+    references: [usuarios.id],
+    relationName: 'usuario_diretor'
+  }),
+  
+  // Um diretor pertence a uma escola
+  escola: one(escolas, {
+    fields: [diretores.escolaId],
+    references: [escolas.id],
+    relationName: 'escola_diretores'
+  }),
+  
+  // Um diretor pertence a uma empresa
+  empresa: one(empresas, {
+    fields: [diretores.empresaId],
+    references: [empresas.id],
+    relationName: 'empresa_diretores'
+  }),
+}));
+
+// Relacionamentos dos Professores
+export const professoresRelations = relations(professores, ({ one }) => ({
+  // Um professor pertence a um usuário
+  usuario: one(usuarios, {
+    fields: [professores.usrId],
+    references: [usuarios.id],
+    relationName: 'usuario_professor'
+  }),
+  
+  // Um professor pertence a uma escola
+  escola: one(escolas, {
+    fields: [professores.escolaId],
+    references: [escolas.id],
+    relationName: 'escola_professores'
+  }),
+  
+  // Um professor pertence a uma empresa
+  empresa: one(empresas, {
+    fields: [professores.empresaId],
+    references: [empresas.id],
+    relationName: 'empresa_professores'
+  }),
+}));
+
+// Relacionamentos dos Alunos
+export const alunosRelations = relations(alunos, ({ one }) => ({
+  // Um aluno pertence a um usuário
+  usuario: one(usuarios, {
+    fields: [alunos.usrId],
+    references: [usuarios.id],
+    relationName: 'usuario_aluno'
+  }),
+  
+  // Um aluno pertence a uma escola
+  escola: one(escolas, {
+    fields: [alunos.escolaId],
+    references: [escolas.id],
+    relationName: 'escola_alunos'
+  }),
+  
+  // Um aluno pertence a uma empresa
+  empresa: one(empresas, {
+    fields: [alunos.empresaId],
+    references: [empresas.id],
+    relationName: 'empresa_alunos'
+  }),
+}));
+
+// Adicionar relacionamentos inversos às empresas
+export const empresasRelationsExtended = relations(empresas, ({ many, one }) => ({
+  // Relacionamentos existentes
+  contratos: many(contratos, { relationName: 'empresa_contratos' }),
+  usuarios: many(usuarios, { relationName: 'empresa_usuarios' }),
+  
+  // Novos relacionamentos
+  escolas: many(escolas, { relationName: 'empresa_escolas' }),
+  diretores: many(diretores, { relationName: 'empresa_diretores' }),
+  professores: many(professores, { relationName: 'empresa_professores' }),
+  alunos: many(alunos, { relationName: 'empresa_alunos' }),
+  
+  // Auditoria
+  criador: one(usuarios, {
+    fields: [empresas.criadoPor],
+    references: [usuarios.id],
+    relationName: 'empresa_criador'
+  }),
+  atualizador: one(usuarios, {
+    fields: [empresas.atualizadoPor],
+    references: [usuarios.id],
+    relationName: 'empresa_atualizador'
+  }),
+}));
+
 // Manter compatibilidade
 export const usersRelations = usuariosRelations;
 
@@ -187,6 +370,24 @@ export const insertUserSchema = createInsertSchema(users).omit({
   atualizadoEm: true,
 });
 
+export const insertEscolaSchema = createInsertSchema(escolas).omit({
+  id: true,
+  criadoEm: true,
+});
+
+export const insertDiretorSchema = createInsertSchema(diretores).omit({
+  id: true,
+});
+
+export const insertProfessorSchema = createInsertSchema(professores).omit({
+  id: true,
+});
+
+export const insertAlunoSchema = createInsertSchema(alunos).omit({
+  id: true,
+  criadoEm: true,
+});
+
 // Tipos
 export type Empresa = typeof empresas.$inferSelect;
 export type InsertEmpresa = z.infer<typeof insertEmpresaSchema>;
@@ -196,3 +397,15 @@ export type InsertContrato = z.infer<typeof insertContratoSchema>;
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type Escola = typeof escolas.$inferSelect;
+export type InsertEscola = z.infer<typeof insertEscolaSchema>;
+
+export type Diretor = typeof diretores.$inferSelect;
+export type InsertDiretor = z.infer<typeof insertDiretorSchema>;
+
+export type Professor = typeof professores.$inferSelect;
+export type InsertProfessor = z.infer<typeof insertProfessorSchema>;
+
+export type Aluno = typeof alunos.$inferSelect;
+export type InsertAluno = z.infer<typeof insertAlunoSchema>;
