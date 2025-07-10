@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Novo Diretor - IAprender</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        /* Professional Theme */
+        .glass-form {
+            backdrop-filter: blur(16px) saturate(180%);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .professional-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* Animações */
+        .field-focus {
+            transition: all 0.3s ease;
+        }
+        
+        .field-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Indicador de força da senha */
+        .password-strength {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+        
+        .strength-weak { background-color: #ef4444; }
+        .strength-medium { background-color: #f59e0b; }
+        .strength-strong { background-color: #10b981; }
+        
+        /* Progress indicator */
+        .progress-step {
+            transition: all 0.3s ease;
+        }
+        
+        .progress-step.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .progress-step.completed {
+            background: #10b981;
+            color: white;
+        }
+    </style>
+</head>
+<body class="professional-gradient min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-3xl">
+        <!-- Header do Formulário -->
+        <div class="text-center mb-8">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <i data-lucide="user-circle" class="h-12 w-12 text-white"></i>
+                <h1 class="text-4xl font-bold text-white">Cadastrar Novo Diretor</h1>
+            </div>
+            <p class="text-white/80 text-lg">
+                Preencha os dados para cadastrar um novo diretor escolar no sistema
+            </p>
+        </div>
+
+        <!-- Indicador de Progresso -->
+        <div class="glass-form rounded-xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-white font-medium">Progresso do Cadastro</span>
+                <span id="progress-text" class="text-white/80 text-sm">0% concluído</span>
+            </div>
+            <div class="w-full bg-white/20 rounded-full h-2">
+                <div id="progress-bar" class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between mt-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="progress-step w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-medium">
+                        1
+                    </div>
+                    <span class="text-white/80">Dados Pessoais</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="progress-step w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-medium">
+                        2
+                    </div>
+                    <span class="text-white/80">Acesso</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="progress-step w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-medium">
+                        3
+                    </div>
+                    <span class="text-white/80">Vinculação</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário Principal -->
+        <form id="form-diretor-criar" 
+              data-endpoint="/api/municipal/directors" 
+              data-method="POST"
+              data-validate="true"
+              class="glass-form rounded-xl p-8">
+            
+            <!-- Seção 1: Dados Pessoais -->
+            <div class="form-section active" data-section="1">
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="user" class="h-6 w-6 text-white"></i>
+                    <h2 class="text-2xl font-bold text-white">Dados Pessoais</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Primeiro Nome -->
+                    <div>
+                        <label for="firstName" class="block text-white font-medium mb-2">
+                            Primeiro Nome *
+                        </label>
+                        <input type="text" 
+                               id="firstName" 
+                               name="firstName"
+                               data-validate="required|minLength:2|maxLength:50"
+                               data-label="Primeiro Nome"
+                               placeholder="João"
+                               class="field-focus w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/40">
+                        <div class="validation-message mt-1 text-red-300 text-sm hidden"></div>
+                    </div>
+                    
+                    <!-- Sobrenome -->
+                    <div>
+                        <label for="lastName" class="block text-white font-medium mb-2">
+                            Sobrenome *
+                        </label>
+                        <input type="text" 
+                               id="lastName" 
+                               name="lastName"
+                               data-validate="required|minLength:2|maxLength:50"
+                               data-label="Sobrenome"
+                               placeholder="Silva Santos"
+                               class="field-focus w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/40">
+                        <div class="validation-message mt-1 text-red-300 text-sm hidden"></div>
+                    </div>
+                    
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-white font-medium mb-2">
+                            Email *
+                        </label>
+                        <input type="email" 
+                               id="email" 
+                               name="email"
+                               data-validate="required|email|unique"
+                               data-label="Email"
+                               placeholder="diretor@escola.edu.br"
+                               class="field-focus w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/40">
+                        <div class="validation-message mt-1 text-red-300 text-sm hidden"></div>
+                        <p class="text-white/60 text-xs mt-1">
+                            Este email será usado para login no sistema
+                        </p>
+                    </div>
+                    
+                    <!-- Telefone -->
+                    <div>
+                        <label for="phone" class="block text-white font-medium mb-2">
+                            Telefone
+                        </label>
+                        <input type="tel" 
+                               id="phone" 
+                               name="phone"
+                               data-validate="telefone_brasileiro"
+                               data-label="Telefone"
+                               data-format="telefone"
+                               placeholder="(11) 99999-9999"
+                               maxlength="15"
+                               class="field-focus w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/40">
+                        <div class="validation-message mt-1 text-red-300 text-sm hidden"></div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mt-8">
+                    <button type="button" 
+                            onclick="nextSection(2)"
+                            class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-all duration-300 flex items-center gap-2">
+                        Continuar
+                        <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Seção 2: Acesso ao Sistema -->
+            <div class="form-section hidden" data-section="2">
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="key" class="h-6 w-6 text-white"></i>
+                    <h2 class="text-2xl font-bold text-white">Acesso ao Sistema</h2>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Senha -->
+                    <div>
+                        <label for="password" class="block text-white font-medium mb-2">
+                            Senha Inicial *
+                        </label>
+                        <input type="password" 
+                               id="password" 
+                               name="password"
+                               data-validate="required|minLength:8|strongPassword"
+                               data-label="Senha"
+                               placeholder="••••••••"
+                               class="field-focus w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/40">
+                        <div class="validation-message mt-1 text-red-300 text-sm hidden"></div>
+                        
+                        <!-- Indicador de força da senha -->
+                        <div class="mt-2">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-white/60 text-xs">Força da senha</span>
+                                <span id="password-strength-text" class="text-white/60 text-xs">-</span>
+                            </div>
+                            <div class="password-strength">
+                                <div id="password-strength-bar" class="password-strength-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <p class="text-white/60 text-xs mt-2">
+                            Mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo
+                        </p>
+                    </div>
+                    
+                    <!-- Confirmar Senha -->
+                    <div>
+                        <label for="confirmPassword" class="block text-white font-medium mb-2">
+                            Confirmar Senha *
+                        </label>
+                        <input type="password" 
+                               id="confirmPassword" 
+                               name="confirmPassword"
+                               data-validate="required|matchField:password"
+                               data-label="Confirmação de Senha"
+                               placeholder="••••••••"
+                               class="field-focus w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur border border-white/20 text-white placeholder-white/60 focus:outline-none focus:border-white/40">
+                        <div class="validation-message mt-1 text-red-300 text-sm hidden"></div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button type="button" 
+                            onclick="previousSection(1)"
+                            class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all duration-300 flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                        Voltar
+                    </button>
+                    <button type="button" 
+                            onclick="nextSection(3)"
+                            class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-all duration-300 flex items-center gap-2">
+                        Continuar
+                        <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Seção 3: Vinculação Institucional -->
+            <div class="form-section hidden" data-section="3">
+                <div class="flex items-center gap-3 mb-6">
+                    <i data-lucide="building" class="h-6 w-6 text-white"></i>
+                    <h2 class="text-2xl font-bold text-white">Vinculação Institucional</h2>
+                </div>
+                
+                <div>
+                    <label for="contractId" class="block text-white font-medium mb-2">
+                        Contrato Vinculado *
+                    </label>
+                    <select id="contractId" 
+                            name="contractId"
+                            data-validate="required"
+                            data-label="Contrato"
+                            class="field-focus w-full px-4 py-3 rounded-lg bg-white/10 backdrop-blur border border-white/20 text-white focus:outline-none focus:border-white/40">
+                        <option value="">Carregando contratos...</option>
+                        <!-- Opções serão carregadas dinamicamente -->
+                    </select>
+                    <div class="validation-message mt-1 text-red-300 text-sm hidden"></div>
+                    <p class="text-white/60 text-xs mt-1">
+                        Selecione o contrato ao qual este diretor será vinculado
+                    </p>
+                </div>
+                
+                <!-- Resumo dos dados -->
+                <div class="mt-8 p-4 bg-white/10 rounded-lg">
+                    <h3 class="text-white font-medium mb-3 flex items-center gap-2">
+                        <i data-lucide="check-circle" class="h-4 w-4"></i>
+                        Resumo dos Dados
+                    </h3>
+                    <div class="grid md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-white/60">Nome:</span>
+                            <span id="summary-name" class="text-white ml-2">-</span>
+                        </div>
+                        <div>
+                            <span class="text-white/60">Email:</span>
+                            <span id="summary-email" class="text-white ml-2">-</span>
+                        </div>
+                        <div>
+                            <span class="text-white/60">Telefone:</span>
+                            <span id="summary-phone" class="text-white ml-2">-</span>
+                        </div>
+                        <div>
+                            <span class="text-white/60">Contrato:</span>
+                            <span id="summary-contract" class="text-white ml-2">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button type="button" 
+                            onclick="previousSection(2)"
+                            class="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all duration-300 flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="h-4 w-4"></i>
+                        Voltar
+                    </button>
+                    <button type="submit" 
+                            id="submit-button"
+                            class="px-8 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition-all duration-300 flex items-center gap-2">
+                        <i data-lucide="user-plus" class="h-4 w-4"></i>
+                        Cadastrar Diretor
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="glass-form rounded-xl p-8 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                <p class="text-white font-medium">Cadastrando diretor...</p>
+                <p class="text-white/60 text-sm">Por favor, aguarde</p>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="success-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="glass-form rounded-xl p-8 text-center max-w-md mx-4">
+                <div class="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="check" class="h-8 w-8 text-white"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">Sucesso!</h3>
+                <p class="text-white/80 mb-6">Diretor cadastrado com sucesso no sistema</p>
+                <button onclick="closeSuccessModal()" 
+                        class="px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg font-medium transition-all duration-300">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicializar Lucide icons
+        lucide.createIcons();
+        
+        // Estado do formulário
+        let currentSection = 1;
+        const totalSections = 3;
+        
+        // Carregar contratos ao inicializar
+        document.addEventListener('DOMContentLoaded', loadContracts);
+        
+        // Navegar entre seções
+        function nextSection(section) {
+            if (validateCurrentSection()) {
+                showSection(section);
+                updateProgress();
+                updateSummary();
+            }
+        }
+        
+        function previousSection(section) {
+            showSection(section);
+            updateProgress();
+        }
+        
+        function showSection(section) {
+            // Esconder todas as seções
+            document.querySelectorAll('.form-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('active');
+            });
+            
+            // Mostrar seção atual
+            const targetSection = document.querySelector(`[data-section="${section}"]`);
+            targetSection.classList.remove('hidden');
+            targetSection.classList.add('active');
+            
+            currentSection = section;
+        }
+        
+        function updateProgress() {
+            const progress = (currentSection / totalSections) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = Math.round(progress) + '% concluído';
+            
+            // Atualizar indicadores de progresso
+            document.querySelectorAll('.progress-step').forEach((step, index) => {
+                const stepNumber = index + 1;
+                step.classList.remove('active', 'completed');
+                
+                if (stepNumber < currentSection) {
+                    step.classList.add('completed');
+                    step.innerHTML = '<i data-lucide="check" class="h-4 w-4"></i>';
+                } else if (stepNumber === currentSection) {
+                    step.classList.add('active');
+                    step.textContent = stepNumber;
+                } else {
+                    step.textContent = stepNumber;
+                }
+            });
+            
+            // Recriar ícones Lucide
+            lucide.createIcons();
+        }
+        
+        function updateSummary() {
+            if (currentSection === 3) {
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const email = document.getElementById('email').value;
+                const phone = document.getElementById('phone').value;
+                const contractSelect = document.getElementById('contractId');
+                const contractText = contractSelect.options[contractSelect.selectedIndex]?.text;
+                
+                document.getElementById('summary-name').textContent = `${firstName} ${lastName}`.trim() || '-';
+                document.getElementById('summary-email').textContent = email || '-';
+                document.getElementById('summary-phone').textContent = phone || '-';
+                document.getElementById('summary-contract').textContent = contractText || '-';
+            }
+        }
+        
+        function validateCurrentSection() {
+            const currentSectionEl = document.querySelector(`[data-section="${currentSection}"]`);
+            const requiredFields = currentSectionEl.querySelectorAll('[data-validate*="required"]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    showFieldError(field, 'Este campo é obrigatório');
+                    isValid = false;
+                } else {
+                    hideFieldError(field);
+                    
+                    // Validação específica para email
+                    if (field.type === 'email' && !isValidEmail(field.value)) {
+                        showFieldError(field, 'Email inválido');
+                        isValid = false;
+                    }
+                    
+                    // Validação de confirmação de senha
+                    if (field.name === 'confirmPassword') {
+                        const password = document.getElementById('password').value;
+                        if (field.value !== password) {
+                            showFieldError(field, 'As senhas não coincidem');
+                            isValid = false;
+                        }
+                    }
+                }
+            });
+            
+            return isValid;
+        }
+        
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        function showFieldError(field, message) {
+            const errorEl = field.nextElementSibling;
+            if (errorEl && errorEl.classList.contains('validation-message')) {
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+            }
+            field.classList.add('border-red-400');
+        }
+        
+        function hideFieldError(field) {
+            const errorEl = field.nextElementSibling;
+            if (errorEl && errorEl.classList.contains('validation-message')) {
+                errorEl.classList.add('hidden');
+            }
+            field.classList.remove('border-red-400');
+        }
+        
+        // Carregar contratos do backend
+        async function loadContracts() {
+            try {
+                const response = await fetch('/api/municipal/contracts/filtered');
+                const contracts = await response.json();
+                
+                const contractSelect = document.getElementById('contractId');
+                contractSelect.innerHTML = '<option value="">Selecione um contrato...</option>';
+                
+                contracts.forEach(contract => {
+                    const option = document.createElement('option');
+                    option.value = contract.id;
+                    option.textContent = `${contract.name} - ${contract.description}`;
+                    contractSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar contratos:', error);
+                const contractSelect = document.getElementById('contractId');
+                contractSelect.innerHTML = '<option value="">Erro ao carregar contratos</option>';
+            }
+        }
+        
+        // Formatação de telefone
+        document.getElementById('phone').addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length >= 11) {
+                value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+            } else if (value.length >= 7) {
+                value = value.replace(/^(\d{2})(\d{4})(\d)/, '($1) $2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+            }
+            this.value = value;
+        });
+        
+        // Indicador de força da senha
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strength = calculatePasswordStrength(password);
+            
+            const strengthBar = document.getElementById('password-strength-bar');
+            const strengthText = document.getElementById('password-strength-text');
+            
+            // Atualizar barra visual
+            strengthBar.style.width = strength.percentage + '%';
+            strengthBar.className = 'password-strength-bar strength-' + strength.level;
+            strengthText.textContent = strength.text;
+        });
+        
+        function calculatePasswordStrength(password) {
+            let score = 0;
+            let text = 'Muito fraca';
+            let level = 'weak';
+            
+            if (password.length >= 8) score += 1;
+            if (/[a-z]/.test(password)) score += 1;
+            if (/[A-Z]/.test(password)) score += 1;
+            if (/[0-9]/.test(password)) score += 1;
+            if (/[^A-Za-z0-9]/.test(password)) score += 1;
+            
+            if (score >= 4) {
+                text = 'Forte';
+                level = 'strong';
+            } else if (score >= 3) {
+                text = 'Média';
+                level = 'medium';
+            } else if (score >= 1) {
+                text = 'Fraca';
+                level = 'weak';
+            }
+            
+            return {
+                percentage: (score / 5) * 100,
+                text: text,
+                level: level
+            };
+        }
+        
+        // Submissão do formulário
+        document.getElementById('form-diretor-criar').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateCurrentSection()) {
+                return;
+            }
+            
+            // Mostrar loading
+            document.getElementById('loading-overlay').classList.remove('hidden');
+            
+            // Coletar dados do formulário
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Remover confirmPassword dos dados enviados
+            delete data.confirmPassword;
+            
+            // Converter contractId para número
+            data.contractId = parseInt(data.contractId);
+            
+            try {
+                const response = await fetch('/api/municipal/directors', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    // Esconder loading e mostrar sucesso
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                    document.getElementById('success-modal').classList.remove('hidden');
+                } else {
+                    throw new Error('Erro ao cadastrar diretor');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('loading-overlay').classList.add('hidden');
+                alert('Erro ao cadastrar diretor. Tente novamente.');
+            }
+        });
+        
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.add('hidden');
+            // Resetar formulário ou redirecionar
+            window.location.reload();
+        }
+        
+        // Navegação por Enter
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.type !== 'submit') {
+                e.preventDefault();
+                const inputs = Array.from(document.querySelectorAll('input, select'));
+                const currentIndex = inputs.indexOf(e.target);
+                if (currentIndex < inputs.length - 1) {
+                    inputs[currentIndex + 1].focus();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -416,6 +416,253 @@ export class FormGenerator {
         ]
       },
 
+      'escola-criar': {
+        id: 'form-escola-criar',
+        title: 'Cadastrar Nova Escola',
+        description: 'Preencha os dados para cadastrar uma nova escola no sistema',
+        icon: 'school',
+        endpoint: '/api/municipal/schools',
+        method: 'POST',
+        fields: [
+          {
+            id: 'name',
+            name: 'name',
+            type: 'text',
+            label: 'Nome da Escola',
+            required: true,
+            validation: 'minLength:2|maxLength:100',
+            placeholder: 'Ex: Escola Municipal João Silva'
+          },
+          {
+            id: 'inep',
+            name: 'inep',
+            type: 'text',
+            label: 'Código INEP',
+            placeholder: '12345678',
+            validation: 'exactLength:8|numeric',
+            help: 'Código de 8 dígitos do Instituto Nacional de Estudos e Pesquisas Educacionais'
+          },
+          {
+            id: 'cnpj',
+            name: 'cnpj',
+            type: 'text',
+            label: 'CNPJ (Opcional)',
+            placeholder: '00.000.000/0000-00',
+            validation: 'cnpj',
+            formatMask: 'cnpj'
+          },
+          {
+            id: 'address',
+            name: 'address',
+            type: 'text',
+            label: 'Endereço Completo',
+            required: true,
+            validation: 'minLength:10|maxLength:200',
+            placeholder: 'Rua, número, bairro'
+          },
+          {
+            id: 'cep',
+            name: 'cep',
+            type: 'text',
+            label: 'CEP',
+            placeholder: '00000-000',
+            validation: 'cep',
+            formatMask: 'cep',
+            autocomplete: 'address',
+            help: 'Preenchimento automático do endereço'
+          },
+          {
+            id: 'city',
+            name: 'city',
+            type: 'text',
+            label: 'Cidade',
+            required: true,
+            validation: 'minLength:2|maxLength:50'
+          },
+          {
+            id: 'state',
+            name: 'state',
+            type: 'select',
+            label: 'Estado',
+            required: true,
+            options: [
+              { value: 'AC', label: 'Acre' },
+              { value: 'AL', label: 'Alagoas' },
+              { value: 'AP', label: 'Amapá' },
+              { value: 'AM', label: 'Amazonas' },
+              { value: 'BA', label: 'Bahia' },
+              { value: 'CE', label: 'Ceará' },
+              { value: 'DF', label: 'Distrito Federal' },
+              { value: 'ES', label: 'Espírito Santo' },
+              { value: 'GO', label: 'Goiás' },
+              { value: 'MA', label: 'Maranhão' },
+              { value: 'MT', label: 'Mato Grosso' },
+              { value: 'MS', label: 'Mato Grosso do Sul' },
+              { value: 'MG', label: 'Minas Gerais' },
+              { value: 'PA', label: 'Pará' },
+              { value: 'PB', label: 'Paraíba' },
+              { value: 'PR', label: 'Paraná' },
+              { value: 'PE', label: 'Pernambuco' },
+              { value: 'PI', label: 'Piauí' },
+              { value: 'RJ', label: 'Rio de Janeiro' },
+              { value: 'RN', label: 'Rio Grande do Norte' },
+              { value: 'RS', label: 'Rio Grande do Sul' },
+              { value: 'RO', label: 'Rondônia' },
+              { value: 'RR', label: 'Roraima' },
+              { value: 'SC', label: 'Santa Catarina' },
+              { value: 'SP', label: 'São Paulo' },
+              { value: 'SE', label: 'Sergipe' },
+              { value: 'TO', label: 'Tocantins' }
+            ]
+          },
+          {
+            id: 'numberOfStudents',
+            name: 'numberOfStudents',
+            type: 'number',
+            label: 'Número de Alunos',
+            placeholder: '0',
+            validation: 'min:0|max:10000',
+            min: 0,
+            max: 10000
+          },
+          {
+            id: 'numberOfTeachers',
+            name: 'numberOfTeachers',
+            type: 'number',
+            label: 'Número de Professores',
+            placeholder: '0',
+            validation: 'min:0|max:1000',
+            min: 0,
+            max: 1000
+          },
+          {
+            id: 'numberOfClassrooms',
+            name: 'numberOfClassrooms',
+            type: 'number',
+            label: 'Número de Salas de Aula',
+            placeholder: '0',
+            validation: 'min:0|max:100',
+            min: 0,
+            max: 100
+          },
+          {
+            id: 'contractId',
+            name: 'contractId',
+            type: 'select',
+            label: 'Contrato Vinculado',
+            required: true,
+            options: [], // Será preenchido dinamicamente
+            help: 'Selecione o contrato ao qual esta escola será vinculada'
+          }
+        ],
+        sections: [
+          { title: 'Informações Básicas', fields: ['name', 'inep', 'cnpj'] },
+          { title: 'Endereço', fields: ['address', 'cep', 'city', 'state'] },
+          { title: 'Capacidade', fields: ['numberOfStudents', 'numberOfTeachers', 'numberOfClassrooms'] },
+          { title: 'Vinculação', fields: ['contractId'] }
+        ],
+        submitText: 'Cadastrar Escola',
+        loadingText: 'Cadastrando escola...',
+        successMessage: 'Escola cadastrada com sucesso!',
+        styling: {
+          theme: 'municipal',
+          progressBar: true,
+          sectionSeparators: true,
+          fieldSpacing: 'comfortable'
+        }
+      },
+
+      'diretor-criar': {
+        id: 'form-diretor-criar',
+        title: 'Cadastrar Novo Diretor',
+        description: 'Preencha os dados para cadastrar um novo diretor escolar',
+        icon: 'user-circle',
+        endpoint: '/api/municipal/directors',
+        method: 'POST',
+        fields: [
+          {
+            id: 'firstName',
+            name: 'firstName',
+            type: 'text',
+            label: 'Primeiro Nome',
+            required: true,
+            validation: 'minLength:2|maxLength:50',
+            placeholder: 'João'
+          },
+          {
+            id: 'lastName',
+            name: 'lastName',
+            type: 'text',
+            label: 'Sobrenome',
+            required: true,
+            validation: 'minLength:2|maxLength:50',
+            placeholder: 'Silva Santos'
+          },
+          {
+            id: 'email',
+            name: 'email',
+            type: 'email',
+            label: 'Email',
+            required: true,
+            validation: 'email|unique',
+            placeholder: 'diretor@escola.edu.br',
+            help: 'Este email será usado para login no sistema'
+          },
+          {
+            id: 'phone',
+            name: 'phone',
+            type: 'tel',
+            label: 'Telefone',
+            placeholder: '(11) 99999-9999',
+            validation: 'telefone_brasileiro',
+            formatMask: 'telefone'
+          },
+          {
+            id: 'password',
+            name: 'password',
+            type: 'password',
+            label: 'Senha Inicial',
+            required: true,
+            validation: 'minLength:8|strongPassword',
+            placeholder: '••••••••',
+            help: 'Senha com no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo',
+            showStrength: true
+          },
+          {
+            id: 'confirmPassword',
+            name: 'confirmPassword',
+            type: 'password',
+            label: 'Confirmar Senha',
+            required: true,
+            validation: 'matchField:password',
+            placeholder: '••••••••'
+          },
+          {
+            id: 'contractId',
+            name: 'contractId',
+            type: 'select',
+            label: 'Contrato Vinculado',
+            required: true,
+            options: [], // Será preenchido dinamicamente
+            help: 'Selecione o contrato ao qual este diretor será vinculado'
+          }
+        ],
+        sections: [
+          { title: 'Dados Pessoais', fields: ['firstName', 'lastName', 'email', 'phone'] },
+          { title: 'Acesso ao Sistema', fields: ['password', 'confirmPassword'] },
+          { title: 'Vinculação Institucional', fields: ['contractId'] }
+        ],
+        submitText: 'Cadastrar Diretor',
+        loadingText: 'Cadastrando diretor...',
+        successMessage: 'Diretor cadastrado com sucesso!',
+        styling: {
+          theme: 'professional',
+          progressBar: true,
+          sectionSeparators: true,
+          fieldSpacing: 'comfortable'
+        }
+      },
+
       'professor-perfil': {
         id: 'form-professor-perfil',
         title: 'Perfil do Professor',
