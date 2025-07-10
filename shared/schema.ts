@@ -64,25 +64,20 @@ export const users = usuarios;
 // Relacionamentos
 export const empresasRelations = relations(empresas, ({ many }) => ({
   contratos: many(contratos),
-  usuarios: many(users),
+  usuarios: many(usuarios),
 }));
 
-export const contratosRelations = relations(contratos, ({ one, many }) => ({
+export const contratosRelations = relations(contratos, ({ one }) => ({
   empresa: one(empresas, {
     fields: [contratos.empresaId],
     references: [empresas.id],
   }),
-  usuarios: many(users),
 }));
 
 export const usersRelations = relations(users, ({ one }) => ({
   empresa: one(empresas, {
-    fields: [users.companyId],
+    fields: [users.empresaId],
     references: [empresas.id],
-  }),
-  contrato: one(contratos, {
-    fields: [users.contractId],
-    references: [contratos.id],
   }),
 }));
 
