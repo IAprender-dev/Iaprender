@@ -34,44 +34,32 @@ export const contratos = pgTable('contratos', {
   numeroLicencas: integer('numero_licencas'),
   valorTotal: doublePrecision('valor_total').notNull(),
   documentoPdf: text('documento_pdf'),
-  status: contractStatusEnum('status').default('active'),
+  status: varchar('status').default('active'),
   criadoEm: timestamp('criado_em').defaultNow(),
 });
 
-// Tabela de Usuários (estrutura real do banco)
-export const users = pgTable('users', {
+// Tabela de Usuários (baseado na estrutura real do banco)
+export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
-  username: text('username'),
-  password: text('password'),
-  firstName: text('first_name'),
-  lastName: text('last_name'),
+  cognitoSub: text('cognito_sub').unique(),
   email: text('email').notNull().unique(),
-  role: text('role'),
-  status: text('status'),
-  firstLogin: boolean('first_login').default(true),
-  forcePasswordChange: boolean('force_password_change').default(false),
-  profileImage: text('profile_image'),
-  contractId: integer('contract_id').references(() => contratos.id),
-  schoolYear: text('school_year'),
-  createdAt: timestamp('created_at').defaultNow(),
-  lastLoginAt: timestamp('last_login_at'),
-  phone: text('phone'),
-  address: text('address'),
-  dateOfBirth: date('date_of_birth'),
-  updatedAt: timestamp('updated_at').defaultNow(),
-  approvedBy: text('approved_by'),
-  approvedAt: timestamp('approved_at'),
-  parentContact: text('parent_contact'),
-  emergencyContact: text('emergency_contact'),
-  parentName: text('parent_name'),
-  parentEmail: text('parent_email'),
-  parentPhone: text('parent_phone'),
-  isMinor: boolean('is_minor').default(false),
-  cognitoUserId: text('cognito_user_id').unique(),
-  cognitoGroup: text('cognito_group'),
-  cognitoStatus: text('cognito_status'),
-  companyId: integer('company_id').references(() => empresas.id),
+  nome: text('nome').notNull(),
+  tipoUsuario: varchar('tipo_usuario').notNull(),
+  empresaId: integer('empresa_id').references(() => empresas.id),
+  telefone: varchar('telefone'),
+  documentoIdentidade: varchar('documento_identidade'),
+  dataNascimento: date('data_nascimento'),
+  genero: varchar('genero'),
+  endereco: text('endereco'),
+  cidade: text('cidade'),
+  estado: varchar('estado', { length: 2 }),
+  fotoPerfil: text('foto_perfil'),
+  criadoEm: timestamp('criado_em').defaultNow(),
+  atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
+
+// Manter compatibilidade com sistema anterior
+export const users = usuarios;
 
 // Relacionamentos
 export const empresasRelations = relations(empresas, ({ many }) => ({

@@ -204,8 +204,7 @@ export class DatabaseStorage implements IStorage {
     
     if (search) {
       whereClause = or(
-        like(contratos.numero, `%${search}%`),
-        like(contratos.nome, `%${search}%`)
+        like(contratos.descricao, `%${search}%`)
       );
     }
 
@@ -232,7 +231,7 @@ export class DatabaseStorage implements IStorage {
       ativos: sql<number>`count(*) filter (where status = 'active')`,
       pendentes: sql<number>`count(*) filter (where status = 'pending')`,
       expirados: sql<number>`count(*) filter (where status = 'expired')`,
-      valorTotal: sql<number>`sum(valor) filter (where status = 'active')`,
+      valorTotal: sql<number>`sum(valor_total) filter (where status = 'active')`,
       vencendo30Dias: sql<number>`count(*) filter (where status = 'active' and data_fim <= current_date + interval '30 days')`
     }).from(contratos);
 
@@ -252,7 +251,7 @@ export class DatabaseStorage implements IStorage {
   async updateContrato(id: number, updateData: Partial<Contrato>): Promise<Contrato | undefined> {
     const [contrato] = await db
       .update(contratos)
-      .set({ ...updateData, atualizadoEm: new Date() })
+      .set(updateData)
       .where(eq(contratos.id, id))
       .returning();
     return contrato || undefined;
