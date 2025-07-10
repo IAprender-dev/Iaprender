@@ -1423,58 +1423,77 @@ function ContratosTab({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Número</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Empresa</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Período</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Ações</TableHead>
+                    <TableHead className="w-[200px]">Identificação</TableHead>
+                    <TableHead>Detalhes do Contrato</TableHead>
+                    <TableHead className="w-[150px]">Valor</TableHead>
+                    <TableHead className="w-[120px]">Status</TableHead>
+                    <TableHead className="w-[100px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {contratos.map((contrato: Contrato) => (
                     <TableRow key={contrato.id}>
                       <TableCell>
-                        <div className="font-medium">{contrato.numero}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{contrato.nome}</div>
-                          <div className="text-sm text-gray-500">{contrato.tipoContrato}</div>
+                        <div className="space-y-1">
+                          <div className="font-bold text-blue-600">{contrato.numero}</div>
+                          <div className="text-xs text-gray-500">
+                            {contrato.tipoContrato && (
+                              <span className="inline-block bg-gray-100 px-2 py-1 rounded-full text-xs">
+                                {contrato.tipoContrato}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        {/* Mostrar nome da empresa se disponível */}
-                        <div className="text-sm">{contrato.empresaId}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">
-                          {new Intl.NumberFormat('pt-BR', { 
-                            style: 'currency', 
-                            currency: contrato.moeda || 'BRL' 
-                          }).format(contrato.valor)}
+                        <div className="space-y-2">
+                          <div className="font-semibold text-gray-900 leading-tight">
+                            {contrato.nome}
+                          </div>
+                          <div className="space-y-1 text-sm text-gray-600">
+                            <div className="flex items-center">
+                              <span className="text-xs font-medium text-gray-500 w-16">Início:</span>
+                              <span>{new Date(contrato.dataInicio).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <span className="text-xs font-medium text-gray-500 w-16">Fim:</span>
+                              <span>{new Date(contrato.dataFim).toLocaleDateString('pt-BR')}</span>
+                            </div>
+                            {contrato.numeroLicencas && (
+                              <div className="flex items-center">
+                                <span className="text-xs font-medium text-gray-500 w-16">Licenças:</span>
+                                <span className="text-blue-600 font-medium">{contrato.numeroLicencas.toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm">
-                          {new Date(contrato.dataInicio).toLocaleDateString()} - 
-                          {new Date(contrato.dataFim).toLocaleDateString()}
+                        <div className="space-y-1">
+                          <div className="font-bold text-green-600 text-lg">
+                            {new Intl.NumberFormat('pt-BR', { 
+                              style: 'currency', 
+                              currency: contrato.moeda || 'BRL' 
+                            }).format(contrato.valorTotal || contrato.valor || 0)}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {contrato.moeda || 'BRL'}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant={
-                          contrato.status === 'active' ? "default" :
-                          contrato.status === 'pending' ? "secondary" :
-                          contrato.status === 'expired' ? "destructive" : "outline"
+                          contrato.status === 'ativo' || contrato.status === 'active' ? "default" :
+                          contrato.status === 'pending' || contrato.status === 'pendente' ? "secondary" :
+                          contrato.status === 'expired' || contrato.status === 'expirado' ? "destructive" : "outline"
                         }>
-                          {contrato.status === 'active' ? 'Ativo' :
-                           contrato.status === 'pending' ? 'Pendente' :
-                           contrato.status === 'expired' ? 'Expirado' : 'Cancelado'}
+                          {contrato.status === 'ativo' || contrato.status === 'active' ? 'Ativo' :
+                           contrato.status === 'pending' || contrato.status === 'pendente' ? 'Pendente' :
+                           contrato.status === 'expired' || contrato.status === 'expirado' ? 'Expirado' : 'Cancelado'}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1">
                           <Button variant="ghost" size="sm" onClick={() => {
                             setSelectedItem(contrato);
                             setIsViewOpen(true);
@@ -1489,7 +1508,7 @@ function ContratosTab({
                               empresaId: contrato.empresaId,
                               dataInicio: contrato.dataInicio ? new Date(contrato.dataInicio).toISOString().split('T')[0] : "",
                               dataFim: contrato.dataFim ? new Date(contrato.dataFim).toISOString().split('T')[0] : "",
-                              valor: contrato.valor?.toString() || "",
+                              valor: (contrato.valorTotal || contrato.valor)?.toString() || "",
                               moeda: contrato.moeda || "BRL",
                               tipoContrato: contrato.tipoContrato || "",
                               descricao: contrato.descricao || "",
