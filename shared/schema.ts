@@ -9,64 +9,68 @@ export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'susp
 export const contractStatusEnum = pgEnum('contract_status', ['active', 'pending', 'expired', 'cancelled']);
 export const cognitoGroupEnum = pgEnum('cognito_group', ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos']);
 
-// Tabela de Empresas
+// Tabela de Empresas (estrutura real do banco)
 export const empresas = pgTable('empresas', {
   id: serial('id').primaryKey(),
   nome: text('nome').notNull(),
   cnpj: varchar('cnpj', { length: 18 }).notNull().unique(),
-  razaoSocial: text('razao_social').notNull(),
   telefone: varchar('telefone', { length: 20 }),
-  email: text('email').notNull(),
+  emailContato: text('email_contato').notNull(),
   endereco: text('endereco'),
   cidade: text('cidade'),
   estado: varchar('estado', { length: 2 }),
-  cep: varchar('cep', { length: 10 }),
-  responsavel: text('responsavel'),
-  cargoResponsavel: text('cargo_responsavel'),
-  observacoes: text('observacoes'),
-  ativo: boolean('ativo').default(true),
+  logo: text('logo'),
+  criadoPor: text('criado_por'),
   criadoEm: timestamp('criado_em').defaultNow(),
-  atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
 
-// Tabela de Contratos
+// Tabela de Contratos (estrutura real do banco)
 export const contratos = pgTable('contratos', {
   id: serial('id').primaryKey(),
-  numero: varchar('numero', { length: 50 }).notNull().unique(),
-  nome: text('nome').notNull(),
   empresaId: integer('empresa_id').notNull().references(() => empresas.id),
+  descricao: text('descricao'),
   dataInicio: date('data_inicio').notNull(),
   dataFim: date('data_fim').notNull(),
-  valor: doublePrecision('valor').notNull(),
-  moeda: varchar('moeda', { length: 3 }).default('BRL'),
+  numeroLicencas: integer('numero_licencas'),
+  valorTotal: doublePrecision('valor_total').notNull(),
+  documentoPdf: text('documento_pdf'),
   status: contractStatusEnum('status').default('active'),
-  tipoContrato: text('tipo_contrato'),
-  descricao: text('descricao'),
-  observacoes: text('observacoes'),
-  arquivo: text('arquivo'),
-  responsavelContrato: text('responsavel_contrato'),
-  emailResponsavel: text('email_responsavel'),
-  telefoneResponsavel: varchar('telefone_responsavel', { length: 20 }),
-  ativo: boolean('ativo').default(true),
   criadoEm: timestamp('criado_em').defaultNow(),
-  atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
 
-// Tabela de Usuários
+// Tabela de Usuários (estrutura real do banco)
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  cognitoSub: text('cognito_sub').unique(),
+  username: text('username'),
+  password: text('password'),
+  firstName: text('first_name'),
+  lastName: text('last_name'),
   email: text('email').notNull().unique(),
-  nome: text('nome').notNull(),
-  role: userRoleEnum('role').default('student'),
-  status: userStatusEnum('status').default('active'),
-  empresaId: integer('empresa_id').references(() => empresas.id),
-  contratoId: integer('contrato_id').references(() => contratos.id),
-  primeiroLogin: boolean('primeiro_login').default(true),
-  ultimoLoginEm: timestamp('ultimo_login_em'),
-  configuracoes: text('configuracoes'),
-  criadoEm: timestamp('criado_em').defaultNow(),
-  atualizadoEm: timestamp('atualizado_em').defaultNow(),
+  role: text('role'),
+  status: text('status'),
+  firstLogin: boolean('first_login').default(true),
+  forcePasswordChange: boolean('force_password_change').default(false),
+  profileImage: text('profile_image'),
+  contractId: integer('contract_id').references(() => contratos.id),
+  schoolYear: text('school_year'),
+  createdAt: timestamp('created_at').defaultNow(),
+  lastLoginAt: timestamp('last_login_at'),
+  phone: text('phone'),
+  address: text('address'),
+  dateOfBirth: date('date_of_birth'),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  approvedBy: text('approved_by'),
+  approvedAt: timestamp('approved_at'),
+  parentContact: text('parent_contact'),
+  emergencyContact: text('emergency_contact'),
+  parentName: text('parent_name'),
+  parentEmail: text('parent_email'),
+  parentPhone: text('parent_phone'),
+  isMinor: boolean('is_minor').default(false),
+  cognitoUserId: text('cognito_user_id').unique(),
+  cognitoGroup: text('cognito_group'),
+  cognitoStatus: text('cognito_status'),
+  companyId: integer('company_id').references(() => empresas.id),
 });
 
 // Relacionamentos
@@ -85,11 +89,11 @@ export const contratosRelations = relations(contratos, ({ one, many }) => ({
 
 export const usersRelations = relations(users, ({ one }) => ({
   empresa: one(empresas, {
-    fields: [users.empresaId],
+    fields: [users.companyId],
     references: [empresas.id],
   }),
   contrato: one(contratos, {
-    fields: [users.contratoId],
+    fields: [users.contractId],
     references: [contratos.id],
   }),
 }));

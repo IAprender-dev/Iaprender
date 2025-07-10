@@ -1,6 +1,15 @@
 import type { Express, Request, Response } from "express";
-// AWS SDK imports serão implementados quando as credenciais estiverem configuradas
-// import { CognitoIdentityProviderClient, AdminListUsersCommand } from "@aws-sdk/client-cognito-identity-provider";
+import { 
+  CognitoIdentityProviderClient, 
+  ListUsersCommand,
+  AdminGetUserCommand, 
+  AdminCreateUserCommand, 
+  AdminSetUserPasswordCommand, 
+  AdminAddUserToGroupCommand, 
+  AdminRemoveUserFromGroupCommand, 
+  ListGroupsCommand, 
+  AdminListGroupsForUserCommand 
+} from "@aws-sdk/client-cognito-identity-provider";
 import jwt from "jsonwebtoken";
 import { db } from "../db";
 import { users } from "../../shared/schema";
@@ -51,9 +60,16 @@ interface PaginationInfo {
   hasPrevPage: boolean;
 }
 
-// Cliente AWS Cognito será inicializado quando as credenciais estiverem nas secrets
-// const cognitoClient = new CognitoIdentityProviderClient({ ... });
-const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID;
+// Cliente AWS Cognito com credenciais das secrets
+const cognitoClient = new CognitoIdentityProviderClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+  }
+});
+
+const USER_POOL_ID = process.env.COGNITO_USER_POOL_ID!;
 
 // Middleware de autenticação JWT
 const authenticate = (req: Request, res: Response, next: any) => {
@@ -97,54 +113,76 @@ export function registerAdminCognitoRoutes(app: Express) {
 
       console.log(`🔍 Listando usuários AWS Cognito - Página: ${currentPage}, Busca: "${search}", Status: "${status}"`);
 
-      // Placeholder para integração com AWS Cognito - requer credenciais configuradas
-      console.log(`🔄 Simulando busca de usuários AWS Cognito...`);
+      // Buscar usuários reais do AWS Cognito com fallback
+      console.log(`🔄 Buscando usuários reais do AWS Cognito...`);
       
-      // Mock de usuários para demonstração (será substituído pela integração real)
-      let cognitoUsers = [
-        {
-          Username: 'admin-001',
-          UserStatus: 'CONFIRMED',
-          Enabled: true,
-          UserCreateDate: new Date(),
-          UserLastModifiedDate: new Date(),
-          Attributes: [
-            { Name: 'email', Value: 'admin@iaprender.com.br' },
-            { Name: 'given_name', Value: 'Administrador' },
-            { Name: 'family_name', Value: 'Sistema' }
-          ]
-        },
-        {
-          Username: 'gestor-001',
-          UserStatus: 'CONFIRMED',
-          Enabled: true,
-          UserCreateDate: new Date(),
-          UserLastModifiedDate: new Date(),
-          Attributes: [
-            { Name: 'email', Value: 'gestor@prefeitura.gov.br' },
-            { Name: 'given_name', Value: 'João' },
-            { Name: 'family_name', Value: 'Silva' }
-          ]
-        }
-      ];
+      let cognitoUsers: any[] = [];
+      let isUsingFallback = false;
+      
+      try {
+        const command = new ListUsersCommand({
+          UserPoolId: USER_POOL_ID,
+          Limit: 60, // AWS permite máximo 60 por requisição
+        });
 
-      console.log(`📊 Encontrados ${cognitoUsers.length} usuários no AWS Cognito`);
+        const cognitoResponse = await cognitoClient.send(command);
+        cognitoUsers = cognitoResponse.Users || [];
+        console.log(`📊 Encontrados ${cognitoUsers.length} usuários reais no AWS Cognito`);
+      } catch (error: any) {
+        console.warn(`⚠️ Erro ao acessar AWS Cognito (possivelmente permissões), usando dados de fallback...`);
+        isUsingFallback = true;
+        
+        // Fallback: buscar usuários locais do banco de dados
+        const localUsers = await db.select().from(users);
+        cognitoUsers = localUsers.map(user => ({
+          Username: user.cognitoUserId || `local-${user.id}`,
+          UserStatus: 'CONFIRMED',
+          Enabled: true,
+          UserCreateDate: user.createdAt,
+          UserLastModifiedDate: user.updatedAt,
+          Attributes: [
+            { Name: 'email', Value: user.email },
+            { Name: 'given_name', Value: user.firstName || 'Nome' },
+            { Name: 'family_name', Value: user.lastName || 'Sobrenome' }
+          ]
+        }));
+        
+        console.log(`📊 Usando fallback: encontrados ${cognitoUsers.length} usuários locais`);
+      }
 
       // Mapear dados dos usuários
       const mappedUsers: CognitoUser[] = await Promise.all(
         cognitoUsers.map(async (user) => {
-          // Mock de grupos baseado no tipo de usuário (será substituído pela integração real)
+          // Buscar grupos reais do usuário ou usar fallback
           let groups: string[] = [];
-          if (user.Username?.includes('admin')) {
-            groups = ['Admin'];
-          } else if (user.Username?.includes('gestor')) {
-            groups = ['Gestores'];
-          } else if (user.Username?.includes('diretor')) {
-            groups = ['Diretores'];
-          } else if (user.Username?.includes('professor')) {
-            groups = ['Professores'];
-          } else if (user.Username?.includes('aluno')) {
-            groups = ['Alunos'];
+          
+          if (!isUsingFallback) {
+            try {
+              const groupsCommand = new AdminListGroupsForUserCommand({
+                UserPoolId: USER_POOL_ID,
+                Username: user.Username!
+              });
+              const groupsResponse = await cognitoClient.send(groupsCommand);
+              groups = groupsResponse.Groups?.map(g => g.GroupName!) || [];
+            } catch (error) {
+              console.warn(`⚠️ Erro ao buscar grupos do usuário ${user.Username}:`, error);
+            }
+          } else {
+            // Fallback: determinar grupo baseado no role local
+            const localUser = await db.query.users.findFirst({
+              where: eq(users.cognitoUserId, user.Username!)
+            });
+            
+            if (localUser?.role) {
+              const roleToGroup: { [key: string]: string } = {
+                'admin': 'Admin',
+                'municipal_manager': 'Gestores',
+                'school_director': 'Diretores',
+                'teacher': 'Professores',
+                'student': 'Alunos'
+              };
+              groups = [roleToGroup[localUser.role] || 'Alunos'];
+            }
           }
 
           // Extrair dados dos atributos
@@ -157,16 +195,16 @@ export function registerAdminCognitoRoutes(app: Express) {
           let localData = null;
           try {
             const localUser = await db.query.users.findFirst({
-              where: eq(users.cognitoSub, user.Username!)
+              where: eq(users.cognitoUserId, user.Username!)
             });
             
             if (localUser) {
               localData = {
                 id: localUser.id,
                 role: localUser.role || 'student',
-                lastLoginAt: localUser.ultimoLoginEm?.toISOString(),
-                firstLogin: localUser.primeiroLogin || true,
-                contractId: localUser.contratoId || undefined
+                lastLoginAt: localUser.lastLoginAt?.toISOString(),
+                firstLogin: localUser.firstLogin || true,
+                contractId: localUser.contractId || undefined
               };
             }
           } catch (error) {
@@ -234,14 +272,73 @@ export function registerAdminCognitoRoutes(app: Express) {
 
       res.json({
         success: true,
+        message: isUsingFallback ? "Dados carregados do banco local (AWS Cognito indisponível)" : "Usuários listados com sucesso",
         users: paginatedUsers,
         statistics,
         pagination,
+        fallbackMode: isUsingFallback,
         timestamp: new Date().toISOString()
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Erro ao listar usuários AWS Cognito:', error);
+      
+      // Se é erro de permissão AWS, usar fallback com dados locais
+      if (error.name === 'AccessDeniedException' || error.message?.includes('not authorized')) {
+        console.log('🔄 Tentando fallback com dados locais...');
+        
+        try {
+          const localUsers = await db.select().from(users);
+          const fallbackUsers = localUsers.map(user => ({
+            cognitoId: user.cognitoUserId || `local-${user.id}`,
+            email: user.email,
+            firstName: user.firstName || 'Nome',
+            lastName: user.lastName || 'Sobrenome',
+            status: 'CONFIRMED',
+            enabled: true,
+            createdDate: user.createdAt?.toISOString() || new Date().toISOString(),
+            lastModifiedDate: user.updatedAt?.toISOString() || new Date().toISOString(),
+            groups: [user.role === 'admin' ? 'Admin' : user.role === 'municipal_manager' ? 'Gestores' : 'Alunos'],
+            localData: {
+              id: user.id,
+              role: user.role || 'student',
+              lastLoginAt: user.lastLoginAt?.toISOString(),
+              firstLogin: user.firstLogin || true,
+              contractId: user.contractId || undefined
+            },
+            contractInfo: null
+          }));
+
+          const statistics = {
+            total: fallbackUsers.length,
+            active: fallbackUsers.filter(u => u.enabled).length,
+            pending: 0,
+            inactive: fallbackUsers.filter(u => !u.enabled).length
+          };
+
+          const pagination = {
+            currentPage: 1,
+            totalPages: 1,
+            totalUsers: fallbackUsers.length,
+            limit: 60,
+            hasNextPage: false,
+            hasPrevPage: false
+          };
+
+          return res.json({
+            success: true,
+            message: 'Dados carregados do banco local (AWS Cognito sem permissões)',
+            users: fallbackUsers,
+            statistics,
+            pagination,
+            fallbackMode: true,
+            timestamp: new Date().toISOString()
+          });
+        } catch (dbError) {
+          console.error('❌ Erro no fallback com banco local:', dbError);
+        }
+      }
+      
       res.status(500).json({
         success: false,
         message: 'Erro ao carregar usuários do AWS Cognito',
@@ -257,22 +354,22 @@ export function registerAdminCognitoRoutes(app: Express) {
 
       console.log(`🔍 Buscando detalhes do usuário: ${cognitoId}`);
 
-      // Mock de resposta do usuário (será substituído pela integração real)
-      const userResponse = {
-        UserStatus: 'CONFIRMED',
-        Enabled: true,
-        UserCreateDate: new Date(),
-        UserLastModifiedDate: new Date(),
-        UserAttributes: [
-          { Name: 'email', Value: `${cognitoId}@exemplo.com` },
-          { Name: 'given_name', Value: 'Usuario' },
-          { Name: 'family_name', Value: 'Teste' }
-        ]
-      };
+      // Buscar usuário real do AWS Cognito
+      const command = new AdminGetUserCommand({
+        UserPoolId: USER_POOL_ID,
+        Username: cognitoId
+      });
 
-      // Mock de grupos
-      const groups = cognitoId.includes('admin') ? ['Admin'] : 
-                    cognitoId.includes('gestor') ? ['Gestores'] : ['Alunos'];
+      const userResponse = await cognitoClient.send(command);
+
+      // Buscar grupos reais
+      const groupsCommand = new AdminListGroupsForUserCommand({
+        UserPoolId: USER_POOL_ID,
+        Username: cognitoId
+      });
+
+      const groupsResponse = await cognitoClient.send(groupsCommand);
+      const groups = groupsResponse.Groups?.map(g => g.GroupName!) || [];
 
       // Buscar dados locais
       let localData = null;
@@ -331,44 +428,13 @@ export function registerAdminCognitoRoutes(app: Express) {
     try {
       console.log('🔍 Listando grupos AWS Cognito disponíveis...');
 
-      // Mock de grupos (será substituído pela integração real)
-      const groups = [
-        {
-          GroupName: 'Admin',
-          Description: 'Administradores do sistema',
-          Precedence: 1,
-          CreationDate: new Date(),
-          LastModifiedDate: new Date()
-        },
-        {
-          GroupName: 'Gestores',
-          Description: 'Gestores municipais',
-          Precedence: 2,
-          CreationDate: new Date(),
-          LastModifiedDate: new Date()
-        },
-        {
-          GroupName: 'Diretores',
-          Description: 'Diretores escolares',
-          Precedence: 3,
-          CreationDate: new Date(),
-          LastModifiedDate: new Date()
-        },
-        {
-          GroupName: 'Professores',
-          Description: 'Professores',
-          Precedence: 4,
-          CreationDate: new Date(),
-          LastModifiedDate: new Date()
-        },
-        {
-          GroupName: 'Alunos',
-          Description: 'Estudantes',
-          Precedence: 5,
-          CreationDate: new Date(),
-          LastModifiedDate: new Date()
-        }
-      ];
+      // Buscar grupos reais do AWS Cognito
+      const command = new ListGroupsCommand({
+        UserPoolId: USER_POOL_ID
+      });
+
+      const response = await cognitoClient.send(command);
+      const groups = response.Groups || [];
 
       console.log(`✅ Encontrados ${groups.length} grupos no AWS Cognito`);
 
@@ -399,19 +465,14 @@ export function registerAdminCognitoRoutes(app: Express) {
     try {
       console.log('📊 Calculando estatísticas dos grupos AWS Cognito...');
 
-      // Mock de usuários para estatísticas (será substituído pela integração real)
-      const allUsers = [
-        { Username: 'admin-001' },
-        { Username: 'gestor-001' },
-        { Username: 'gestor-002' },
-        { Username: 'diretor-001' },
-        { Username: 'diretor-002' },
-        { Username: 'professor-001' },
-        { Username: 'professor-002' },
-        { Username: 'professor-003' },
-        { Username: 'aluno-001' },
-        { Username: 'aluno-002' }
-      ];
+      // Buscar todos os usuários reais
+      const usersCommand = new ListUsersCommand({
+        UserPoolId: USER_POOL_ID,
+        Limit: 60
+      });
+
+      const usersResponse = await cognitoClient.send(usersCommand);
+      const allUsers = usersResponse.Users || [];
 
       // Contar usuários por grupo
       const groupStats: { [key: string]: number } = {
@@ -423,19 +484,28 @@ export function registerAdminCognitoRoutes(app: Express) {
         'SemGrupo': 0
       };
 
-      // Mock de contagem de grupos (será substituído pela integração real)
+      // Contar usuários reais por grupo
       for (const user of allUsers) {
-        if (user.Username?.includes('admin')) {
-          groupStats['Admin']++;
-        } else if (user.Username?.includes('gestor')) {
-          groupStats['Gestores']++;
-        } else if (user.Username?.includes('diretor')) {
-          groupStats['Diretores']++;
-        } else if (user.Username?.includes('professor')) {
-          groupStats['Professores']++;
-        } else if (user.Username?.includes('aluno')) {
-          groupStats['Alunos']++;
-        } else {
+        try {
+          const groupsCommand = new AdminListGroupsForUserCommand({
+            UserPoolId: USER_POOL_ID,
+            Username: user.Username!
+          });
+
+          const groupsResponse = await cognitoClient.send(groupsCommand);
+          const userGroups = groupsResponse.Groups?.map(g => g.GroupName!) || [];
+
+          if (userGroups.length === 0) {
+            groupStats['SemGrupo']++;
+          } else {
+            userGroups.forEach(groupName => {
+              if (groupStats[groupName] !== undefined) {
+                groupStats[groupName]++;
+              }
+            });
+          }
+        } catch (error) {
+          console.warn(`⚠️ Erro ao buscar grupos do usuário ${user.Username}:`, error);
           groupStats['SemGrupo']++;
         }
       }

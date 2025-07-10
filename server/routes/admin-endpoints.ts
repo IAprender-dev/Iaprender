@@ -25,13 +25,31 @@ const authenticate = (req: Request, res: Response, next: any) => {
 
 // Middleware para verificar admin ou gestor
 const requireAdminOrGestor = (req: Request, res: Response, next: any) => {
-  if (!req.user || !['admin', 'gestor', 'municipal_manager'].includes(req.user.role)) {
+  console.log('🔐 Verificando permissões:', { 
+    user: req.user, 
+    tipo_usuario: req.user?.tipo_usuario,
+    role: req.user?.role 
+  });
+  
+  if (!req.user) {
     return res.status(403).json({ 
-      message: 'Acesso negado. Apenas administradores e gestores podem acessar este recurso.',
-      requiredRole: ['admin', 'gestor', 'municipal_manager'],
-      currentRole: req.user?.role || 'none'
+      message: 'Usuário não autenticado',
+      currentRole: 'none'
     });
   }
+
+  // Verificar tanto tipo_usuario quanto role para compatibilidade
+  const allowedTypes = ['admin', 'gestor', 'municipal_manager'];
+  const userType = req.user.tipo_usuario || req.user.role;
+  
+  if (!allowedTypes.includes(userType)) {
+    return res.status(403).json({ 
+      message: 'Acesso negado. Apenas administradores e gestores podem acessar este recurso.',
+      requiredRole: allowedTypes,
+      currentRole: userType || 'none'
+    });
+  }
+  
   next();
 };
 
