@@ -58,23 +58,22 @@ export class DatabaseStorage implements IStorage {
     
     if (search) {
       whereClause = or(
-        like(users.nome, `%${search}%`),
-        like(users.email, `%${search}%`),
-        like(users.tipoUsuario, `%${search}%`)
+        like(users.firstName, `%${search}%`),
+        like(users.lastName, `%${search}%`),
+        like(users.email, `%${search}%`)
       );
     }
 
-    // Não aplicar filtro de status pois a tabela usuarios não possui este campo
-    // if (status && status !== 'all') {
-    //   const statusFilter = eq(users.status, status);
-    //   whereClause = whereClause ? and(whereClause, statusFilter) : statusFilter;
-    // }
+    if (status && status !== 'all') {
+      const statusFilter = eq(users.status, status);
+      whereClause = whereClause ? and(whereClause, statusFilter) : statusFilter;
+    }
 
     const usersList = await db.select().from(users)
       .where(whereClause)
       .limit(limit)
       .offset(offset)
-      .orderBy(desc(users.criadoEm));
+      .orderBy(desc(users.createdAt));
 
     const totalResult = await db.select({ count: sql<number>`count(*)` }).from(users).where(whereClause);
     const total = totalResult[0]?.count || 0;
@@ -83,25 +82,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserStats(): Promise<any> {
-    try {
-      // Usar SQL direto baseado nos campos reais da tabela usuarios
-      const query = `
-        SELECT 
-          COUNT(*) as total,
-          COUNT(*) as ativos,
-          0 as inativos,
-          0 as suspensos,
-          COUNT(CASE WHEN tipo_usuario = 'admin' THEN 1 END) as admins,
-          COUNT(CASE WHEN tipo_usuario = 'gestor' THEN 1 END) as gestores
-        FROM usuarios
-      `;
-      
-      const result = await db.execute(sql.raw(query));
-      return result.rows[0] || { total: 0, ativos: 0, inativos: 0, suspensos: 0, admins: 0, gestores: 0 };
-    } catch (error) {
-      console.error('❌ Erro ao buscar estatísticas dos usuários:', error);
-      return { total: 0, ativos: 0, inativos: 0, suspensos: 0, admins: 0, gestores: 0 };
-    }
+    const statsResult = await db.select({
+      total: sql<number>`count(*)`,
+      ativos: sql<number>`count(*) filter (where status = 'active')`,
+      inativos: sql<number>`count(*) filter (where status = 'inactive')`,
+      suspensos: sql<number>`count(*) filter (where status = 'suspended')`,
+      admins: sql<number>`count(*) filter (where role = 'admin')`,
+      gestores: sql<number>`count(*) filter (where role = 'municipal_manager')`
+    }).from(users);
+
+    return statsResult[0] || { total: 0, ativos: 0, inativos: 0, suspensos: 0, admins: 0, gestores: 0 };
   }
 
   async updateUser(id: number, updateData: Partial<User>): Promise<User | undefined> {

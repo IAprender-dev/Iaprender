@@ -1098,15 +1098,13 @@ function UsuariosTab({
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Tipo de Usuário" />
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os Tipos</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-                <SelectItem value="gestor">Gestor</SelectItem>
-                <SelectItem value="diretor">Diretor</SelectItem>
-                <SelectItem value="professor">Professor</SelectItem>
-                <SelectItem value="aluno">Aluno</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">Ativos</SelectItem>
+                <SelectItem value="inactive">Inativos</SelectItem>
+                <SelectItem value="suspended">Suspensos</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1124,8 +1122,8 @@ function UsuariosTab({
                     <TableHead>Nome</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Tipo</TableHead>
-                    <TableHead>Telefone</TableHead>
-                    <TableHead>Criado em</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Último Login</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
