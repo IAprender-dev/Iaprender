@@ -35,6 +35,7 @@ import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
 
 import AdminUnifiedDashboard from "@/pages/admin/AdminUnifiedDashboard";
 import AdminCRUDDashboard from "@/pages/admin/AdminCRUDDashboard";
+import GestorCRUDDashboard from "@/pages/gestor/GestorCRUDDashboard";
 import CreateUser from "@/pages/admin/CreateUser";
 import ExecutiveDashboard from "@/pages/admin/ExecutiveDashboard";
 import AdvancedToolsDashboard from "@/pages/admin/AdvancedToolsDashboard";
@@ -174,6 +175,7 @@ function Router() {
       <Route path="/admin/master" component={AdminMaster} />
       <Route path="/admin/user-management" component={AdminUnifiedDashboard} />
       <Route path="/gestor/dashboard" component={GestorFormRoutes} />
+      <Route path="/gestor/crud" component={GestorCRUDDashboard} />
       <Route path="/diretor/dashboard" component={SchoolDashboard} />
       <Route path="/professor/dashboard" component={TeacherDashboardNew} />
       <Route path="/aluno/dashboard" component={StudentDashboardNew} />
