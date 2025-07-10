@@ -51,6 +51,22 @@ const answerSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Create an HTTP server
+  const server = createServer(app);
+
+  // Middleware para garantir que requisições de API sejam processadas antes do Vite
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      // Marcar a requisição como processada pela API
+      res.locals.isApiRequest = true;
+      // Garantir que o content-type seja JSON para APIs
+      if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+        res.setHeader('Content-Type', 'application/json');
+      }
+    }
+    next();
+  });
+
   // Rate limiting configurations - more permissive for development
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -193,6 +209,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Middleware para admin ou gestor
   const requireAdminOrGestor = requireUserType(['admin', 'gestor']);
+
+  // Admin routes - High priority routes to avoid conflict with frontend routing
+  app.post("/api/create-user", authenticate, async (req: Request, res: Response) => {
+    try {
+      console.log('🚀 [ADMIN USER CREATE] Dados recebidos:', req.body);
+      
+      // Definir headers para garantir que a resposta seja JSON
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      
+      const { email, firstName, lastName, group, temporaryPassword } = req.body;
+      
+      // Validar campos obrigatórios
+      if (!email || !firstName || !lastName || !group || !temporaryPassword) {
+        return res.status(400).json({
+          success: false,
+          message: "Todos os campos são obrigatórios",
+          missing: {
+            email: !email,
+            firstName: !firstName,
+            lastName: !lastName,
+            group: !group,
+            temporaryPassword: !temporaryPassword
+          }
+        });
+      }
+      
+      // Validar formato do email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          success: false,
+          message: "Formato de email inválido"
+        });
+      }
+      
+      // Validar grupo
+      const validGroups = ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos'];
+      if (!validGroups.includes(group)) {
+        return res.status(400).json({
+          success: false,
+          message: "Grupo de usuário inválido",
+          validGroups
+        });
+      }
+      
+      // Usar o cognitoService para criar o usuário
+      const result = await cognitoService.createUser({
+        email,
+        name: `${firstName} ${lastName}`,
+        group,
+        tempPassword: temporaryPassword
+      });
+      
+      console.log('✅ [ADMIN USER CREATE] Usuário criado no Cognito:', result);
+      
+      res.json({
+        success: true,
+        message: "Usuário criado com sucesso no AWS Cognito",
+        user: {
+          cognitoId: result.userId,
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          group: group,
+          status: "CONFIRMED",
+          enabled: true,
+          createdDate: new Date().toISOString(),
+          tempPassword: result.tempPassword
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ [ADMIN USER CREATE] Erro:', error);
+      
+      let errorMessage = "Erro interno do servidor";
+      let statusCode = 500;
+      
+      if (error.message.includes('already exists')) {
+        errorMessage = "Usuário com este email já existe";
+        statusCode = 409;
+      } else if (error.message.includes('Invalid password')) {
+        errorMessage = "Senha não atende aos critérios de segurança";
+        statusCode = 400;
+      } else if (error.message.includes('Invalid email')) {
+        errorMessage = "Email inválido";
+        statusCode = 400;
+      } else if (error.message.includes('AccessDenied')) {
+        errorMessage = "Acesso negado - verifique as credenciais AWS";
+        statusCode = 403;
+      }
+      
+      res.status(statusCode).json({
+        success: false,
+        message: errorMessage,
+        error: error.message
+      });
+    }
+  });
 
   // Dashboard routes - High priority routes to avoid conflict with frontend routing
   app.get("/api/dashboard/health", async (req: Request, res: Response) => {
@@ -498,8 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // WebSocket setup
-  const httpServer = createServer(app);
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ server: server, path: '/ws' });
 
   interface ExtendedWebSocket extends WebSocket {
     userId?: string;
@@ -685,6 +799,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+
+
   // Placeholder routes that will be implemented with new database structure
   app.get("/api/placeholder", (req: Request, res: Response) => {
     res.json({ 
@@ -695,5 +811,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   console.log("✅ All routes registered successfully (placeholder mode)");
   
-  return httpServer;
+  return server;
 }

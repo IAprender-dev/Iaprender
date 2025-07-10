@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupViteCustom, serveStatic, log } from "./vite-custom";
 import { initializeDatabase } from "./db";
 import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
 // WebSocket import removed - using direct OpenAI Realtime API connection
@@ -68,11 +68,20 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // Middleware para garantir que APIs sejam processadas antes do Vite
+  app.use((req, res, next) => {
+    // Se é uma requisição de API, marcar como processada
+    if (req.path.startsWith('/api/')) {
+      res.locals.isApiRequest = true;
+    }
+    next();
+  });
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    await setupVite(app, server);
+    await setupViteCustom(app, server);
   } else {
     serveStatic(app);
   }

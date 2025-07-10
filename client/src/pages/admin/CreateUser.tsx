@@ -94,7 +94,7 @@ export default function CreateUser() {
     mutationFn: async (data: CreateUserFormData) => {
       console.log('🚀 [CREATE USER] Enviando dados:', data);
       
-      const response = await apiRequest('/api/admin/users/create', {
+      const response = await apiRequest('/api/create-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,13 +108,23 @@ export default function CreateUser() {
         }),
       });
 
+      console.log('📡 [CREATE USER] Response status:', response.status);
+      console.log('📡 [CREATE USER] Response headers:', response.headers);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao criar usuário');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ [CREATE USER] Erro detalhado:', errorData);
+        throw new Error(errorData.message || `Erro HTTP ${response.status}: ${response.statusText}`);
       }
 
       const result = await response.json();
       console.log('✅ [CREATE USER] Usuário criado:', result);
+      
+      // Verificar se a resposta tem a estrutura esperada
+      if (!result.success) {
+        throw new Error(result.message || 'Resposta inválida do servidor');
+      }
+      
       return result;
     },
     onSuccess: (result) => {
