@@ -438,8 +438,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Redirect route for login
   app.get("/start-login", (req: Request, res: Response) => {
-    console.log("🔄 Redirecionamento /start-login -> /auth");
-    res.redirect("/auth");
+    console.log("🔄 Redirecionamento /start-login -> AWS Cognito");
+    
+    // Configurar URL do Cognito diretamente
+    const cognitoUrl = `https://iaprender.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=${process.env.COGNITO_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.COGNITO_REDIRECT_URI || '')}&scope=openid%20email%20profile`;
+    
+    res.redirect(cognitoUrl);
+  });
+
+  // Callback route for AWS Cognito
+  app.get("/callback", async (req: Request, res: Response) => {
+    console.log("🔄 Callback do AWS Cognito recebido");
+    
+    const { code, error } = req.query;
+    
+    if (error) {
+      console.error("❌ Erro na autenticação Cognito:", error);
+      return res.redirect("/auth?error=cognito_error");
+    }
+    
+    if (!code) {
+      console.error("❌ Código de autorização não fornecido");
+      return res.redirect("/auth?error=no_code");
+    }
+    
+    try {
+      // Processar o código de autorização aqui
+      console.log("✅ Código de autorização recebido:", code);
+      
+      // Por enquanto, redirecionar para a página principal
+      res.redirect("/");
+    } catch (error) {
+      console.error("❌ Erro ao processar callback:", error);
+      res.redirect("/auth?error=callback_error");
+    }
   });
 
   // Placeholder routes that will be implemented with new database structure
