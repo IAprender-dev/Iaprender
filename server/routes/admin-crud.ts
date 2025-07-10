@@ -365,25 +365,6 @@ export function registerAdminCRUDEndpoints(app: Express) {
     }
   });
 
-  // GET /api/admin/contracts/stats - Estatísticas de contratos (movido antes da rota com parâmetro)
-  app.get('/api/admin/contracts/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
-    try {
-      const stats = await storage.getContratoStats();
-      res.json({
-        success: true,
-        data: stats,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('❌ Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar estatísticas',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-    }
-  });
-
   // POST /api/admin/contracts - Criar contrato
   app.post('/api/admin/contracts', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
@@ -429,7 +410,26 @@ export function registerAdminCRUDEndpoints(app: Express) {
     }
   });
 
-  // GET /api/admin/contracts/:id - Buscar contrato por ID
+  // GET /api/admin/contracts/stats - Estatísticas de contratos (ANTES da rota /:id)
+  app.get('/api/admin/contracts/stats', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const stats = await storage.getContratoStats();
+      res.json({
+        success: true,
+        data: stats,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  });
+
+  // GET /api/admin/contracts/:id - Buscar contrato por ID (DEPOIS da rota /stats)
   app.get('/api/admin/contracts/:id', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);

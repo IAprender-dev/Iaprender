@@ -372,48 +372,7 @@ export function registerAdminEndpoints(app: Express) {
     }
   });
 
-  // Buscar contrato por ID
-  app.get('/api/admin/contracts/:id', authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      
-      console.log(`🔍 Buscando contrato ID: ${id}`);
-
-      const contrato = await db.query.contratos.findFirst({
-        where: eq(contratos.id, parseInt(id)),
-        with: {
-          empresa: true,
-          usuarios: {
-            limit: 10,
-            orderBy: [desc(users.criadoEm)]
-          }
-        }
-      });
-
-      if (!contrato) {
-        return res.status(404).json({
-          success: false,
-          message: 'Contrato não encontrado'
-        });
-      }
-
-      console.log(`✅ Contrato encontrado: ${contrato.nome}`);
-
-      res.json({
-        success: true,
-        contrato,
-        timestamp: new Date().toISOString()
-      });
-
-    } catch (error) {
-      console.error('❌ Erro ao buscar contrato:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar contrato',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
-      });
-    }
-  });
+  // ROTA REMOVIDA - Duplicada em admin-crud.ts (a implementação correta está lá)
 
   console.log('✅ Endpoints administrativos registrados com sucesso');
 }
