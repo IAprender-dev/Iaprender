@@ -1,0 +1,72 @@
+## 📋 **TAREFA 5: Criar Formulários Dinâmicos**
+
+### Passo 5.1: Gerador de Formulários
+Crie `/src/frontend/utils/formGenerator.js`:
+```javascript
+class FormGenerator {
+  constructor(containerId) {
+    this.container = document.getElementById(containerId);
+  }
+
+  generate(config) {
+    const form = document.createElement('form');
+    form.id = config.id;
+    form.className = 'space-y-4';
+
+    config.fields.forEach(field => {
+      const fieldElement = this.createField(field);
+      form.appendChild(fieldElement);
+    });
+
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.textContent = config.submitText || 'Enviar';
+    submitBtn.className = 'w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700';
+
+    form.appendChild(submitBtn);
+    this.container.appendChild(form);
+
+    return new FormHandler(config.id, {
+      endpoint: config.endpoint,
+      method: config.method,
+      onSuccess: config.onSuccess
+    });
+  }
+
+  createField(field) {
+    const div = document.createElement('div');
+    div.className = 'mb-4';
+
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.className = 'block text-sm font-medium text-gray-700';
+
+    let input;
+    if (field.type === 'select') {
+      input = document.createElement('select');
+      field.options.forEach(option => {
+        const opt = document.createElement('option');
+        opt.value = option.value;
+        opt.textContent = option.text;
+        input.appendChild(opt);
+      });
+    } else {
+      input = document.createElement('input');
+      input.type = field.type || 'text';
+    }
+
+    input.name = field.name;
+    input.className = 'mt-1 block w-full rounded-md border-gray-300 shadow-sm';
+    
+    if (field.required) {
+      input.required = true;
+      input.setAttribute('data-validate', 'required');
+    }
+
+    div.appendChild(label);
+    div.appendChild(input);
+
+    return div;
+  }
+}
+```

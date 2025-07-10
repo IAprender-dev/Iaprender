@@ -1,774 +1,552 @@
 /**
- * GERADOR DE FORMULÁRIOS AUTOMÁTICO - IAPRENDER
+ * GERADOR DE FORMULÁRIOS DINÂMICOS - IAPRENDER
  * 
- * Sistema para gerar formulários HTML a partir de templates
- * e configurações predefinidas.
+ * Classe para gerar formulários HTML dinamicamente com integração completa
+ * ao sistema de autenticação e validação do IAprender
  */
 
+import { FormHandler, createFormHandler } from './formHandler';
+
+// Interfaces para tipagem TypeScript
+interface FormFieldOption {
+  value: string;
+  text: string;
+}
+
 interface FormField {
-  id: string;
   name: string;
-  type: 'text' | 'email' | 'password' | 'tel' | 'cpf' | 'cnpj' | 'cep' | 'select' | 'textarea' | 'date' | 'file' | 'checkbox' | 'radio' | 'hidden';
   label: string;
-  placeholder?: string;
+  type: 'text' | 'email' | 'password' | 'tel' | 'date' | 'select' | 'textarea' | 'number' | 'cpf' | 'cnpj' | 'cep';
   required?: boolean;
+  placeholder?: string;
+  options?: FormFieldOption[];
   validation?: string;
-  format?: string;
-  help?: string;
-  icon?: string;
-  options?: Array<{value: string, label: string}>;
-  value?: string;
-  attributes?: Record<string, any>;
+  mask?: boolean;
+  autocomplete?: string;
+  rows?: number; // Para textarea
+  min?: number; // Para number/date
+  max?: number; // Para number/date
+  step?: number; // Para number
 }
 
 interface FormConfig {
   id: string;
-  title: string;
-  description: string;
-  icon: string;
-  endpoint: string;
-  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  title?: string;
+  description?: string;
   fields: FormField[];
+  endpoint: string;
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   submitText?: string;
-  successMessage?: string;
-  errorMessage?: string;
-  redirectUrl?: string;
-  showProgress?: boolean;
-  autoReset?: boolean;
-  customValidation?: string;
-  onSuccess?: string;
-  onError?: string;
+  resetText?: string;
+  classes?: {
+    form?: string;
+    container?: string;
+    field?: string;
+    label?: string;
+    input?: string;
+    button?: string;
+  };
+  onSuccess?: (response: any) => void;
+  onError?: (error: Error) => void;
+  showReset?: boolean;
+  validateOnChange?: boolean;
+  debug?: boolean;
 }
 
 export class FormGenerator {
-  private templates: Map<string, string> = new Map();
-  private baseTemplate: string = '';
+  private container: HTMLElement | null;
+  private formHandler: FormHandler | null = null;
 
-  constructor() {
-    this.loadTemplates();
-  }
-
-  /**
-   * Carrega todos os templates de campos
-   */
-  private async loadTemplates(): Promise<void> {
-    try {
-      // Carregar template base
-      const baseResponse = await fetch('/src/templates/form-base.html');
-      this.baseTemplate = await baseResponse.text();
-
-      // Carregar templates de campos
-      const fieldsResponse = await fetch('/src/templates/form-fields.html');
-      const fieldsHtml = await fieldsResponse.text();
-
-      // Extrair templates individuais
-      const templateRegex = /<template id="([^"]+)">([\s\S]*?)<\/template>/g;
-      let match;
-
-      while ((match = templateRegex.exec(fieldsHtml)) !== null) {
-        const [, templateId, templateContent] = match;
-        this.templates.set(templateId, templateContent.trim());
-      }
-
-      console.log('📋 Templates carregados:', Array.from(this.templates.keys()));
-    } catch (error) {
-      console.error('❌ Erro ao carregar templates:', error);
-    }
-  }
-
-  /**
-   * Gera um formulário completo a partir da configuração
-   */
-  public generateForm(config: FormConfig): string {
-    if (!this.baseTemplate) {
-      console.error('❌ Template base não carregado');
-      return '';
-    }
-
-    // Gerar campos do formulário
-    const fieldsHtml = config.fields.map(field => this.generateField(field)).join('\n');
-
-    // Substituir placeholders no template base
-    let formHtml = this.baseTemplate
-      .replace(/\{\{FORM_ID\}\}/g, config.id)
-      .replace(/\{\{FORM_TITLE\}\}/g, config.title)
-      .replace(/\{\{FORM_DESCRIPTION\}\}/g, config.description)
-      .replace(/\{\{FORM_ICON\}\}/g, config.icon)
-      .replace(/\{\{ENDPOINT\}\}/g, config.endpoint)
-      .replace(/\{\{METHOD\}\}/g, config.method)
-      .replace(/\{\{FORM_FIELDS\}\}/g, fieldsHtml)
-      .replace(/\{\{SUBMIT_TEXT\}\}/g, config.submitText || 'Enviar')
-      .replace(/\{\{SUCCESS_MESSAGE\}\}/g, config.successMessage || 'Operação realizada com sucesso!')
-      .replace(/\{\{ERROR_MESSAGE\}\}/g, config.errorMessage || 'Ocorreu um erro. Tente novamente.')
-      .replace(/\{\{REDIRECT_URL\}\}/g, config.redirectUrl || '')
-      .replace(/\{\{SHOW_PROGRESS\}\}/g, config.showProgress ? 'true' : 'false')
-      .replace(/\{\{AUTO_RESET\}\}/g, config.autoReset ? 'true' : 'false')
-      .replace(/\{\{CUSTOM_VALIDATION\}\}/g, config.customValidation || 'return null;')
-      .replace(/\{\{ON_SUCCESS_CALLBACK\}\}/g, config.onSuccess || '// Callback de sucesso')
-      .replace(/\{\{ON_ERROR_CALLBACK\}\}/g, config.onError || '// Callback de erro');
-
-    return formHtml;
-  }
-
-  /**
-   * Gera um campo individual a partir da configuração
-   */
-  private generateField(field: FormField): string {
-    const templateId = this.getTemplateId(field.type);
-    const template = this.templates.get(templateId);
-
-    if (!template) {
-      console.warn(`⚠️ Template não encontrado para tipo: ${field.type}`);
-      return `<!-- Campo ${field.type} não encontrado -->`;
-    }
-
-    // Construir validação
-    let validation = '';
-    if (field.required) validation += 'required';
-    if (field.validation) validation += (validation ? '|' : '') + field.validation;
-
-    // Preparar opções para select/radio
-    let optionsHtml = '';
-    if (field.options) {
-      optionsHtml = field.options
-        .map(option => `<option value="${option.value}">${option.label}</option>`)
-        .join('\n');
-    }
-
-    // Substituir placeholders no template
-    let fieldHtml = template
-      .replace(/\{\{FIELD_ID\}\}/g, field.id)
-      .replace(/\{\{FIELD_NAME\}\}/g, field.name)
-      .replace(/\{\{FIELD_LABEL\}\}/g, field.label)
-      .replace(/\{\{PLACEHOLDER\}\}/g, field.placeholder || '')
-      .replace(/\{\{VALIDATION\}\}/g, validation)
-      .replace(/\{\{FORMAT\}\}/g, field.format || '')
-      .replace(/\{\{HELP_TEXT\}\}/g, field.help || '')
-      .replace(/\{\{ICON\}\}/g, field.icon || '')
-      .replace(/\{\{VALUE\}\}/g, field.value || '')
-      .replace(/\{\{OPTIONS\}\}/g, optionsHtml);
-
-    // Lidar com condicionais
-    fieldHtml = this.processConditionals(fieldHtml, {
-      REQUIRED: field.required,
-      ...field.attributes
-    });
-
-    return fieldHtml;
-  }
-
-  /**
-   * Determina o ID do template baseado no tipo do campo
-   */
-  private getTemplateId(type: string): string {
-    const templateMap: Record<string, string> = {
-      'text': 'text-field-template',
-      'email': 'email-field-template',
-      'password': 'password-field-template',
-      'tel': 'phone-field-template',
-      'cpf': 'cpf-field-template',
-      'cnpj': 'cnpj-field-template',
-      'cep': 'cep-field-template',
-      'select': 'select-field-template',
-      'textarea': 'textarea-field-template',
-      'date': 'date-field-template',
-      'file': 'file-field-template',
-      'checkbox': 'checkbox-field-template',
-      'radio': 'radio-group-template',
-      'hidden': 'hidden-field-template'
-    };
-
-    return templateMap[type] || 'text-field-template';
-  }
-
-  /**
-   * Processa condicionais no template ({{#if}}, {{/if}})
-   */
-  private processConditionals(template: string, context: Record<string, any>): string {
-    // Processa {{#if CONDITION}}...{{/if}}
-    let processed = template.replace(/\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (match, condition, content) => {
-      return context[condition] ? content : '';
-    });
-
-    // Processa valores com fallback {{VALUE:default}}
-    processed = processed.replace(/\{\{(\w+):([^}]+)\}\}/g, (match, key, defaultValue) => {
-      return context[key] || defaultValue;
-    });
-
-    return processed;
-  }
-
-  /**
-   * Configurações predefinidas para formulários comuns
-   */
-  public static getPresetConfigs(): Record<string, FormConfig> {
-    return {
-      'usuario-criar': {
-        id: 'form-usuario-criar',
-        title: 'Criar Usuário',
-        description: 'Cadastre um novo usuário no sistema',
-        icon: 'user-plus',
-        endpoint: '/api/usuarios',
-        method: 'POST',
-        showProgress: true,
-        fields: [
-          {
-            id: 'nome',
-            name: 'nome',
-            type: 'text',
-            label: 'Nome Completo',
-            placeholder: 'Digite o nome completo',
-            required: true,
-            validation: 'minLength:2|maxLength:100'
-          },
-          {
-            id: 'email',
-            name: 'email',
-            type: 'email',
-            label: 'Email',
-            placeholder: 'usuario@email.com',
-            required: true
-          },
-          {
-            id: 'cpf',
-            name: 'documento',
-            type: 'cpf',
-            label: 'CPF',
-            required: true
-          },
-          {
-            id: 'telefone',
-            name: 'telefone',
-            type: 'tel',
-            label: 'Telefone',
-            placeholder: '(11) 99999-9999'
-          },
-          {
-            id: 'tipo_usuario',
-            name: 'tipo_usuario',
-            type: 'select',
-            label: 'Tipo de Usuário',
-            required: true,
-            options: [
-              { value: 'admin', label: 'Administrador' },
-              { value: 'gestor', label: 'Gestor' },
-              { value: 'diretor', label: 'Diretor' },
-              { value: 'professor', label: 'Professor' },
-              { value: 'aluno', label: 'Aluno' }
-            ]
-          },
-          {
-            id: 'senha',
-            name: 'senha',
-            type: 'password',
-            label: 'Senha',
-            required: true,
-            validation: 'minLength:8',
-            attributes: { SHOW_STRENGTH: true }
-          }
-        ]
-      },
-
-      'escola-criar': {
-        id: 'form-escola-criar',
-        title: 'Criar Escola',
-        description: 'Cadastre uma nova escola no sistema',
-        icon: 'school',
-        endpoint: '/api/municipal/schools',
-        method: 'POST',
-        showProgress: true,
-        fields: [
-          {
-            id: 'nome',
-            name: 'nome',
-            type: 'text',
-            label: 'Nome da Escola',
-            placeholder: 'Nome completo da escola',
-            required: true,
-            validation: 'minLength:3|maxLength:200'
-          },
-          {
-            id: 'codigo_inep',
-            name: 'codigo_inep',
-            type: 'text',
-            label: 'Código INEP',
-            placeholder: '12345678',
-            required: true,
-            validation: 'pattern:^\\d{8}$',
-            help: 'Código de 8 dígitos do INEP/MEC'
-          },
-          {
-            id: 'tipo_escola',
-            name: 'tipo_escola',
-            type: 'select',
-            label: 'Tipo de Escola',
-            required: true,
-            options: [
-              { value: 'municipal', label: 'Municipal' },
-              { value: 'estadual', label: 'Estadual' },
-              { value: 'federal', label: 'Federal' },
-              { value: 'privada', label: 'Privada' }
-            ]
-          },
-          {
-            id: 'telefone',
-            name: 'telefone',
-            type: 'tel',
-            label: 'Telefone',
-            placeholder: '(11) 3333-4444'
-          },
-          {
-            id: 'email',
-            name: 'email',
-            type: 'email',
-            label: 'Email',
-            placeholder: 'contato@escola.edu.br'
-          },
-          {
-            id: 'cep',
-            name: 'cep',
-            type: 'cep',
-            label: 'CEP',
-            placeholder: '00000-000'
-          },
-          {
-            id: 'endereco',
-            name: 'endereco',
-            type: 'text',
-            label: 'Endereço',
-            placeholder: 'Rua, número, bairro'
-          },
-          {
-            id: 'cidade',
-            name: 'cidade',
-            type: 'text',
-            label: 'Cidade',
-            placeholder: 'Nome da cidade'
-          },
-          {
-            id: 'estado',
-            name: 'estado',
-            type: 'text',
-            label: 'Estado',
-            placeholder: 'SP',
-            validation: 'pattern:^[A-Z]{2}$|maxLength:2'
-          }
-        ]
-      },
-
-      'contato': {
-        id: 'form-contato',
-        title: 'Entre em Contato',
-        description: 'Envie sua mensagem ou dúvida',
-        icon: 'mail',
-        endpoint: '/api/contato',
-        method: 'POST',
-        autoReset: true,
-        fields: [
-          {
-            id: 'nome',
-            name: 'nome',
-            type: 'text',
-            label: 'Seu Nome',
-            placeholder: 'Como devemos te chamar?',
-            required: true,
-            validation: 'minLength:2'
-          },
-          {
-            id: 'email',
-            name: 'email',
-            type: 'email',
-            label: 'Seu Email',
-            placeholder: 'para respondermos você',
-            required: true
-          },
-          {
-            id: 'telefone',
-            name: 'telefone',
-            type: 'tel',
-            label: 'Telefone',
-            placeholder: '(opcional)'
-          },
-          {
-            id: 'assunto',
-            name: 'assunto',
-            type: 'select',
-            label: 'Assunto',
-            required: true,
-            options: [
-              { value: 'duvida', label: 'Dúvida Geral' },
-              { value: 'suporte', label: 'Suporte Técnico' },
-              { value: 'comercial', label: 'Comercial' },
-              { value: 'parceria', label: 'Parceria' },
-              { value: 'outro', label: 'Outro' }
-            ]
-          },
-          {
-            id: 'mensagem',
-            name: 'mensagem',
-            type: 'textarea',
-            label: 'Sua Mensagem',
-            placeholder: 'Descreva sua dúvida ou necessidade...',
-            required: true,
-            validation: 'minLength:10|maxLength:1000',
-            attributes: { ROWS: 5, MAX_LENGTH: 1000 }
-          }
-        ]
-      },
-
-      'escola-criar': {
-        id: 'form-escola-criar',
-        title: 'Cadastrar Nova Escola',
-        description: 'Preencha os dados para cadastrar uma nova escola no sistema',
-        icon: 'school',
-        endpoint: '/api/municipal/schools',
-        method: 'POST',
-        fields: [
-          {
-            id: 'name',
-            name: 'name',
-            type: 'text',
-            label: 'Nome da Escola',
-            required: true,
-            validation: 'minLength:2|maxLength:100',
-            placeholder: 'Ex: Escola Municipal João Silva'
-          },
-          {
-            id: 'inep',
-            name: 'inep',
-            type: 'text',
-            label: 'Código INEP',
-            placeholder: '12345678',
-            validation: 'exactLength:8|numeric',
-            help: 'Código de 8 dígitos do Instituto Nacional de Estudos e Pesquisas Educacionais'
-          },
-          {
-            id: 'cnpj',
-            name: 'cnpj',
-            type: 'text',
-            label: 'CNPJ (Opcional)',
-            placeholder: '00.000.000/0000-00',
-            validation: 'cnpj',
-            formatMask: 'cnpj'
-          },
-          {
-            id: 'address',
-            name: 'address',
-            type: 'text',
-            label: 'Endereço Completo',
-            required: true,
-            validation: 'minLength:10|maxLength:200',
-            placeholder: 'Rua, número, bairro'
-          },
-          {
-            id: 'cep',
-            name: 'cep',
-            type: 'text',
-            label: 'CEP',
-            placeholder: '00000-000',
-            validation: 'cep',
-            formatMask: 'cep',
-            autocomplete: 'address',
-            help: 'Preenchimento automático do endereço'
-          },
-          {
-            id: 'city',
-            name: 'city',
-            type: 'text',
-            label: 'Cidade',
-            required: true,
-            validation: 'minLength:2|maxLength:50'
-          },
-          {
-            id: 'state',
-            name: 'state',
-            type: 'select',
-            label: 'Estado',
-            required: true,
-            options: [
-              { value: 'AC', label: 'Acre' },
-              { value: 'AL', label: 'Alagoas' },
-              { value: 'AP', label: 'Amapá' },
-              { value: 'AM', label: 'Amazonas' },
-              { value: 'BA', label: 'Bahia' },
-              { value: 'CE', label: 'Ceará' },
-              { value: 'DF', label: 'Distrito Federal' },
-              { value: 'ES', label: 'Espírito Santo' },
-              { value: 'GO', label: 'Goiás' },
-              { value: 'MA', label: 'Maranhão' },
-              { value: 'MT', label: 'Mato Grosso' },
-              { value: 'MS', label: 'Mato Grosso do Sul' },
-              { value: 'MG', label: 'Minas Gerais' },
-              { value: 'PA', label: 'Pará' },
-              { value: 'PB', label: 'Paraíba' },
-              { value: 'PR', label: 'Paraná' },
-              { value: 'PE', label: 'Pernambuco' },
-              { value: 'PI', label: 'Piauí' },
-              { value: 'RJ', label: 'Rio de Janeiro' },
-              { value: 'RN', label: 'Rio Grande do Norte' },
-              { value: 'RS', label: 'Rio Grande do Sul' },
-              { value: 'RO', label: 'Rondônia' },
-              { value: 'RR', label: 'Roraima' },
-              { value: 'SC', label: 'Santa Catarina' },
-              { value: 'SP', label: 'São Paulo' },
-              { value: 'SE', label: 'Sergipe' },
-              { value: 'TO', label: 'Tocantins' }
-            ]
-          },
-          {
-            id: 'numberOfStudents',
-            name: 'numberOfStudents',
-            type: 'number',
-            label: 'Número de Alunos',
-            placeholder: '0',
-            validation: 'min:0|max:10000',
-            min: 0,
-            max: 10000
-          },
-          {
-            id: 'numberOfTeachers',
-            name: 'numberOfTeachers',
-            type: 'number',
-            label: 'Número de Professores',
-            placeholder: '0',
-            validation: 'min:0|max:1000',
-            min: 0,
-            max: 1000
-          },
-          {
-            id: 'numberOfClassrooms',
-            name: 'numberOfClassrooms',
-            type: 'number',
-            label: 'Número de Salas de Aula',
-            placeholder: '0',
-            validation: 'min:0|max:100',
-            min: 0,
-            max: 100
-          },
-          {
-            id: 'contractId',
-            name: 'contractId',
-            type: 'select',
-            label: 'Contrato Vinculado',
-            required: true,
-            options: [], // Será preenchido dinamicamente
-            help: 'Selecione o contrato ao qual esta escola será vinculada'
-          }
-        ],
-        sections: [
-          { title: 'Informações Básicas', fields: ['name', 'inep', 'cnpj'] },
-          { title: 'Endereço', fields: ['address', 'cep', 'city', 'state'] },
-          { title: 'Capacidade', fields: ['numberOfStudents', 'numberOfTeachers', 'numberOfClassrooms'] },
-          { title: 'Vinculação', fields: ['contractId'] }
-        ],
-        submitText: 'Cadastrar Escola',
-        loadingText: 'Cadastrando escola...',
-        successMessage: 'Escola cadastrada com sucesso!',
-        styling: {
-          theme: 'municipal',
-          progressBar: true,
-          sectionSeparators: true,
-          fieldSpacing: 'comfortable'
-        }
-      },
-
-      'diretor-criar': {
-        id: 'form-diretor-criar',
-        title: 'Cadastrar Novo Diretor',
-        description: 'Preencha os dados para cadastrar um novo diretor escolar',
-        icon: 'user-circle',
-        endpoint: '/api/municipal/directors',
-        method: 'POST',
-        fields: [
-          {
-            id: 'firstName',
-            name: 'firstName',
-            type: 'text',
-            label: 'Primeiro Nome',
-            required: true,
-            validation: 'minLength:2|maxLength:50',
-            placeholder: 'João'
-          },
-          {
-            id: 'lastName',
-            name: 'lastName',
-            type: 'text',
-            label: 'Sobrenome',
-            required: true,
-            validation: 'minLength:2|maxLength:50',
-            placeholder: 'Silva Santos'
-          },
-          {
-            id: 'email',
-            name: 'email',
-            type: 'email',
-            label: 'Email',
-            required: true,
-            validation: 'email|unique',
-            placeholder: 'diretor@escola.edu.br',
-            help: 'Este email será usado para login no sistema'
-          },
-          {
-            id: 'phone',
-            name: 'phone',
-            type: 'tel',
-            label: 'Telefone',
-            placeholder: '(11) 99999-9999',
-            validation: 'telefone_brasileiro',
-            formatMask: 'telefone'
-          },
-          {
-            id: 'password',
-            name: 'password',
-            type: 'password',
-            label: 'Senha Inicial',
-            required: true,
-            validation: 'minLength:8|strongPassword',
-            placeholder: '••••••••',
-            help: 'Senha com no mínimo 8 caracteres, incluindo maiúscula, minúscula, número e símbolo',
-            showStrength: true
-          },
-          {
-            id: 'confirmPassword',
-            name: 'confirmPassword',
-            type: 'password',
-            label: 'Confirmar Senha',
-            required: true,
-            validation: 'matchField:password',
-            placeholder: '••••••••'
-          },
-          {
-            id: 'contractId',
-            name: 'contractId',
-            type: 'select',
-            label: 'Contrato Vinculado',
-            required: true,
-            options: [], // Será preenchido dinamicamente
-            help: 'Selecione o contrato ao qual este diretor será vinculado'
-          }
-        ],
-        sections: [
-          { title: 'Dados Pessoais', fields: ['firstName', 'lastName', 'email', 'phone'] },
-          { title: 'Acesso ao Sistema', fields: ['password', 'confirmPassword'] },
-          { title: 'Vinculação Institucional', fields: ['contractId'] }
-        ],
-        submitText: 'Cadastrar Diretor',
-        loadingText: 'Cadastrando diretor...',
-        successMessage: 'Diretor cadastrado com sucesso!',
-        styling: {
-          theme: 'professional',
-          progressBar: true,
-          sectionSeparators: true,
-          fieldSpacing: 'comfortable'
-        }
-      },
-
-      'professor-perfil': {
-        id: 'form-professor-perfil',
-        title: 'Perfil do Professor',
-        description: 'Atualize suas informações profissionais',
-        icon: 'user-check',
-        endpoint: '/api/usuarios/me',
-        method: 'PATCH',
-        fields: [
-          {
-            id: 'nome',
-            name: 'nome',
-            type: 'text',
-            label: 'Nome Completo',
-            required: true,
-            validation: 'minLength:2|maxLength:100'
-          },
-          {
-            id: 'email',
-            name: 'email',
-            type: 'email',
-            label: 'Email',
-            required: true,
-            attributes: { READONLY: true },
-            help: 'Email não pode ser alterado'
-          },
-          {
-            id: 'telefone',
-            name: 'telefone',
-            type: 'tel',
-            label: 'Telefone',
-            placeholder: '(11) 99999-9999'
-          },
-          {
-            id: 'formacao',
-            name: 'formacao',
-            type: 'text',
-            label: 'Formação Acadêmica',
-            placeholder: 'Ex: Licenciatura em Matemática',
-            validation: 'maxLength:200'
-          },
-          {
-            id: 'disciplinas',
-            name: 'disciplinas',
-            type: 'text',
-            label: 'Disciplinas que Leciona',
-            placeholder: 'Ex: Matemática, Física',
-            help: 'Separe as disciplinas por vírgula'
-          },
-          {
-            id: 'bio',
-            name: 'bio',
-            type: 'textarea',
-            label: 'Biografia Profissional',
-            placeholder: 'Conte um pouco sobre sua experiência...',
-            validation: 'maxLength:500',
-            attributes: { ROWS: 4, MAX_LENGTH: 500 }
-          }
-        ]
-      }
-    };
-  }
-
-  /**
-   * Gera um formulário a partir de um preset
-   */
-  public generatePresetForm(presetName: string): string {
-    const presets = FormGenerator.getPresetConfigs();
-    const config = presets[presetName];
-
-    if (!config) {
-      console.error(`❌ Preset '${presetName}' não encontrado`);
-      return '';
-    }
-
-    return this.generateForm(config);
-  }
-
-  /**
-   * Salva um formulário gerado como arquivo HTML
-   */
-  public async saveFormToFile(config: FormConfig, filename?: string): Promise<string> {
-    const formHtml = this.generateForm(config);
-    const fileName = filename || `${config.id}.html`;
+  constructor(containerId: string) {
+    this.container = document.getElementById(containerId);
     
-    // Em um ambiente real, isso salvaria no sistema de arquivos
-    console.log(`💾 Formulário gerado: ${fileName}`);
-    console.log('📝 HTML gerado:', formHtml.length, 'caracteres');
+    if (!this.container) {
+      console.error(`🚨 FormGenerator: Container com ID "${containerId}" não encontrado`);
+      throw new Error(`Container com ID "${containerId}" não encontrado`);
+    }
+  }
+
+  /**
+   * Gera um formulário dinâmico baseado na configuração
+   */
+  generate(config: FormConfig): FormHandler {
+    if (!this.container) {
+      throw new Error('Container não inicializado');
+    }
+
+    // Limpa o container
+    this.container.innerHTML = '';
+
+    // Cria wrapper do formulário
+    const wrapper = this.createFormWrapper(config);
     
-    return formHtml;
+    // Cria o formulário
+    const form = this.createForm(config);
+    
+    // Adiciona título e descrição se fornecidos
+    if (config.title || config.description) {
+      const header = this.createFormHeader(config);
+      wrapper.appendChild(header);
+    }
+
+    // Cria campos do formulário
+    config.fields.forEach(field => {
+      const fieldElement = this.createField(field, config.classes);
+      form.appendChild(fieldElement);
+    });
+
+    // Cria botões do formulário
+    const buttonsContainer = this.createFormButtons(config);
+    form.appendChild(buttonsContainer);
+
+    wrapper.appendChild(form);
+    this.container.appendChild(wrapper);
+
+    // Aplica máscaras brasileiras nos campos
+    this.applyBrazilianMasks();
+
+    // Inicializa FormHandler com autenticação
+    this.formHandler = createFormHandler(config.id, {
+      endpoint: config.endpoint,
+      method: config.method || 'POST',
+      validateOnSubmit: true,
+      onSuccess: config.onSuccess || ((response) => {
+        console.log('✅ Formulário enviado com sucesso:', response);
+        this.showSuccessMessage('Formulário enviado com sucesso!');
+      }),
+      onError: config.onError || ((error) => {
+        console.error('❌ Erro ao enviar formulário:', error);
+        this.showErrorMessage(`Erro: ${error.message}`);
+      }),
+      debug: config.debug || false
+    });
+
+    // Configura evento de reset se habilitado
+    if (config.showReset) {
+      this.setupResetButton(config.id);
+    }
+
+    return this.formHandler;
+  }
+
+  /**
+   * Cria wrapper do formulário com classes CSS
+   */
+  private createFormWrapper(config: FormConfig): HTMLElement {
+    const wrapper = document.createElement('div');
+    wrapper.className = config.classes?.container || 'max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md';
+    
+    return wrapper;
+  }
+
+  /**
+   * Cria elemento form base
+   */
+  private createForm(config: FormConfig): HTMLFormElement {
+    const form = document.createElement('form');
+    form.id = config.id;
+    form.className = config.classes?.form || 'space-y-6';
+    form.noValidate = true; // Usamos validação customizada
+    
+    return form;
+  }
+
+  /**
+   * Cria cabeçalho do formulário
+   */
+  private createFormHeader(config: FormConfig): HTMLElement {
+    const header = document.createElement('div');
+    header.className = 'mb-8 text-center';
+
+    if (config.title) {
+      const title = document.createElement('h2');
+      title.className = 'text-2xl font-bold text-gray-900 mb-2';
+      title.textContent = config.title;
+      header.appendChild(title);
+    }
+
+    if (config.description) {
+      const description = document.createElement('p');
+      description.className = 'text-gray-600';
+      description.textContent = config.description;
+      header.appendChild(description);
+    }
+
+    return header;
+  }
+
+  /**
+   * Cria um campo do formulário
+   */
+  private createField(field: FormField, classes?: FormConfig['classes']): HTMLElement {
+    const fieldContainer = document.createElement('div');
+    fieldContainer.className = classes?.field || 'mb-6';
+
+    // Label
+    const label = document.createElement('label');
+    label.setAttribute('for', field.name);
+    label.className = classes?.label || 'block text-sm font-medium text-gray-700 mb-2';
+    label.textContent = field.label + (field.required ? ' *' : '');
+
+    // Campo de entrada
+    let input: HTMLElement;
+
+    switch (field.type) {
+      case 'select':
+        input = this.createSelectField(field);
+        break;
+      case 'textarea':
+        input = this.createTextareaField(field);
+        break;
+      default:
+        input = this.createInputField(field);
+        break;
+    }
+
+    input.className = classes?.input || 'w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200';
+
+    // Aplica validações
+    this.applyFieldValidation(input, field);
+
+    fieldContainer.appendChild(label);
+    fieldContainer.appendChild(input);
+
+    return fieldContainer;
+  }
+
+  /**
+   * Cria campo select
+   */
+  private createSelectField(field: FormField): HTMLSelectElement {
+    const select = document.createElement('select');
+    select.id = field.name;
+    select.name = field.name;
+
+    // Opção padrão
+    if (!field.required) {
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = `Selecione ${field.label.toLowerCase()}`;
+      select.appendChild(defaultOption);
+    }
+
+    // Adiciona opções
+    field.options?.forEach(option => {
+      const opt = document.createElement('option');
+      opt.value = option.value;
+      opt.textContent = option.text;
+      select.appendChild(opt);
+    });
+
+    return select;
+  }
+
+  /**
+   * Cria campo textarea
+   */
+  private createTextareaField(field: FormField): HTMLTextAreaElement {
+    const textarea = document.createElement('textarea');
+    textarea.id = field.name;
+    textarea.name = field.name;
+    textarea.rows = field.rows || 4;
+    
+    if (field.placeholder) {
+      textarea.placeholder = field.placeholder;
+    }
+
+    return textarea;
+  }
+
+  /**
+   * Cria campo input
+   */
+  private createInputField(field: FormField): HTMLInputElement {
+    const input = document.createElement('input');
+    input.id = field.name;
+    input.name = field.name;
+    
+    // Define tipo do input baseado no tipo do campo
+    switch (field.type) {
+      case 'cpf':
+      case 'cnpj':
+      case 'cep':
+      case 'tel':
+        input.type = 'text';
+        break;
+      default:
+        input.type = field.type;
+        break;
+    }
+
+    // Atributos opcionais
+    if (field.placeholder) {
+      input.placeholder = field.placeholder;
+    }
+
+    if (field.autocomplete) {
+      input.autocomplete = field.autocomplete;
+    }
+
+    if (field.min !== undefined) {
+      input.min = field.min.toString();
+    }
+
+    if (field.max !== undefined) {
+      input.max = field.max.toString();
+    }
+
+    if (field.step !== undefined) {
+      input.step = field.step.toString();
+    }
+
+    return input;
+  }
+
+  /**
+   * Aplica validação ao campo
+   */
+  private applyFieldValidation(input: HTMLElement, field: FormField): void {
+    if (field.required) {
+      input.setAttribute('required', 'true');
+      input.setAttribute('data-validate', 'required');
+    }
+
+    // Validações específicas por tipo
+    switch (field.type) {
+      case 'email':
+        input.setAttribute('data-validate', (input.getAttribute('data-validate') || '') + '|email');
+        break;
+      case 'cpf':
+        input.setAttribute('data-validate', (input.getAttribute('data-validate') || '') + '|cpf');
+        input.setAttribute('data-mask', 'cpf');
+        break;
+      case 'cnpj':
+        input.setAttribute('data-validate', (input.getAttribute('data-validate') || '') + '|cnpj');
+        input.setAttribute('data-mask', 'cnpj');
+        break;
+      case 'tel':
+        input.setAttribute('data-validate', (input.getAttribute('data-validate') || '') + '|phone');
+        input.setAttribute('data-mask', 'phone');
+        break;
+      case 'cep':
+        input.setAttribute('data-validate', (input.getAttribute('data-validate') || '') + '|cep');
+        input.setAttribute('data-mask', 'cep');
+        break;
+    }
+
+    // Validação customizada
+    if (field.validation) {
+      input.setAttribute('data-validate', field.validation);
+    }
+  }
+
+  /**
+   * Cria botões do formulário
+   */
+  private createFormButtons(config: FormConfig): HTMLElement {
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.className = 'flex space-x-4 pt-6';
+
+    // Botão submit
+    const submitBtn = document.createElement('button');
+    submitBtn.type = 'submit';
+    submitBtn.textContent = config.submitText || 'Enviar';
+    submitBtn.className = config.classes?.button || 'flex-1 bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-medium';
+
+    buttonsContainer.appendChild(submitBtn);
+
+    // Botão reset (opcional)
+    if (config.showReset) {
+      const resetBtn = document.createElement('button');
+      resetBtn.type = 'button';
+      resetBtn.id = `${config.id}-reset`;
+      resetBtn.textContent = config.resetText || 'Limpar';
+      resetBtn.className = 'flex-1 bg-gray-500 text-white py-3 px-6 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 font-medium';
+
+      buttonsContainer.appendChild(resetBtn);
+    }
+
+    return buttonsContainer;
+  }
+
+  /**
+   * Aplica máscaras brasileiras nos campos
+   */
+  private applyBrazilianMasks(): void {
+    // CPF
+    const cpfFields = document.querySelectorAll('[data-mask="cpf"]');
+    cpfFields.forEach(field => {
+      field.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        target.value = this.maskCPF(target.value);
+      });
+    });
+
+    // CNPJ
+    const cnpjFields = document.querySelectorAll('[data-mask="cnpj"]');
+    cnpjFields.forEach(field => {
+      field.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        target.value = this.maskCNPJ(target.value);
+      });
+    });
+
+    // Telefone
+    const phoneFields = document.querySelectorAll('[data-mask="phone"]');
+    phoneFields.forEach(field => {
+      field.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        target.value = this.maskPhone(target.value);
+      });
+    });
+
+    // CEP
+    const cepFields = document.querySelectorAll('[data-mask="cep"]');
+    cepFields.forEach(field => {
+      field.addEventListener('input', (e) => {
+        const target = e.target as HTMLInputElement;
+        target.value = this.maskCEP(target.value);
+      });
+    });
+  }
+
+  /**
+   * Máscaras brasileiras
+   */
+  private maskCPF(value: string): string {
+    value = value.replace(/\D/g, '');
+    value = value.substring(0, 11);
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    return value;
+  }
+
+  private maskCNPJ(value: string): string {
+    value = value.replace(/\D/g, '');
+    value = value.substring(0, 14);
+    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    return value;
+  }
+
+  private maskPhone(value: string): string {
+    value = value.replace(/\D/g, '');
+    value = value.substring(0, 11);
+    if (value.length <= 10) {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+    return value;
+  }
+
+  private maskCEP(value: string): string {
+    value = value.replace(/\D/g, '');
+    value = value.substring(0, 8);
+    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    return value;
+  }
+
+  /**
+   * Configura evento de reset
+   */
+  private setupResetButton(formId: string): void {
+    const resetBtn = document.getElementById(`${formId}-reset`);
+    if (resetBtn && this.formHandler) {
+      resetBtn.addEventListener('click', () => {
+        this.formHandler?.reset();
+        this.clearMessages();
+      });
+    }
+  }
+
+  /**
+   * Mostra mensagem de sucesso
+   */
+  private showSuccessMessage(message: string): void {
+    this.clearMessages();
+    const successDiv = document.createElement('div');
+    successDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 flex items-center';
+    successDiv.innerHTML = `
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+      </svg>
+      <span>${message}</span>
+    `;
+    successDiv.id = 'form-success-message';
+    
+    if (this.container) {
+      this.container.insertBefore(successDiv, this.container.firstChild);
+      
+      // Remove automaticamente após 5 segundos
+      setTimeout(() => {
+        successDiv.remove();
+      }, 5000);
+    }
+  }
+
+  /**
+   * Mostra mensagem de erro
+   */
+  private showErrorMessage(message: string): void {
+    this.clearMessages();
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center';
+    errorDiv.innerHTML = `
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+      </svg>
+      <span>${message}</span>
+    `;
+    errorDiv.id = 'form-error-message';
+    
+    if (this.container) {
+      this.container.insertBefore(errorDiv, this.container.firstChild);
+    }
+  }
+
+  /**
+   * Remove mensagens de sucesso/erro
+   */
+  private clearMessages(): void {
+    const successMsg = document.getElementById('form-success-message');
+    const errorMsg = document.getElementById('form-error-message');
+    
+    if (successMsg) successMsg.remove();
+    if (errorMsg) errorMsg.remove();
+  }
+
+  /**
+   * Destrói o formulário e limpa eventos
+   */
+  destroy(): void {
+    if (this.formHandler) {
+      this.formHandler.destroy();
+      this.formHandler = null;
+    }
+    
+    if (this.container) {
+      this.container.innerHTML = '';
+    }
+  }
+
+  /**
+   * Retorna o FormHandler associado
+   */
+  getFormHandler(): FormHandler | null {
+    return this.formHandler;
   }
 }
 
-// Exportar instância singleton
-export const formGenerator = new FormGenerator();
-
-// Funções auxiliares para uso direto
-export const generateForm = (config: FormConfig): string => {
-  return formGenerator.generateForm(config);
+// Factory function para criar instâncias
+export const createFormGenerator = (containerId: string): FormGenerator => {
+  return new FormGenerator(containerId);
 };
 
-export const generatePresetForm = (presetName: string): string => {
-  return formGenerator.generatePresetForm(presetName);
-};
-
-export const getPresetConfigs = (): Record<string, FormConfig> => {
-  return FormGenerator.getPresetConfigs();
-};
-
-export default FormGenerator;
+// Export dos tipos para uso externo
+export type { FormConfig, FormField, FormFieldOption };
