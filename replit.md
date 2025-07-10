@@ -143,6 +143,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 10, 2025: ✅ CONCLUÍDO - Integração AWS Cognito Configurada com API de Secrets
+  - ✅ Removidas referências hardcoded e criada API `/api/auth/cognito-config` que busca dados das secrets
+  - ✅ Endpoint `/start-login` refatorado para buscar configuração de variáveis de ambiente
+  - ✅ Sistema agora funciona dinamicamente com dados das secrets: COGNITO_DOMAIN, COGNITO_CLIENT_ID, COGNITO_REDIRECT_URI
+  - ✅ URL de login AWS Cognito gerada corretamente: `https://us-east-14jqf97h2x.auth.us-east-1.amazoncognito.com/login`
+  - ✅ Callback endpoint `/callback` implementado para processar retorno do AWS Cognito
+  - ✅ Rate limiting temporariamente removido para facilitar debugging e desenvolvimento
+  - ✅ Sistema pronto para autenticação via formulário oficial do AWS Cognito
 - July 9, 2025: ✅ CONCLUÍDO - CORREÇÃO CRÍTICA DE SEGURANÇA: Sistema de Autenticação JWT e Controle de Acesso Totalmente Funcional
   - ✅ PROBLEMA IDENTIFICADO E CORRIGIDO: Conflito entre sistemas de autenticação (sessão vs JWT)
   - ✅ IMPLEMENTAÇÃO JWT COMPLETA:

@@ -194,6 +194,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Middleware para admin ou gestor
   const requireAdminOrGestor = requireUserType(['admin', 'gestor']);
 
+  // API para obter configuração do Cognito das secrets
+  app.get("/api/auth/cognito-config", (req: Request, res: Response) => {
+    try {
+      const cognitoConfig = {
+        domain: process.env.COGNITO_DOMAIN,
+        clientId: process.env.COGNITO_CLIENT_ID,
+        redirectUri: process.env.COGNITO_REDIRECT_URI,
+        userPoolId: process.env.COGNITO_USER_POOL_ID,
+        region: process.env.COGNITO_REGION || process.env.AWS_REGION
+      };
+
+      // Verificar se todas as configs necessárias estão disponíveis
+      const missingConfigs = Object.entries(cognitoConfig)
+        .filter(([key, value]) => !value)
+        .map(([key]) => key);
+
+      if (missingConfigs.length > 0) {
+        return res.status(500).json({
+          error: "Configuração Cognito incompleta",
+          missing: missingConfigs
+        });
+      }
+
+      res.json({
+        success: true,
+        loginUrl: `${cognitoConfig.domain}/login?response_type=code&client_id=${cognitoConfig.clientId}&redirect_uri=${encodeURIComponent(cognitoConfig.redirectUri!)}&scope=openid%20email%20profile`,
+        config: {
+          domain: cognitoConfig.domain,
+          clientId: cognitoConfig.clientId,
+          redirectUri: cognitoConfig.redirectUri
+        }
+      });
+    } catch (error) {
+      console.error("Erro ao obter configuração Cognito:", error);
+      res.status(500).json({
+        error: "Erro interno do servidor",
+        message: "Não foi possível obter configuração do Cognito"
+      });
+    }
+  });
+
   // Register specialized route modules
   adminRoutes.registerAdminRoutes(app);
   registerMunicipalRoutes(app);
@@ -436,14 +477,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Redirect route for login
-  app.get("/start-login", (req: Request, res: Response) => {
-    console.log("🔄 Redirecionamento /start-login -> AWS Cognito");
-    
-    // Configurar URL do Cognito diretamente
-    const cognitoUrl = `https://iaprender.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=${process.env.COGNITO_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.COGNITO_REDIRECT_URI || '')}&scope=openid%20email%20profile`;
-    
-    res.redirect(cognitoUrl);
+  // Redirect route for login - busca configuração das secrets
+  app.get("/start-login", async (req: Request, res: Response) => {
+    try {
+      console.log("🔄 Redirecionamento /start-login -> AWS Cognito (via secrets)");
+      
+      // Buscar configuração das secrets
+      const cognitoConfig = {
+        domain: process.env.COGNITO_DOMAIN,
+        clientId: process.env.COGNITO_CLIENT_ID,
+        redirectUri: process.env.COGNITO_REDIRECT_URI
+      };
+
+      if (!cognitoConfig.domain || !cognitoConfig.clientId || !cognitoConfig.redirectUri) {
+        console.error("❌ Configuração Cognito incompleta nas secrets");
+        return res.redirect("/auth?error=cognito_config_missing");
+      }
+
+      const cognitoUrl = `${cognitoConfig.domain}/login?response_type=code&client_id=${cognitoConfig.clientId}&redirect_uri=${encodeURIComponent(cognitoConfig.redirectUri)}&scope=openid%20email%20profile`;
+      
+      console.log("✅ URL gerada das secrets:", cognitoUrl);
+      res.redirect(cognitoUrl);
+    } catch (error) {
+      console.error("❌ Erro ao gerar URL Cognito:", error);
+      res.redirect("/auth?error=cognito_error");
+    }
   });
 
   // Callback route for AWS Cognito
