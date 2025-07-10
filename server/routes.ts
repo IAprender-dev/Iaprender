@@ -562,7 +562,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("✅ Tokens obtidos com sucesso");
 
       // Decodificar ID token para obter informações do usuário
-      const jwt = require('jsonwebtoken');
       const decoded = jwt.decode(tokens.id_token) as any;
       
       if (!decoded) {
