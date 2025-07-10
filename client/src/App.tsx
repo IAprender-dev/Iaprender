@@ -33,7 +33,7 @@ import LiteLLMManagement from "@/pages/admin/LiteLLMManagement";
 import ContractManagement from "@/pages/admin/ContractManagement";
 import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
 
-import UserManagement from "@/pages/admin/UserManagement";
+import AdminUnifiedDashboard from "@/pages/admin/AdminUnifiedDashboard";
 import CreateUser from "@/pages/admin/CreateUser";
 import ExecutiveDashboard from "@/pages/admin/ExecutiveDashboard";
 import AdvancedToolsDashboard from "@/pages/admin/AdvancedToolsDashboard";
@@ -170,7 +170,7 @@ function Router() {
       
       {/* AWS Cognito Dashboards */}
       <Route path="/admin/master" component={AdminMaster} />
-      <Route path="/admin/user-management" component={AdminFormRoutes} />
+      <Route path="/admin/user-management" component={AdminUnifiedDashboard} />
       <Route path="/gestor/dashboard" component={GestorFormRoutes} />
       <Route path="/diretor/dashboard" component={SchoolDashboard} />
       <Route path="/professor/dashboard" component={TeacherDashboardNew} />
@@ -189,8 +189,7 @@ function Router() {
       <Route path="/admin/contracts" component={ContractManagement} />
       <Route path="/admin/companies-contracts" component={CompanyContractManagement} />
 
-      <Route path="/admin/users" component={UserManagement} />
-      <Route path="/admin/user-management" component={UserManagement} />
+      <Route path="/admin/users" component={AdminUnifiedDashboard} />
       <Route path="/admin/create-user" component={CreateUser} />
 
       <Route path="/admin/cognito-users" component={CognitoUserManagement} />
