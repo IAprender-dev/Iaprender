@@ -48,6 +48,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { Empresa, InsertEmpresa, Contrato, InsertContrato, User, InsertUser } from "@shared/schema";
 import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
+import { LogoutButton } from "@/components/LogoutButton";
 
 // Interface para dados do formulário de empresa
 interface EmpresaFormData {
@@ -212,12 +213,13 @@ export default function AdminCRUDDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/admin/user-management">
-                <Button variant="outline" size="sm">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sair
-                </Button>
-              </Link>
+              <LogoutButton 
+                variant="outline" 
+                size="sm"
+                text="Sair"
+                showIcon={true}
+                className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+              />
               <Button variant="outline" size="sm">
                 <Shield className="h-4 w-4 mr-2" />
                 Admin
