@@ -67,6 +67,13 @@ import StudentQuiz from "@/pages/student/StudentQuiz";
 import StudentMindMap from "@/pages/student/StudentMindMap";
 import NotFound from "@/pages/not-found";
 
+// AWS Cognito Dashboards
+import AdminMaster from "@/pages/AdminMaster";
+import GestorDashboardNew from "@/pages/GestorDashboard";
+import SchoolDashboard from "@/pages/SchoolDashboard";
+import TeacherDashboardNew from "@/pages/TeacherDashboard";
+import StudentDashboardNew from "@/pages/StudentDashboard";
+
 // Ferramentas IA
 import ImagemEducacional from "@/pages/teacher/ferramentas/ImagemEducacional";
 import GeradorAtividades from "@/pages/teacher/ferramentas/GeradorAtividades";
@@ -154,8 +161,15 @@ function Router() {
       {/* Token Dashboard */}
       <Route path="/tokens" component={TokenDashboard} />
       
+      {/* AWS Cognito Dashboards */}
+      <Route path="/admin/master" component={AdminMaster} />
+      <Route path="/gestor/dashboard" component={GestorDashboardNew} />
+      <Route path="/school/dashboard" component={SchoolDashboard} />
+      <Route path="/teacher/dashboard" component={TeacherDashboardNew} />
+      <Route path="/student/dashboard" component={StudentDashboardNew} />
+
       {/* Admin Master Dashboard */}
-      <Route path="/admin/master" component={AdminMasterDashboard} />
+      <Route path="/admin/master-old" component={AdminMasterDashboard} />
       <Route path="/admin/advanced" component={AdvancedAdminDashboard} />
       <Route path="/admin/executive" component={ExecutiveDashboard} />
       <Route path="/admin/tools" component={AdvancedToolsDashboard} />
