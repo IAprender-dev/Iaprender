@@ -1,19 +1,57 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, Users, Building, Settings, Activity, BarChart3 } from "lucide-react";
+import { Shield, Users, Building, Settings, Activity, BarChart3, LogOut } from "lucide-react";
+import iaprenderLogo from "@assets/iaprender-logo.png";
 
 export default function AdminMaster() {
+  const handleLogout = () => {
+    // Limpar dados de autenticação e redirecionar
+    localStorage.removeItem('auth_token');
+    window.location.href = '/auth';
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header com Logo */}
+      <div className="bg-white shadow-sm border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo e Marca IAprender */}
+            <div className="flex items-center space-x-4">
+              <img 
+                src={iaprenderLogo} 
+                alt="IAprender Logo" 
+                className="h-12 w-12 object-contain"
+              />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">IAprender</h1>
+                <p className="text-sm text-slate-600">Plataforma Educacional IA</p>
+              </div>
+            </div>
+
+            {/* Botão de Logout */}
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-slate-600 hover:text-red-600 hover:border-red-300"
+            >
+              <LogOut className="h-4 w-4" />
+              Sair
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Conteúdo Principal */}
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
+        {/* Title Section */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 flex items-center gap-3">
+            <h2 className="text-4xl font-bold text-slate-900 flex items-center gap-3">
               <Shield className="h-10 w-10 text-blue-600" />
               Dashboard Administrativo
-            </h1>
+            </h2>
             <p className="text-slate-600 mt-2">Controle total do sistema IAprender</p>
           </div>
           <Badge variant="secondary" className="bg-green-100 text-green-700 px-4 py-2">
