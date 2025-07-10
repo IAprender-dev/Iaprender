@@ -361,6 +361,236 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rotas de Empresas - Admin apenas
+  app.get("/api/empresas", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const empresas = await storage.getAllEmpresas();
+      res.json({
+        success: true,
+        data: empresas,
+        total: empresas.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao buscar empresas:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Erro ao buscar empresas",
+        error: error.message 
+      });
+    }
+  });
+
+  app.post("/api/empresas", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const empresaData = req.body;
+      
+      // Validações básicas
+      if (!empresaData.nome || !empresaData.cnpj || !empresaData.razaoSocial || !empresaData.email) {
+        return res.status(400).json({
+          success: false,
+          message: "Campos obrigatórios: nome, cnpj, razaoSocial, email"
+        });
+      }
+
+      // Validar formato CNPJ (simples)
+      const cnpjLimpo = empresaData.cnpj.replace(/[^\d]/g, '');
+      if (cnpjLimpo.length !== 14) {
+        return res.status(400).json({
+          success: false,
+          message: "CNPJ deve ter 14 dígitos"
+        });
+      }
+
+      const novaEmpresa = await storage.createEmpresa({
+        ...empresaData,
+        cnpj: cnpjLimpo,
+        ativo: true
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Empresa criada com sucesso",
+        data: novaEmpresa,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao criar empresa:', error);
+      
+      let message = "Erro ao criar empresa";
+      let statusCode = 500;
+      
+      if (error.message.includes('unique')) {
+        message = "CNPJ já existe no sistema";
+        statusCode = 409;
+      }
+      
+      res.status(statusCode).json({
+        success: false,
+        message,
+        error: error.message
+      });
+    }
+  });
+
+  app.get("/api/empresas/:id", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "ID da empresa inválido"
+        });
+      }
+
+      const empresa = await storage.getEmpresa(id);
+      if (!empresa) {
+        return res.status(404).json({
+          success: false,
+          message: "Empresa não encontrada"
+        });
+      }
+
+      res.json({
+        success: true,
+        data: empresa,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao buscar empresa:', error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao buscar empresa",
+        error: error.message
+      });
+    }
+  });
+
+  // Rotas de Contratos - Admin apenas  
+  app.get("/api/contratos", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const { empresaId } = req.query;
+      
+      let contratos;
+      if (empresaId && !isNaN(Number(empresaId))) {
+        contratos = await storage.getContratosByEmpresa(Number(empresaId));
+      } else {
+        contratos = await storage.getAllContratos();
+      }
+
+      res.json({
+        success: true,
+        data: contratos,
+        total: contratos.length,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao buscar contratos:', error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao buscar contratos",
+        error: error.message
+      });
+    }
+  });
+
+  app.post("/api/contratos", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const contratoData = req.body;
+      
+      // Validações básicas
+      if (!contratoData.numero || !contratoData.nome || !contratoData.empresaId || 
+          !contratoData.dataInicio || !contratoData.dataFim || !contratoData.valor) {
+        return res.status(400).json({
+          success: false,
+          message: "Campos obrigatórios: numero, nome, empresaId, dataInicio, dataFim, valor"
+        });
+      }
+
+      // Verificar se empresa existe
+      const empresa = await storage.getEmpresa(contratoData.empresaId);
+      if (!empresa) {
+        return res.status(400).json({
+          success: false,
+          message: "Empresa não encontrada"
+        });
+      }
+
+      // Validar datas
+      const dataInicio = new Date(contratoData.dataInicio);
+      const dataFim = new Date(contratoData.dataFim);
+      if (dataFim <= dataInicio) {
+        return res.status(400).json({
+          success: false,
+          message: "Data de fim deve ser posterior à data de início"
+        });
+      }
+
+      const novoContrato = await storage.createContrato({
+        ...contratoData,
+        status: contratoData.status || 'active',
+        moeda: contratoData.moeda || 'BRL',
+        ativo: true
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Contrato criado com sucesso",
+        data: novoContrato,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao criar contrato:', error);
+      
+      let message = "Erro ao criar contrato";
+      let statusCode = 500;
+      
+      if (error.message.includes('unique')) {
+        message = "Número do contrato já existe no sistema";
+        statusCode = 409;
+      }
+      
+      res.status(statusCode).json({
+        success: false,
+        message,
+        error: error.message
+      });
+    }
+  });
+
+  app.get("/api/contratos/:id", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "ID do contrato inválido"
+        });
+      }
+
+      const contrato = await storage.getContrato(id);
+      if (!contrato) {
+        return res.status(404).json({
+          success: false,
+          message: "Contrato não encontrado"
+        });
+      }
+
+      res.json({
+        success: true,
+        data: contrato,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao buscar contrato:', error);
+      res.status(500).json({
+        success: false,
+        message: "Erro ao buscar contrato",
+        error: error.message
+      });
+    }
+  });
+
   // API para obter configuração do Cognito das secrets
   app.get("/api/auth/cognito-config", (req: Request, res: Response) => {
     try {
