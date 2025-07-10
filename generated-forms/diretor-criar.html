@@ -11,6 +11,12 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
+    <!-- Sistema de Validação Brasileira -->
+    <script src="/client/src/utils/validation.js"></script>
+    
+    <!-- AuthManager -->
+    <script src="/client/src/utils/auth.js"></script>
+    
     <style>
         /* Professional Theme */
         .glass-form {
@@ -373,8 +379,26 @@
         let currentSection = 1;
         const totalSections = 3;
         
-        // Carregar contratos ao inicializar
-        document.addEventListener('DOMContentLoaded', loadContracts);
+        // Verificar autenticação e carregar contratos
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verificar se o usuário está autenticado
+            if (!window.auth || !window.auth.isAuthenticated()) {
+                alert('Você precisa estar logado para acessar este formulário');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Verificar permissões (apenas gestores e admins podem criar diretores)
+            const user = window.auth.getCurrentUser();
+            if (!window.auth.hasPermission('gestor')) {
+                alert('Você não tem permissão para criar diretores');
+                window.history.back();
+                return;
+            }
+            
+            // Carregar contratos
+            loadContracts();
+        });
         
         // Navegar entre seções
         function nextSection(section) {
@@ -502,22 +526,28 @@
         // Carregar contratos do backend
         async function loadContracts() {
             try {
-                const response = await fetch('/api/municipal/contracts/filtered');
-                const contracts = await response.json();
+                const response = await window.auth.makeRequest('/api/municipal/contracts/filtered');
                 
                 const contractSelect = document.getElementById('contractId');
                 contractSelect.innerHTML = '<option value="">Selecione um contrato...</option>';
                 
-                contracts.forEach(contract => {
-                    const option = document.createElement('option');
-                    option.value = contract.id;
-                    option.textContent = `${contract.name} - ${contract.description}`;
-                    contractSelect.appendChild(option);
-                });
+                if (response && Array.isArray(response)) {
+                    response.forEach(contract => {
+                        const option = document.createElement('option');
+                        option.value = contract.id;
+                        option.textContent = `${contract.name || contract.description} - ${contract.description || ''}`;
+                        contractSelect.appendChild(option);
+                    });
+                } else {
+                    throw new Error('Formato de resposta inválido');
+                }
             } catch (error) {
                 console.error('Erro ao carregar contratos:', error);
                 const contractSelect = document.getElementById('contractId');
                 contractSelect.innerHTML = '<option value="">Erro ao carregar contratos</option>';
+                
+                // Mostrar toast de erro
+                showErrorToast('Erro ao carregar contratos. Verifique sua conexão.');
             }
         }
         
@@ -599,26 +629,25 @@
             data.contractId = parseInt(data.contractId);
             
             try {
-                const response = await fetch('/api/municipal/directors', {
+                const response = await window.auth.makeRequest('/api/municipal/directors', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                    },
                     body: JSON.stringify(data)
                 });
                 
-                if (response.ok) {
-                    // Esconder loading e mostrar sucesso
-                    document.getElementById('loading-overlay').classList.add('hidden');
-                    document.getElementById('success-modal').classList.remove('hidden');
-                } else {
-                    throw new Error('Erro ao cadastrar diretor');
-                }
-            } catch (error) {
-                console.error('Erro:', error);
+                // Esconder loading e mostrar sucesso
                 document.getElementById('loading-overlay').classList.add('hidden');
-                alert('Erro ao cadastrar diretor. Tente novamente.');
+                document.getElementById('success-modal').classList.remove('hidden');
+                
+                // Log de auditoria
+                console.log('Diretor criado com sucesso:', response);
+                
+            } catch (error) {
+                console.error('Erro ao criar diretor:', error);
+                document.getElementById('loading-overlay').classList.add('hidden');
+                
+                // Mostrar erro específico
+                const errorMessage = error.message || 'Erro ao criar diretor. Tente novamente.';
+                showErrorToast(errorMessage);
             }
         });
         
@@ -626,6 +655,28 @@
             document.getElementById('success-modal').classList.add('hidden');
             // Resetar formulário ou redirecionar
             window.location.reload();
+        }
+        
+        // Função para mostrar toast de erro
+        function showErrorToast(message) {
+            // Criar elemento de toast se não existir
+            let toast = document.getElementById('error-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'error-toast';
+                toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300';
+                document.body.appendChild(toast);
+            }
+            
+            toast.textContent = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            
+            // Auto remover após 5 segundos
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 5000);
         }
         
         // Navegação por Enter
