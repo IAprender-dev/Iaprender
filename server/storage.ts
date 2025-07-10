@@ -150,14 +150,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEmpresaStats(): Promise<any> {
-    const statsResult = await db.select({
-      total: sql<number>`count(distinct ${empresas.id})`,
-      comContratos: sql<number>`count(distinct case when ${contratos.id} is not null then ${empresas.id} end)`,
-      semContratos: sql<number>`count(distinct case when ${contratos.id} is null then ${empresas.id} end)`
-    }).from(empresas)
-    .leftJoin(contratos, eq(empresas.id, contratos.empresaId));
-
-    return statsResult[0] || { total: 0, comContratos: 0, semContratos: 0 };
+    try {
+      // Usar SQL direto para evitar problemas com relacionamentos
+      const query = `
+        SELECT 
+          COUNT(*) as total,
+          COUNT(*) as ativas,
+          0 as inativas,
+          (SELECT COUNT(DISTINCT empresa_id) FROM contratos) as com_contratos,
+          COUNT(DISTINCT cidade) as cidades_unicas
+        FROM empresas
+      `;
+      
+      const result = await db.execute(sql.raw(query));
+      return result.rows[0] || { total: 0, ativas: 0, inativas: 0, com_contratos: 0, cidades_unicas: 0 };
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas das empresas:', error);
+      return { total: 0, ativas: 0, inativas: 0, com_contratos: 0, cidades_unicas: 0 };
+    }
   }
 
   async createEmpresa(insertEmpresa: InsertEmpresa): Promise<Empresa> {
@@ -226,18 +236,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getContratoStats(): Promise<any> {
-    const statsResult = await db.select({
-      total: sql<number>`count(*)`,
-      ativos: sql<number>`count(*) filter (where status = 'active')`,
-      pendentes: sql<number>`count(*) filter (where status = 'pending')`,
-      expirados: sql<number>`count(*) filter (where status = 'expired')`,
-      valorTotal: sql<number>`sum(valor_total) filter (where status = 'active')`,
-      vencendo30Dias: sql<number>`count(*) filter (where status = 'active' and data_fim <= current_date + interval '30 days')`
-    }).from(contratos);
-
-    const result = statsResult[0] || { total: 0, ativos: 0, pendentes: 0, expirados: 0, valorTotal: 0, vencendo30Dias: 0 };
-    
-    return result;
+    try {
+      // Usar SQL direto para evitar problemas com relacionamentos
+      const query = `
+        SELECT 
+          COUNT(*) as total,
+          COUNT(CASE WHEN status = 'active' THEN 1 END) as ativos,
+          COUNT(CASE WHEN status = 'pending' THEN 1 END) as pendentes,
+          COUNT(CASE WHEN status = 'expired' THEN 1 END) as expirados,
+          COALESCE(SUM(CASE WHEN status = 'active' THEN valor_total END), 0) as valor_total,
+          COUNT(CASE WHEN status = 'active' AND data_fim <= CURRENT_DATE + INTERVAL '30 days' THEN 1 END) as vencendo_30_dias
+        FROM contratos
+      `;
+      
+      const result = await db.execute(sql.raw(query));
+      return result.rows[0] || { total: 0, ativos: 0, pendentes: 0, expirados: 0, valor_total: 0, vencendo_30_dias: 0 };
+    } catch (error) {
+      console.error('❌ Erro ao buscar estatísticas dos contratos:', error);
+      return { total: 0, ativos: 0, pendentes: 0, expirados: 0, valor_total: 0, vencendo_30_dias: 0 };
+    }
   }
 
   async createContrato(insertContrato: InsertContrato): Promise<Contrato> {

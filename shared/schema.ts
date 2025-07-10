@@ -74,12 +74,15 @@ export const contratosRelations = relations(contratos, ({ one }) => ({
   }),
 }));
 
-export const usersRelations = relations(users, ({ one }) => ({
+export const usuariosRelations = relations(usuarios, ({ one }) => ({
   empresa: one(empresas, {
-    fields: [users.empresaId],
+    fields: [usuarios.empresaId],
     references: [empresas.id],
   }),
 }));
+
+// Manter compatibilidade
+export const usersRelations = usuariosRelations;
 
 // Schemas de inserção
 export const insertEmpresaSchema = createInsertSchema(empresas).omit({

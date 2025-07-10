@@ -768,7 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Identificar tipo de usuário com base nos grupos Cognito
       if (userGroups.includes('Admin') || userGroups.includes('AdminMaster') || userGroups.includes('Administrador')) {
         userType = "admin";
-        redirectPath = "/admin/user-management";
+        redirectPath = "/admin/crud";
         console.log("🎯 Redirecionando ADMIN para:", redirectPath);
       } else if (userGroups.includes('Gestores') || userGroups.includes('GestorMunicipal')) {
         userType = "gestor";
