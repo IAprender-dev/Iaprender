@@ -295,7 +295,7 @@ export class CognitoSyncService {
   private async _syncUserToLocal(cognitoUser: CognitoUser): Promise<void> {
     try {
       // 1️⃣ EXTRAIR TODOS OS DADOS DO USUÁRIO DO COGNITO
-      const userData = this._extractUserDataFromCognito(cognitoUser);
+      const userData = await this._extractUserDataFromCognito(cognitoUser);
       
       // 2️⃣ INSERIR/ATUALIZAR NA TABELA USUARIOS
       const userId = await this._upsertUser(userData);
@@ -491,7 +491,7 @@ export class CognitoSyncService {
   /**
    * 📊 EXTRAI TODOS OS DADOS DO USUÁRIO DO COGNITO (Baseado na implementação Python)
    */
-  private _extractUserDataFromCognito(cognitoUser: CognitoUser): any {
+  private async _extractUserDataFromCognito(cognitoUser: CognitoUser): Promise<any> {
     // Converter atributos do Cognito para dict
     const attributes: { [key: string]: string } = {};
     cognitoUser.Attributes?.forEach(attr => {
@@ -499,7 +499,7 @@ export class CognitoSyncService {
     });
     
     // Buscar grupos do usuário no Cognito
-    const grupos = this._getUserGroups(cognitoUser.Username);
+    const grupos = await this._getUserGroups(cognitoUser.Username);
     
     return {
       cognito_sub: cognitoUser.Username,
@@ -513,16 +513,21 @@ export class CognitoSyncService {
   }
 
   /**
-   * 👥 BUSCAR GRUPOS DO USUÁRIO NO COGNITO (Baseado na implementação Python)
+   * 👥 BUSCA TODOS OS GRUPOS DO USUÁRIO NO COGNITO (Baseado na implementação Python)
    */
-  private _getUserGroups(username: string): string[] {
+  private async _getUserGroups(username: string): Promise<string[]> {
     try {
-      // Esta implementação será chamada de forma síncrona no contexto atual
-      // Para alinhar com Python, retornamos array vazio quando há erro de permissão
-      // A implementação async original está disponível em getUserGroups()
-      return [];
-    } catch (error) {
-      console.warn(`⚠️ Não foi possível buscar grupos para usuário ${username}:`, error);
+      const response = await this.cognitoClient.adminListGroupsForUser({
+        UserPoolId: this.userPoolId,
+        Username: username
+      }).promise();
+      
+      const groups = response.Groups?.map(group => group.GroupName || '') || [];
+      console.log(`📋 Grupos encontrados para ${username}: ${groups}`);
+      return groups;
+      
+    } catch (error: any) {
+      console.log(`❌ Erro ao buscar grupos para ${username}: ${error.message || error}`);
       return [];
     }
   }
