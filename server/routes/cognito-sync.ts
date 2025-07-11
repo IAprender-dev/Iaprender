@@ -102,6 +102,41 @@ router.post('/sync', authenticateAdmin, async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/cognito-sync/sync-all
+ * Executar sincronização completa com paginação otimizada (baseado no método Python)
+ */
+router.post('/sync-all', authenticateAdmin, async (req: Request, res: Response) => {
+  try {
+    console.log('🚀 Iniciando sincronização completa de todos os usuários via API');
+    
+    const syncService = new CognitoSyncService();
+    const result = await syncService.syncAllUsers();
+    
+    const statusCode = result.success ? 200 : (result.users_processed > 0 ? 207 : 500);
+    
+    res.status(statusCode).json({
+      success: result.success,
+      timestamp: new Date().toISOString(),
+      message: result.success 
+        ? `Sincronização completa finalizada: ${result.users_processed} usuários processados`
+        : `Sincronização parcial: ${result.users_processed} usuários processados com erros`,
+      users_processed: result.users_processed,
+      error: result.error || undefined
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro no endpoint de sincronização completa:', error);
+    res.status(500).json({
+      success: false,
+      timestamp: new Date().toISOString(),
+      message: 'Erro interno no servidor',
+      users_processed: 0,
+      error: error instanceof Error ? error.message : 'Erro desconhecido'
+    });
+  }
+});
+
+/**
  * GET /api/cognito-sync/test-connection
  * Testar conectividade com AWS Cognito
  */

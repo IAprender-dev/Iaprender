@@ -122,6 +122,19 @@ async function runCompleteTest() {
     }
   );
   
+  // 7. Teste Sync-All (protegido) - POST - NOVO!
+  await testEndpoint(
+    'Sincronização Completa (COM token)', 
+    '/api/cognito-sync/sync-all',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+  
   console.log('\n' + '='.repeat(60));
   console.log('✅ TESTE COMPLETO FINALIZADO');
   console.log('\n📊 RESUMO DOS RESULTADOS:');

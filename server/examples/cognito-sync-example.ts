@@ -99,6 +99,12 @@ Headers:
   Authorization: Bearer YOUR_JWT_TOKEN
   Content-Type: application/json
 
+### 6. Sincronização Completa com Paginação (Requer Autenticação)
+POST http://localhost:5000/api/cognito-sync/sync-all
+Headers: 
+  Authorization: Bearer YOUR_JWT_TOKEN
+  Content-Type: application/json
+
 ## EXEMPLOS CURL:
 
 # Health Check
@@ -107,8 +113,13 @@ curl http://localhost:5000/api/cognito-sync/health
 # Status
 curl http://localhost:5000/api/cognito-sync/status
 
-# Sincronização (com token)
+# Sincronização padrão (com token)
 curl -X POST http://localhost:5000/api/cognito-sync/sync \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  -H "Content-Type: application/json"
+
+# Sincronização completa com paginação (com token) - NOVO!
+curl -X POST http://localhost:5000/api/cognito-sync/sync-all \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
   -H "Content-Type: application/json"
 

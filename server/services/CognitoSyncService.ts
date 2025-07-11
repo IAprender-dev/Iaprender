@@ -204,6 +204,179 @@ export class CognitoSyncService {
   }
 
   /**
+   * 🔄 SINCRONIZAR TODOS OS USUÁRIOS COM PAGINAÇÃO COMPLETA
+   * Implementação baseada no método Python fornecido
+   */
+  async syncAllUsers(): Promise<{ success: boolean; users_processed: number; error?: string }> {
+    try {
+      console.log('🔄 Iniciando sincronização completa de todos os usuários...');
+
+      // 1️⃣ BUSCAR TODOS OS USUÁRIOS DO COGNITO (COM PAGINAÇÃO)
+      const cognitoUsers = await this._getAllCognitoUsersWithPagination();
+      
+      // 2️⃣ PROCESSAR CADA USUÁRIO INDIVIDUALMENTE
+      let processedCount = 0;
+      for (const user of cognitoUsers) {
+        try {
+          await this._syncUserToLocal(user);
+          processedCount++;
+        } catch (error) {
+          console.error(`❌ Erro ao processar usuário ${user.Username}:`, error);
+        }
+      }
+      
+      console.log(`✅ Sincronização concluída: ${processedCount} usuários processados`);
+      return { 
+        success: true, 
+        users_processed: processedCount 
+      };
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.error(`❌ Erro na sincronização: ${errorMessage}`);
+      return { 
+        success: false, 
+        users_processed: 0,
+        error: errorMessage 
+      };
+    }
+  }
+
+  /**
+   * 📄 BUSCAR TODOS OS USUÁRIOS COM PAGINAÇÃO AUTOMÁTICA
+   */
+  private async _getAllCognitoUsersWithPagination(): Promise<CognitoUser[]> {
+    const allUsers: CognitoUser[] = [];
+    let paginationToken: string | undefined;
+    
+    console.log('📄 Buscando usuários do Cognito com paginação...');
+    
+    do {
+      try {
+        const params: AWS.CognitoIdentityServiceProvider.ListUsersRequest = {
+          UserPoolId: this.userPoolId,
+          Limit: 60 // AWS Cognito limit
+        };
+        
+        if (paginationToken) {
+          params.PaginationToken = paginationToken;
+        }
+        
+        const response = await this.cognitoClient.listUsers(params).promise();
+        
+        if (response.Users) {
+          allUsers.push(...response.Users as CognitoUser[]);
+          console.log(`📊 Página processada: ${response.Users.length} usuários (Total: ${allUsers.length})`);
+        }
+        
+        paginationToken = response.PaginationToken;
+        
+        // Pequeno delay para evitar rate limiting
+        if (paginationToken) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+      } catch (error) {
+        console.error('❌ Erro ao buscar página de usuários:', error);
+        throw error;
+      }
+      
+    } while (paginationToken);
+    
+    console.log(`✅ Total de usuários encontrados: ${allUsers.length}`);
+    return allUsers;
+  }
+
+  /**
+   * 👤 SINCRONIZAR USUÁRIO INDIVIDUAL PARA BANCO LOCAL
+   */
+  private async _syncUserToLocal(cognitoUser: CognitoUser): Promise<void> {
+    try {
+      const email = this.extractEmailFromUser(cognitoUser);
+      const cognitoSub = cognitoUser.Username;
+      
+      if (!email || !cognitoSub) {
+        console.warn(`⚠️ Usuário inválido ignorado: ${cognitoSub || 'sem ID'}`);
+        return;
+      }
+      
+      // Verificar se usuário já existe no banco local
+      const existingUsers = await db
+        .select()
+        .from(users)
+        .where(eq(users.cognitoSub, cognitoSub))
+        .limit(1);
+      
+      const userData = this._extractUserDataFromCognito(cognitoUser);
+      
+      if (existingUsers.length > 0) {
+        // Atualizar usuário existente
+        await db
+          .update(users)
+          .set({
+            email: userData.email,
+            name: userData.nome,
+            userType: userData.tipo_usuario,
+            companyId: userData.empresa_id,
+            schoolId: userData.escola_id,
+            status: userData.status,
+            updatedAt: new Date()
+          })
+          .where(eq(users.cognitoSub, cognitoSub));
+        
+        console.log(`🔄 Usuário atualizado: ${email}`);
+      } else {
+        // Criar novo usuário
+        await db
+          .insert(users)
+          .values({
+            cognitoSub: userData.cognito_sub,
+            email: userData.email,
+            name: userData.nome,
+            userType: userData.tipo_usuario,
+            companyId: userData.empresa_id,
+            schoolId: userData.escola_id,
+            status: userData.status,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        
+        console.log(`➕ Usuário criado: ${email}`);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Erro ao sincronizar usuário ${cognitoUser.Username}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📊 EXTRAIR DADOS ESTRUTURADOS DO USUÁRIO COGNITO
+   */
+  private _extractUserDataFromCognito(cognitoUser: CognitoUser): any {
+    const email = this.extractEmailFromUser(cognitoUser);
+    const attributes = cognitoUser.Attributes || [];
+    
+    // Extrair atributos customizados
+    const getAttributeValue = (name: string) => {
+      const attr = attributes.find((a: any) => a.Name === name);
+      return attr ? attr.Value : null;
+    };
+    
+    return {
+      cognito_sub: cognitoUser.Username,
+      email: email,
+      nome: getAttributeValue('name') || getAttributeValue('given_name') || email?.split('@')[0] || 'Usuário',
+      tipo_usuario: getAttributeValue('custom:tipo_usuario') || 'aluno',
+      empresa_id: getAttributeValue('custom:empresa_id') ? parseInt(getAttributeValue('custom:empresa_id')) : null,
+      escola_id: getAttributeValue('custom:escola_id') ? parseInt(getAttributeValue('custom:escola_id')) : null,
+      documento: getAttributeValue('custom:documento'),
+      telefone: getAttributeValue('phone_number'),
+      status: cognitoUser.UserStatus === 'CONFIRMED' ? 'ativo' : 'pendente'
+    };
+  }
+
+  /**
    * Buscar todos os usuários do AWS Cognito
    */
   private async getAllCognitoUsers(): Promise<CognitoUser[]> {
