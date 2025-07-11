@@ -175,12 +175,20 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Schema da tabela diretores adicionado: id, usr_id, escola_id, empresa_id, nome, cargo, data_inicio, status
     • Log com emoji 🏫 para identificação específica
     • Prepared statements e error handling implementados
-  - ✅ **PROGRESSO DAS FUNÇÕES AUXILIARES**: 3 de 6 funções implementadas
+  - ✅ **FUNÇÃO _upsert_professor IMPLEMENTADA**: Insert/Update de professores
+    • Equivalente ao SQL Python: INSERT INTO professores (usuario_id, empresa_id) VALUES (%s, %s) ON CONFLICT (usuario_id) DO NOTHING
+    • Input: usuario_id (number), empresa_id (number), Output: Promise<void>
+    • Usa INSERT com onConflictDoNothing() do Drizzle ORM
+    • Campos inseridos: usr_id, empresa_id, status='ativo'
+    • Schema da tabela professores adicionado: id, usr_id, escola_id, empresa_id, nome, disciplinas, formacao, data_admissao, status
+    • Log com emoji 👩‍🏫 para identificação específica
+    • Prepared statements e error handling implementados
+  - ✅ **PROGRESSO DAS FUNÇÕES AUXILIARES**: 4 de 6 funções implementadas
     • ✅ _get_usuario_id - Busca ID por cognito_sub
     • ✅ _upsert_gestor - Upsert de gestores municipais
     • ✅ _upsert_diretor - Upsert de diretores escolares
-    • ⏳ _upsert_professor - Pendente (próxima prioridade)
-    • ⏳ _upsert_aluno - Pendente
+    • ✅ _upsert_professor - Upsert de professores
+    • ⏳ _upsert_aluno - Pendente (próxima prioridade)
     • ⏳ _update_role_tables - Pendente (orquestração final)
   - ✅ **PRÓXIMOS PASSOS IDENTIFICADOS**: Completar hierarquia educacional
     • _upsert_professor para gestão de professores
