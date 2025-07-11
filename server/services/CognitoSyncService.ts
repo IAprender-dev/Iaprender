@@ -567,6 +567,41 @@ export class CognitoSyncService {
   }
 
   /**
+   * 🔄 SINCRONIZA UM USUÁRIO ESPECÍFICO (Baseado na implementação Python)
+   */
+  public async syncSingleUser(cognitoUsername: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      // Buscar usuário específico no Cognito
+      const response = await this.cognitoClient.adminGetUser({
+        UserPoolId: this.userPoolId,
+        Username: cognitoUsername
+      }).promise();
+      
+      // Converter para formato compatível
+      const cognitoUser = {
+        Username: response.Username,
+        Attributes: response.UserAttributes,
+        Enabled: response.Enabled,
+        UserStatus: response.UserStatus
+      };
+      
+      // Sincronizar
+      await this._syncUserToLocal(cognitoUser);
+      
+      return { 
+        success: true, 
+        message: `Usuário ${cognitoUsername} sincronizado` 
+      };
+      
+    } catch (error: any) {
+      return { 
+        success: false, 
+        error: error.message 
+      };
+    }
+  }
+
+  /**
    * 📊 EXTRAI TODOS OS DADOS DO USUÁRIO DO COGNITO (Baseado na implementação Python)
    */
   private async _extractUserDataFromCognito(cognitoUser: CognitoUser): Promise<any> {

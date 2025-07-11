@@ -234,4 +234,47 @@ router.get('/health', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/cognito-sync/sync-single-user
+ * Sincronizar usuário específico (baseado na implementação Python)
+ */
+router.post('/sync-single-user', authenticateAdmin, async (req: Request, res: Response) => {
+  try {
+    const { cognitoUsername } = req.body;
+    
+    if (!cognitoUsername) {
+      return res.status(400).json({
+        success: false,
+        error: 'cognitoUsername é obrigatório'
+      });
+    }
+    
+    const syncService = new CognitoSyncService();
+    
+    // Sincronizar usuário específico
+    const result = await syncService.syncSingleUser(cognitoUsername);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: result.message,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 export default router;
