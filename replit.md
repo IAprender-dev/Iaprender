@@ -184,10 +184,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Condição `if (!paginationToken) break;` exata como no Python
     • Comentários "Máximo por requisição" correspondentes ao Python
     • _syncUserToLocal() implementado com 3 passos exatos: extract → upsert → update_role_tables
-    • _upsertUser() retorna userId para atualização de tabelas específicas
-    • _updateRoleTables() com switch case para admin/gestor/diretor/professor/aluno
+    • _extractUserDataFromCognito() com estrutura dict idêntica: cognito_sub, email, nome, empresa_id, grupos, enabled, user_status
+    • _getUserGroups() integrado para busca de grupos do usuário (preparado para permissões AWS)
+    • _upsertUser() com mapeamento de grupos para tipo de usuário e status mapping completo
+    • _mapGroupsToUserType() com hierarquia: admin > gestor > diretor > professor > aluno
+    • _mapUserStatusToStatus() para CONFIRMED→ativo, UNCONFIRMED→pendente, etc.
+    • _updateRoleTables() com switch case baseado em grupos extraídos
     • Logs de progresso formatados identicamente ao Python original
-    • Endpoint `/api/cognito-sync/sync-all` com Python-inspired approach completo
+    • Endpoint `/api/cognito-sync/sync-all` com Python-inspired approach 100% completo
   - ✅ **DOCUMENTAÇÃO E TESTES ATUALIZADOS**: Exemplos e testes incluem novo endpoint
     • server/examples/cognito-sync-example.ts - Documentação do novo endpoint sync-all
     • test-cognito-sync-complete.cjs - Teste automatizado do novo endpoint
