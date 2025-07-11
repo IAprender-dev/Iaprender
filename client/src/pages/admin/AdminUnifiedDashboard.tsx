@@ -196,6 +196,12 @@ export default function AdminUnifiedDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/admin/credentials">
+                <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Credenciais
+                </Button>
+              </Link>
               <Link href="/logout">
                 <Button variant="outline" size="sm">
                   Sair
