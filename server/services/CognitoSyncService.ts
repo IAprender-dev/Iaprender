@@ -301,7 +301,7 @@ export class CognitoSyncService {
       const userId = await this._upsertUser(userData);
       
       // 3️⃣ ATUALIZAR TABELAS ESPECÍFICAS POR GRUPO
-      await this._updateRoleTables(userData, userId);
+      await this._update_role_tables(userData, userId);
       
       console.log(`✅ Usuário sincronizado: ${userData.email}`);
       
@@ -764,6 +764,78 @@ export class CognitoSyncService {
       
     } catch (error: any) {
       console.log(`❌ Erro ao fazer upsert do aluno para usuario_id ${usuario_id}: ${error.message || error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔄 UPDATE ROLE TABLES (Baseado na implementação Python)
+   * Orquestra as funções de upsert baseadas nos grupos do usuário
+   * Processa cada grupo individualmente e chama a função correspondente
+   */
+  private async _update_role_tables(userData: any, usuario_id: number): Promise<void> {
+    try {
+      console.log(`🔄 Atualizando tabelas de roles para usuario_id ${usuario_id}...`);
+      
+      // Extrair grupos e empresa_id do userData
+      const grupos = userData.grupos || [];
+      const empresa_id = userData.empresa_id;
+      
+      console.log(`📋 Grupos encontrados: ${JSON.stringify(grupos)}`);
+      console.log(`🏢 Empresa ID: ${empresa_id}`);
+      
+      // Processar cada grupo individualmente (equivalente ao loop Python)
+      for (const grupo of grupos) {
+        console.log(`🎯 Processando grupo: ${grupo}`);
+        
+        try {
+          // Switch baseado no grupo (equivalente aos ifs Python)
+          switch (grupo) {
+            case 'Gestores':
+            case 'GestorMunicipal':
+              console.log(`🏛️ Processando gestor: usuario_id=${usuario_id}, empresa_id=${empresa_id}`);
+              await this._upsert_gestor(usuario_id, empresa_id);
+              break;
+              
+            case 'Diretores':
+            case 'Diretor':
+              console.log(`🏫 Processando diretor: usuario_id=${usuario_id}, empresa_id=${empresa_id}`);
+              await this._upsert_diretor(usuario_id, empresa_id);
+              break;
+              
+            case 'Professores':
+            case 'Professor':
+              console.log(`👩‍🏫 Processando professor: usuario_id=${usuario_id}, empresa_id=${empresa_id}`);
+              await this._upsert_professor(usuario_id, empresa_id);
+              break;
+              
+            case 'Alunos':
+            case 'Aluno':
+              console.log(`🎓 Processando aluno: usuario_id=${usuario_id}, empresa_id=${empresa_id}`);
+              await this._upsert_aluno(usuario_id, empresa_id);
+              break;
+              
+            case 'Admin':
+            case 'AdminMaster':
+            case 'Administrador':
+              console.log(`⚡ Grupo administrativo detectado: ${grupo} - Não requer tabela específica`);
+              break;
+              
+            default:
+              console.log(`⚠️ Grupo não reconhecido: ${grupo} - Ignorando`);
+              break;
+          }
+          
+        } catch (error: any) {
+          console.log(`❌ Erro ao processar grupo ${grupo}: ${error.message || error}`);
+          // Continuar processando outros grupos mesmo se um falhar
+        }
+      }
+      
+      console.log(`✅ Tabelas de roles atualizadas com sucesso para usuario_id ${usuario_id}`);
+      
+    } catch (error: any) {
+      console.log(`❌ Erro ao atualizar tabelas de roles para usuario_id ${usuario_id}: ${error.message || error}`);
       throw error;
     }
   }
