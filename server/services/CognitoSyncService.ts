@@ -623,7 +623,7 @@ export class CognitoSyncService {
     return {
       cognito_sub: cognitoUser.Username,
       email: attributes.email,
-      nome: attributes.name || attributes.given_name || '',
+      nome: attributes.name || attributes.given_name || attributes.family_name || cognitoUser.Username || 'Usuário',
       empresa_id: attributes['custom:empresa_id'] ? parseInt(attributes['custom:empresa_id']) : null,
       grupos: grupos,
       enabled: cognitoUser.Enabled ?? true,
