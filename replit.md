@@ -143,7 +143,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 11, 2025: ✅ CONCLUÍDO - Sistema Final de Sincronização AWS Cognito Individual com Endpoint sync_single_user() Implementado
+- July 11, 2025: ✅ CONCLUÍDO - Sistema Final de Sincronização AWS Cognito Individual com Endpoint sync_single_user() Implementado + Remoção Completa de Credenciais Hardcoded
   - ✅ **ENDPOINT SYNC_SINGLE_USER FUNCIONAL**: Último método Python implementado e testado
     • POST /api/cognito-sync/sync-single-user - Sincronização individual por username
     • Método syncSingleUser() usando adminGetUser() API do AWS Cognito
@@ -174,6 +174,12 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Monitoramento completo com health checks e statistics
     • Estruturas de dados, logs e comportamento 100% idênticos ao Python
     • Sistema enterprise-ready aguardando apenas configuração de permissões AWS IAM
+  - ✅ **REMOÇÃO COMPLETA DE CREDENCIAIS HARDCODED**: Sistema 100% via Secrets
+    • Removidas todas as referências hardcoded: us-east-1_SduwfXm8p, 762723916379, UsuarioBedrock
+    • CognitoSyncService agora usa apenas SecretsManager.getAWSCredentials()
+    • Arquivo .env limpo - todas as credenciais AWS movidas para Secrets
+    • Documentação atualizada para remover referências específicas
+    • Sistema usa access_key e secret_key dos Secrets corretamente
   - ✅ **DOCUMENTAÇÃO FINAL CRIADA**: SISTEMA_COGNITO_SYNC_FINAL.md com resumo executivo completo
     • Casos de uso implementados: tempo real, massiva, monitoramento
     • Permissões AWS necessárias: ListUsers, AdminGetUser, AdminListGroupsForUser, DescribeUserPool

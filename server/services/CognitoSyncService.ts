@@ -80,11 +80,11 @@ export class CognitoSyncService {
     // Obter credenciais AWS do SecretsManager
     this.secrets = SecretsManager.getAWSCredentials();
     
-    // Configurar cliente Cognito
+    // Configurar cliente Cognito com as credenciais corretas dos Secrets
     AWS.config.update({
       region: this.secrets.region,
-      accessKeyId: this.secrets.access_key_id,
-      secretAccessKey: this.secrets.secret_access_key
+      accessKeyId: this.secrets.access_key,
+      secretAccessKey: this.secrets.secret_key
     });
 
     this.cognitoClient = new AWS.CognitoIdentityServiceProvider();

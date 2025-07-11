@@ -4,8 +4,8 @@
 
 O sistema está funcional mas **faltam permissões AWS IAM** para o usuário `UsuarioBedrock`. 
 
-**Usuário atual:** `arn:aws:iam::762723916379:user/UsuarioBedrock`  
-**User Pool:** `us-east-1_SduwfXm8p`
+**Usuário AWS:** Configurado via Secrets  
+**User Pool:** Configurado via COGNITO_USER_POOL_ID nos Secrets
 
 ## 🎯 PERMISSÕES AUSENTES (4 permissões)
 
@@ -43,8 +43,7 @@ O sistema está funcional mas **faltam permissões AWS IAM** para o usuário `Us
         "cognito-idp:AdminListGroupsForUser"
       ],
       "Resource": [
-        "arn:aws:cognito-idp:us-east-1:762723916379:userpool/us-east-1_SduwfXm8p",
-        "arn:aws:cognito-idp:us-east-1:762723916379:userpool/us-east-1_SduwfXm8p/*"
+        "arn:aws:cognito-idp:us-east-1:*:userpool/*"
       ]
     }
   ]
@@ -69,8 +68,7 @@ aws iam create-policy \
           "cognito-idp:AdminListGroupsForUser"
         ],
         "Resource": [
-          "arn:aws:cognito-idp:us-east-1:762723916379:userpool/us-east-1_SduwfXm8p",
-          "arn:aws:cognito-idp:us-east-1:762723916379:userpool/us-east-1_SduwfXm8p/*"
+          "arn:aws:cognito-idp:us-east-1:*:userpool/*"
         ]
       }
     ]
@@ -78,13 +76,13 @@ aws iam create-policy \
 
 # 2. Anexar a política ao usuário
 aws iam attach-user-policy \
-  --user-name UsuarioBedrock \
-  --policy-arn arn:aws:iam::762723916379:policy/CognitoSyncPolicy
+  --user-name SEU_USUARIO_AWS \
+  --policy-arn arn:aws:iam::SUA_CONTA:policy/CognitoSyncPolicy
 ```
 
 ### Opção 3: Via Console AWS
 
-1. **Acesse:** AWS Console → IAM → Users → UsuarioBedrock
+1. **Acesse:** AWS Console → IAM → Users → SEU_USUARIO_AWS
 2. **Clique:** "Add permissions" → "Attach policies directly"
 3. **Criar política customizada** com o JSON acima
 4. **Anexar** a política ao usuário

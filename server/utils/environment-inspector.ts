@@ -48,31 +48,26 @@ export class EnvironmentInspector {
   }
 
   /**
-   * Verificar se o User Pool atual é diferente do antigo
+   * Verificar se o User Pool está configurado corretamente
    */
   static checkUserPoolUpdate(): {
     currentUserPoolId: string;
-    isUpdated: boolean;
-    oldUserPoolId: string;
+    isConfigured: boolean;
     needsDocumentationUpdate: boolean;
   } {
     const currentUserPoolId = process.env.COGNITO_USER_POOL_ID || '';
-    const oldUserPoolId = 'us-east-1_SduwfXm8p';
-    
-    const isUpdated = currentUserPoolId !== oldUserPoolId;
-    const needsDocumentationUpdate = isUpdated && currentUserPoolId !== '';
+    const isConfigured = currentUserPoolId !== '';
+    const needsDocumentationUpdate = isConfigured;
     
     console.log('📋 Status do User Pool:', {
-      currentUserPoolId,
-      oldUserPoolId,
-      isUpdated,
+      currentUserPoolId: currentUserPoolId ? `${currentUserPoolId.substring(0, 20)}...` : 'não configurado',
+      isConfigured,
       needsDocumentationUpdate
     });
     
     return {
       currentUserPoolId,
-      oldUserPoolId,
-      isUpdated,
+      isConfigured,
       needsDocumentationUpdate
     };
   }
