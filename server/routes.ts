@@ -862,6 +862,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const diretorCrudRoutes = await import('./routes/diretor-crud.js');
   app.use('/api/diretor', diretorCrudRoutes.default);
   
+  // Registrar rotas de status de credenciais
+  const secretsStatusRoutes = await import('./routes/secrets-status');
+  app.use('/api/secrets', secretsStatusRoutes.default);
+  
   // Registrar rotas de autenticação unificadas
   const { registerAuthRoutes } = await import('./routes/auth-routes.js');
   registerAuthRoutes(app);

@@ -37,6 +37,7 @@ import AdminUnifiedDashboard from "@/pages/admin/AdminUnifiedDashboard";
 import AdminCRUDDashboard from "@/pages/admin/AdminCRUDDashboard";
 import GestorCRUDDashboard from "@/pages/gestor/GestorCRUDDashboard";
 import DiretorCRUDDashboard from "@/pages/diretor/DiretorCRUDDashboard";
+import SystemCredentials from "@/pages/admin/SystemCredentials";
 import CreateUser from "@/pages/admin/CreateUser";
 import ExecutiveDashboard from "@/pages/admin/ExecutiveDashboard";
 import AdvancedToolsDashboard from "@/pages/admin/AdvancedToolsDashboard";
@@ -200,6 +201,7 @@ function Router() {
 
       <Route path="/admin/users" component={AdminUnifiedDashboard} />
       <Route path="/admin/crud" component={AdminCRUDDashboard} />
+      <Route path="/admin/credentials" component={SystemCredentials} />
       <Route path="/admin/create-user" component={CreateUser} />
 
       <Route path="/admin/cognito-users" component={CognitoUserManagement} />
