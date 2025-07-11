@@ -41,6 +41,7 @@ import { registerSchoolRoutes } from "./routes/school-routes";
 import { registerAdminCognitoRoutes } from "./routes/admin-cognito-routes";
 import { registerAdminEndpoints } from "./routes/admin-endpoints";
 import { registerAdminCRUDEndpoints } from "./routes/admin-crud";
+// Import removido para implementação dinâmica
 
 // Define login schema
 const loginSchema = z.object({
@@ -865,6 +866,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registrar rotas de status de credenciais
   const secretsStatusRoutes = await import('./routes/secrets-status');
   app.use('/api/secrets', secretsStatusRoutes.default);
+  
+  // Registrar rotas de sincronização AWS Cognito
+  try {
+    const cognitoSyncRoutes = await import('./routes/cognito-sync');
+    app.use('/api/cognito-sync', cognitoSyncRoutes.default);
+    console.log("✅ Rotas de sincronização AWS Cognito registradas com sucesso");
+  } catch (error) {
+    console.error("❌ Erro ao registrar rotas de sincronização Cognito:", error);
+  }
   
   // Registrar rotas de autenticação unificadas
   const { registerAuthRoutes } = await import('./routes/auth-routes.js');
