@@ -81,6 +81,17 @@ export const usuarios = pgTable('usuarios', {
   atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
 
+// Tabela de Gestores (estrutura baseada no banco real)
+export const gestores = pgTable('gestores', {
+  id: serial('id').primaryKey(),
+  usr_id: integer('usr_id'),
+  empresa_id: integer('empresa_id'),
+  nome: varchar('nome'),
+  cargo: varchar('cargo'),
+  data_admissao: date('data_admissao'),
+  status: varchar('status').default('ativo'),
+});
+
 // Manter compatibilidade com sistema anterior
 export const users = usuarios;
 

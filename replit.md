@@ -143,6 +143,34 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 11, 2025: ✅ CONCLUÍDO - Implementação de Funções Auxiliares Python-Compatible no CognitoSyncService
+  - ✅ **FUNÇÃO _get_usuario_id IMPLEMENTADA**: Busca ID de usuário local por cognito_sub
+    • Input: cognitoSub (string), Output: number | null
+    • Usa Drizzle ORM com SELECT + WHERE + LIMIT(1) para eficiência
+    • Prepared statements para segurança contra SQL injection
+    • Tratamento de erro robusto com try/catch e logging
+    • Compatível 100% com implementação Python original
+  - ✅ **FUNÇÃO _upsert_gestor IMPLEMENTADA**: Insert/Update de gestores com conflito ignorado
+    • Equivalente ao SQL Python: INSERT INTO gestores (usuario_id, empresa_id) VALUES (%s, %s) ON CONFLICT (usuario_id) DO NOTHING
+    • Input: usuario_id (number), empresa_id (number), Output: Promise<void>
+    • Usa INSERT com onConflictDoNothing() do Drizzle ORM
+    • Campos inseridos: usr_id, empresa_id, status='ativo'
+    • Log detalhado para debugging e auditoria
+    • Prepared statements e error handling implementados
+  - ✅ **SCHEMA GESTORES ADICIONADO**: Tabela gestores incluída no shared/schema.ts
+    • Campos: id (serial PK), usr_id, empresa_id, nome, cargo, data_admissao, status
+    • Importação correta no CognitoSyncService.ts
+    • Estrutura baseada na tabela real do banco PostgreSQL
+    • Compatibilidade mantida com modelo Gestor.js existente
+  - ✅ **TESTES CRIADOS E VALIDADOS**: Scripts de teste para ambas as funções
+    • test-get-usuario-id.cjs: Validação da busca de ID por cognito_sub
+    • test-upsert-gestor.cjs: Validação do upsert de gestores
+    • Análise de estrutura e compatibilidade com Python
+    • Documentação técnica e casos de uso incluídos
+  - ✅ **PRÓXIMOS PASSOS IDENTIFICADOS**: Expansão do sistema de funções auxiliares
+    • _upsert_diretor, _upsert_professor, _upsert_aluno para completar hierarquia
+    • _update_role_tables para processamento por grupo
+    • Integração completa com _sync_user_to_local existente
 - July 11, 2025: ✅ CONCLUÍDO - Sistema Final de Sincronização AWS Cognito Individual com Endpoint sync_single_user() Implementado + Remoção Completa de Credenciais Hardcoded
   - ✅ **ENDPOINT SYNC_SINGLE_USER FUNCIONAL**: Último método Python implementado e testado
     • POST /api/cognito-sync/sync-single-user - Sincronização individual por username
