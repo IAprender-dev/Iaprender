@@ -312,60 +312,59 @@ export class CognitoSyncService {
   }
 
   /**
-   * 🔄 INSERIR/ATUALIZAR USUÁRIO NA TABELA PRINCIPAL
+   * 💾 INSERE OU ATUALIZA USUÁRIO NA TABELA LOCAL (UPSERT) - Baseado na implementação Python
    */
   private async _upsertUser(userData: any): Promise<number> {
     try {
       // Determinar tipo de usuário baseado nos grupos
       const tipoUsuario = this._mapGroupsToUserType(userData.grupos);
       
-      // Determinar status baseado no user_status
-      const status = this._mapUserStatusToStatus(userData.user_status, userData.enabled);
+      // Determinar status baseado no user_status  
+      const ativo = this._mapUserStatusToStatus(userData.user_status, userData.enabled) === 'ativo';
       
-      // Verificar se usuário já existe
+      // Usar Drizzle para simular ON CONFLICT com valores preparados
       const existingUsers = await db
         .select({ id: users.id })
         .from(users)
         .where(eq(users.cognitoSub, userData.cognito_sub))
         .limit(1);
       
+      const now = new Date();
+      const userValues = {
+        cognitoSub: userData.cognito_sub,
+        email: userData.email,
+        name: userData.nome,
+        userType: tipoUsuario,
+        companyId: userData.empresa_id,
+        status: ativo ? 'ativo' : 'inativo',
+        updatedAt: now
+      };
+      
       if (existingUsers.length > 0) {
-        // Atualizar usuário existente
+        // UPDATE: usuário já existe
         await db
           .update(users)
-          .set({
-            email: userData.email,
-            name: userData.nome,
-            userType: tipoUsuario,
-            companyId: userData.empresa_id,
-            status: status,
-            updatedAt: new Date()
-          })
+          .set(userValues)
           .where(eq(users.cognitoSub, userData.cognito_sub));
         
-        console.log(`🔄 Usuário atualizado: ${userData.email}`);
+        console.log(`💾 Usuário atualizado: ${userData.email} (ID: ${existingUsers[0].id})`);
         return existingUsers[0].id;
       } else {
-        // Criar novo usuário
+        // INSERT: novo usuário
         const [newUser] = await db
           .insert(users)
           .values({
-            cognitoSub: userData.cognito_sub,
-            email: userData.email,
-            name: userData.nome,
-            userType: tipoUsuario,
-            companyId: userData.empresa_id,
-            status: status,
-            createdAt: new Date(),
-            updatedAt: new Date()
+            ...userValues,
+            createdAt: now
           })
           .returning({ id: users.id });
         
-        console.log(`➕ Usuário criado: ${userData.email}`);
+        console.log(`💾 Usuário inserido: ${userData.email} (ID: ${newUser.id})`);
         return newUser.id;
       }
-    } catch (error) {
-      console.error(`❌ Erro ao fazer upsert do usuário ${userData.email}:`, error);
+      
+    } catch (error: any) {
+      console.error(`❌ Erro ao fazer upsert do usuário ${userData.email}:`, error.message);
       throw error;
     }
   }
