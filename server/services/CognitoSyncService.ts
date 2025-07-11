@@ -9,7 +9,7 @@ import AWS from 'aws-sdk';
 import { SecretsManager } from '../config/secrets';
 import { db } from '../db';
 import { eq, sql, count } from 'drizzle-orm';
-import { users, gestores } from '@shared/schema';
+import { users, gestores, diretores } from '@shared/schema';
 
 interface CognitoUser {
   Username: string;
@@ -686,6 +686,32 @@ export class CognitoSyncService {
       
     } catch (error: any) {
       console.log(`❌ Erro ao fazer upsert do gestor para usuario_id ${usuario_id}: ${error.message || error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 🏫 UPSERT DIRETOR (Baseado na implementação Python)
+   * INSERT INTO diretores (usuario_id, empresa_id) VALUES (%s, %s) ON CONFLICT (usuario_id) DO NOTHING
+   */
+  private async _upsert_diretor(usuario_id: number, empresa_id: number): Promise<void> {
+    try {
+      console.log(`📝 Upsert diretor: usuario_id=${usuario_id}, empresa_id=${empresa_id}`);
+      
+      // Usar INSERT com ON CONFLICT DO NOTHING (equivalente ao Python)
+      await db
+        .insert(diretores)
+        .values({
+          usr_id: usuario_id,
+          empresa_id: empresa_id,
+          status: 'ativo'
+        })
+        .onConflictDoNothing();
+
+      console.log(`✅ Diretor upserted: usuario_id=${usuario_id}, empresa_id=${empresa_id}`);
+      
+    } catch (error: any) {
+      console.log(`❌ Erro ao fazer upsert do diretor para usuario_id ${usuario_id}: ${error.message || error}`);
       throw error;
     }
   }

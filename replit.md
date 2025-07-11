@@ -167,8 +167,24 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • test-upsert-gestor.cjs: Validação do upsert de gestores
     • Análise de estrutura e compatibilidade com Python
     • Documentação técnica e casos de uso incluídos
-  - ✅ **PRÓXIMOS PASSOS IDENTIFICADOS**: Expansão do sistema de funções auxiliares
-    • _upsert_diretor, _upsert_professor, _upsert_aluno para completar hierarquia
+  - ✅ **FUNÇÃO _upsert_diretor IMPLEMENTADA**: Insert/Update de diretores escolares  
+    • Equivalente ao SQL Python: INSERT INTO diretores (usuario_id, empresa_id) VALUES (%s, %s) ON CONFLICT (usuario_id) DO NOTHING
+    • Input: usuario_id (number), empresa_id (number), Output: Promise<void>
+    • Usa INSERT com onConflictDoNothing() do Drizzle ORM
+    • Campos inseridos: usr_id, empresa_id, status='ativo'
+    • Schema da tabela diretores adicionado: id, usr_id, escola_id, empresa_id, nome, cargo, data_inicio, status
+    • Log com emoji 🏫 para identificação específica
+    • Prepared statements e error handling implementados
+  - ✅ **PROGRESSO DAS FUNÇÕES AUXILIARES**: 3 de 6 funções implementadas
+    • ✅ _get_usuario_id - Busca ID por cognito_sub
+    • ✅ _upsert_gestor - Upsert de gestores municipais
+    • ✅ _upsert_diretor - Upsert de diretores escolares
+    • ⏳ _upsert_professor - Pendente (próxima prioridade)
+    • ⏳ _upsert_aluno - Pendente
+    • ⏳ _update_role_tables - Pendente (orquestração final)
+  - ✅ **PRÓXIMOS PASSOS IDENTIFICADOS**: Completar hierarquia educacional
+    • _upsert_professor para gestão de professores
+    • _upsert_aluno para gestão de alunos  
     • _update_role_tables para processamento por grupo
     • Integração completa com _sync_user_to_local existente
 - July 11, 2025: ✅ CONCLUÍDO - Sistema Final de Sincronização AWS Cognito Individual com Endpoint sync_single_user() Implementado + Remoção Completa de Credenciais Hardcoded
