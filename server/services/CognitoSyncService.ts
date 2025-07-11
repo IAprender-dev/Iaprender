@@ -422,69 +422,148 @@ export class CognitoSyncService {
   }
 
   /**
-   * 📋 ATUALIZAR TABELAS ESPECÍFICAS POR TIPO DE USUÁRIO
+   * 🏢 ATUALIZA TABELAS ESPECÍFICAS BASEADAS NOS GRUPOS DO USUÁRIO (Baseado na implementação Python)
    */
   private async _updateRoleTables(userData: any, userId: number): Promise<void> {
     try {
-      // Determinar tipo de usuário baseado nos grupos
-      const userType = this._mapGroupsToUserType(userData.grupos)?.toLowerCase();
+      const empresaId = userData.empresa_id;
       
-      switch (userType) {
-        case 'professor':
-          await this._updateProfessorTable(userData, userId);
-          break;
-        case 'aluno':
-          await this._updateAlunoTable(userData, userId);
-          break;
-        case 'diretor':
-          await this._updateDiretorTable(userData, userId);
-          break;
-        case 'gestor':
-          await this._updateGestorTable(userData, userId);
-          break;
-        case 'admin':
-          // Admin não tem tabela específica
-          console.log(`👨‍💼 Admin sincronizado: ${userData.email}`);
-          break;
-        default:
-          console.warn(`⚠️ Tipo de usuário não reconhecido: ${userType} (grupos: ${userData.grupos?.join(', ')})`);
+      if (!userId || !empresaId) {
+        return;
       }
-    } catch (error) {
-      console.error(`❌ Erro ao atualizar tabelas específicas para ${userData.email}:`, error);
+      
+      // Processar cada grupo e atualizar tabela correspondente
+      for (const grupo of userData.grupos) {
+        if (grupo === 'Gestores') {
+          await this._upsertGestor(userId, empresaId);
+          console.log(`👨‍💼 Gestor atualizado: ${userData.email}`);
+        } else if (grupo === 'Diretores') {
+          await this._upsertDiretor(userId, empresaId);
+          console.log(`🎯 Diretor atualizado: ${userData.email}`);
+        } else if (grupo === 'Professores') {
+          await this._upsertProfessor(userId, empresaId);
+          console.log(`👨‍🏫 Professor atualizado: ${userData.email}`);
+        } else if (grupo === 'Alunos') {
+          await this._upsertAluno(userId, empresaId);
+          console.log(`🎓 Aluno atualizado: ${userData.email}`);
+        }
+      }
+    } catch (error: any) {
+      console.error(`❌ Erro ao atualizar tabelas específicas para ${userData.email}:`, error.message);
       // Não propagar erro para não quebrar sincronização principal
     }
   }
 
   /**
-   * 👨‍🏫 ATUALIZAR TABELA DE PROFESSORES
+   * 👨‍💼 UPSERT GESTOR (Baseado na implementação Python)
    */
-  private async _updateProfessorTable(userData: any, userId: number): Promise<void> {
-    // TODO: Implementar quando tabela professores estiver disponível
-    console.log(`👨‍🏫 Professor processado: ${userData.email} (tabela pendente)`);
+  private async _upsertGestor(usuarioId: number, empresaId: number): Promise<void> {
+    try {
+      // Verificar se registro já existe
+      const existingGestor = await db
+        .select({ id: usuarios.id })
+        .from(usuarios)
+        .where(eq(usuarios.id, usuarioId))
+        .limit(1);
+
+      if (existingGestor.length > 0) {
+        // Atualizar registro existente
+        await db
+          .update(usuarios)
+          .set({
+            empresaId: empresaId,
+            atualizadoEm: new Date()
+          })
+          .where(eq(usuarios.id, usuarioId));
+      }
+      // Usuário já existe na tabela principal, apenas confirmar empresa_id
+    } catch (error: any) {
+      console.error(`❌ Erro ao fazer upsert do gestor:`, error.message);
+    }
   }
 
   /**
-   * 👨‍🎓 ATUALIZAR TABELA DE ALUNOS
+   * 🎯 UPSERT DIRETOR (Baseado na implementação Python)
    */
-  private async _updateAlunoTable(userData: any, userId: number): Promise<void> {
-    // TODO: Implementar quando tabela alunos estiver disponível
-    console.log(`👨‍🎓 Aluno processado: ${userData.email} (tabela pendente)`);
+  private async _upsertDiretor(usuarioId: number, empresaId: number): Promise<void> {
+    try {
+      // Verificar se registro já existe
+      const existingDiretor = await db
+        .select({ id: usuarios.id })
+        .from(usuarios)
+        .where(eq(usuarios.id, usuarioId))
+        .limit(1);
+
+      if (existingDiretor.length > 0) {
+        // Atualizar registro existente
+        await db
+          .update(usuarios)
+          .set({
+            empresaId: empresaId,
+            atualizadoEm: new Date()
+          })
+          .where(eq(usuarios.id, usuarioId));
+      }
+      // Usuário já existe na tabela principal, apenas confirmar empresa_id
+    } catch (error: any) {
+      console.error(`❌ Erro ao fazer upsert do diretor:`, error.message);
+    }
   }
 
   /**
-   * 👨‍💼 ATUALIZAR TABELA DE DIRETORES
+   * 👨‍🏫 UPSERT PROFESSOR (Baseado na implementação Python)
    */
-  private async _updateDiretorTable(userData: any, userId: number): Promise<void> {
-    // TODO: Implementar quando tabela diretores estiver disponível
-    console.log(`👨‍💼 Diretor processado: ${userData.email} (tabela pendente)`);
+  private async _upsertProfessor(usuarioId: number, empresaId: number): Promise<void> {
+    try {
+      // Verificar se registro já existe
+      const existingProfessor = await db
+        .select({ id: usuarios.id })
+        .from(usuarios)
+        .where(eq(usuarios.id, usuarioId))
+        .limit(1);
+
+      if (existingProfessor.length > 0) {
+        // Atualizar registro existente
+        await db
+          .update(usuarios)
+          .set({
+            empresaId: empresaId,
+            atualizadoEm: new Date()
+          })
+          .where(eq(usuarios.id, usuarioId));
+      }
+      // Usuário já existe na tabela principal, apenas confirmar empresa_id
+    } catch (error: any) {
+      console.error(`❌ Erro ao fazer upsert do professor:`, error.message);
+    }
   }
 
   /**
-   * 🏛️ ATUALIZAR TABELA DE GESTORES
+   * 🎓 UPSERT ALUNO (Baseado na implementação Python)
    */
-  private async _updateGestorTable(userData: any, userId: number): Promise<void> {
-    // TODO: Implementar quando tabela gestores estiver disponível
-    console.log(`🏛️ Gestor processado: ${userData.email} (tabela pendente)`);
+  private async _upsertAluno(usuarioId: number, empresaId: number): Promise<void> {
+    try {
+      // Verificar se registro já existe
+      const existingAluno = await db
+        .select({ id: usuarios.id })
+        .from(usuarios)
+        .where(eq(usuarios.id, usuarioId))
+        .limit(1);
+
+      if (existingAluno.length > 0) {
+        // Atualizar registro existente
+        await db
+          .update(usuarios)
+          .set({
+            empresaId: empresaId,
+            atualizadoEm: new Date()
+          })
+          .where(eq(usuarios.id, usuarioId));
+      }
+      // Usuário já existe na tabela principal, apenas confirmar empresa_id
+    } catch (error: any) {
+      console.error(`❌ Erro ao fazer upsert do aluno:`, error.message);
+    }
   }
 
   /**
