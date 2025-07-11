@@ -646,6 +646,25 @@ export class CognitoSyncService {
   }
 
   /**
+   * 🔍 BUSCA ID DO USUÁRIO LOCAL (Baseado na implementação Python)
+   */
+  private async _get_usuario_id(cognitoSub: string): Promise<number | null> {
+    try {
+      const result = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.cognitoSub, cognitoSub))
+        .limit(1);
+
+      return result.length > 0 ? result[0].id : null;
+      
+    } catch (error: any) {
+      console.log(`❌ Erro ao buscar ID do usuário para cognito_sub ${cognitoSub}: ${error.message || error}`);
+      return null;
+    }
+  }
+
+  /**
    * Buscar todos os usuários do AWS Cognito
    */
   private async getAllCognitoUsers(): Promise<CognitoUser[]> {
