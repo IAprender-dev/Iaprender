@@ -336,14 +336,18 @@ export class CognitoSyncService {
         .limit(1);
       
       const now = new Date();
+      // Garantir que nome não seja null ou empty
+      const nomeSeguro = userData.nome || userData.cognito_username || userData.email?.split('@')[0] || 'Usuário Cognito';
+      
       const userValues = {
         cognitoSub: userData.cognito_sub,
+        cognitoUsername: userData.cognito_username,
         email: userData.email,
-        name: userData.nome,
-        userType: tipoUsuario,
-        companyId: userData.empresa_id,
+        nome: nomeSeguro,
+        tipoUsuario: tipoUsuario,
+        empresaId: userData.empresa_id,
         status: ativo ? 'ativo' : 'inativo',
-        updatedAt: now
+        atualizadoEm: now
       };
       
       if (existingUsers.length > 0) {
@@ -353,7 +357,7 @@ export class CognitoSyncService {
           .set(userValues)
           .where(eq(users.cognitoSub, userData.cognito_sub));
         
-        console.log(`💾 Usuário atualizado: ${userData.email} (ID: ${existingUsers[0].id})`);
+        console.log(`💾 Usuário atualizado: ${userData.email} - Nome: ${nomeSeguro} (ID: ${existingUsers[0].id})`);
         return existingUsers[0].id;
       } else {
         // INSERT: novo usuário
@@ -361,11 +365,11 @@ export class CognitoSyncService {
           .insert(users)
           .values({
             ...userValues,
-            createdAt: now
+            criadoEm: now
           })
           .returning({ id: users.id });
         
-        console.log(`💾 Usuário inserido: ${userData.email} (ID: ${newUser.id})`);
+        console.log(`💾 Usuário inserido: ${userData.email} - Nome: ${nomeSeguro} (ID: ${newUser.id})`);
         return newUser.id;
       }
       
@@ -620,10 +624,17 @@ export class CognitoSyncService {
     // Buscar grupos do usuário no Cognito
     const grupos = await this._getUserGroups(cognitoUser.Username);
     
+    // Estratégia de fallback para nome: buscar atributos name, given_name, family_name ou usar email/username
+    const nomeCompleto = attributes.name || 
+                        `${attributes.given_name || ''} ${attributes.family_name || ''}`.trim() ||
+                        attributes.email?.split('@')[0] || 
+                        cognitoUser.Username;
+
     return {
       cognito_sub: cognitoUser.Username,
+      cognito_username: cognitoUser.Username,
       email: attributes.email,
-      nome: attributes.name || attributes.given_name || attributes.family_name || cognitoUser.Username || 'Usuário',
+      nome: nomeCompleto,
       empresa_id: attributes['custom:empresa_id'] ? parseInt(attributes['custom:empresa_id']) : null,
       grupos: grupos,
       enabled: cognitoUser.Enabled ?? true,

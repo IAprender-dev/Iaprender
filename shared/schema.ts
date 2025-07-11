@@ -61,6 +61,7 @@ export const contratos = pgTable('contratos', {
 export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
   cognitoSub: text('cognito_sub').unique(),
+  cognitoUsername: varchar('cognito_username'),
   email: varchar('email').notNull(),
   nome: varchar('nome').notNull(),
   tipoUsuario: varchar('tipo_usuario').notNull(),
