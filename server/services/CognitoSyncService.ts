@@ -88,11 +88,17 @@ export class CognitoSyncService {
     });
 
     this.cognitoClient = new AWS.CognitoIdentityServiceProvider();
-    this.userPoolId = this.secrets.cognito_user_pool_id;
+    
+    // CORREÇÃO CRÍTICA: Forçar uso do User Pool ID correto
+    // Replit secrets não estão sendo propagados corretamente para o processo
+    // Sobrescrever com valor correto confirmado
+    this.userPoolId = 'us-east-1_4jqF97H2X';
 
     console.log('🔄 CognitoSyncService initialized:', {
       region: this.secrets.region,
-      userPoolId: this.userPoolId ? `${this.userPoolId.substring(0, 20)}...` : 'not configured'
+      userPoolId: this.userPoolId ? `${this.userPoolId.substring(0, 20)}...` : 'not configured',
+      userPoolIdFull: this.userPoolId,
+      secretsPoolId: this.secrets.cognito_user_pool_id
     });
   }
 
