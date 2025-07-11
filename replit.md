@@ -183,13 +183,21 @@ IAverse is a comprehensive educational platform that integrates artificial intel
     • Schema da tabela professores adicionado: id, usr_id, escola_id, empresa_id, nome, disciplinas, formacao, data_admissao, status
     • Log com emoji 👩‍🏫 para identificação específica
     • Prepared statements e error handling implementados
-  - ✅ **PROGRESSO DAS FUNÇÕES AUXILIARES**: 4 de 6 funções implementadas
+  - ✅ **FUNÇÃO _upsert_aluno IMPLEMENTADA**: Insert/Update de alunos
+    • Equivalente ao SQL Python: INSERT INTO alunos (usuario_id, empresa_id) VALUES (%s, %s) ON CONFLICT (usuario_id) DO NOTHING
+    • Input: usuario_id (number), empresa_id (number), Output: Promise<void>
+    • Usa INSERT com onConflictDoNothing() do Drizzle ORM
+    • Campos inseridos: usr_id, empresa_id, status='ativo'
+    • Schema da tabela alunos adicionado: id, usr_id, escola_id, empresa_id, matricula, nome, turma, serie, turno, nome_responsavel, contato_responsavel, data_matricula, status, criado_em
+    • Log com emoji 🎓 para identificação específica
+    • Prepared statements e error handling implementados
+  - ✅ **PROGRESSO DAS FUNÇÕES AUXILIARES**: 5 de 6 funções implementadas
     • ✅ _get_usuario_id - Busca ID por cognito_sub
     • ✅ _upsert_gestor - Upsert de gestores municipais
     • ✅ _upsert_diretor - Upsert de diretores escolares
     • ✅ _upsert_professor - Upsert de professores
-    • ⏳ _upsert_aluno - Pendente (próxima prioridade)
-    • ⏳ _update_role_tables - Pendente (orquestração final)
+    • ✅ _upsert_aluno - Upsert de alunos
+    • ⏳ _update_role_tables - Pendente (função final de orquestração)
   - ✅ **PRÓXIMOS PASSOS IDENTIFICADOS**: Completar hierarquia educacional
     • _upsert_professor para gestão de professores
     • _upsert_aluno para gestão de alunos  

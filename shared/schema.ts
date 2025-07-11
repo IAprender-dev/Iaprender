@@ -117,6 +117,24 @@ export const professores = pgTable('professores', {
   status: varchar('status').default('ativo'),
 });
 
+// Tabela de Alunos (estrutura baseada no banco real)
+export const alunos = pgTable('alunos', {
+  id: serial('id').primaryKey(),
+  usr_id: integer('usr_id'),
+  escola_id: integer('escola_id'),
+  empresa_id: integer('empresa_id'),
+  matricula: varchar('matricula').notNull(),
+  nome: varchar('nome'),
+  turma: varchar('turma'),
+  serie: varchar('serie'),
+  turno: varchar('turno'),
+  nome_responsavel: varchar('nome_responsavel'),
+  contato_responsavel: varchar('contato_responsavel'),
+  data_matricula: date('data_matricula'),
+  status: varchar('status').default('ativo'),
+  criado_em: timestamp('criado_em'),
+});
+
 // Manter compatibilidade com sistema anterior
 export const users = usuarios;
 
