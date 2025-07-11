@@ -243,48 +243,50 @@ export class CognitoSyncService {
   }
 
   /**
-   * 📄 BUSCAR TODOS OS USUÁRIOS COM PAGINAÇÃO AUTOMÁTICA
+   * 📋 BUSCAR TODOS OS USUÁRIOS COM PAGINAÇÃO AUTOMÁTICA (Baseado na implementação Python)
    */
   private async _getAllCognitoUsersWithPagination(): Promise<CognitoUser[]> {
-    const allUsers: CognitoUser[] = [];
-    let paginationToken: string | undefined;
+    const users: CognitoUser[] = [];
+    let paginationToken: string | undefined = undefined;
     
     console.log('📄 Buscando usuários do Cognito com paginação...');
     
-    do {
+    while (true) {
       try {
         const params: AWS.CognitoIdentityServiceProvider.ListUsersRequest = {
           UserPoolId: this.userPoolId,
-          Limit: 60 // AWS Cognito limit
+          Limit: 60 // Máximo por requisição
         };
         
         if (paginationToken) {
           params.PaginationToken = paginationToken;
         }
         
+        // Chamada à API do Cognito
         const response = await this.cognitoClient.listUsers(params).promise();
         
         if (response.Users) {
-          allUsers.push(...response.Users as CognitoUser[]);
-          console.log(`📊 Página processada: ${response.Users.length} usuários (Total: ${allUsers.length})`);
+          users.push(...response.Users as CognitoUser[]);
+          console.log(`📊 Página processada: ${response.Users.length} usuários (Total: ${users.length})`);
         }
         
+        // Verificar se há mais páginas
         paginationToken = response.PaginationToken;
+        if (!paginationToken) {
+          break;
+        }
         
         // Pequeno delay para evitar rate limiting
-        if (paginationToken) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
+        await new Promise(resolve => setTimeout(resolve, 100));
         
       } catch (error) {
         console.error('❌ Erro ao buscar página de usuários:', error);
         throw error;
       }
-      
-    } while (paginationToken);
+    }
     
-    console.log(`✅ Total de usuários encontrados: ${allUsers.length}`);
-    return allUsers;
+    console.log(`📊 Total de usuários encontrados no Cognito: ${users.length}`);
+    return users;
   }
 
   /**
