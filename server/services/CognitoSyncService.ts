@@ -290,26 +290,38 @@ export class CognitoSyncService {
   }
 
   /**
-   * 👤 SINCRONIZAR USUÁRIO INDIVIDUAL PARA BANCO LOCAL
+   * 🔄 SINCRONIZA USUÁRIO INDIVIDUAL DO COGNITO PARA BANCO LOCAL (Baseado na implementação Python)
    */
   private async _syncUserToLocal(cognitoUser: CognitoUser): Promise<void> {
     try {
-      const email = this.extractEmailFromUser(cognitoUser);
-      const cognitoSub = cognitoUser.Username;
-      
-      if (!email || !cognitoSub) {
-        console.warn(`⚠️ Usuário inválido ignorado: ${cognitoSub || 'sem ID'}`);
-        return;
-      }
-      
-      // Verificar se usuário já existe no banco local
-      const existingUsers = await db
-        .select()
-        .from(users)
-        .where(eq(users.cognitoSub, cognitoSub))
-        .limit(1);
-      
+      // 1️⃣ EXTRAIR TODOS OS DADOS DO USUÁRIO DO COGNITO
       const userData = this._extractUserDataFromCognito(cognitoUser);
+      
+      // 2️⃣ INSERIR/ATUALIZAR NA TABELA USUARIOS
+      const userId = await this._upsertUser(userData);
+      
+      // 3️⃣ ATUALIZAR TABELAS ESPECÍFICAS POR GRUPO
+      await this._updateRoleTables(userData, userId);
+      
+      console.log(`✅ Usuário sincronizado: ${userData.email}`);
+      
+    } catch (error) {
+      console.error(`❌ Erro ao sincronizar usuário ${cognitoUser.Username || 'unknown'}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * 🔄 INSERIR/ATUALIZAR USUÁRIO NA TABELA PRINCIPAL
+   */
+  private async _upsertUser(userData: any): Promise<number> {
+    try {
+      // Verificar se usuário já existe
+      const existingUsers = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.cognitoSub, userData.cognito_sub))
+        .limit(1);
       
       if (existingUsers.length > 0) {
         // Atualizar usuário existente
@@ -324,12 +336,13 @@ export class CognitoSyncService {
             status: userData.status,
             updatedAt: new Date()
           })
-          .where(eq(users.cognitoSub, cognitoSub));
+          .where(eq(users.cognitoSub, userData.cognito_sub));
         
-        console.log(`🔄 Usuário atualizado: ${email}`);
+        console.log(`🔄 Usuário atualizado: ${userData.email}`);
+        return existingUsers[0].id;
       } else {
         // Criar novo usuário
-        await db
+        const [newUser] = await db
           .insert(users)
           .values({
             cognitoSub: userData.cognito_sub,
@@ -341,15 +354,81 @@ export class CognitoSyncService {
             status: userData.status,
             createdAt: new Date(),
             updatedAt: new Date()
-          });
+          })
+          .returning({ id: users.id });
         
-        console.log(`➕ Usuário criado: ${email}`);
+        console.log(`➕ Usuário criado: ${userData.email}`);
+        return newUser.id;
       }
-      
     } catch (error) {
-      console.error(`❌ Erro ao sincronizar usuário ${cognitoUser.Username}:`, error);
+      console.error(`❌ Erro ao fazer upsert do usuário ${userData.email}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * 📋 ATUALIZAR TABELAS ESPECÍFICAS POR TIPO DE USUÁRIO
+   */
+  private async _updateRoleTables(userData: any, userId: number): Promise<void> {
+    try {
+      const userType = userData.tipo_usuario?.toLowerCase();
+      
+      switch (userType) {
+        case 'professor':
+          await this._updateProfessorTable(userData, userId);
+          break;
+        case 'aluno':
+          await this._updateAlunoTable(userData, userId);
+          break;
+        case 'diretor':
+          await this._updateDiretorTable(userData, userId);
+          break;
+        case 'gestor':
+          await this._updateGestorTable(userData, userId);
+          break;
+        case 'admin':
+          // Admin não tem tabela específica
+          console.log(`👨‍💼 Admin sincronizado: ${userData.email}`);
+          break;
+        default:
+          console.warn(`⚠️ Tipo de usuário não reconhecido: ${userType}`);
+      }
+    } catch (error) {
+      console.error(`❌ Erro ao atualizar tabelas específicas para ${userData.email}:`, error);
+      // Não propagar erro para não quebrar sincronização principal
+    }
+  }
+
+  /**
+   * 👨‍🏫 ATUALIZAR TABELA DE PROFESSORES
+   */
+  private async _updateProfessorTable(userData: any, userId: number): Promise<void> {
+    // TODO: Implementar quando tabela professores estiver disponível
+    console.log(`👨‍🏫 Professor processado: ${userData.email} (tabela pendente)`);
+  }
+
+  /**
+   * 👨‍🎓 ATUALIZAR TABELA DE ALUNOS
+   */
+  private async _updateAlunoTable(userData: any, userId: number): Promise<void> {
+    // TODO: Implementar quando tabela alunos estiver disponível
+    console.log(`👨‍🎓 Aluno processado: ${userData.email} (tabela pendente)`);
+  }
+
+  /**
+   * 👨‍💼 ATUALIZAR TABELA DE DIRETORES
+   */
+  private async _updateDiretorTable(userData: any, userId: number): Promise<void> {
+    // TODO: Implementar quando tabela diretores estiver disponível
+    console.log(`👨‍💼 Diretor processado: ${userData.email} (tabela pendente)`);
+  }
+
+  /**
+   * 🏛️ ATUALIZAR TABELA DE GESTORES
+   */
+  private async _updateGestorTable(userData: any, userId: number): Promise<void> {
+    // TODO: Implementar quando tabela gestores estiver disponível
+    console.log(`🏛️ Gestor processado: ${userData.email} (tabela pendente)`);
   }
 
   /**

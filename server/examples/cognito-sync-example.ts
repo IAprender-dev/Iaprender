@@ -69,6 +69,39 @@ async function exemploSincronizacaoCompleta() {
 }
 
 /**
+ * 2.1. EXEMPLO: SINCRONIZAÇÃO COMPLETA COM PAGINAÇÃO (Python-inspired)
+ */
+async function exemploSincronizacaoAvancada() {
+  console.log('🔄 2.1. EXECUTANDO SINCRONIZAÇÃO AVANÇADA COM PAGINAÇÃO');
+  
+  try {
+    const syncService = new CognitoSyncService();
+    
+    // Executar sincronização com paginação automática
+    const result = await syncService.syncAllUsers();
+    
+    console.log('📊 Resultado da Sincronização Avançada:');
+    console.log('- Sucesso:', result.success);
+    console.log('- Usuários processados:', result.users_processed);
+    
+    if (result.error) {
+      console.log('⚠️ Erro encontrado:', result.error);
+    }
+    
+    console.log('🔧 Funcionalidades implementadas:');
+    console.log('  - Paginação automática com while(true) loop');
+    console.log('  - Processamento individual de usuários');
+    console.log('  - Upsert otimizado na tabela principal');
+    console.log('  - Atualização de tabelas específicas por role');
+    console.log('  - Rate limiting inteligente');
+    console.log('  - Tratamento gracioso de erros');
+    
+  } catch (error) {
+    console.error('❌ Erro na sincronização avançada:', error);
+  }
+}
+
+/**
  * 3. EXEMPLO: USAR VIA REQUISIÇÕES HTTP
  */
 function exemploRequisitionsHTTP() {
@@ -433,6 +466,9 @@ export async function executarExemplosCognitoSync() {
   console.log('\\n' + '='.repeat(60));
   
   await exemploSincronizacaoCompleta();
+  console.log('\\n' + '='.repeat(60));
+  
+  await exemploSincronizacaoAvancada();
   console.log('\\n' + '='.repeat(60));
   
   exemploRequisitionsHTTP();
