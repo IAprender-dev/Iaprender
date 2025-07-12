@@ -277,4 +277,50 @@ router.get('/gestores',
   }
 );
 
+/**
+ * ROTA 6: DIRETORES DA EMPRESA
+ * Equivalente ao Python:
+ * 
+ * @api_bp.route('/diretores', methods=['GET'])
+ * @auth.require_auth(required_role='Diretores')
+ * def get_diretores():
+ *     filter_service = HierarchicalFilterService(g.user_empresa_id, g.user_grupos)
+ *     diretores = filter_service.get_diretores()
+ *     return jsonify(diretores)
+ */
+router.get('/diretores',
+  authMiddleware.requireAuth(['Diretores']),
+  extractUserContext,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      console.log(`🏫 Buscando diretores da empresa: ${req.userEmpresaId}`);
+      
+      if (!req.userEmpresaId || !req.userGrupos) {
+        return res.status(400).json({ 
+          error: 'Dados do usuário não encontrados',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      const filterService = new HierarchicalFilterService(req.userEmpresaId, req.userGrupos);
+      const diretores = await filterService.getDiretores();
+      
+      console.log(`✅ Diretores encontrados: ${diretores?.length || 0} registros`);
+      
+      res.json({
+        data: diretores,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar diretores:', error);
+      
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
 export { router as apiRoutes, AuthenticatedRequest };
