@@ -185,4 +185,50 @@ router.get('/contratos',
   }
 );
 
+/**
+ * ROTA 4: USUÁRIOS DA EMPRESA
+ * Equivalente ao Python:
+ * 
+ * @api_bp.route('/usuarios', methods=['GET'])
+ * @auth.require_auth()
+ * def get_usuarios():
+ *     filter_service = HierarchicalFilterService(g.user_empresa_id, g.user_grupos)
+ *     usuarios = filter_service.get_usuarios_by_role()
+ *     return jsonify(usuarios)
+ */
+router.get('/usuarios',
+  authMiddleware.requireAuth(),
+  extractUserContext,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      console.log(`👥 Buscando usuários da empresa: ${req.userEmpresaId}`);
+      
+      if (!req.userEmpresaId || !req.userGrupos) {
+        return res.status(400).json({ 
+          error: 'Dados do usuário não encontrados',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      const filterService = new HierarchicalFilterService(req.userEmpresaId, req.userGrupos);
+      const usuarios = await filterService.getUsuariosByRole();
+      
+      console.log(`✅ Usuários encontrados: ${usuarios?.length || 0} registros`);
+      
+      res.json({
+        data: usuarios,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar usuários:', error);
+      
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
 export { router as apiRoutes, AuthenticatedRequest };
