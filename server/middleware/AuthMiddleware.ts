@@ -172,6 +172,32 @@ export class AuthMiddleware {
     console.log('❌ Header Authorization não encontrado ou formato inválido');
     return null;
   }
+
+  /**
+   * DECODIFICA TOKEN JWT
+   * Equivalente ao _decode_token() Python:
+   * 
+   * def _decode_token(self, token):
+   *     # Aqui você implementaria a validação real do token Cognito
+   *     # Por enquanto, retornamos dados mock
+   *     return jwt.decode(token, options={"verify_signature": False})
+   */
+  private _decodeToken(token: string): any {
+    try {
+      // Implementação simplificada - decodifica sem verificar assinatura
+      // Em produção, você implementaria validação real do token Cognito
+      const base64Payload = token.split('.')[1];
+      const payload = Buffer.from(base64Payload, 'base64').toString('utf8');
+      const decoded = JSON.parse(payload);
+      
+      console.log(`🔓 Token decodificado para usuário: ${decoded.sub || 'sub não encontrado'}`);
+      return decoded;
+      
+    } catch (error) {
+      console.error('❌ Erro ao decodificar token:', error);
+      throw new Error('Token inválido ou malformado');
+    }
+  }
 }
 
 export default AuthMiddleware;
