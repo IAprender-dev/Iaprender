@@ -149,6 +149,29 @@ export class AuthMiddleware {
       }
     };
   }
+
+  /**
+   * EXTRAI TOKEN DO HEADER AUTHORIZATION
+   * Equivalente ao _extract_token() Python:
+   * 
+   * def _extract_token(self):
+   *     auth_header = request.headers.get('Authorization')
+   *     if auth_header and auth_header.startswith('Bearer '):
+   *         return auth_header.split(' ')[1]
+   *     return None
+   */
+  private _extractToken(req: Request): string | null {
+    const authHeader = req.headers.authorization;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      console.log(`🔍 Token extraído do header Authorization: ${token ? 'presente' : 'ausente'}`);
+      return token;
+    }
+    
+    console.log('❌ Header Authorization não encontrado ou formato inválido');
+    return null;
+  }
 }
 
 export default AuthMiddleware;
