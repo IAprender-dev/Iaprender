@@ -51,4 +51,46 @@ function extractUserContext(req: AuthenticatedRequest, res: Response, next: Next
   next();
 }
 
+/**
+ * ROTA 1: SINCRONIZAÇÃO COGNITO
+ * Equivalente ao Python:
+ * 
+ * @api_bp.route('/sync/cognito', methods=['POST'])
+ * @auth.require_auth(required_role='Gestores')
+ * def sync_cognito():
+ *     try:
+ *         sync_service = CognitoSyncService()
+ *         sync_service.sync_all_users()
+ *         return jsonify({'message': 'Sincronização concluída com sucesso'})
+ *     except Exception as e:
+ *         return jsonify({'error': str(e)}), 500
+ */
+router.post('/sync/cognito', 
+  authMiddleware.requireAuth(['Gestores']),
+  extractUserContext,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      console.log('🔄 Iniciando sincronização Cognito...');
+      
+      const syncService = new CognitoSyncService();
+      await syncService.syncAllUsers();
+      
+      console.log('✅ Sincronização concluída com sucesso');
+      
+      res.json({ 
+        message: 'Sincronização concluída com sucesso',
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro na sincronização Cognito:', error);
+      
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
 export { router as apiRoutes, AuthenticatedRequest };
