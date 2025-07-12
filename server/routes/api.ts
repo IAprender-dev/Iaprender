@@ -323,4 +323,50 @@ router.get('/diretores',
   }
 );
 
+/**
+ * ROTA 7: PROFESSORES DA EMPRESA
+ * Equivalente ao Python:
+ * 
+ * @api_bp.route('/professores', methods=['GET'])
+ * @auth.require_auth()
+ * def get_professores():
+ *     filter_service = HierarchicalFilterService(g.user_empresa_id, g.user_grupos)
+ *     professores = filter_service.get_professores()
+ *     return jsonify(professores)
+ */
+router.get('/professores',
+  authMiddleware.requireAuth(),
+  extractUserContext,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      console.log(`👩‍🏫 Buscando professores da empresa: ${req.userEmpresaId}`);
+      
+      if (!req.userEmpresaId || !req.userGrupos) {
+        return res.status(400).json({ 
+          error: 'Dados do usuário não encontrados',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      const filterService = new HierarchicalFilterService(req.userEmpresaId, req.userGrupos);
+      const professores = await filterService.getProfessores();
+      
+      console.log(`✅ Professores encontrados: ${professores?.length || 0} registros`);
+      
+      res.json({
+        data: professores,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar professores:', error);
+      
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
 export { router as apiRoutes, AuthenticatedRequest };
