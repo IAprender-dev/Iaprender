@@ -231,4 +231,50 @@ router.get('/usuarios',
   }
 );
 
+/**
+ * ROTA 5: GESTORES DA EMPRESA
+ * Equivalente ao Python:
+ * 
+ * @api_bp.route('/gestores', methods=['GET'])
+ * @auth.require_auth(required_role='Gestores')
+ * def get_gestores():
+ *     filter_service = HierarchicalFilterService(g.user_empresa_id, g.user_grupos)
+ *     gestores = filter_service.get_gestores()
+ *     return jsonify(gestores)
+ */
+router.get('/gestores',
+  authMiddleware.requireAuth(['Gestores']),
+  extractUserContext,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      console.log(`👔 Buscando gestores da empresa: ${req.userEmpresaId}`);
+      
+      if (!req.userEmpresaId || !req.userGrupos) {
+        return res.status(400).json({ 
+          error: 'Dados do usuário não encontrados',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      const filterService = new HierarchicalFilterService(req.userEmpresaId, req.userGrupos);
+      const gestores = await filterService.getGestores();
+      
+      console.log(`✅ Gestores encontrados: ${gestores?.length || 0} registros`);
+      
+      res.json({
+        data: gestores,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar gestores:', error);
+      
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
 export { router as apiRoutes, AuthenticatedRequest };
