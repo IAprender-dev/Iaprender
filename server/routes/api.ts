@@ -139,4 +139,50 @@ router.get('/empresas',
   }
 );
 
+/**
+ * ROTA 3: CONTRATOS DA EMPRESA
+ * Equivalente ao Python:
+ * 
+ * @api_bp.route('/contratos', methods=['GET'])
+ * @auth.require_auth()
+ * def get_contratos():
+ *     filter_service = HierarchicalFilterService(g.user_empresa_id, g.user_grupos)
+ *     contratos = filter_service.get_contratos()
+ *     return jsonify(contratos)
+ */
+router.get('/contratos',
+  authMiddleware.requireAuth(),
+  extractUserContext,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      console.log(`📋 Buscando contratos da empresa: ${req.userEmpresaId}`);
+      
+      if (!req.userEmpresaId || !req.userGrupos) {
+        return res.status(400).json({ 
+          error: 'Dados do usuário não encontrados',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      const filterService = new HierarchicalFilterService(req.userEmpresaId, req.userGrupos);
+      const contratos = await filterService.getContratos();
+      
+      console.log(`✅ Contratos encontrados: ${contratos?.length || 0} registros`);
+      
+      res.json({
+        data: contratos,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar contratos:', error);
+      
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
 export { router as apiRoutes, AuthenticatedRequest };
