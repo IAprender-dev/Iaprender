@@ -527,6 +527,268 @@ export class HierarchicalFilterService {
   }
 
   /**
+   * 🔍 RETORNA DADOS FILTRADOS POR EMPRESA COM FILTROS ADICIONAIS
+   * Equivalente ao get_filtered_data() Python
+   */
+  public async getFilteredData(tableName: string, additionalFilters?: Record<string, any>): Promise<any[]> {
+    if (!this.userEmpresaId) {
+      return [];
+    }
+
+    try {
+      let query: any;
+      
+      // Selecionar tabela baseada no nome
+      switch (tableName.toLowerCase()) {
+        case 'usuarios':
+          query = db.select().from(users).where(eq(users.empresaId, this.userEmpresaId));
+          break;
+        case 'empresas':
+          query = db.select().from(empresas).where(eq(empresas.id, this.userEmpresaId));
+          break;
+        case 'escolas':
+          query = db.select().from(escolas).where(eq(escolas.empresaId, this.userEmpresaId));
+          break;
+        case 'contratos':
+          query = db.select().from(contratos).where(eq(contratos.empresaId, this.userEmpresaId));
+          break;
+        case 'alunos':
+          query = db.select().from(alunos).where(eq(alunos.empresaId, this.userEmpresaId));
+          break;
+        case 'professores':
+          query = db.select().from(professores).where(eq(professores.empresaId, this.userEmpresaId));
+          break;
+        case 'diretores':
+          query = db.select().from(diretores).where(eq(diretores.empresaId, this.userEmpresaId));
+          break;
+        case 'gestores':
+          query = db.select().from(gestores).where(eq(gestores.empresaId, this.userEmpresaId));
+          break;
+        default:
+          throw new Error(`Tabela não suportada: ${tableName}`);
+      }
+
+      // Aplicar filtros adicionais
+      if (additionalFilters) {
+        const filterConditions = Object.entries(additionalFilters).map(([key, value]) => {
+          // Usar sql para filtros dinâmicos
+          return sql`${sql.identifier(key)} = ${value}`;
+        });
+        
+        if (filterConditions.length > 0) {
+          query = query.where(and(...filterConditions));
+        }
+      }
+
+      return await query;
+      
+    } catch (error) {
+      console.error(`Erro ao obter dados filtrados da tabela ${tableName}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * 👥 RETORNA USUÁRIOS FILTRADOS POR EMPRESA E ROLE
+   * Equivalente ao get_usuarios_by_role() Python
+   */
+  public async getUsuariosByRole(role?: string): Promise<any[]> {
+    if (!this.userEmpresaId) {
+      return [];
+    }
+
+    try {
+      let query = db
+        .select({
+          id: users.id,
+          cognitoSub: users.cognitoSub,
+          email: users.email,
+          nome: users.nome,
+          tipoUsuario: users.tipoUsuario,
+          empresaId: users.empresaId,
+          status: users.status,
+          criadoEm: users.criadoEm,
+          empresaNome: empresas.nome
+        })
+        .from(users)
+        .innerJoin(empresas, eq(users.empresaId, empresas.id))
+        .where(eq(users.empresaId, this.userEmpresaId));
+
+      // Filtrar por role se especificado
+      if (role) {
+        query = query.where(eq(users.tipoUsuario, role));
+      }
+
+      return await query;
+      
+    } catch (error) {
+      console.error('Erro ao obter usuários por role:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 🏛️ RETORNA GESTORES DA EMPRESA
+   * Equivalente ao get_gestores() Python
+   */
+  public async getGestores(): Promise<any[]> {
+    if (!this.userEmpresaId) {
+      return [];
+    }
+
+    try {
+      return await db
+        .select({
+          id: gestores.id,
+          usuarioId: gestores.usrId,
+          empresaId: gestores.empresaId,
+          nome: users.nome,
+          email: users.email,
+          cargo: gestores.cargo,
+          dataAdmissao: gestores.dataAdmissao,
+          status: gestores.status,
+          empresaNome: empresas.nome
+        })
+        .from(gestores)
+        .innerJoin(users, eq(gestores.usrId, users.id))
+        .innerJoin(empresas, eq(gestores.empresaId, empresas.id))
+        .where(eq(gestores.empresaId, this.userEmpresaId));
+        
+    } catch (error) {
+      console.error('Erro ao obter gestores:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 🏫 RETORNA DIRETORES DA EMPRESA
+   * Equivalente ao get_diretores() Python
+   */
+  public async getDiretores(): Promise<any[]> {
+    if (!this.userEmpresaId) {
+      return [];
+    }
+
+    try {
+      return await db
+        .select({
+          id: diretores.id,
+          usuarioId: diretores.usrId,
+          escolaId: diretores.escolaId,
+          empresaId: diretores.empresaId,
+          nome: users.nome,
+          email: users.email,
+          cargo: diretores.cargo,
+          dataInicio: diretores.dataInicio,
+          status: diretores.status,
+          empresaNome: empresas.nome
+        })
+        .from(diretores)
+        .innerJoin(users, eq(diretores.usrId, users.id))
+        .innerJoin(empresas, eq(diretores.empresaId, empresas.id))
+        .where(eq(diretores.empresaId, this.userEmpresaId));
+        
+    } catch (error) {
+      console.error('Erro ao obter diretores:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 👩‍🏫 RETORNA PROFESSORES DA EMPRESA
+   * Equivalente ao get_professores() Python
+   */
+  public async getProfessores(): Promise<any[]> {
+    if (!this.userEmpresaId) {
+      return [];
+    }
+
+    try {
+      return await db
+        .select({
+          id: professores.id,
+          usuarioId: professores.usrId,
+          escolaId: professores.escolaId,
+          empresaId: professores.empresaId,
+          nome: users.nome,
+          email: users.email,
+          disciplinas: professores.disciplinas,
+          formacao: professores.formacao,
+          dataAdmissao: professores.dataAdmissao,
+          status: professores.status,
+          empresaNome: empresas.nome
+        })
+        .from(professores)
+        .innerJoin(users, eq(professores.usrId, users.id))
+        .innerJoin(empresas, eq(professores.empresaId, empresas.id))
+        .where(eq(professores.empresaId, this.userEmpresaId));
+        
+    } catch (error) {
+      console.error('Erro ao obter professores:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 🎓 RETORNA ALUNOS DA EMPRESA
+   * Equivalente ao get_alunos() Python
+   */
+  public async getAlunos(): Promise<any[]> {
+    if (!this.userEmpresaId) {
+      return [];
+    }
+
+    try {
+      return await db
+        .select({
+          id: alunos.id,
+          usuarioId: alunos.usrId,
+          escolaId: alunos.escolaId,
+          empresaId: alunos.empresaId,
+          matricula: alunos.matricula,
+          nome: users.nome,
+          email: users.email,
+          turma: alunos.turma,
+          serie: alunos.serie,
+          turno: alunos.turno,
+          nomeResponsavel: alunos.nomeResponsavel,
+          contatoResponsavel: alunos.contatoResponsavel,
+          dataMatricula: alunos.dataMatricula,
+          status: alunos.status,
+          empresaNome: empresas.nome
+        })
+        .from(alunos)
+        .innerJoin(users, eq(alunos.usrId, users.id))
+        .innerJoin(empresas, eq(alunos.empresaId, empresas.id))
+        .where(eq(alunos.empresaId, this.userEmpresaId));
+        
+    } catch (error) {
+      console.error('Erro ao obter alunos:', error);
+      return [];
+    }
+  }
+
+  /**
+   * 📋 RETORNA CONTRATOS DA EMPRESA
+   * Equivalente ao get_contratos() Python
+   */
+  public async getContratos(): Promise<any[]> {
+    return await this.getFilteredData('contratos');
+  }
+
+  /**
+   * ✅ VERIFICA SE USUÁRIO PODE ACESSAR DETERMINADOS DADOS
+   * Equivalente ao can_access_data() Python
+   */
+  public canAccessData(requiredRole?: string): boolean {
+    if (!requiredRole) {
+      return true;
+    }
+    
+    return this.userGrupos.includes(requiredRole);
+  }
+
+  /**
    * 📊 OBTER ESTATÍSTICAS BASEADAS NA HIERARQUIA
    */
   public async getHierarchicalStats(): Promise<any> {

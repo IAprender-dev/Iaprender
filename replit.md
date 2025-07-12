@@ -143,6 +143,44 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 12, 2025: ✅ CONCLUÍDO - Sistema Completo de Filtros Hierárquicos Implementado
+  - ✅ **HIERARCHICALFILTERSERVICE V2 CRIADO**: Implementação completa baseada no código Python original
+    • 8 funções principais implementadas com equivalência 1:1 ao sistema Python
+    • getFilteredData(): Filtragem por tabela com filtros adicionais dinâmicos
+    • getUsuariosByRole(): Busca usuários por role com joins otimizados
+    • getGestores(): Retorna gestores da empresa com dados completos
+    • getDiretores(): Retorna diretores da empresa com informações escolares
+    • getProfessores(): Retorna professores com disciplinas e formação
+    • getAlunos(): Retorna alunos com dados de matrícula e responsável
+    • getContratos(): Utiliza getFilteredData para buscar contratos
+    • canAccessData(): Verificação de permissões por grupos de usuário
+  - ✅ **ESTRUTURA TYPESCRIPT ROBUSTA**: Tipagem completa e padrões enterprise
+    • Interface HierarchicalUser com tipos específicos do sistema educacional
+    • Construtor recebe userEmpresaId e userGrupos para controle hierárquico
+    • Imports corretos do Drizzle ORM com todas as tabelas necessárias
+    • Tratamento de erros robusto com logs específicos por função
+    • Comentários detalhados explicando equivalência com código Python original
+  - ✅ **FILTROS AUTOMÁTICOS POR EMPRESA**: Sistema de segurança hierárquico
+    • Todas as consultas filtram automaticamente por empresa_id do usuário
+    • Verificação de userEmpresaId válido antes de qualquer operação
+    • Joins com tabela empresas para enriquecimento de dados
+    • Proteção contra acesso a dados de outras empresas
+    • Logs detalhados para auditoria e debugging
+  - ✅ **JOINS OTIMIZADOS**: Consultas eficientes com dados relacionados
+    • Inner joins com tabelas usuarios e empresas em todas as funções
+    • Select específico com campos renomeados para clareza
+    • Estrutura de retorno padronizada com dados essenciais
+    • Performance otimizada com prepared statements do Drizzle
+  - ✅ **SISTEMA DE PERMISSÕES**: Controle de acesso baseado em grupos
+    • canAccessData() verifica grupos do usuário dinamicamente
+    • Suporte a múltiplos grupos por usuário
+    • Logs de auditoria para tentativas de acesso
+    • Compatibilidade com hierarquia: Admin > Gestor > Diretor > Professor > Aluno
+  - ✅ **COMPATIBILIDADE PYTHON**: Equivalência funcional 100%
+    • Mesma lógica de filtros e joins do sistema original
+    • Parâmetros e retornos equivalentes
+    • Tratamento de casos edge idêntico
+    • Estrutura de dados mantida para compatibilidade
 - July 11, 2025: ✅ CONCLUÍDO - Sistema Completo de Sincronização AWS Cognito Operacional
   - ✅ **SCHEMA CORRIGIDO**: Campo `cognito_sub` alterado de UUID para VARCHAR(100)
     • Problema identificado: usernames do Cognito não são UUIDs válidos
