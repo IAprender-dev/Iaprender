@@ -93,4 +93,50 @@ router.post('/sync/cognito',
   }
 );
 
+/**
+ * ROTA 2: DADOS DA EMPRESA
+ * Equivalente ao Python:
+ * 
+ * @api_bp.route('/empresas', methods=['GET'])
+ * @auth.require_auth()
+ * def get_empresas():
+ *     filter_service = HierarchicalFilterService(g.user_empresa_id, g.user_grupos)
+ *     empresa = filter_service.get_filtered_data('empresas', {'id': g.user_empresa_id})
+ *     return jsonify(empresa)
+ */
+router.get('/empresas',
+  authMiddleware.requireAuth(),
+  extractUserContext,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      console.log(`🏢 Buscando dados da empresa: ${req.userEmpresaId}`);
+      
+      if (!req.userEmpresaId || !req.userGrupos) {
+        return res.status(400).json({ 
+          error: 'Dados do usuário não encontrados',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      const filterService = new HierarchicalFilterService(req.userEmpresaId, req.userGrupos);
+      const empresa = await filterService.getFilteredData('empresas', { id: req.userEmpresaId });
+      
+      console.log(`✅ Dados da empresa encontrados: ${empresa?.length || 0} registros`);
+      
+      res.json({
+        data: empresa,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('❌ Erro ao buscar dados da empresa:', error);
+      
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Erro interno do servidor',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+);
+
 export { router as apiRoutes, AuthenticatedRequest };
