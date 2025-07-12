@@ -198,6 +198,55 @@ export class AuthMiddleware {
       throw new Error('Token inválido ou malformado');
     }
   }
+
+  /**
+   * BUSCA USUÁRIO NO BANCO LOCAL
+   * Equivalente ao _get_user_from_db() Python:
+   * 
+   * def _get_user_from_db(self, cognito_sub):
+   *     query = "SELECT * FROM usuarios WHERE cognito_sub = %s"
+   *     return self.db.execute_query(query, (cognito_sub,), fetch_one=True)
+   */
+  private async _getUserFromDb(cognitoSub: string): Promise<AuthenticatedUser | null> {
+    try {
+      console.log(`🔍 Buscando usuário no banco local: ${cognitoSub}`);
+      
+      // Query SQL equivalente usando Drizzle ORM
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.cognitoSub, cognitoSub))
+        .limit(1);
+      
+      if (userResult.length === 0) {
+        console.log(`❌ Usuário não encontrado no banco: ${cognitoSub}`);
+        return null;
+      }
+      
+      const user = userResult[0];
+      
+      // Montar dados do usuário autenticado (equivalente aos dados retornados pelo Python)
+      const authenticatedUser: AuthenticatedUser = {
+        id: user.id,
+        cognitoSub: user.cognitoSub,
+        email: user.email,
+        nome: user.nome,
+        tipoUsuario: user.tipoUsuario,
+        empresaId: user.empresaId,
+        escolaId: user.escolaId,
+        status: user.status,
+        grupos: user.tipoUsuario ? [user.tipoUsuario] : [] // Simplificado - em produção viria do Cognito
+      };
+      
+      console.log(`✅ Usuário encontrado: ${authenticatedUser.nome} (${authenticatedUser.email}) - Tipo: ${authenticatedUser.tipoUsuario}`);
+      
+      return authenticatedUser;
+      
+    } catch (error) {
+      console.error(`❌ Erro ao buscar usuário no banco: ${cognitoSub}`, error);
+      return null;
+    }
+  }
 }
 
 export default AuthMiddleware;
