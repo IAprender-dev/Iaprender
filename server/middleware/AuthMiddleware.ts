@@ -59,6 +59,96 @@ export class AuthMiddleware {
     
     console.log('🔐 AuthMiddleware inicializado com CognitoSyncService');
   }
+
+  /**
+   * DECORATOR PARA REQUERER AUTENTICAÇÃO
+   * Equivalente ao require_auth() Python:
+   * 
+   * def require_auth(self, required_role=None):
+   *     def decorator(f):
+   *         @wraps(f)
+   *         def decorated_function(*args, **kwargs):
+   *             try:
+   *                 # Verificar token JWT
+   *                 token = self._extract_token()
+   *                 if not token:
+   *                     return jsonify({'error': 'Token não fornecido'}), 401
+   *                 
+   *                 # Decodificar token
+   *                 user_data = self._decode_token(token)
+   *                 
+   *                 # Buscar dados do usuário local
+   *                 user = self._get_user_from_db(user_data['sub'])
+   *                 if not user:
+   *                     return jsonify({'error': 'Usuário não encontrado'}), 404
+   *                 
+   *                 # Verificar role se necessário
+   *                 if required_role and required_role not in user['grupos']:
+   *                     return jsonify({'error': 'Acesso negado'}), 403
+   *                 
+   *                 # Adicionar dados do usuário ao contexto
+   *                 g.current_user = user
+   *                 g.user_empresa_id = user['empresa_id']
+   *                 g.user_grupos = user['grupos']
+   *                 
+   *                 return f(*args, **kwargs)
+   *                 
+   *             except Exception as e:
+   *                 return jsonify({'error': f'Erro de autenticação: {str(e)}'}), 401
+   *         
+   *         return decorated_function
+   *     return decorator
+   */
+  public requireAuth(requiredRole?: string) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        console.log(`🔐 Verificando autenticação${requiredRole ? ` (role requerida: ${requiredRole})` : ''}`);
+        
+        // Verificar token JWT
+        const token = this._extractToken(req);
+        if (!token) {
+          console.log('❌ Token não fornecido');
+          return res.status(401).json({ error: 'Token não fornecido' });
+        }
+        
+        // Decodificar token
+        const userData = this._decodeToken(token);
+        if (!userData || !userData.sub) {
+          console.log('❌ Token inválido');
+          return res.status(401).json({ error: 'Token inválido' });
+        }
+        
+        // Buscar dados do usuário local
+        const user = await this._getUserFromDb(userData.sub);
+        if (!user) {
+          console.log(`❌ Usuário não encontrado: ${userData.sub}`);
+          return res.status(404).json({ error: 'Usuário não encontrado' });
+        }
+        
+        // Verificar role se necessário
+        if (requiredRole && !user.grupos.includes(requiredRole)) {
+          console.log(`❌ Acesso negado. Role requerida: ${requiredRole}, Grupos do usuário: ${user.grupos.join(', ')}`);
+          return res.status(403).json({ error: 'Acesso negado' });
+        }
+        
+        // Adicionar dados do usuário ao contexto da requisição (equivalente ao g. do Flask)
+        req.currentUser = user;
+        req.userEmpresaId = user.empresaId;
+        req.userGrupos = user.grupos;
+        
+        console.log(`✅ Usuário autenticado: ${user.nome} (${user.email}) - Grupos: ${user.grupos.join(', ')}`);
+        
+        // Continuar para o próximo middleware/rota
+        next();
+        
+      } catch (error) {
+        console.error('❌ Erro de autenticação:', error);
+        return res.status(401).json({ 
+          error: `Erro de autenticação: ${error instanceof Error ? error.message : 'Erro desconhecido'}` 
+        });
+      }
+    };
+  }
 }
 
 export default AuthMiddleware;
