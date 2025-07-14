@@ -1,15 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, Users, Brain, Sparkles } from "lucide-react";
+import { BookOpen, Users, Brain, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
 import iaprenderLogo from "@assets/IAprender_1750262542315.png";
@@ -241,50 +237,18 @@ export default function Auth() {
                         </div>
                         
                         <Button 
-                          type="submit" 
+                          type="button" 
                           className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 rounded-2xl h-14 text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02]"
-                          disabled={loginMutation.isPending}
+                          onClick={() => {
+                            window.location.href = 'https://us-east-14jqf97h2x.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=1ooqafj1v6bh3ff55t2ha56hn4&redirect_uri=https%3A%2F%2F39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev%2Fauth%2Fcallback&scope=openid%20email%20profile';
+                          }}
                         >
-                          {loginMutation.isPending ? (
-                            <div className="flex items-center space-x-3">
-                              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                              <span>Entrando...</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center space-x-2">
-                              <span>Entrar na plataforma</span>
-                              <Sparkles className="w-5 h-5" />
-                            </div>
-                          )}
+                          <div className="flex items-center space-x-2">
+                            <span>Entrar na plataforma</span>
+                            <Sparkles className="w-5 h-5" />
+                          </div>
                         </Button>
                       </form>
-                      
-                      {/* Divisor */}
-                      <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                          <div className="w-full border-t border-slate-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                          <span className="px-4 bg-white text-slate-500 font-medium">ou continue com</span>
-                        </div>
-                      </div>
-                      
-                      {/* Login AWS Cognito */}
-                      <Button 
-                        type="button"
-                        variant="outline"
-                        className="w-full border-2 border-orange-200 hover:border-orange-300 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 rounded-2xl h-14 text-orange-700 font-bold text-lg transition-all duration-300 transform hover:scale-[1.02]"
-                        onClick={() => {
-                          window.location.href = '/start-login';
-                        }}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-bold text-xs">AWS</span>
-                          </div>
-                          <span>Login Institucional (AWS Cognito)</span>
-                        </div>
-                      </Button>
                     </CardContent>
                   </Card>
                 </div>
