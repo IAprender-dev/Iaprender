@@ -1,11 +1,15 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/AuthContext";
-import { BookOpen, Users, Brain, Sparkles } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
+import { ArrowLeft, BookOpen, Users, Brain, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
 import iaprenderLogo from "@assets/IAprender_1750262542315.png";
