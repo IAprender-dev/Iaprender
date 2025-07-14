@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, BookOpen, Users, Brain } from "lucide-react";
+import { ArrowLeft, BookOpen, Users, Brain, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { Helmet } from "react-helmet";
 import iaprenderLogo from "@assets/IAprender_1750262542315.png";
