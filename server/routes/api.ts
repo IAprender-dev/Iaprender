@@ -243,7 +243,7 @@ router.get('/usuarios',
  *     return jsonify(gestores)
  */
 router.get('/gestores',
-  authMiddleware.requireAuth(['Gestores']),
+  authMiddleware.requireAuth(['Admin', 'Gestores']),
   extractUserContext,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
@@ -289,7 +289,7 @@ router.get('/gestores',
  *     return jsonify(diretores)
  */
 router.get('/diretores',
-  authMiddleware.requireAuth(['Diretores']),
+  authMiddleware.requireAuth(['Admin', 'Diretores']),
   extractUserContext,
   async (req: AuthenticatedRequest, res: Response) => {
     try {

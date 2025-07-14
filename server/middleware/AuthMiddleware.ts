@@ -11,7 +11,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
-import { users } from '../../shared/schema';
+import { usuarios as users } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 import CognitoSyncService from '../services/CognitoSyncService';
 
@@ -99,10 +99,13 @@ export class AuthMiddleware {
    *         return decorated_function
    *     return decorator
    */
-  public requireAuth(requiredRole?: string) {
+  public requireAuth(requiredRoles?: string | string[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
       try {
-        console.log(`🔐 Verificando autenticação${requiredRole ? ` (role requerida: ${requiredRole})` : ''}`);
+        const rolesStr = requiredRoles 
+          ? (Array.isArray(requiredRoles) ? requiredRoles.join(' ou ') : requiredRoles)
+          : '';
+        console.log(`🔐 Verificando autenticação${rolesStr ? ` (roles permitidas: ${rolesStr})` : ''}`);
         
         // Verificar token JWT
         const token = this._extractToken(req);
@@ -113,22 +116,45 @@ export class AuthMiddleware {
         
         // Decodificar token
         const userData = this._decodeToken(token);
-        if (!userData || !userData.sub) {
+        if (!userData || (!userData.sub && !userData.id)) {
           console.log('❌ Token inválido');
           return res.status(401).json({ error: 'Token inválido' });
         }
         
-        // Buscar dados do usuário local
-        const user = await this._getUserFromDb(userData.sub);
+        // Para tokens do nosso sistema, usar direto os dados do token
+        // Para tokens AWS Cognito, buscar no banco local
+        let user;
+        if (userData.sub) {
+          // Token AWS Cognito - buscar no banco
+          user = await this._getUserFromDb(userData.sub);
+        } else if (userData.id) {
+          // Token do nosso sistema - usar dados diretos
+          user = {
+            id: userData.id,
+            cognitoSub: 'local_user',
+            email: userData.email,
+            nome: userData.nome,
+            tipoUsuario: userData.tipo_usuario,
+            empresaId: userData.empresa_id,
+            escolaId: userData.escola_id,
+            status: 'active',
+            grupos: userData.grupos || []
+          };
+        }
         if (!user) {
           console.log(`❌ Usuário não encontrado: ${userData.sub}`);
           return res.status(404).json({ error: 'Usuário não encontrado' });
         }
         
-        // Verificar role se necessário
-        if (requiredRole && !user.grupos.includes(requiredRole)) {
-          console.log(`❌ Acesso negado. Role requerida: ${requiredRole}, Grupos do usuário: ${user.grupos.join(', ')}`);
-          return res.status(403).json({ error: 'Acesso negado' });
+        // Verificar roles se necessário
+        if (requiredRoles) {
+          const allowedRoles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+          const hasAccess = allowedRoles.some(role => user.grupos.includes(role));
+          
+          if (!hasAccess) {
+            console.log(`❌ Acesso negado. Roles permitidas: [${allowedRoles.join(', ')}], Grupos do usuário: [${user.grupos.join(', ')}]`);
+            return res.status(403).json({ error: 'Acesso negado' });
+          }
         }
         
         // Adicionar dados do usuário ao contexto da requisição (equivalente ao g. do Flask)

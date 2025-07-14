@@ -7,6 +7,7 @@ import { cognitoService } from "./utils/cognito-service";
 import { awsIAMService } from "./services/aws-iam-service";
 // Schema imports removidas - será reescrito com nova estrutura hierárquica
 import { eq, sql, gte, desc, and, isNull, isNotNull, lte, or, inArray } from "drizzle-orm";
+import { usuarios as users, alunos, empresas } from "../shared/schema";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import session from "express-session";
@@ -471,29 +472,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Rotas de usuários
   app.get("/api/usuarios", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {
-      // Simular busca de usuários (placeholder até nova estrutura)
-      const query = `
-        SELECT id, email, tipo_usuario, empresa_id, nome, criado_em
-        FROM usuarios 
-        WHERE ($1::text IS NULL OR empresa_id = $1::int)
-        ORDER BY nome
-        LIMIT 50
-      `;
+      console.log(`👥 Buscando usuários - Tipo: ${req.user.tipo_usuario}, Empresa: ${req.user.empresa_id}`);
       
-      const empresaFilter = req.user.tipo_usuario === 'admin' ? null : req.user.empresa_id;
-      const result = await db.execute(sql.raw(query, [empresaFilter]));
+      // Para admin: buscar todos os usuários
+      // Para gestor: buscar apenas da própria empresa
+      let usuarios;
+      
+      if (req.user.tipo_usuario === 'admin') {
+        usuarios = await db.select({
+          id: users.id,
+          email: users.email,
+          nome: users.nome,
+          tipoUsuario: users.tipoUsuario,
+          empresaId: users.empresaId,
+          criadoEm: users.criadoEm
+        }).from(users).orderBy(users.nome).limit(50);
+      } else {
+        usuarios = await db.select({
+          id: users.id,
+          email: users.email,
+          nome: users.nome,
+          tipoUsuario: users.tipoUsuario,
+          empresaId: users.empresaId,
+          criadoEm: users.criadoEm
+        }).from(users)
+        .where(eq(users.empresaId, req.user.empresa_id))
+        .orderBy(users.nome)
+        .limit(50);
+      }
+      
+      console.log(`✅ Encontrados ${usuarios.length} usuários`);
       
       res.json({
         success: true,
-        data: result.rows,
-        total: result.rows.length,
+        data: usuarios,
+        total: usuarios.length,
         user_type: req.user.tipo_usuario
       });
     } catch (error) {
+      console.error('❌ Erro ao buscar usuários:', error);
       res.status(500).json({ 
         success: false, 
         message: "Erro ao buscar usuários",
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }
   });
@@ -560,37 +581,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Rotas de alunos
   app.get("/api/alunos", authenticate, async (req: Request, res: Response) => {
     try {
-      // Controle de acesso por tipo de usuário
-      let empresaFilter = null;
-      if (req.user.tipo_usuario !== 'admin') {
-        empresaFilter = req.user.empresa_id;
+      console.log(`🎓 Buscando alunos - Tipo: ${req.user.tipo_usuario}, Empresa: ${req.user.empresa_id}`);
+      
+      // Para admin: buscar todos os alunos
+      // Para outros: buscar apenas da própria empresa
+      let alunosData;
+      
+      if (req.user.tipo_usuario === 'admin') {
+        alunosData = await db.select({
+          id: alunos.id,
+          nome: alunos.nome,
+          matricula: alunos.matricula,
+          turma: alunos.turma,
+          serie: alunos.serie,
+          status: alunos.status,
+          empresa_id: alunos.empresa_id,
+          escola_id: alunos.escola_id
+        }).from(alunos).orderBy(alunos.nome).limit(50);
+      } else {
+        alunosData = await db.select({
+          id: alunos.id,
+          nome: alunos.nome,
+          matricula: alunos.matricula,
+          turma: alunos.turma,
+          serie: alunos.serie,
+          status: alunos.status,
+          empresa_id: alunos.empresa_id,
+          escola_id: alunos.escola_id
+        }).from(alunos)
+        .where(eq(alunos.empresa_id, req.user.empresa_id))
+        .orderBy(alunos.nome)
+        .limit(50);
       }
       
-      const query = `
-        SELECT a.id, a.nome, a.matricula, a.turma, a.serie, a.status,
-               e.nome as escola_nome, emp.nome as empresa_nome
-        FROM alunos a
-        LEFT JOIN escolas e ON a.escola_id = e.id
-        LEFT JOIN empresas emp ON a.empresa_id = emp.id
-        WHERE ($1::text IS NULL OR a.empresa_id = $1::int)
-        ORDER BY a.nome
-        LIMIT 50
-      `;
-      
-      const result = await db.execute(sql.raw(query, [empresaFilter]));
+      console.log(`✅ Encontrados ${alunosData.length} alunos`);
       
       res.json({
         success: true,
-        data: result.rows,
-        total: result.rows.length,
-        filter_empresa: empresaFilter,
+        data: alunosData,
+        total: alunosData.length,
+        filter_empresa: req.user.tipo_usuario === 'admin' ? null : req.user.empresa_id,
         user_type: req.user.tipo_usuario
       });
     } catch (error) {
+      console.error('❌ Erro ao buscar alunos:', error);
       res.status(500).json({ 
         success: false, 
         message: "Erro ao buscar alunos",
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
       });
     }
   });
@@ -879,6 +917,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registrar rotas de autenticação unificadas
   const { registerAuthRoutes } = await import('./routes/auth-routes.js');
   registerAuthRoutes(app);
+
+  // Registrar novas rotas da API hierárquica
+  try {
+    const { apiRoutes } = await import('./routes/api.js');
+    app.use('/api', apiRoutes);
+    console.log("✅ Rotas da API hierárquica registradas com sucesso");
+  } catch (error) {
+    console.error("❌ Erro ao registrar rotas da API hierárquica:", error);
+  }
 
   console.log("✅ All routes registered successfully (placeholder mode)");
   

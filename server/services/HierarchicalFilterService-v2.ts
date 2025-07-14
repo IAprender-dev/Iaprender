@@ -10,7 +10,7 @@
  */
 
 import { db } from '../db';
-import { users, empresas, escolas, contratos, alunos, professores, diretores, gestores } from '../../shared/schema';
+import { usuarios as users, empresas, contratos, alunos, professores, diretores, gestores } from '../../shared/schema';
 import { eq, and, or, sql, inArray } from 'drizzle-orm';
 
 export interface HierarchicalUser {
