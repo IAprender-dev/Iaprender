@@ -13,7 +13,7 @@ export default function AuthProxy() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: "",
+    username: "esdrasnerideoliveira@gmail.com",
     password: ""
   });
   const { toast } = useToast();
@@ -110,6 +110,17 @@ export default function AuthProxy() {
               <p className="text-gray-600">Sistema Educacional Inteligente</p>
             </div>
 
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="font-semibold text-blue-900 mb-2">Teste de Autenticação</h3>
+              <p className="text-sm text-blue-800">
+                O usuário <strong>esdrasnerideoliveira@gmail.com</strong> tem status CONFIRMED, 
+                portanto já possui uma senha própria (não é mais a temporária NovaSenh123!).
+              </p>
+              <p className="text-sm text-blue-800 mt-1">
+                Por favor, teste com a senha real que você conhece para esse email.
+              </p>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="username">Email ou Nome de Usuário</Label>
@@ -174,6 +185,9 @@ export default function AuthProxy() {
               </p>
               <p className="text-xs text-gray-500">
                 Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                💡 Para ver logs detalhados, abra o Console do navegador (F12)
               </p>
             </div>
           </CardContent>

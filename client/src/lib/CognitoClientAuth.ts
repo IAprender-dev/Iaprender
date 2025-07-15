@@ -129,6 +129,9 @@ export class CognitoClientAuth {
         const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
         authDetails.SecretHash = secretHash;
         console.log('🔐 Usando SECRET_HASH para autenticação');
+        console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
+      } else {
+        console.log('⚠️ CLIENT_SECRET não disponível, tentando sem SECRET_HASH');
       }
 
       const authenticationDetails = new AuthenticationDetails(authDetails);
@@ -173,6 +176,8 @@ export class CognitoClientAuth {
             console.error('❌ Falha na autenticação:', err);
             console.error('❌ Código do erro:', err.code);
             console.error('❌ Mensagem do erro:', err.message);
+            console.error('❌ Stack trace:', err.stack);
+            console.error('❌ Objeto completo do erro:', JSON.stringify(err, null, 2));
             
             let errorMessage = 'Erro na autenticação';
             
@@ -189,10 +194,14 @@ export class CognitoClientAuth {
             } else {
               errorMessage = `Erro: ${err.message}`;
             }
+            
+            // Adicionar código de erro para debugging
+            errorMessage += ` (Código: ${err.code})`;
 
             resolve({
               success: false,
-              error: errorMessage
+              error: errorMessage,
+              errorCode: err.code
             });
           },
 
