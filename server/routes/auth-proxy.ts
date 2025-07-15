@@ -3,19 +3,8 @@ import { SecretsManager } from '../config/secrets.js';
 import { CognitoIdentityProviderClient, InitiateAuthCommand, AuthFlowType } from '@aws-sdk/client-cognito-identity-provider';
 import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
-import crypto from 'crypto';
 
 const router = Router();
-
-/**
- * Função para calcular o SECRET_HASH necessário para o AWS Cognito
- * quando o client tem um secret configurado
- */
-function calculateSecretHash(username: string, clientId: string, clientSecret: string): string {
-  const hmac = crypto.createHmac('sha256', clientSecret);
-  hmac.update(username + clientId);
-  return hmac.digest('base64');
-}
 
 /**
  * Endpoint para autenticação direta via AWS SDK
@@ -34,7 +23,7 @@ router.post('/cognito-direct-auth', async (req, res) => {
 
     const credentials = SecretsManager.getAWSCredentials();
     
-    if (!credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_USER_POOL_ID || !credentials.AWS_COGNITO_CLIENT_SECRET) {
+    if (!credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_USER_POOL_ID) {
       return res.status(500).json({ 
         success: false, 
         error: 'Configuração AWS Cognito incompleta' 
@@ -50,17 +39,13 @@ router.post('/cognito-direct-auth', async (req, res) => {
       }
     });
 
-    // Calcular SECRET_HASH necessário para clients com secret
-    const secretHash = calculateSecretHash(username, credentials.AWS_COGNITO_CLIENT_ID, credentials.AWS_COGNITO_CLIENT_SECRET);
-
     // Autenticar usando AWS SDK
     const authCommand = new InitiateAuthCommand({
       AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
       ClientId: credentials.AWS_COGNITO_CLIENT_ID,
       AuthParameters: {
         USERNAME: username,
-        PASSWORD: password,
-        SECRET_HASH: secretHash
+        PASSWORD: password
       }
     });
 
