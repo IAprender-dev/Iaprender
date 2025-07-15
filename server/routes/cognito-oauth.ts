@@ -5,6 +5,39 @@ import jwt from 'jsonwebtoken';
 const router = Router();
 
 /**
+ * Rota direta /auth que redireciona para o Cognito Hosted UI
+ */
+router.get('/', (req, res) => {
+  try {
+    const credentials = SecretsManager.getAWSCredentials();
+    
+    if (!credentials.AWS_COGNITO_DOMAIN || !credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_REDIRECT_URI) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Configuração AWS Cognito incompleta' 
+      });
+    }
+
+    // Construir URL de autenticação do Cognito
+    const authUrl = new URL('/oauth2/authorize', credentials.AWS_COGNITO_DOMAIN);
+    authUrl.searchParams.append('response_type', 'code');
+    authUrl.searchParams.append('client_id', credentials.AWS_COGNITO_CLIENT_ID);
+    authUrl.searchParams.append('redirect_uri', credentials.AWS_COGNITO_REDIRECT_URI);
+    authUrl.searchParams.append('scope', 'openid email profile');
+
+    console.log('🔐 Rota /auth - Redirecionando para Cognito OAuth:', authUrl.toString());
+    
+    res.redirect(authUrl.toString());
+  } catch (error) {
+    console.error('❌ Erro ao redirecionar para Cognito:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Erro interno do servidor' 
+    });
+  }
+});
+
+/**
  * Redireciona para o Cognito Hosted UI para autenticação
  */
 router.get('/oauth/login', (req, res) => {
