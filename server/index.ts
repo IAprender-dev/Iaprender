@@ -10,6 +10,7 @@ import cognitoOAuthRouter from "./routes/cognito-oauth";
 import cognitoDirectRouter from "./routes/cognito-direct";
 import cognitoAdminRouter from "./routes/cognito-admin";
 import cognitoHybridRouter from "./routes/cognito-hybrid";
+import authSimpleRouter from "./routes/auth-simple";
 // WebSocket import removed - using direct OpenAI Realtime API connection
 
 const app = express();
@@ -83,6 +84,19 @@ app.use((req, res, next) => {
   // Add hybrid authentication routes
   app.use('/api/auth', cognitoHybridRouter);
   console.log('🔒 Rotas de autenticação híbrida registradas');
+  
+  app.use('/api/auth', authSimpleRouter);
+  console.log('🔒 Rotas de autenticação simples registradas');
+  
+  // Import and register the new direct Cognito routes
+  const cognitoDirectNewRouter = await import('./routes/cognito-direct.js');
+  app.use('/api/auth', cognitoDirectNewRouter.default);
+  console.log('🔒 Rotas de autenticação direta Cognito registradas');
+  
+  // Import and register the new auth routes with JWT middleware
+  const authRouter = await import('./routes/auth.js');
+  app.use('/api/auth', authRouter.default);
+  console.log('🔒 Rotas de autenticação JWT registradas');
   
   const server = await registerRoutes(app);
   

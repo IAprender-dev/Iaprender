@@ -9,6 +9,33 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { z } from "zod";
 
+// Função utilitária para mapear grupos do Cognito para roles
+function mapCognitoGroupsToRole(groups: string[]): "admin" | "teacher" | "student" | "municipal_manager" | "school_director" {
+  if (!groups || groups.length === 0) return "student";
+  
+  const groupMap: { [key: string]: "admin" | "teacher" | "student" | "municipal_manager" | "school_director" } = {
+    'Admin': 'admin',
+    'AdminMaster': 'admin',
+    'Gestores': 'municipal_manager',
+    'GestorMunicipal': 'municipal_manager',
+    'Diretores': 'school_director',
+    'Diretor': 'school_director',
+    'Professores': 'teacher',
+    'Professor': 'teacher',
+    'Alunos': 'student',
+    'Aluno': 'student',
+  };
+
+  // Retornar o primeiro grupo mapeado encontrado
+  for (const group of groups) {
+    if (groupMap[group]) {
+      return groupMap[group];
+    }
+  }
+
+  return "student"; // Default
+}
+
 // Tipos básicos
 export type User = {
   id: number;
@@ -160,7 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Mutation para login direto com Cognito
   const directLoginMutation = useMutation<User, Error, LoginData>({
     mutationFn: async (credentials) => {
-      const response = await fetch("/api/auth/hybrid-login", {
+      const response = await fetch("/api/auth/simple-login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -177,7 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || "Erro na autenticação");
       }
 
-      // Salvar token no localStorage
+      // Salvar token JWT do sistema
       localStorage.setItem("token", data.token);
       
       return data.user;
