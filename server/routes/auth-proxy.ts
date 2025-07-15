@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { SecretsManager } from '../config/secrets.js';
-import { CognitoIdentityProviderClient, InitiateAuthCommand, AuthFlowType } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProviderClient, AdminInitiateAuthCommand, AuthFlowType } from '@aws-sdk/client-cognito-identity-provider';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import fetch from 'node-fetch';
@@ -57,9 +57,10 @@ router.post('/cognito-direct-auth', async (req, res) => {
     // Gerar SECRET_HASH para o cliente
     const secretHash = generateSecretHash(username, credentials.AWS_COGNITO_CLIENT_ID, credentials.AWS_COGNITO_CLIENT_SECRET);
 
-    // Autenticar usando AWS SDK com SECRET_HASH
-    const authCommand = new InitiateAuthCommand({
-      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
+    // Autenticar usando AWS SDK com ADMIN_NO_SRP_AUTH
+    const authCommand = new AdminInitiateAuthCommand({
+      AuthFlow: AuthFlowType.ADMIN_NO_SRP_AUTH,
+      UserPoolId: credentials.AWS_COGNITO_USER_POOL_ID,
       ClientId: credentials.AWS_COGNITO_CLIENT_ID,
       AuthParameters: {
         USERNAME: username,
