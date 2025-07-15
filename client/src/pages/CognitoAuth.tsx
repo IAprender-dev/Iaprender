@@ -71,17 +71,8 @@ export default function CognitoAuth() {
       const result = await response.json();
 
       if (result.success) {
-        // Redirect to Cognito hosted UI for final authentication
-        const params = new URLSearchParams({
-          response_type: 'code',
-          client_id: '1ooqafj1v6bh3ff55t2ha56hn4',
-          redirect_uri: `${window.location.origin}/auth/callback`,
-          scope: 'openid email profile',
-          ui_locales: 'pt-BR'
-        });
-        
-        const cognitoUrl = `https://us-east-14jqf97h2x.auth.us-east-1.amazoncognito.com/login?${params.toString()}`;
-        window.location.href = cognitoUrl;
+        // Usar redirecionamento invisível para manter usuário no domínio da aplicação
+        window.location.href = '/api/auth/invisible-redirect';
       } else {
         setError(result.message || 'Credenciais inválidas');
         toast({
@@ -106,16 +97,8 @@ export default function CognitoAuth() {
   const handleCognitoRedirect = () => {
     setLoading(true);
     
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: '1ooqafj1v6bh3ff55t2ha56hn4',
-      redirect_uri: `${window.location.origin}/auth/callback`,
-      scope: 'openid email profile',
-      ui_locales: 'pt-BR'
-    });
-    
-    const cognitoUrl = `https://us-east-14jqf97h2x.auth.us-east-1.amazoncognito.com/login?${params.toString()}`;
-    window.location.href = cognitoUrl;
+    // Usar redirecionamento invisível para manter usuário no domínio da aplicação
+    window.location.href = '/api/auth/invisible-redirect';
   };
 
   return (

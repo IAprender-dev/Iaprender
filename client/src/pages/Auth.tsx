@@ -94,8 +94,8 @@ export default function Auth() {
   };
 
   const onCognitoLogin = () => {
-    // Redirecionar para o OAuth do Cognito
-    window.location.href = "/api/auth/oauth/login";
+    // Usar redirecionamento invisível para manter usuário no domínio da aplicação
+    window.location.href = "/api/auth/invisible-redirect";
   };
 
   return (
