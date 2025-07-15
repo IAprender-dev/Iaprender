@@ -714,30 +714,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Redirect route for login - busca configuração das secrets
+  // Redirect route for login - usa redirecionamento invisível
   app.get("/start-login", async (req: Request, res: Response) => {
     try {
-      console.log("🔄 Redirecionamento /start-login -> AWS Cognito (via secrets)");
-      
-      // Buscar configuração das secrets
-      const cognitoConfig = {
-        domain: process.env.COGNITO_DOMAIN,
-        clientId: process.env.COGNITO_CLIENT_ID,
-        redirectUri: process.env.COGNITO_REDIRECT_URI
-      };
-
-      if (!cognitoConfig.domain || !cognitoConfig.clientId || !cognitoConfig.redirectUri) {
-        console.error("❌ Configuração Cognito incompleta nas secrets");
-        return res.redirect("/auth?error=cognito_config_missing");
-      }
-
-      const cognitoUrl = `${cognitoConfig.domain}/login?response_type=code&client_id=${cognitoConfig.clientId}&redirect_uri=${encodeURIComponent(cognitoConfig.redirectUri)}&scope=openid%20email%20profile`;
-      
-      console.log("✅ URL gerada das secrets:", cognitoUrl);
-      res.redirect(cognitoUrl);
+      console.log("🔄 Redirecionamento /start-login -> página invisível");
+      // Usar o redirecionamento invisível para não expor o domínio do Cognito
+      res.redirect("/api/auth/invisible-redirect");
     } catch (error) {
-      console.error("❌ Erro ao gerar URL Cognito:", error);
-      res.redirect("/auth?error=cognito_error");
+      console.error("❌ Erro ao redirecionar:", error);
+      res.redirect("/auth?error=redirect_error");
     }
   });
 
