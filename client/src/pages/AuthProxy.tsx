@@ -13,8 +13,8 @@ export default function AuthProxy() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: "esdrasnerideoliveira@gmail.com",
-    password: ""
+    username: "admin@gmail.com",
+    password: "NovaSenh123!"
   });
   const { toast } = useToast();
 
@@ -110,14 +110,14 @@ export default function AuthProxy() {
               <p className="text-gray-600">Sistema Educacional Inteligente</p>
             </div>
 
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Teste de Autenticação</h3>
-              <p className="text-sm text-blue-800">
-                O usuário <strong>esdrasnerideoliveira@gmail.com</strong> tem status CONFIRMED, 
-                portanto já possui uma senha própria (não é mais a temporária NovaSenh123!).
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h3 className="font-semibold text-green-900 mb-2">Teste de Autenticação</h3>
+              <p className="text-sm text-green-800">
+                O usuário <strong>admin@gmail.com</strong> tem status FORCE_CHANGE_PASSWORD, 
+                portanto aceita a senha temporária <strong>NovaSenh123!</strong>.
               </p>
-              <p className="text-sm text-blue-800 mt-1">
-                Por favor, teste com a senha real que você conhece para esse email.
+              <p className="text-sm text-green-800 mt-1">
+                Clique em "Entrar" para testar a autenticação com SECRET_HASH.
               </p>
             </div>
 
