@@ -5,69 +5,26 @@ import jwt from 'jsonwebtoken';
 const router = Router();
 
 /**
- * Rota direta /auth que redireciona para o Cognito Hosted UI
+ * Rota raiz /api/auth - retorna informações sobre autenticação
  */
 router.get('/', (req, res) => {
-  try {
-    const credentials = SecretsManager.getAWSCredentials();
-    
-    if (!credentials.AWS_COGNITO_DOMAIN || !credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_REDIRECT_URI) {
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Configuração AWS Cognito incompleta' 
-      });
+  res.json({
+    success: true,
+    message: 'Use /auth no navegador para fazer login',
+    endpoints: {
+      login: '/auth',
+      oauth: '/api/auth/oauth/login',
+      callback: '/api/auth/callback'
     }
-
-    // Construir URL de autenticação do Cognito
-    const authUrl = new URL('/oauth2/authorize', credentials.AWS_COGNITO_DOMAIN);
-    authUrl.searchParams.append('response_type', 'code');
-    authUrl.searchParams.append('client_id', credentials.AWS_COGNITO_CLIENT_ID);
-    authUrl.searchParams.append('redirect_uri', credentials.AWS_COGNITO_REDIRECT_URI);
-    authUrl.searchParams.append('scope', 'openid email profile');
-
-    console.log('🔐 Rota /auth - Redirecionando para Cognito OAuth:', authUrl.toString());
-    
-    res.redirect(authUrl.toString());
-  } catch (error) {
-    console.error('❌ Erro ao redirecionar para Cognito:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Erro interno do servidor' 
-    });
-  }
+  });
 });
 
 /**
- * Redireciona para o Cognito Hosted UI para autenticação
+ * Usa o redirecionamento invisível para manter o usuário no domínio
  */
 router.get('/oauth/login', (req, res) => {
-  try {
-    const credentials = SecretsManager.getAWSCredentials();
-    
-    if (!credentials.AWS_COGNITO_DOMAIN || !credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_REDIRECT_URI) {
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Configuração AWS Cognito incompleta' 
-      });
-    }
-
-    // Construir URL de autenticação do Cognito
-    const authUrl = new URL('/oauth2/authorize', credentials.AWS_COGNITO_DOMAIN);
-    authUrl.searchParams.append('response_type', 'code');
-    authUrl.searchParams.append('client_id', credentials.AWS_COGNITO_CLIENT_ID);
-    authUrl.searchParams.append('redirect_uri', credentials.AWS_COGNITO_REDIRECT_URI);
-    authUrl.searchParams.append('scope', 'openid email profile');
-
-    console.log('🔐 Redirecionando para Cognito OAuth:', authUrl.toString());
-    
-    res.redirect(authUrl.toString());
-  } catch (error) {
-    console.error('❌ Erro ao redirecionar para Cognito:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Erro interno do servidor' 
-    });
-  }
+  // Redirecionar para nossa página de redirecionamento invisível
+  res.redirect('/api/auth/invisible-redirect');
 });
 
 /**

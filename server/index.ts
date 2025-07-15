@@ -70,9 +70,8 @@ app.use((req, res, next) => {
   app.use('/api/auth', authProxyRouter);
   console.log('🔒 Rotas de proxy de autenticação registradas');
   
-  // Add callback route at root level
-  app.use('/auth', cognitoOAuthRouter);
-  console.log('🔒 Rotas de callback OAuth registradas');
+  // Callback routes handled by cognitoOAuthRouter under /api/auth
+  console.log('🔒 Rotas de callback OAuth registradas via /api/auth');
   
   // Add admin authentication routes
   app.use('/api/auth', cognitoAdminRouter);
