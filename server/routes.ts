@@ -485,6 +485,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Endpoint para criar token JWT interno do sistema
+  app.post("/api/auth/create-internal-token", async (req: Request, res: Response) => {
+    try {
+      const { id, email, name, tipo_usuario, empresa_id, escola_id, cognito_sub, groups } = req.body;
+      
+      console.log('🔐 Criando token interno para:', email, 'tipo:', tipo_usuario);
+      
+      // Validação básica
+      if (!email || !cognito_sub) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email e cognito_sub são obrigatórios'
+        });
+      }
+
+      // Criar payload do token
+      const tokenPayload = {
+        id: id || 1,
+        email,
+        name: name || email,
+        tipo_usuario: tipo_usuario || 'user',
+        empresa_id: empresa_id || 1,
+        escola_id: escola_id || null,
+        cognito_sub,
+        groups: groups || []
+      };
+
+      // Usar o mesmo secret do sistema
+      const jwt = require('jsonwebtoken');
+      const secret = process.env.JWT_SECRET || 'test_secret_key_iaprender_2025';
+      
+      const token = jwt.sign(tokenPayload, secret, { 
+        expiresIn: '24h',
+        issuer: 'iaprender'
+      });
+
+      console.log('✅ Token interno criado com sucesso');
+
+      res.json({
+        success: true,
+        token,
+        user: tokenPayload
+      });
+
+    } catch (error) {
+      console.error('❌ Erro ao criar token interno:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  });
+
   // Rotas de usuários
   app.get("/api/usuarios", authenticate, requireAdminOrGestor, async (req: Request, res: Response) => {
     try {

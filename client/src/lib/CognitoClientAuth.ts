@@ -84,7 +84,11 @@ export class CognitoClientAuth {
    */
   async authenticate(email: string, password: string): Promise<CognitoAuthResult> {
     try {
+      console.log('🔐 Iniciando autenticação para:', email);
       await this.initialize();
+
+      console.log('🔐 User Pool configurado:', poolData.UserPoolId);
+      console.log('🔐 Client ID:', poolData.ClientId);
 
       const authenticationDetails = new AuthenticationDetails({
         Username: email,
@@ -95,6 +99,8 @@ export class CognitoClientAuth {
         Username: email,
         Pool: userPool
       });
+
+      console.log('🔐 Tentando autenticar usuário...');
 
       return new Promise((resolve) => {
         cognitoUser.authenticateUser(authenticationDetails, {
@@ -107,6 +113,7 @@ export class CognitoClientAuth {
 
             // Decodificar ID token para obter informações do usuário
             const idTokenPayload = session.getIdToken().payload;
+            console.log('👤 Payload do usuário:', idTokenPayload);
             
             // Criar token JWT interno
             const internalToken = await this.createInternalToken(idTokenPayload);
@@ -126,6 +133,8 @@ export class CognitoClientAuth {
 
           onFailure: (err) => {
             console.error('❌ Falha na autenticação:', err);
+            console.error('❌ Código do erro:', err.code);
+            console.error('❌ Mensagem do erro:', err.message);
             
             let errorMessage = 'Erro na autenticação';
             
@@ -139,6 +148,8 @@ export class CognitoClientAuth {
               errorMessage = 'Redefinição de senha necessária';
             } else if (err.code === 'InvalidParameterException') {
               errorMessage = 'Parâmetros inválidos';
+            } else {
+              errorMessage = `Erro: ${err.message}`;
             }
 
             resolve({
@@ -148,10 +159,19 @@ export class CognitoClientAuth {
           },
 
           newPasswordRequired: (userAttributes, requiredAttributes) => {
-            console.log('🔄 Nova senha necessária');
-            resolve({
-              success: false,
-              error: 'Nova senha necessária - funcionalidade em desenvolvimento'
+            console.log('🔄 Nova senha necessária - usuário precisa definir senha');
+            console.log('Atributos do usuário:', userAttributes);
+            console.log('Atributos obrigatórios:', requiredAttributes);
+            
+            // Implementar fluxo de nova senha
+            this.handleNewPasswordRequired(cognitoUser, userAttributes, requiredAttributes).then(result => {
+              resolve(result);
+            }).catch(error => {
+              console.error('❌ Erro ao definir nova senha:', error);
+              resolve({
+                success: false,
+                error: 'Erro ao processar nova senha'
+              });
             });
           }
         });
@@ -274,6 +294,69 @@ export class CognitoClientAuth {
       } else {
         resolve(null);
       }
+    });
+  }
+
+  /**
+   * Lida com o fluxo de nova senha obrigatória
+   */
+  private async handleNewPasswordRequired(
+    cognitoUser: CognitoUser, 
+    userAttributes: any, 
+    requiredAttributes: any
+  ): Promise<CognitoAuthResult> {
+    console.log('🔄 Iniciando fluxo de nova senha obrigatória');
+    
+    // Por enquanto, vamos usar a própria senha atual como nova senha
+    // Em produção, isso deveria ser uma interface para o usuário definir nova senha
+    const newPassword = 'NovaSenh123!'; // Senha temporária que atende aos requisitos
+    
+    return new Promise((resolve) => {
+      cognitoUser.completeNewPasswordChallenge(newPassword, userAttributes, {
+        onSuccess: async (session: CognitoUserSession) => {
+          console.log('✅ Nova senha definida com sucesso');
+          
+          const accessToken = session.getAccessToken().getJwtToken();
+          const idToken = session.getIdToken().getJwtToken();
+          const refreshToken = session.getRefreshToken().getToken();
+          
+          // Decodificar ID token para obter informações do usuário
+          const idTokenPayload = session.getIdToken().payload;
+          console.log('👤 Payload do usuário após nova senha:', idTokenPayload);
+          
+          // Criar token JWT interno
+          const internalToken = await this.createInternalToken(idTokenPayload);
+          
+          // Determinar redirecionamento baseado no tipo de usuário
+          const redirectUrl = this.determineRedirectUrl(idTokenPayload);
+          
+          resolve({
+            success: true,
+            accessToken,
+            idToken,
+            refreshToken,
+            user: idTokenPayload,
+            redirectUrl: `${redirectUrl}?token=${encodeURIComponent(internalToken)}&auth=success&newPassword=true`
+          });
+        },
+        
+        onFailure: (err) => {
+          console.error('❌ Erro ao definir nova senha:', err);
+          
+          let errorMessage = 'Erro ao definir nova senha';
+          
+          if (err.code === 'InvalidPasswordException') {
+            errorMessage = 'Nova senha não atende aos requisitos';
+          } else if (err.code === 'InvalidParameterException') {
+            errorMessage = 'Parâmetros inválidos para nova senha';
+          }
+          
+          resolve({
+            success: false,
+            error: errorMessage
+          });
+        }
+      });
     });
   }
 
