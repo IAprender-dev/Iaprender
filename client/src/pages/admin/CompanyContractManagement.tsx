@@ -42,8 +42,10 @@ import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
 
 interface Company {
   id: number;
+  razaoSocial?: string;
   name: string;
   email: string;
+  cnpj?: string;
   phone?: string;
   address?: string;
   contactPerson?: string;
@@ -73,8 +75,10 @@ interface Contract {
 }
 
 interface NewCompanyForm {
+  razaoSocial: string;
   name: string;
   email: string;
+  cnpj: string;
   phone: string;
   address: string;
   contactPerson: string;
@@ -91,6 +95,43 @@ interface NewContractForm {
   maxStudents: number;
   pricePerLicense: number;
 }
+
+// Formatting functions
+const formatCNPJ = (value: string): string => {
+  const cleanValue = value.replace(/\D/g, '');
+  if (cleanValue.length <= 14) {
+    return cleanValue.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  }
+  return value;
+};
+
+const formatPhone = (value: string): string => {
+  const cleanValue = value.replace(/\D/g, '');
+  if (cleanValue.length <= 11) {
+    if (cleanValue.length === 10) {
+      return cleanValue.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+    } else if (cleanValue.length === 11) {
+      return cleanValue.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    }
+  }
+  return value;
+};
+
+const handleCNPJChange = (value: string, setter: (fn: (prev: any) => any) => void) => {
+  const cleanValue = value.replace(/\D/g, '');
+  if (cleanValue.length <= 14) {
+    const formatted = formatCNPJ(cleanValue);
+    setter(prev => ({ ...prev, cnpj: formatted }));
+  }
+};
+
+const handlePhoneChange = (value: string, setter: (fn: (prev: any) => any) => void) => {
+  const cleanValue = value.replace(/\D/g, '');
+  if (cleanValue.length <= 11) {
+    const formatted = formatPhone(cleanValue);
+    setter(prev => ({ ...prev, phone: formatted }));
+  }
+};
 
 export default function CompanyContractManagement() {
   const { user, logout } = useAuth();
@@ -114,8 +155,10 @@ export default function CompanyContractManagement() {
   const [contractToDelete, setContractToDelete] = useState<Contract | null>(null);
   const [dependenciesToDelete, setDependenciesToDelete] = useState<any>(null);
   const [newCompany, setNewCompany] = useState<NewCompanyForm>({
+    razaoSocial: "",
     name: "",
     email: "",
+    cnpj: "",
     phone: "",
     address: "",
     contactPerson: ""
@@ -134,8 +177,10 @@ export default function CompanyContractManagement() {
   
   // Edit forms state
   const [editCompany, setEditCompany] = useState<NewCompanyForm>({
+    razaoSocial: "",
     name: "",
     email: "",
+    cnpj: "",
     phone: "",
     address: "",
     contactPerson: ""
@@ -188,7 +233,7 @@ export default function CompanyContractManagement() {
         description: "A nova empresa foi adicionada ao sistema.",
       });
       setIsCreateCompanyModalOpen(false);
-      setNewCompany({ name: "", email: "", phone: "", address: "", contactPerson: "" });
+      setNewCompany({ razaoSocial: "", name: "", email: "", cnpj: "", phone: "", address: "", contactPerson: "" });
       refetch();
     },
     onError: (error: any) => {
@@ -313,8 +358,10 @@ export default function CompanyContractManagement() {
   const openEditCompany = (company: Company) => {
     setSelectedCompany(company);
     setEditCompany({
+      razaoSocial: company.razaoSocial || "",
       name: company.name,
       email: company.email,
+      cnpj: company.cnpj || "",
       phone: company.phone || "",
       address: company.address || "",
       contactPerson: company.contactPerson || ""
@@ -485,10 +532,10 @@ export default function CompanyContractManagement() {
   };
 
   const handleCreateCompany = () => {
-    if (!newCompany.name || !newCompany.email) {
+    if (!newCompany.razaoSocial || !newCompany.name || !newCompany.email) {
       toast({
         title: "Dados incompletos",
-        description: "Nome e email da empresa são obrigatórios.",
+        description: "Razão social, nome fantasia e email da empresa são obrigatórios.",
         variant: "destructive",
       });
       return;
@@ -603,12 +650,33 @@ export default function CompanyContractManagement() {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="companyName">Nome da Empresa *</Label>
+                      <Label htmlFor="razaoSocial">Razão Social *</Label>
+                      <Input
+                        id="razaoSocial"
+                        value={newCompany.razaoSocial}
+                        onChange={(e) => setNewCompany(prev => ({ ...prev, razaoSocial: e.target.value }))}
+                        placeholder="Ex: Prefeitura Municipal de São Paulo"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="companyName">Nome Fantasia *</Label>
                       <Input
                         id="companyName"
                         value={newCompany.name}
                         onChange={(e) => setNewCompany(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="Ex: Prefeitura Municipal de São Paulo"
+                        placeholder="Ex: Prefeitura de São Paulo"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="cnpj">CNPJ</Label>
+                      <Input
+                        id="cnpj"
+                        value={newCompany.cnpj}
+                        onChange={(e) => handleCNPJChange(e.target.value, setNewCompany)}
+                        placeholder="00.000.000/0000-00"
+                        maxLength={18}
                       />
                     </div>
                     <div>
@@ -619,6 +687,17 @@ export default function CompanyContractManagement() {
                         value={newCompany.email}
                         onChange={(e) => setNewCompany(prev => ({ ...prev, email: e.target.value }))}
                         placeholder="contato@prefeitura.sp.gov.br"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="companyPhone">Telefone</Label>
+                      <Input
+                        id="companyPhone"
+                        value={newCompany.phone}
+                        onChange={(e) => handlePhoneChange(e.target.value, setNewCompany)}
+                        placeholder="(11) 99999-9999"
+                        maxLength={15}
                       />
                     </div>
                     <div>
@@ -628,15 +707,6 @@ export default function CompanyContractManagement() {
                         value={newCompany.contactPerson}
                         onChange={(e) => setNewCompany(prev => ({ ...prev, contactPerson: e.target.value }))}
                         placeholder="Nome do responsável pelo contrato"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="companyPhone">Telefone</Label>
-                      <Input
-                        id="companyPhone"
-                        value={newCompany.phone}
-                        onChange={(e) => setNewCompany(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="(11) 99999-9999"
                       />
                     </div>
                     <div>
@@ -697,7 +767,15 @@ export default function CompanyContractManagement() {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">{company.name}</h3>
+                        {company.razaoSocial && (
+                          <p className="text-sm text-gray-600 italic">{company.razaoSocial}</p>
+                        )}
                         <div className="flex items-center space-x-3 text-sm text-gray-600">
+                          {company.cnpj && (
+                            <span className="flex items-center bg-gray-100 px-2 py-1 rounded font-mono text-xs">
+                              {company.cnpj}
+                            </span>
+                          )}
                           {company.email && (
                             <span className="flex items-center">
                               <Mail className="h-3 w-3 mr-1" />
@@ -1033,8 +1111,16 @@ export default function CompanyContractManagement() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-gray-500">Nome da Empresa</Label>
+                    <Label className="text-sm font-medium text-gray-500">Razão Social</Label>
+                    <p className="text-gray-900 font-medium">{selectedCompany.razaoSocial || 'Não informado'}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Nome Fantasia</Label>
                     <p className="text-gray-900 font-medium">{selectedCompany.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">CNPJ</Label>
+                    <p className="text-gray-900">{selectedCompany.cnpj || 'Não informado'}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Email</Label>
@@ -1092,12 +1178,33 @@ export default function CompanyContractManagement() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="editCompanyName">Nome da Empresa *</Label>
+                <Label htmlFor="editRazaoSocial">Razão Social *</Label>
+                <Input
+                  id="editRazaoSocial"
+                  value={editCompany.razaoSocial}
+                  onChange={(e) => setEditCompany(prev => ({ ...prev, razaoSocial: e.target.value }))}
+                  placeholder="Ex: Prefeitura Municipal de São Paulo"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCompanyName">Nome Fantasia *</Label>
                 <Input
                   id="editCompanyName"
                   value={editCompany.name}
                   onChange={(e) => setEditCompany(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ex: Prefeitura Municipal de São Paulo"
+                  placeholder="Ex: Prefeitura de São Paulo"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCompanyCNPJ">CNPJ</Label>
+                <Input
+                  id="editCompanyCNPJ"
+                  value={editCompany.cnpj}
+                  onChange={(e) => handleCNPJChange(e.target.value, setEditCompany)}
+                  placeholder="00.000.000/0000-00"
+                  maxLength={18}
                 />
               </div>
               <div>
@@ -1108,6 +1215,17 @@ export default function CompanyContractManagement() {
                   value={editCompany.email}
                   onChange={(e) => setEditCompany(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="contato@prefeitura.sp.gov.br"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="editCompanyPhone">Telefone</Label>
+                <Input
+                  id="editCompanyPhone"
+                  value={editCompany.phone}
+                  onChange={(e) => handlePhoneChange(e.target.value, setEditCompany)}
+                  placeholder="(11) 99999-9999"
+                  maxLength={15}
                 />
               </div>
               <div>
@@ -1117,15 +1235,6 @@ export default function CompanyContractManagement() {
                   value={editCompany.contactPerson}
                   onChange={(e) => setEditCompany(prev => ({ ...prev, contactPerson: e.target.value }))}
                   placeholder="Nome do responsável"
-                />
-              </div>
-              <div>
-                <Label htmlFor="editCompanyPhone">Telefone</Label>
-                <Input
-                  id="editCompanyPhone"
-                  value={editCompany.phone}
-                  onChange={(e) => setEditCompany(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="(11) 9999-9999"
                 />
               </div>
               <div>
