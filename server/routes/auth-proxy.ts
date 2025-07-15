@@ -1,94 +1,130 @@
 import { Router } from 'express';
 import { SecretsManager } from '../config/secrets.js';
+import { CognitoIdentityProviderClient, InitiateAuthCommand, AuthFlowType } from '@aws-sdk/client-cognito-identity-provider';
+import jwt from 'jsonwebtoken';
 import fetch from 'node-fetch';
 
 const router = Router();
 
 /**
- * Endpoint para criar uma página de redirecionamento invisível
- * Mantém o usuário vendo apenas /auth no navegador
+ * Endpoint para autenticação direta via AWS SDK
+ * Mantém o usuário no domínio da aplicação durante todo o processo
+ */
+router.post('/cognito-direct-auth', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Username e password são obrigatórios'
+      });
+    }
+
+    const credentials = SecretsManager.getAWSCredentials();
+    
+    if (!credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_USER_POOL_ID) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Configuração AWS Cognito incompleta' 
+      });
+    }
+
+    // Configurar cliente do Cognito
+    const client = new CognitoIdentityProviderClient({
+      region: 'us-east-1',
+      credentials: {
+        accessKeyId: credentials.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: credentials.AWS_SECRET_ACCESS_KEY!
+      }
+    });
+
+    // Autenticar usando AWS SDK
+    const authCommand = new InitiateAuthCommand({
+      AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
+      ClientId: credentials.AWS_COGNITO_CLIENT_ID,
+      AuthParameters: {
+        USERNAME: username,
+        PASSWORD: password
+      }
+    });
+
+    const authResponse = await client.send(authCommand);
+
+    if (!authResponse.AuthenticationResult) {
+      return res.status(401).json({
+        success: false,
+        error: 'Credenciais inválidas'
+      });
+    }
+
+    // Obter token de acesso
+    const accessToken = authResponse.AuthenticationResult.AccessToken;
+    const idToken = authResponse.AuthenticationResult.IdToken;
+
+    // Decodificar token para obter informações do usuário
+    const userInfo = jwt.decode(idToken!) as any;
+    
+    // Criar JWT interno da aplicação
+    const internalToken = jwt.sign(
+      {
+        id: userInfo.sub,
+        email: userInfo.email,
+        name: userInfo.name || userInfo.email,
+        cognitoGroups: userInfo['cognito:groups'] || [],
+        tipo_usuario: userInfo['custom:tipo_usuario'] || 'user'
+      },
+      process.env.JWT_SECRET || 'test_secret_key_iaprender_2025',
+      { expiresIn: '24h' }
+    );
+
+    // Definir redirecionamento baseado no tipo de usuário
+    const userType = userInfo['custom:tipo_usuario'] || 'user';
+    let redirectPath = '/admin/user-management';
+    
+    if (userType === 'gestor') {
+      redirectPath = '/gestor/dashboard';
+    } else if (userType === 'diretor') {
+      redirectPath = '/diretor/dashboard';
+    } else if (userType === 'professor') {
+      redirectPath = '/professor/dashboard';
+    } else if (userType === 'aluno') {
+      redirectPath = '/aluno/dashboard';
+    }
+
+    return res.json({
+      success: true,
+      redirect: `${redirectPath}?token=${internalToken}&success=true`,
+      message: 'Autenticação realizada com sucesso'
+    });
+
+  } catch (error) {
+    console.error('❌ Erro na autenticação direta:', error);
+    
+    if (error.name === 'NotAuthorizedException') {
+      return res.status(401).json({
+        success: false,
+        error: 'Credenciais inválidas'
+      });
+    }
+    
+    return res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
+
+/**
+ * Endpoint provisório para redirecionamento - será removido
+ * Mantém compatibilidade durante a transição
  */
 router.get('/invisible-redirect', async (req, res) => {
   try {
-    const credentials = SecretsManager.getAWSCredentials();
-    
-    if (!credentials.AWS_COGNITO_DOMAIN || !credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_REDIRECT_URI) {
-      return res.status(500).send('Configuração AWS Cognito incompleta');
-    }
-
-    // Construir URL de autenticação do Cognito
-    const authUrl = new URL('/oauth2/authorize', credentials.AWS_COGNITO_DOMAIN);
-    authUrl.searchParams.append('response_type', 'code');
-    authUrl.searchParams.append('client_id', credentials.AWS_COGNITO_CLIENT_ID);
-    authUrl.searchParams.append('redirect_uri', credentials.AWS_COGNITO_REDIRECT_URI);
-    authUrl.searchParams.append('scope', 'openid email profile');
-
-    // Retornar HTML com redirecionamento automático via JavaScript
-    const html = `
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Autenticando - IAprender</title>
-        <style>
-          body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-          }
-          .container {
-            text-align: center;
-            padding: 2rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-          }
-          .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid white;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-          p { opacity: 0.8; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="spinner"></div>
-          <h1>Redirecionando para autenticação</h1>
-          <p>Por favor, aguarde...</p>
-        </div>
-        <script>
-          // Redirecionar após breve loading para uma experiência mais suave
-          setTimeout(() => {
-            window.location.replace('${authUrl.toString()}');
-          }, 500);
-        </script>
-      </body>
-      </html>
-    `;
-
-    res.setHeader('Content-Type', 'text/html');
-    res.send(html);
-
+    // Redirecionar para a página de login personalizada
+    res.redirect('/auth?message=use_direct_auth');
   } catch (error) {
-    console.error('❌ Erro no redirecionamento invisível:', error);
+    console.error('❌ Erro no redirecionamento:', error);
     res.status(500).send('Erro interno do servidor');
   }
 });

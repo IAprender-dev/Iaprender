@@ -52,15 +52,45 @@ export default function AuthProxy() {
 
     setIsLoading(true);
     
-    toast({
-      title: "Redirecionando",
-      description: "Você será redirecionado para o login seguro...",
-    });
-    
-    // Usar redirecionamento invisível para manter usuário no domínio da aplicação
-    setTimeout(() => {
-      window.location.href = '/api/auth/invisible-redirect';
-    }, 1000);
+    try {
+      const response = await fetch('/api/auth/cognito-direct-auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast({
+          title: "Autenticação realizada com sucesso!",
+          description: "Redirecionando para o dashboard...",
+        });
+        
+        // Redirecionar para o callback com token sem expor domínio externo
+        window.location.href = result.redirect;
+      } else {
+        toast({
+          title: "Erro na autenticação",
+          description: result.error || "Credenciais inválidas.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Erro na autenticação:', error);
+      toast({
+        title: "Erro de conexão",
+        description: "Não foi possível conectar com o servidor.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
