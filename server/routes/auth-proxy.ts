@@ -2,9 +2,24 @@ import { Router } from 'express';
 import { SecretsManager } from '../config/secrets.js';
 import { CognitoIdentityProviderClient, InitiateAuthCommand, AuthFlowType } from '@aws-sdk/client-cognito-identity-provider';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import fetch from 'node-fetch';
 
 const router = Router();
+
+/**
+ * Gera o SECRET_HASH necessário para o Cognito
+ * @param username - Nome do usuário
+ * @param clientId - ID do cliente Cognito
+ * @param clientSecret - Secret do cliente Cognito
+ * @returns SECRET_HASH gerado
+ */
+function generateSecretHash(username: string, clientId: string, clientSecret: string): string {
+  const message = username + clientId;
+  const hmac = crypto.createHmac('sha256', clientSecret);
+  hmac.update(message);
+  return hmac.digest('base64');
+}
 
 /**
  * Endpoint para autenticação direta via AWS SDK
@@ -23,7 +38,7 @@ router.post('/cognito-direct-auth', async (req, res) => {
 
     const credentials = SecretsManager.getAWSCredentials();
     
-    if (!credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_USER_POOL_ID) {
+    if (!credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_USER_POOL_ID || !credentials.AWS_COGNITO_CLIENT_SECRET) {
       return res.status(500).json({ 
         success: false, 
         error: 'Configuração AWS Cognito incompleta' 
@@ -39,13 +54,17 @@ router.post('/cognito-direct-auth', async (req, res) => {
       }
     });
 
-    // Autenticar usando AWS SDK
+    // Gerar SECRET_HASH para o cliente
+    const secretHash = generateSecretHash(username, credentials.AWS_COGNITO_CLIENT_ID, credentials.AWS_COGNITO_CLIENT_SECRET);
+
+    // Autenticar usando AWS SDK com SECRET_HASH
     const authCommand = new InitiateAuthCommand({
       AuthFlow: AuthFlowType.USER_PASSWORD_AUTH,
       ClientId: credentials.AWS_COGNITO_CLIENT_ID,
       AuthParameters: {
         USERNAME: username,
-        PASSWORD: password
+        PASSWORD: password,
+        SECRET_HASH: secretHash
       }
     });
 
