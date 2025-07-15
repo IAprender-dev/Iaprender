@@ -143,6 +143,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 15, 2025: ✅ CONCLUÍDO - Sistema de Autenticação Segura Implementado com Buttons da Landing Page Atualizados
+  - ✅ **SISTEMA DE AUTENTICAÇÃO SEGURA**: Implementado CognitoAuthService para autenticação backend
+  - ✅ **ENDPOINTS SEGUROS**: Criado /api/auth/login, /api/auth/me, /api/auth/logout para JWT
+  - ✅ **AUTHCONTEXT ATUALIZADO**: Modificado para usar autenticação direta sem expor URLs do Cognito
+  - ✅ **PÁGINA DE LOGIN**: Formulário direto com email/senha substituindo redirecionamento Cognito
+  - ✅ **BOTÕES DA LANDING PAGE**: Ambos "Acessar IAprender" e "Explorar o IAprender" direcionam para /auth
+  - ✅ **TOKENS JWT**: Sistema de tokens armazenados no localStorage para manter sessão
+  - ✅ **REDIRECIONAMENTO INTELIGENTE**: Baseado no role do usuário após login bem-sucedido
 - July 15, 2025: ✅ CONCLUÍDO - Formulário de Empresas com Formatação Brasileira Implementado
   - ✅ **RAZÃO SOCIAL COMO CAMPO PRINCIPAL**: Reorganizada ordem dos campos com Razão Social obrigatória em primeiro lugar
   - ✅ **FORMATAÇÃO AUTOMÁTICA DE CNPJ**: Implementada formatação XX.XXX.XXX/XXXX-XX durante digitação
