@@ -23,7 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Auth() {
   const [location, navigate] = useLocation();
-  const { user, loginMutation } = useAuth();
+  const { user, loginMutation, directLoginMutation } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -89,7 +89,8 @@ export default function Auth() {
   });
 
   const onLogin = (data: LoginFormValues) => {
-    loginMutation.mutate(data);
+    // Usar login direto em vez do login padrão
+    directLoginMutation.mutate(data);
   };
 
   const onCognitoLogin = () => {
@@ -280,11 +281,11 @@ export default function Auth() {
                         <Button 
                           type="submit" 
                           className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 rounded-2xl h-14 text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02]"
-                          disabled={loginMutation.isPending}
+                          disabled={directLoginMutation.isPending}
                         >
                           <div className="flex items-center space-x-2">
                             <span>
-                              {loginMutation.isPending ? "Autenticando..." : "Entrar na plataforma"}
+                              {directLoginMutation.isPending ? "Autenticando..." : "Entrar na plataforma"}
                             </span>
                             <Sparkles className="w-5 h-5" />
                           </div>

@@ -7,6 +7,9 @@ import { initializeDatabase } from "./db";
 import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
 import secureAuthRouter from "./routes/secure-auth";
 import cognitoOAuthRouter from "./routes/cognito-oauth";
+import cognitoDirectRouter from "./routes/cognito-direct";
+import cognitoAdminRouter from "./routes/cognito-admin";
+import cognitoHybridRouter from "./routes/cognito-hybrid";
 // WebSocket import removed - using direct OpenAI Realtime API connection
 
 const app = express();
@@ -68,6 +71,18 @@ app.use((req, res, next) => {
   // Add callback route at root level
   app.use('/auth', cognitoOAuthRouter);
   console.log('🔒 Rotas de callback OAuth registradas');
+  
+  // Add direct authentication routes
+  app.use('/api/auth', cognitoDirectRouter);
+  console.log('🔒 Rotas de autenticação direta registradas');
+  
+  // Add admin authentication routes
+  app.use('/api/auth', cognitoAdminRouter);
+  console.log('🔒 Rotas de autenticação administrativa registradas');
+  
+  // Add hybrid authentication routes
+  app.use('/api/auth', cognitoHybridRouter);
+  console.log('🔒 Rotas de autenticação híbrida registradas');
   
   const server = await registerRoutes(app);
   
