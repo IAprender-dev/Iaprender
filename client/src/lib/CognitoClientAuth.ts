@@ -118,7 +118,7 @@ export class CognitoClientAuth {
         console.warn('Recebido:', poolData.UserPoolId);
       }
 
-      // Configurar autenticação com SECRET_HASH se disponível
+      // Configurar autenticação com SECRET_HASH - SRP flow
       const authDetails: any = {
         Username: email,
         Password: password
@@ -128,7 +128,7 @@ export class CognitoClientAuth {
       if (this.clientSecret) {
         const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
         authDetails.SecretHash = secretHash;
-        console.log('🔐 Usando SECRET_HASH para autenticação');
+        console.log('🔐 Usando SECRET_HASH para autenticação SRP');
         console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
       } else {
         console.log('⚠️ CLIENT_SECRET não disponível, tentando sem SECRET_HASH');
@@ -144,7 +144,7 @@ export class CognitoClientAuth {
       console.log('🔐 Tentando autenticar usuário...');
 
       return new Promise((resolve) => {
-        cognitoUser.authenticateUser(authenticationDetails, {
+        const customCallback = {
           onSuccess: async (session: CognitoUserSession) => {
             console.log('✅ Autenticação bem-sucedida');
 
@@ -221,7 +221,18 @@ export class CognitoClientAuth {
               });
             });
           }
-        });
+        };
+
+        // Configurar SECRET_HASH no callback se necessário
+        if (this.clientSecret) {
+          const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
+          customCallback.customChallenge = (challengeParameters: any) => {
+            challengeParameters.SECRET_HASH = secretHash;
+            return challengeParameters;
+          };
+        }
+
+        cognitoUser.authenticateUser(authenticationDetails, customCallback);
       });
 
     } catch (error) {
