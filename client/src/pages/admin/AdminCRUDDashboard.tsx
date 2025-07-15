@@ -646,7 +646,7 @@ function EmpresasTab({
                           </div>
                           <div className="text-sm text-gray-600">
                             {empresa.razaoSocial && (
-                              <div className="italic text-gray-500">Nome Fantasia: {empresa.nome}</div>
+                              <div className="italic text-gray-500">{empresa.nome}</div>
                             )}
                           </div>
                           {empresa.cnpj && (

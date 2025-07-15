@@ -143,6 +143,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 15, 2025: ✅ CONCLUÍDO - Formulário de Empresas com Formatação Brasileira Implementado
+  - ✅ **RAZÃO SOCIAL COMO CAMPO PRINCIPAL**: Reorganizada ordem dos campos com Razão Social obrigatória em primeiro lugar
+  - ✅ **FORMATAÇÃO AUTOMÁTICA DE CNPJ**: Implementada formatação XX.XXX.XXX/XXXX-XX durante digitação
+  - ✅ **FORMATAÇÃO AUTOMÁTICA DE TELEFONE**: Implementada formatação brasileira (XX) XXXXX-XXXX
+  - ✅ **NOVA ORDEM DOS CAMPOS**: Razão Social → Nome Fantasia → CNPJ → Email → Telefone → Endereço → Cidade/Estado → Responsável
+  - ✅ **EXIBIÇÃO APRIMORADA NA LISTAGEM**: Razão Social em destaque, Nome Fantasia em itálico (sem rótulo)
+  - ✅ **MODAL DE VISUALIZAÇÃO ATUALIZADO**: Nova ordem dos campos aplicada também na visualização
+  - ✅ **VALIDAÇÃO E FORMATAÇÃO**: Funções de formatação e limpeza implementadas para dados brasileiros
 - July 14, 2025: ✅ CONCLUÍDO - Sistema Completo de Autenticação e API REST Totalmente Funcional
   - ✅ **PROBLEMA SQL RESOLVIDO**: Convertidas queries raw SQL com binding errors para Drizzle ORM
     • `/api/usuarios`: Convertido para db.select() com filtros hierárquicos por empresa_id
