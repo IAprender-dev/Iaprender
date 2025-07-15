@@ -50,6 +50,33 @@ import { Empresa, InsertEmpresa, Contrato, InsertContrato, User, InsertUser } fr
 import IAprender_Logo from "@/assets/IAprender_1750262377399.png";
 import { LogoutButton } from "@/components/LogoutButton";
 
+// Funções de formatação para campos brasileiros
+const formatCNPJ = (value: string) => {
+  const cleaned = value.replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/);
+  if (match) {
+    return `${match[1]}.${match[2]}.${match[3]}/${match[4]}-${match[5]}`;
+  }
+  return value;
+};
+
+const formatPhone = (value: string) => {
+  const cleaned = value.replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{2})(\d{4,5})(\d{4})$/);
+  if (match) {
+    return `(${match[1]}) ${match[2]}-${match[3]}`;
+  }
+  return value;
+};
+
+const removeCNPJFormat = (value: string) => {
+  return value.replace(/\D/g, '');
+};
+
+const removePhoneFormat = (value: string) => {
+  return value.replace(/\D/g, '');
+};
+
 // Interface para dados do formulário de empresa
 interface EmpresaFormData {
   nome: string;
@@ -615,11 +642,11 @@ function EmpresasTab({
                       <TableCell>
                         <div className="space-y-2">
                           <div className="font-bold text-blue-600 text-lg leading-tight">
-                            {empresa.nome}
+                            {empresa.razaoSocial || empresa.nome}
                           </div>
                           <div className="text-sm text-gray-600">
                             {empresa.razaoSocial && (
-                              <div className="italic">{empresa.razaoSocial}</div>
+                              <div className="italic text-gray-500">Nome Fantasia: {empresa.nome}</div>
                             )}
                           </div>
                           {empresa.cnpj && (
@@ -756,22 +783,22 @@ function EmpresasTab({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="nome">Nome da Empresa *</Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-                  placeholder="Nome fantasia"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="razaoSocial">Razão Social</Label>
+                <Label htmlFor="razaoSocial">Razão Social *</Label>
                 <Input
                   id="razaoSocial"
                   value={formData.razaoSocial}
                   onChange={(e) => setFormData(prev => ({ ...prev, razaoSocial: e.target.value }))}
                   placeholder="Razão social da empresa"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="nome">Nome Fantasia</Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
+                  placeholder="Nome fantasia"
                 />
               </div>
             </div>
@@ -782,7 +809,14 @@ function EmpresasTab({
                 <Input
                   id="cnpj"
                   value={formData.cnpj}
-                  onChange={(e) => setFormData(prev => ({ ...prev, cnpj: e.target.value }))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const cleanValue = removeCNPJFormat(value);
+                    if (cleanValue.length <= 14) {
+                      const formatted = formatCNPJ(cleanValue);
+                      setFormData(prev => ({ ...prev, cnpj: formatted }));
+                    }
+                  }}
                   placeholder="00.000.000/0000-00"
                   required
                 />
@@ -806,7 +840,14 @@ function EmpresasTab({
                 <Input
                   id="telefone"
                   value={formData.telefone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, telefone: e.target.value }))}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const cleanValue = removePhoneFormat(value);
+                    if (cleanValue.length <= 11) {
+                      const formatted = formatPhone(cleanValue);
+                      setFormData(prev => ({ ...prev, telefone: formatted }));
+                    }
+                  }}
                   placeholder="(11) 99999-9999"
                 />
               </div>
@@ -925,12 +966,12 @@ function EmpresasTab({
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Nome</Label>
-                  <p className="text-sm">{selectedItem.nome}</p>
-                </div>
-                <div>
                   <Label className="text-sm font-medium text-gray-500">Razão Social</Label>
                   <p className="text-sm">{selectedItem.razaoSocial || '-'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Nome Fantasia</Label>
+                  <p className="text-sm">{selectedItem.nome}</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
