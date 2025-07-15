@@ -75,8 +75,10 @@ router.get('/invisible-redirect', async (req, res) => {
           <p>Por favor, aguarde...</p>
         </div>
         <script>
-          // Redirecionar imediatamente
-          window.location.replace('${authUrl.toString()}');
+          // Redirecionar após breve loading para uma experiência mais suave
+          setTimeout(() => {
+            window.location.replace('${authUrl.toString()}');
+          }, 500);
         </script>
       </body>
       </html>

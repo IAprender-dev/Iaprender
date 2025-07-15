@@ -50,21 +50,17 @@ export default function AuthProxy() {
       return;
     }
 
-    // Por enquanto, vamos usar o fluxo OAuth padrão
-    // No futuro, implementaremos login direto via API
+    setIsLoading(true);
+    
     toast({
       title: "Redirecionando",
       description: "Você será redirecionado para o login seguro...",
     });
     
+    // Usar redirecionamento invisível para manter usuário no domínio da aplicação
     setTimeout(() => {
-      window.location.href = '/api/auth/oauth/login';
+      window.location.href = '/api/auth/invisible-redirect';
     }, 1000);
-  };
-
-  // Método alternativo - usar redirecionamento invisível
-  const handleDirectLogin = () => {
-    window.location.href = '/api/auth/invisible-redirect';
   };
 
   return (
@@ -141,25 +137,6 @@ export default function AuthProxy() {
                     Entrar
                   </>
                 )}
-              </Button>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">ou</span>
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleDirectLogin}
-                disabled={isLoading}
-                className="w-full h-12 text-base font-medium"
-              >
-                Entrar com AWS Cognito
               </Button>
             </form>
 
