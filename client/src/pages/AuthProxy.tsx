@@ -7,6 +7,7 @@ import { Loader2, LogIn, Eye, EyeOff } from "lucide-react";
 import { Helmet } from "react-helmet";
 import { useToast } from "@/hooks/use-toast";
 import iaprenderLogo from "@assets/IAprender_1750262542315.png";
+import { CognitoClientAuth } from "@/lib/CognitoClientAuth";
 
 export default function AuthProxy() {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,82 +42,40 @@ export default function AuthProxy() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.username || !formData.password) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha email e senha.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
-      // Obter URL de autenticação OAuth
-      const response = await fetch('/api/auth/cognito-oauth-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+      // Usar autenticação client-side do Cognito
+      const authClient = CognitoClientAuth.getInstance();
+      
+      toast({
+        title: "Processando autenticação",
+        description: "Verificando credenciais...",
       });
-
-      const result = await response.json();
-
+      
+      const result = await authClient.authenticate(formData.username, formData.password);
+      
       if (result.success) {
         toast({
-          title: "Redirecionando para autenticação",
-          description: "Aguarde enquanto processamos sua autenticação...",
+          title: "Autenticação realizada com sucesso!",
+          description: "Redirecionando para o dashboard...",
         });
         
-        // Criar iframe invisível para autenticação
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = result.authUrl;
-        
-        // Escutar mensagens do iframe
-        const handleMessage = (event: MessageEvent) => {
-          if (event.origin !== window.location.origin) return;
-          
-          if (event.data.type === 'AUTH_SUCCESS') {
-            window.removeEventListener('message', handleMessage);
-            document.body.removeChild(iframe);
-            
-            toast({
-              title: "Autenticação realizada com sucesso!",
-              description: "Redirecionando para o dashboard...",
-            });
-            
-            // Redirecionar para o dashboard
-            window.location.href = event.data.redirect;
-          } else if (event.data.type === 'AUTH_ERROR') {
-            window.removeEventListener('message', handleMessage);
-            document.body.removeChild(iframe);
-            
-            toast({
-              title: "Erro na autenticação",
-              description: event.data.error || "Erro desconhecido",
-              variant: "destructive"
-            });
-            
-            setIsLoading(false);
-          }
-        };
-        
-        window.addEventListener('message', handleMessage);
-        document.body.appendChild(iframe);
-        
-        // Timeout para evitar travamento
-        setTimeout(() => {
-          if (document.body.contains(iframe)) {
-            window.removeEventListener('message', handleMessage);
-            document.body.removeChild(iframe);
-            
-            toast({
-              title: "Timeout na autenticação",
-              description: "Tente novamente em alguns segundos.",
-              variant: "destructive"
-            });
-            
-            setIsLoading(false);
-          }
-        }, 30000);
-        
+        // Redirecionar para o dashboard com token
+        window.location.href = result.redirectUrl!;
       } else {
         toast({
-          title: "Erro na configuração",
-          description: result.error || "Erro interno do servidor",
+          title: "Erro na autenticação",
+          description: result.error || "Credenciais inválidas",
           variant: "destructive"
         });
         setIsLoading(false);

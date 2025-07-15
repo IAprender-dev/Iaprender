@@ -22,35 +22,48 @@ function generateSecretHash(username: string, clientId: string, clientSecret: st
 }
 
 /**
- * Endpoint para gerar URL de autenticação OAuth
- * Retorna URL para usar em iframe mantendo usuário no domínio
+ * Endpoint para criar token JWT interno do sistema
+ * Usado após autenticação client-side bem-sucedida
  */
-router.post('/cognito-oauth-url', async (req, res) => {
+router.post('/create-internal-token', async (req, res) => {
   try {
-    const credentials = SecretsManager.getAWSCredentials();
-    
-    if (!credentials.AWS_COGNITO_DOMAIN || !credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_REDIRECT_URI) {
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Configuração AWS Cognito incompleta' 
+    const { id, email, name, tipo_usuario, empresa_id, escola_id, cognito_sub, groups } = req.body;
+
+    if (!email || !cognito_sub) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email e cognito_sub são obrigatórios'
       });
     }
 
-    // Construir URL de autenticação do Cognito
-    const authUrl = new URL('/oauth2/authorize', credentials.AWS_COGNITO_DOMAIN);
-    authUrl.searchParams.append('response_type', 'code');
-    authUrl.searchParams.append('client_id', credentials.AWS_COGNITO_CLIENT_ID);
-    authUrl.searchParams.append('redirect_uri', credentials.AWS_COGNITO_REDIRECT_URI);
-    authUrl.searchParams.append('scope', 'openid email profile');
+    // Criar token JWT interno
+    const tokenPayload = {
+      id: id || 1,
+      email,
+      name: name || email,
+      tipo_usuario: tipo_usuario || 'user',
+      empresa_id: empresa_id || 1,
+      escola_id: escola_id || null,
+      cognito_sub,
+      groups: groups || []
+    };
+
+    const token = jwt.sign(
+      tokenPayload,
+      process.env.JWT_SECRET || 'test_secret_key_iaprender_2025',
+      { expiresIn: '24h' }
+    );
+
+    console.log('🔐 Token JWT interno criado para:', email);
 
     return res.json({
       success: true,
-      authUrl: authUrl.toString(),
-      message: 'URL de autenticação gerada'
+      token,
+      message: 'Token criado com sucesso'
     });
 
   } catch (error) {
-    console.error('❌ Erro ao gerar URL OAuth:', error);
+    console.error('❌ Erro ao criar token interno:', error);
     return res.status(500).json({
       success: false,
       error: 'Erro interno do servidor'

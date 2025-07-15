@@ -418,6 +418,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         success: true,
+        userPoolId: cognitoConfig.userPoolId,
+        clientId: cognitoConfig.clientId,
+        region: cognitoConfig.region,
         loginUrl: `${cognitoConfig.domain}/login?response_type=code&client_id=${cognitoConfig.clientId}&redirect_uri=${encodeURIComponent(cognitoConfig.redirectUri!)}&scope=openid%20email%20profile`,
         config: {
           domain: cognitoConfig.domain,
