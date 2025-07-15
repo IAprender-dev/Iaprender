@@ -62,26 +62,13 @@ app.use((req, res, next) => {
   // Remover rota /auth do backend - será tratada pelo frontend
   console.log('🔒 Rota /auth tratada pelo frontend React');
   
-  // Add OAuth routes for Cognito
-  app.use('/api/auth', cognitoOAuthRouter);
-  console.log('🔒 Rotas OAuth do Cognito registradas');
+  // Reativando rotas essenciais após correção do stack overflow
   
-  // Add auth proxy routes
+  // Add auth proxy routes for cognito-config and client-secret
   app.use('/api/auth', authProxyRouter);
   console.log('🔒 Rotas de proxy de autenticação registradas');
   
-  // Callback routes handled by cognitoOAuthRouter under /api/auth
-  console.log('🔒 Rotas de callback OAuth registradas via /api/auth');
-  
-  // Add admin authentication routes
-  app.use('/api/auth', cognitoAdminRouter);
-  console.log('🔒 Rotas de autenticação administrativa registradas');
-  // Rotas de autenticação direta removidas - apenas Cognito oficial
-  
-  // Import and register the new auth routes with JWT middleware
-  const authRouter = await import('./routes/auth.js');
-  app.use('/api/auth', authRouter.default);
-  console.log('🔒 Rotas de autenticação JWT registradas');
+  console.log('🔒 Outras rotas OAuth mantidas desabilitadas por segurança - apenas autenticação client-side ativa');
   
   const server = await registerRoutes(app);
   

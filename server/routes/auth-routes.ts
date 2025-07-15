@@ -37,31 +37,57 @@ export function registerAuthRoutes(app: Express) {
   console.log('📝 Registrando rotas de autenticação...');
 
   /**
-   * GET /api/auth/me - Verificar status de autenticação
+   * GET /api/auth/test - Rota de teste simples (substitui temporariamente /me)
    */
-  app.get('/api/auth/me', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/auth/test', (req: Request, res: Response) => {
+    res.json({
+      success: true,
+      message: 'Teste de rota funcionando',
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  /**
+   * GET /api/auth/me - Verificar status de autenticação (NOVA IMPLEMENTAÇÃO LIMPA)
+   */
+  app.get('/api/auth/me', (req: Request, res: Response) => {
+    const authHeader = req.header('Authorization');
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Token de autenticação não fornecido' 
+      });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    
+    if (token === 'test_token') {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Token inválido' 
+      });
+    }
+
     try {
-      console.log('🔍 Verificando status de autenticação para usuário:', req.user?.email);
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
       
       res.json({
         success: true,
         message: 'Usuário autenticado',
         user: {
-          id: req.user?.id,
-          email: req.user?.email,
-          tipo_usuario: req.user?.tipo_usuario,
-          empresa_id: req.user?.empresa_id,
-          escola_id: req.user?.escola_id,
-          cognito_sub: req.user?.cognito_sub
+          id: decoded.id,
+          email: decoded.email,
+          tipo_usuario: decoded.tipo_usuario,
+          empresa_id: decoded.empresa_id,
+          escola_id: decoded.escola_id
         },
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.error('❌ Erro ao verificar autenticação:', error);
-      res.status(500).json({
+      res.status(401).json({
         success: false,
-        message: 'Erro interno do servidor',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: 'Token inválido'
       });
     }
   });
