@@ -1,6 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { HierarchicalFilterService } from '../services/HierarchicalFilterService-v2.js';
-import { CognitoSyncService } from '../services/CognitoSyncService.js';
 import AuthMiddleware from '../middleware/AuthMiddleware.js';
 
 /**
@@ -10,7 +9,6 @@ import AuthMiddleware from '../middleware/AuthMiddleware.js';
  * from flask import Blueprint, jsonify, g
  * from middleware.auth_middleware import AuthMiddleware
  * from services.hierarchical_filter import HierarchicalFilterService
- * from services.cognito_sync import CognitoSyncService
  * 
  * api_bp = Blueprint('api', __name__)
  * auth = AuthMiddleware()
@@ -59,11 +57,8 @@ function extractUserContext(req: AuthenticatedRequest, res: Response, next: Next
  * @auth.require_auth(required_role='Gestores')
  * def sync_cognito():
  *     try:
- *         sync_service = CognitoSyncService()
- *         sync_service.sync_all_users()
- *         return jsonify({'message': 'Sincronização concluída com sucesso'})
- *     except Exception as e:
- *         return jsonify({'error': str(e)}), 500
+ *         # Sincronização removida - apenas autenticação oficial
+ *         return jsonify({'error': 'Sincronização removida'}), 500
  */
 router.post('/sync/cognito', 
   authMiddleware.requireAuth(['Gestores']),
@@ -72,13 +67,11 @@ router.post('/sync/cognito',
     try {
       console.log('🔄 Iniciando sincronização Cognito...');
       
-      const syncService = new CognitoSyncService();
-      await syncService.syncAllUsers();
+      // Sincronização removida - apenas autenticação oficial
+      console.log('❌ Sincronização removida do sistema');
       
-      console.log('✅ Sincronização concluída com sucesso');
-      
-      res.json({ 
-        message: 'Sincronização concluída com sucesso',
+      res.status(501).json({ 
+        error: 'Sincronização removida - sistema usa apenas autenticação oficial AWS Cognito',
         timestamp: new Date().toISOString()
       });
       

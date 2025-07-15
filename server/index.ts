@@ -5,12 +5,8 @@ import { registerRoutes } from "./routes";
 import { setupViteCustom, serveStatic, log } from "./vite-custom";
 import { initializeDatabase } from "./db";
 import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
-import secureAuthRouter from "./routes/secure-auth";
 import cognitoOAuthRouter from "./routes/cognito-oauth";
-import cognitoDirectRouter from "./routes/cognito-direct";
 import cognitoAdminRouter from "./routes/cognito-admin";
-import cognitoHybridRouter from "./routes/cognito-hybrid";
-import authSimpleRouter from "./routes/auth-simple";
 // WebSocket import removed - using direct OpenAI Realtime API connection
 
 const app = express();
@@ -61,10 +57,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Add secure authentication routes BEFORE registerRoutes to avoid middleware interference
-  app.use('/api/auth', secureAuthRouter);
-  console.log('🔒 Rotas de autenticação segura registradas');
-  
   // Add OAuth routes for Cognito
   app.use('/api/auth', cognitoOAuthRouter);
   console.log('🔒 Rotas OAuth do Cognito registradas');
@@ -73,22 +65,10 @@ app.use((req, res, next) => {
   app.use('/auth', cognitoOAuthRouter);
   console.log('🔒 Rotas de callback OAuth registradas');
   
-  // Add direct authentication routes
-  app.use('/api/auth', cognitoDirectRouter);
-  console.log('🔒 Rotas de autenticação direta registradas');
-  
   // Add admin authentication routes
   app.use('/api/auth', cognitoAdminRouter);
   console.log('🔒 Rotas de autenticação administrativa registradas');
-  
-  // Sistema de autenticação híbrida removido - apenas Cognito oficial
-  
-  // Sistema de autenticação direta removido - apenas Cognito oficial
-  
-  // Import and register the new direct Cognito routes
-  const cognitoDirectNewRouter = await import('./routes/cognito-direct.js');
-  app.use('/api/auth', cognitoDirectNewRouter.default);
-  console.log('🔒 Rotas de autenticação direta Cognito registradas');
+  // Rotas de autenticação direta removidas - apenas Cognito oficial
   
   // Import and register the new auth routes with JWT middleware
   const authRouter = await import('./routes/auth.js');

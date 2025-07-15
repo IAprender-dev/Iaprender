@@ -143,7 +143,7 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 15, 2025: ✅ CONCLUÍDO - Sistema de Autenticação Exclusivamente AWS Cognito Implementado
+- July 15, 2025: ✅ CONCLUÍDO - Sistema de Autenticação Exclusivamente AWS Cognito Implementado e Limpeza de Arquivos
   - ✅ **SEGURANÇA RESTAURADA**: Removido completamente sistema de login direto que comprometia segurança do Cognito
   - ✅ **COGNITO OFICIAL APENAS**: Sistema agora usa exclusivamente autenticação oficial do AWS Cognito
   - ✅ **PÁGINA /LOGIN-DIRECT**: Convertida para espelho da /auth que redireciona para Cognito oficial
@@ -152,6 +152,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
   - ✅ **USUÁRIOS COGNITO**: Sistema funciona apenas com usuários criados no ambiente AWS Cognito
   - ✅ **TOKENS JWT OFICIAIS**: Apenas tokens gerados pelo Cognito são aceitos
   - ✅ **INTEGRIDADE DE SEGURANÇA**: Nenhum bypass ou duplicação de dados do Cognito permitida
+  - ✅ **LIMPEZA DE ARQUIVOS**: Removidos arquivos obsoletos não utilizados após migração para Cognito oficial:
+    • server/routes/auth-simple.ts, cognito-hybrid.ts, cognito-direct.ts, secure-auth.ts
+    • client/src/utils/auth.js, client/src/schemas/auth.ts
+    • test-auth-direct.js, test-cognito-callback.js, test-cognito-direct.js
+    • server/routes/cognito-sync.ts e dependências do CognitoSyncService
+    • Importações removidas do server/index.ts e server/routes.ts
+    • CognitoJWTVerifier recriado com funcionalidade limpa apenas para verificação oficial
 - July 15, 2025: ✅ CONCLUÍDO - Formulário de Empresas com Formatação Brasileira Implementado
   - ✅ **RAZÃO SOCIAL COMO CAMPO PRINCIPAL**: Reorganizada ordem dos campos com Razão Social obrigatória em primeiro lugar
   - ✅ **FORMATAÇÃO AUTOMÁTICA DE CNPJ**: Implementada formatação XX.XXX.XXX/XXXX-XX durante digitação

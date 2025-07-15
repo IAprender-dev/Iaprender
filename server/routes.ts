@@ -918,27 +918,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const secretsStatusRoutes = await import('./routes/secrets-status');
   app.use('/api/secrets', secretsStatusRoutes.default);
   
-  // Registrar rotas de sincronização AWS Cognito
-  try {
-    const cognitoSyncRoutes = await import('./routes/cognito-sync');
-    app.use('/api/cognito-sync', cognitoSyncRoutes.default);
-    console.log("✅ Rotas de sincronização AWS Cognito registradas com sucesso");
-  } catch (error) {
-    console.error("❌ Erro ao registrar rotas de sincronização Cognito:", error);
-  }
+  // Rotas de sincronização AWS Cognito removidas - apenas autenticação oficial
   
   // Registrar rotas de autenticação unificadas
   const { registerAuthRoutes } = await import('./routes/auth-routes.js');
   registerAuthRoutes(app);
 
-  // Registrar novas rotas da API hierárquica
-  try {
-    const { apiRoutes } = await import('./routes/api.js');
-    app.use('/api', apiRoutes);
-    console.log("✅ Rotas da API hierárquica registradas com sucesso");
-  } catch (error) {
-    console.error("❌ Erro ao registrar rotas da API hierárquica:", error);
-  }
+  // Rotas da API hierárquica removidas temporariamente (dependência do CognitoSyncService removida)
 
   console.log("✅ All routes registered successfully (placeholder mode)");
   
