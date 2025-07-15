@@ -14,9 +14,10 @@ export type User = {
   id: number;
   email: string;
   username: string;
-  firstName: string;
-  lastName: string;
-  role: "admin" | "teacher" | "student";
+  nome?: string;
+  firstName?: string;
+  lastName?: string;
+  role: "admin" | "teacher" | "student" | "municipal_manager" | "school_director";
   status: "active" | "inactive" | "suspended" | "blocked";
   contractId?: number | null;
   schoolYear?: string;
@@ -67,17 +68,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ["/api/auth/me"],
     queryFn: async ({ signal }) => {
       try {
-        const response = await apiRequest("GET", "/api/auth/me", undefined, { 
-          signal 
-        } as RequestInit);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          return null as any; // Sem token, usuário não autenticado
+        }
+
+        const response = await fetch("/api/auth/me", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          signal,
+        });
         
         if (!response.ok) {
           if (response.status === 401) {
-            return null as any; // Retorna null em caso de não autenticado
+            // Token inválido, remover do localStorage
+            localStorage.removeItem("token");
+            return null as any;
           }
           throw new Error("Failed to fetch user");
         }
-        return await response.json();
+        
+        const data = await response.json();
+        return data.user;
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') {
           console.log('Request aborted');
@@ -88,21 +102,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Mutation para login
+  // Mutation para login seguro
   const loginMutation = useMutation<User, Error, LoginData>({
     mutationFn: async (credentials) => {
-      const res = await apiRequest("POST", "/api/auth/login", credentials);
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: "Login failed" }));
-        throw new Error(errorData.message || "Login failed");
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: credentials.email,
+          password: credentials.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro na autenticação");
       }
-      return await res.json();
+
+      // Salvar token no localStorage
+      localStorage.setItem("token", data.token);
+      
+      return data.user;
     },
     onSuccess: (userData: User) => {
       queryClient.setQueryData(["/api/auth/me"], userData);
       toast({
         title: "Login bem-sucedido",
-        description: `Bem-vindo, ${userData.firstName}!`,
+        description: `Bem-vindo, ${userData.nome || userData.email}!`,
       });
       
       // Redirect based on user role
@@ -157,12 +186,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logoutMutation = useMutation<void, Error, void>({
     mutationFn: async () => {
       try {
-        const res = await apiRequest("POST", "/api/auth/logout");
-        // Não falha se retornar 200, mesmo com body empty
-        if (res.status === 200 || res.ok) {
-          return;
+        const token = localStorage.getItem("token");
+        if (token) {
+          const res = await fetch("/api/auth/logout", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          // Não falha se retornar 200, mesmo com body empty
+          if (res.status === 200 || res.ok) {
+            return;
+          }
+          throw new Error("Logout failed");
         }
-        throw new Error("Logout failed");
       } catch (error) {
         // Se o logout falhar no servidor, limpa localmente mesmo assim
         console.log("Logout failed on server, clearing local session");
@@ -170,6 +208,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     },
     onSuccess: () => {
+      // Limpar token do localStorage
+      localStorage.removeItem("token");
       queryClient.setQueryData(["/api/auth/me"], null);
       // Redireciona para a landing page
       setLocation("/");
@@ -179,11 +219,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     },
     onError: (error: Error) => {
+      // Mesmo com erro, fazer logout local
+      localStorage.removeItem("token");
+      queryClient.setQueryData(["/api/auth/me"], null);
       toast({
-        title: "Falha no logout",
-        description: error.message,
-        variant: "destructive",
+        title: "Logout realizado",
+        description: "Você foi desconectado.",
       });
+      setLocation("/");
     },
   });
 

@@ -241,14 +241,14 @@ export default function Auth() {
                         </div>
                         
                         <Button 
-                          type="button" 
+                          type="submit" 
                           className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:via-indigo-700 hover:to-purple-700 rounded-2xl h-14 text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02]"
-                          onClick={() => {
-                            window.location.href = 'https://us-east-14jqf97h2x.auth.us-east-1.amazoncognito.com/login?response_type=code&client_id=1ooqafj1v6bh3ff55t2ha56hn4&redirect_uri=https%3A%2F%2F39be0399-0121-4891-903c-353f1d3ba9d4-00-23r9t77u2drlf.janeway.replit.dev%2Fauth%2Fcallback&scope=openid%20email%20profile';
-                          }}
+                          disabled={loginMutation.isPending}
                         >
                           <div className="flex items-center space-x-2">
-                            <span>Entrar na plataforma</span>
+                            <span>
+                              {loginMutation.isPending ? "Autenticando..." : "Entrar na plataforma"}
+                            </span>
                             <Sparkles className="w-5 h-5" />
                           </div>
                         </Button>
