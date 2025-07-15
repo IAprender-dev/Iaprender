@@ -5,13 +5,13 @@
 
 interface AWSCredentials {
   region: string;
-  cognito_user_pool_id?: string;
-  cognito_client_id?: string;
-  cognito_client_secret?: string;
-  cognito_domain?: string;
-  cognito_redirect_uri?: string;
-  access_key?: string;
-  secret_key?: string;
+  AWS_COGNITO_USER_POOL_ID?: string;
+  AWS_COGNITO_CLIENT_ID?: string;
+  AWS_COGNITO_CLIENT_SECRET?: string;
+  AWS_COGNITO_DOMAIN?: string;
+  AWS_COGNITO_REDIRECT_URI?: string;
+  AWS_ACCESS_KEY_ID?: string;
+  AWS_SECRET_ACCESS_KEY?: string;
 }
 
 interface DatabaseCredentials {
@@ -82,13 +82,13 @@ export class SecretsManager {
   static getAWSCredentials(): AWSCredentials {
     return {
       region: process.env.AWS_REGION || 'us-east-1',
-      cognito_user_pool_id: process.env.COGNITO_USER_POOL_ID,
-      cognito_client_id: process.env.COGNITO_CLIENT_ID,
-      cognito_client_secret: process.env.COGNITO_CLIENT_SECRET,
-      cognito_domain: process.env.COGNITO_DOMAIN,
-      cognito_redirect_uri: process.env.COGNITO_REDIRECT_URI,
-      access_key: process.env.AWS_ACCESS_KEY_ID,
-      secret_key: process.env.AWS_SECRET_ACCESS_KEY
+      AWS_COGNITO_USER_POOL_ID: process.env.AWS_COGNITO_USER_POOL_ID,
+      AWS_COGNITO_CLIENT_ID: process.env.AWS_COGNITO_CLIENT_ID,
+      AWS_COGNITO_CLIENT_SECRET: process.env.AWS_COGNITO_CLIENT_SECRET,
+      AWS_COGNITO_DOMAIN: process.env.AWS_COGNITO_DOMAIN,
+      AWS_COGNITO_REDIRECT_URI: process.env.AWS_COGNITO_REDIRECT_URI,
+      AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+      AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY
     };
   }
 

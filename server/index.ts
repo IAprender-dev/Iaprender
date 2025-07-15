@@ -56,14 +56,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Add secure authentication routes BEFORE registerRoutes to avoid middleware interference
+  app.use('/api/auth', secureAuthRouter);
+  console.log('🔒 Rotas de autenticação segura registradas');
+  
   const server = await registerRoutes(app);
   
   // Add custom Cognito UI routes
   app.use('/cognito-ui', cognitoCustomUIRouter);
-  
-  // Add secure authentication routes
-  app.use('/api/auth', secureAuthRouter);
-  console.log('🔒 Rotas de autenticação segura registradas');
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

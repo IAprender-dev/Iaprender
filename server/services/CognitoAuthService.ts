@@ -13,6 +13,11 @@ export class CognitoAuthService {
     const credentials = SecretsManager.getAWSCredentials();
     const region = credentials.AWS_REGION || 'us-east-1';
     
+    console.log('🔍 Verificando credenciais AWS Cognito:');
+    console.log('- AWS_COGNITO_USER_POOL_ID:', credentials.AWS_COGNITO_USER_POOL_ID ? 'SET' : 'NOT SET');
+    console.log('- AWS_COGNITO_CLIENT_ID:', credentials.AWS_COGNITO_CLIENT_ID ? 'SET' : 'NOT SET');
+    console.log('- AWS_COGNITO_CLIENT_SECRET:', credentials.AWS_COGNITO_CLIENT_SECRET ? 'SET' : 'NOT SET');
+    
     this.client = new CognitoIdentityProviderClient({
       region,
       credentials: {
@@ -24,6 +29,11 @@ export class CognitoAuthService {
     this.userPoolId = credentials.AWS_COGNITO_USER_POOL_ID!;
     this.clientId = credentials.AWS_COGNITO_CLIENT_ID!;
     this.clientSecret = credentials.AWS_COGNITO_CLIENT_SECRET!;
+    
+    if (!this.clientSecret) {
+      console.error('❌ AWS_COGNITO_CLIENT_SECRET não configurado!');
+      throw new Error('AWS_COGNITO_CLIENT_SECRET é obrigatório para autenticação segura');
+    }
   }
 
   /**

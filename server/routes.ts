@@ -140,9 +140,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apply token interceptor middleware to all routes
-  app.use(tokenInterceptor);
-  app.use(tokenAlertMiddleware);
+  // Token interceptor middleware temporarily disabled for debugging
+  // app.use((req, res, next) => {
+  //   // Skip token interceptor for auth routes
+  //   if (req.path.startsWith('/api/auth/')) {
+  //     return next();
+  //   }
+  //   tokenInterceptor(req, res, next).catch(next);
+  // });
+  
+  // app.use((req, res, next) => {
+  //   // Skip token alert middleware for auth routes
+  //   if (req.path.startsWith('/api/auth/')) {
+  //     return next();
+  //   }
+  //   tokenAlertMiddleware(req, res, next).catch(next);
+  // });
 
   // Session configuration
   const MemoryStoreSession = MemoryStore(session);

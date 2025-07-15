@@ -17,15 +17,30 @@ const authLimiter = rateLimit({
 });
 
 /**
+ * POST /api/auth/test
+ * Endpoint de teste para verificar se o problema é do middleware
+ */
+router.post('/test', (req, res) => {
+  console.log('🔍 Teste básico - Body recebido:', req.body);
+  res.json({
+    success: true,
+    message: 'Endpoint de teste funcionando',
+    body: req.body
+  });
+});
+
+/**
  * POST /api/auth/login
  * Autenticação segura via username/password
  */
 router.post('/login', authLimiter, async (req, res) => {
   try {
+    console.log('🔐 Body recebido no login:', req.body);
     const { username, password } = req.body;
 
     // Validação de entrada
     if (!username || !password) {
+      console.log('❌ Campos obrigatórios faltando - username:', username, 'password:', password);
       return res.status(400).json({
         success: false,
         error: 'Username e password são obrigatórios'
@@ -50,7 +65,7 @@ router.post('/login', authLimiter, async (req, res) => {
       console.log('❌ Falha na autenticação:', authResult.error);
       return res.status(401).json({
         success: false,
-        error: authResult.error
+        error: authResult.error || 'Invalid credentials'
       });
     }
 
