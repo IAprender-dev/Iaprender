@@ -11,6 +11,7 @@ import { useEffect } from "react";
 // Pages
 import AIverseLanding from "@/pages/AIverseLanding";
 import Auth from "@/pages/Auth";
+import AuthProxy from "@/pages/AuthProxy";
 import CognitoAuth from "@/pages/CognitoAuth";
 import LoginDirect from "@/pages/LoginDirect";
 import FirstAccess from "@/pages/FirstAccess";
@@ -130,7 +131,7 @@ function Router() {
     <Switch>
       {/* Public routes - Always serve landing page first */}
       <Route path="/" component={AIverseLanding} />
-      <Route path="/auth" component={Auth} />
+      <Route path="/auth" component={AuthProxy} />
       <Route path="/login-direct" component={LoginDirect} />
       <Route path="/cognito-auth" component={CognitoAuth} />
       <Route path="/first-access" component={FirstAccess} />

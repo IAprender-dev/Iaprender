@@ -7,6 +7,7 @@ import { initializeDatabase } from "./db";
 import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
 import cognitoOAuthRouter from "./routes/cognito-oauth";
 import cognitoAdminRouter from "./routes/cognito-admin";
+import authProxyRouter from "./routes/auth-proxy";
 import { SecretsManager } from "./config/secrets.js";
 // WebSocket import removed - using direct OpenAI Realtime API connection
 
@@ -58,35 +59,16 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Add auth route FIRST - before any other middleware to prevent conflicts
-  app.get('/auth', (req, res) => {
-    try {
-      const credentials = SecretsManager.getAWSCredentials();
-      
-      if (!credentials.AWS_COGNITO_DOMAIN || !credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_REDIRECT_URI) {
-        return res.status(500).send('Configuração AWS Cognito incompleta');
-      }
-
-      // Construir URL de autenticação do Cognito
-      const authUrl = new URL('/oauth2/authorize', credentials.AWS_COGNITO_DOMAIN);
-      authUrl.searchParams.append('response_type', 'code');
-      authUrl.searchParams.append('client_id', credentials.AWS_COGNITO_CLIENT_ID);
-      authUrl.searchParams.append('redirect_uri', credentials.AWS_COGNITO_REDIRECT_URI);
-      authUrl.searchParams.append('scope', 'openid email profile');
-
-      console.log('🔐 Rota /auth - Redirecionando para Cognito OAuth:', authUrl.toString());
-      
-      res.redirect(authUrl.toString());
-    } catch (error) {
-      console.error('❌ Erro ao redirecionar para Cognito:', error);
-      res.status(500).send('Erro interno do servidor');
-    }
-  });
-  console.log('🔒 Rota /auth registrada com prioridade máxima');
+  // Remover rota /auth do backend - será tratada pelo frontend
+  console.log('🔒 Rota /auth tratada pelo frontend React');
   
   // Add OAuth routes for Cognito
   app.use('/api/auth', cognitoOAuthRouter);
   console.log('🔒 Rotas OAuth do Cognito registradas');
+  
+  // Add auth proxy routes
+  app.use('/api/auth', authProxyRouter);
+  console.log('🔒 Rotas de proxy de autenticação registradas');
   
   // Add callback route at root level
   app.use('/auth', cognitoOAuthRouter);
