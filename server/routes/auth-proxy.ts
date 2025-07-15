@@ -22,112 +22,35 @@ function generateSecretHash(username: string, clientId: string, clientSecret: st
 }
 
 /**
- * Endpoint para autenticação direta via AWS SDK
- * Mantém o usuário no domínio da aplicação durante todo o processo
+ * Endpoint para gerar URL de autenticação OAuth
+ * Retorna URL para usar em iframe mantendo usuário no domínio
  */
-router.post('/cognito-direct-auth', async (req, res) => {
+router.post('/cognito-oauth-url', async (req, res) => {
   try {
-    const { username, password } = req.body;
-    
-    if (!username || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'Username e password são obrigatórios'
-      });
-    }
-
     const credentials = SecretsManager.getAWSCredentials();
     
-    if (!credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_USER_POOL_ID || !credentials.AWS_COGNITO_CLIENT_SECRET) {
+    if (!credentials.AWS_COGNITO_DOMAIN || !credentials.AWS_COGNITO_CLIENT_ID || !credentials.AWS_COGNITO_REDIRECT_URI) {
       return res.status(500).json({ 
         success: false, 
         error: 'Configuração AWS Cognito incompleta' 
       });
     }
 
-    // Configurar cliente do Cognito
-    const client = new CognitoIdentityProviderClient({
-      region: 'us-east-1',
-      credentials: {
-        accessKeyId: credentials.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: credentials.AWS_SECRET_ACCESS_KEY!
-      }
-    });
-
-    // Gerar SECRET_HASH para o cliente
-    const secretHash = generateSecretHash(username, credentials.AWS_COGNITO_CLIENT_ID, credentials.AWS_COGNITO_CLIENT_SECRET);
-
-    // Autenticar usando AWS SDK com ADMIN_NO_SRP_AUTH
-    const authCommand = new AdminInitiateAuthCommand({
-      AuthFlow: AuthFlowType.ADMIN_NO_SRP_AUTH,
-      UserPoolId: credentials.AWS_COGNITO_USER_POOL_ID,
-      ClientId: credentials.AWS_COGNITO_CLIENT_ID,
-      AuthParameters: {
-        USERNAME: username,
-        PASSWORD: password,
-        SECRET_HASH: secretHash
-      }
-    });
-
-    const authResponse = await client.send(authCommand);
-
-    if (!authResponse.AuthenticationResult) {
-      return res.status(401).json({
-        success: false,
-        error: 'Credenciais inválidas'
-      });
-    }
-
-    // Obter token de acesso
-    const accessToken = authResponse.AuthenticationResult.AccessToken;
-    const idToken = authResponse.AuthenticationResult.IdToken;
-
-    // Decodificar token para obter informações do usuário
-    const userInfo = jwt.decode(idToken!) as any;
-    
-    // Criar JWT interno da aplicação
-    const internalToken = jwt.sign(
-      {
-        id: userInfo.sub,
-        email: userInfo.email,
-        name: userInfo.name || userInfo.email,
-        cognitoGroups: userInfo['cognito:groups'] || [],
-        tipo_usuario: userInfo['custom:tipo_usuario'] || 'user'
-      },
-      process.env.JWT_SECRET || 'test_secret_key_iaprender_2025',
-      { expiresIn: '24h' }
-    );
-
-    // Definir redirecionamento baseado no tipo de usuário
-    const userType = userInfo['custom:tipo_usuario'] || 'user';
-    let redirectPath = '/admin/user-management';
-    
-    if (userType === 'gestor') {
-      redirectPath = '/gestor/dashboard';
-    } else if (userType === 'diretor') {
-      redirectPath = '/diretor/dashboard';
-    } else if (userType === 'professor') {
-      redirectPath = '/professor/dashboard';
-    } else if (userType === 'aluno') {
-      redirectPath = '/aluno/dashboard';
-    }
+    // Construir URL de autenticação do Cognito
+    const authUrl = new URL('/oauth2/authorize', credentials.AWS_COGNITO_DOMAIN);
+    authUrl.searchParams.append('response_type', 'code');
+    authUrl.searchParams.append('client_id', credentials.AWS_COGNITO_CLIENT_ID);
+    authUrl.searchParams.append('redirect_uri', credentials.AWS_COGNITO_REDIRECT_URI);
+    authUrl.searchParams.append('scope', 'openid email profile');
 
     return res.json({
       success: true,
-      redirect: `${redirectPath}?token=${internalToken}&success=true`,
-      message: 'Autenticação realizada com sucesso'
+      authUrl: authUrl.toString(),
+      message: 'URL de autenticação gerada'
     });
 
   } catch (error) {
-    console.error('❌ Erro na autenticação direta:', error);
-    
-    if (error.name === 'NotAuthorizedException') {
-      return res.status(401).json({
-        success: false,
-        error: 'Credenciais inválidas'
-      });
-    }
-    
+    console.error('❌ Erro ao gerar URL OAuth:', error);
     return res.status(500).json({
       success: false,
       error: 'Erro interno do servidor'

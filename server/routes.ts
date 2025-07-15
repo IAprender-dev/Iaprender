@@ -863,8 +863,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const redirectUrl = `${redirectPath}?auth=success&type=${userType}&email=${encodeURIComponent(decoded.email)}&token=${encodeURIComponent(systemJwtToken)}`;
       console.log("🔗 URL final de redirecionamento:", redirectUrl);
 
-      // Redirecionar para o dashboard/formulário correto
-      res.redirect(redirectUrl);
+      // Retornar HTML que detecta iframe e comunica com parent
+      const html = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Autenticação Concluída</title>
+          <style>
+            body {
+              margin: 0;
+              padding: 2rem;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+            }
+            .container {
+              text-align: center;
+              padding: 2rem;
+              background: rgba(255, 255, 255, 0.1);
+              border-radius: 1rem;
+              backdrop-filter: blur(10px);
+            }
+            .spinner {
+              border: 3px solid rgba(255, 255, 255, 0.3);
+              border-radius: 50%;
+              border-top: 3px solid white;
+              width: 40px;
+              height: 40px;
+              animation: spin 1s linear infinite;
+              margin: 0 auto 1rem;
+            }
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="spinner"></div>
+            <h1>Autenticação Concluída</h1>
+            <p>Redirecionando para o dashboard...</p>
+          </div>
+          <script>
+            console.log('Callback processado - verificando contexto');
+            
+            // Verificar se está em iframe
+            if (window.parent !== window) {
+              console.log('Detectado iframe - enviando mensagem para parent');
+              
+              // Enviar mensagem para parent window
+              window.parent.postMessage({
+                type: 'AUTH_SUCCESS',
+                redirect: '${redirectUrl}',
+                userType: '${userType}',
+                email: '${decoded.email}'
+              }, '*');
+            } else {
+              console.log('Não está em iframe - redirecionando diretamente');
+              
+              // Redirecionar diretamente se não estiver em iframe
+              window.location.href = '${redirectUrl}';
+            }
+          </script>
+        </body>
+        </html>
+      `;
+
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
       
     } catch (error) {
       console.error("❌ Erro ao processar callback:", error);

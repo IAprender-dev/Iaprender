@@ -41,45 +41,85 @@ export default function AuthProxy() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.username || !formData.password) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/auth/cognito-direct-auth', {
+      // Obter URL de autenticação OAuth
+      const response = await fetch('/api/auth/cognito-oauth-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password
-        })
+        }
       });
 
       const result = await response.json();
 
       if (result.success) {
         toast({
-          title: "Autenticação realizada com sucesso!",
-          description: "Redirecionando para o dashboard...",
+          title: "Redirecionando para autenticação",
+          description: "Aguarde enquanto processamos sua autenticação...",
         });
         
-        // Redirecionar para o callback com token sem expor domínio externo
-        window.location.href = result.redirect;
+        // Criar iframe invisível para autenticação
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = result.authUrl;
+        
+        // Escutar mensagens do iframe
+        const handleMessage = (event: MessageEvent) => {
+          if (event.origin !== window.location.origin) return;
+          
+          if (event.data.type === 'AUTH_SUCCESS') {
+            window.removeEventListener('message', handleMessage);
+            document.body.removeChild(iframe);
+            
+            toast({
+              title: "Autenticação realizada com sucesso!",
+              description: "Redirecionando para o dashboard...",
+            });
+            
+            // Redirecionar para o dashboard
+            window.location.href = event.data.redirect;
+          } else if (event.data.type === 'AUTH_ERROR') {
+            window.removeEventListener('message', handleMessage);
+            document.body.removeChild(iframe);
+            
+            toast({
+              title: "Erro na autenticação",
+              description: event.data.error || "Erro desconhecido",
+              variant: "destructive"
+            });
+            
+            setIsLoading(false);
+          }
+        };
+        
+        window.addEventListener('message', handleMessage);
+        document.body.appendChild(iframe);
+        
+        // Timeout para evitar travamento
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            window.removeEventListener('message', handleMessage);
+            document.body.removeChild(iframe);
+            
+            toast({
+              title: "Timeout na autenticação",
+              description: "Tente novamente em alguns segundos.",
+              variant: "destructive"
+            });
+            
+            setIsLoading(false);
+          }
+        }, 30000);
+        
       } else {
         toast({
-          title: "Erro na autenticação",
-          description: result.error || "Credenciais inválidas.",
+          title: "Erro na configuração",
+          description: result.error || "Erro interno do servidor",
           variant: "destructive"
         });
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Erro na autenticação:', error);
@@ -88,7 +128,6 @@ export default function AuthProxy() {
         description: "Não foi possível conectar com o servidor.",
         variant: "destructive"
       });
-    } finally {
       setIsLoading(false);
     }
   };
