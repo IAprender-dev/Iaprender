@@ -537,6 +537,38 @@ function EmpresasTab({
     }
   });
 
+  // Deletar usuário
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Erro ao deletar usuário');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/stats'] });
+      toast({
+        title: "Sucesso",
+        description: "Usuário removido com sucesso",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedItem) {
@@ -566,6 +598,34 @@ function EmpresasTab({
 
   const openView = (empresa: Empresa) => {
     setSelectedItem(empresa);
+    setIsViewOpen(true);
+  };
+
+  // Funções específicas para usuários
+  const openEditUser = (usuario: User) => {
+    setSelectedItem(usuario);
+    setFormData({
+      email: usuario.email,
+      firstName: usuario.firstName || "",
+      lastName: usuario.lastName || "",
+      role: usuario.role || "",
+      status: usuario.status || "active",
+      companyId: usuario.companyId || undefined,
+      contractId: usuario.contractId || undefined,
+      phone: usuario.phone || "",
+      address: usuario.address || "",
+      dateOfBirth: usuario.dateOfBirth || "",
+      isMinor: usuario.isMinor || false,
+      parentName: usuario.parentName || "",
+      parentEmail: usuario.parentEmail || "",
+      parentPhone: usuario.parentPhone || "",
+      emergencyContact: usuario.emergencyContact || ""
+    });
+    setIsEditOpen(true);
+  };
+
+  const openViewUser = (usuario: User) => {
+    setSelectedItem(usuario);
     setIsViewOpen(true);
   };
 
@@ -1212,26 +1272,24 @@ function UsuariosTab({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Último Login</TableHead>
-                    <TableHead>Ações</TableHead>
+                    <TableHead className="w-[250px]">Nome</TableHead>
+                    <TableHead>Nível de Acesso</TableHead>
+                    <TableHead>Situação</TableHead>
+                    <TableHead className="w-[140px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {usuarios.map((usuario: User) => (
                     <TableRow key={usuario.id}>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">{usuario.firstName} {usuario.lastName}</div>
-                          <div className="text-sm text-gray-500">{usuario.username}</div>
+                        <div className="space-y-1">
+                          <div className="font-medium text-blue-600">{usuario.firstName} {usuario.lastName}</div>
+                          <div className="text-sm text-gray-500">{usuario.email}</div>
+                          <div className="text-xs text-gray-400">{usuario.username}</div>
                         </div>
                       </TableCell>
-                      <TableCell>{usuario.email}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="text-xs">
                           {usuario.role}
                         </Badge>
                       </TableCell>
@@ -1243,35 +1301,19 @@ function UsuariosTab({
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {usuario.lastLoginAt ? new Date(usuario.lastLoginAt).toLocaleDateString() : 'Nunca'}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => setSelectedItem(usuario)}>
+                        <div className="flex items-center space-x-1">
+                          <Button variant="ghost" size="sm" onClick={() => openViewUser(usuario)} title="Ver detalhes">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => {
-                            setSelectedItem(usuario);
-                            setFormData({
-                              email: usuario.email,
-                              firstName: usuario.firstName || "",
-                              lastName: usuario.lastName || "",
-                              role: usuario.role || "",
-                              status: usuario.status || "active",
-                              companyId: usuario.companyId || undefined,
-                              contractId: usuario.contractId || undefined,
-                              phone: usuario.phone || "",
-                              address: usuario.address || "",
-                              dateOfBirth: usuario.dateOfBirth || "",
-                              isMinor: usuario.isMinor || false,
-                              parentName: usuario.parentName || "",
-                              parentEmail: usuario.parentEmail || "",
-                              parentPhone: usuario.parentPhone || "",
-                              emergencyContact: usuario.emergencyContact || ""
-                            });
-                            setIsEditOpen(true);
-                          }}>
+                          <Button variant="ghost" size="sm" onClick={() => openEditUser(usuario)} title="Editar usuário">
                             <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => {
+                            if (confirm('Tem certeza que deseja excluir este usuário?')) {
+                              deleteUserMutation.mutate(usuario.id);
+                            }
+                          }} title="Excluir usuário" className="text-red-600 hover:text-red-800">
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
