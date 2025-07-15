@@ -162,12 +162,17 @@ export default function LoginDirect() {
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Contas de teste:</p>
+            <p>Contas disponíveis do Cognito:</p>
             <div className="mt-2 text-xs space-y-1">
               <p><strong>Admin:</strong> admin@example.com</p>
-              <p><strong>Gestor:</strong> gestor@example.com</p>
-              <p><strong>Diretor:</strong> diretor@example.com</p>
+              <p><strong>Admin:</strong> admin@gmail.com</p>
+              <p><strong>Admin:</strong> admin.cognito@iaprender.com.br</p>
+              <p><strong>Diretor:</strong> diretortst@gmail.com</p>
+              <p><strong>Aluno:</strong> cassianoway@gmail.com</p>
               <p><strong>Senha:</strong> iaprender2025</p>
+            </div>
+            <div className="mt-2 text-xs text-green-600">
+              <p>✅ 16 usuários do Cognito disponíveis</p>
             </div>
           </div>
         </CardContent>
