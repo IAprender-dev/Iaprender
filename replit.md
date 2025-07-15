@@ -143,14 +143,15 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 15, 2025: ✅ CONCLUÍDO - Sistema de Autenticação Segura Implementado com Buttons da Landing Page Atualizados
-  - ✅ **SISTEMA DE AUTENTICAÇÃO SEGURA**: Implementado CognitoAuthService para autenticação backend
-  - ✅ **ENDPOINTS SEGUROS**: Criado /api/auth/login, /api/auth/me, /api/auth/logout para JWT
-  - ✅ **AUTHCONTEXT ATUALIZADO**: Modificado para usar autenticação direta sem expor URLs do Cognito
-  - ✅ **PÁGINA DE LOGIN**: Formulário direto com email/senha substituindo redirecionamento Cognito
-  - ✅ **BOTÕES DA LANDING PAGE**: Ambos "Acessar IAprender" e "Explorar o IAprender" direcionam para /auth
-  - ✅ **TOKENS JWT**: Sistema de tokens armazenados no localStorage para manter sessão
-  - ✅ **REDIRECIONAMENTO INTELIGENTE**: Baseado no role do usuário após login bem-sucedido
+- July 15, 2025: ✅ CONCLUÍDO - Sistema de Autenticação Exclusivamente AWS Cognito Implementado
+  - ✅ **SEGURANÇA RESTAURADA**: Removido completamente sistema de login direto que comprometia segurança do Cognito
+  - ✅ **COGNITO OFICIAL APENAS**: Sistema agora usa exclusivamente autenticação oficial do AWS Cognito
+  - ✅ **PÁGINA /LOGIN-DIRECT**: Convertida para espelho da /auth que redireciona para Cognito oficial
+  - ✅ **AUTHCONTEXT LIMPO**: Removido directLoginMutation e rotas de bypass de segurança
+  - ✅ **BACKEND SEGURO**: Removidas rotas /simple-login e /hybrid-login que permitiam bypass
+  - ✅ **USUÁRIOS COGNITO**: Sistema funciona apenas com usuários criados no ambiente AWS Cognito
+  - ✅ **TOKENS JWT OFICIAIS**: Apenas tokens gerados pelo Cognito são aceitos
+  - ✅ **INTEGRIDADE DE SEGURANÇA**: Nenhum bypass ou duplicação de dados do Cognito permitida
 - July 15, 2025: ✅ CONCLUÍDO - Formulário de Empresas com Formatação Brasileira Implementado
   - ✅ **RAZÃO SOCIAL COMO CAMPO PRINCIPAL**: Reorganizada ordem dos campos com Razão Social obrigatória em primeiro lugar
   - ✅ **FORMATAÇÃO AUTOMÁTICA DE CNPJ**: Implementada formatação XX.XXX.XXX/XXXX-XX durante digitação

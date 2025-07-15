@@ -81,12 +81,9 @@ app.use((req, res, next) => {
   app.use('/api/auth', cognitoAdminRouter);
   console.log('🔒 Rotas de autenticação administrativa registradas');
   
-  // Add hybrid authentication routes
-  app.use('/api/auth', cognitoHybridRouter);
-  console.log('🔒 Rotas de autenticação híbrida registradas');
+  // Sistema de autenticação híbrida removido - apenas Cognito oficial
   
-  app.use('/api/auth', authSimpleRouter);
-  console.log('🔒 Rotas de autenticação simples registradas');
+  // Sistema de autenticação direta removido - apenas Cognito oficial
   
   // Import and register the new direct Cognito routes
   const cognitoDirectNewRouter = await import('./routes/cognito-direct.js');

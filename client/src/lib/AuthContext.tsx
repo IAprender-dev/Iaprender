@@ -74,7 +74,7 @@ export interface AuthContextType {
   isLoading: boolean;
   error: Error | null;
   loginMutation: UseMutationResult<User, Error, LoginData>;
-  directLoginMutation: UseMutationResult<User, Error, LoginData>;
+
   registerMutation: UseMutationResult<User, Error, RegisterData>;
   logoutMutation: UseMutationResult<void, Error, void>;
   logout: () => Promise<void>;
@@ -184,59 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Mutation para login direto com Cognito
-  const directLoginMutation = useMutation<User, Error, LoginData>({
-    mutationFn: async (credentials) => {
-      const response = await fetch("/api/auth/simple-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: credentials.email,
-          password: credentials.password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Erro na autenticação");
-      }
-
-      // Salvar token JWT do sistema
-      localStorage.setItem("token", data.token);
-      
-      return data.user;
-    },
-    onSuccess: (userData: User) => {
-      queryClient.setQueryData(["/api/auth/me"], userData);
-      toast({
-        title: "Login direto bem-sucedido",
-        description: `Bem-vindo, ${userData.nome || userData.email}!`,
-      });
-      
-      // Redirect based on user role
-      if (userData.role === 'admin') {
-        setLocation('/admin/master');
-      } else if (userData.role === 'municipal_manager') {
-        setLocation('/gestor/dashboard');
-      } else if (userData.role === 'school_director') {
-        setLocation('/school/dashboard');
-      } else if (userData.role === 'teacher') {
-        setLocation('/professor');
-      } else if (userData.role === 'student') {
-        setLocation('/student/dashboard');
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Falha no login direto",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  // Sistema de login direto removido - apenas Cognito oficial
 
   // Mutation para registro
   const registerMutation = useMutation<User, Error, RegisterData>({
@@ -333,7 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         error,
         loginMutation,
-        directLoginMutation,
+
         registerMutation,
         logoutMutation,
         logout,
