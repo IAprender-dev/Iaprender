@@ -118,20 +118,20 @@ export class CognitoClientAuth {
         console.warn('Recebido:', poolData.UserPoolId);
       }
 
-      // Configurar autenticação com SECRET_HASH - SRP flow
+      // Configurar autenticação com SECRET_HASH para USER_PASSWORD_AUTH
       const authDetails: any = {
         Username: email,
         Password: password
       };
 
-      // Se temos client secret, adicionar SECRET_HASH
+      // Adicionar SECRET_HASH obrigatório para Client Apps com Client Secret
       if (this.clientSecret) {
         const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
         authDetails.SecretHash = secretHash;
-        console.log('🔐 Usando SECRET_HASH para autenticação SRP');
+        console.log('🔐 USER_PASSWORD_AUTH flow habilitado - usando SECRET_HASH');
         console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
       } else {
-        console.log('⚠️ CLIENT_SECRET não disponível, tentando sem SECRET_HASH');
+        console.log('⚠️ CLIENT_SECRET não disponível - isso pode causar falha na autenticação');
       }
 
       const authenticationDetails = new AuthenticationDetails(authDetails);
