@@ -397,12 +397,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/cognito-config", (req: Request, res: Response) => {
     try {
       const cognitoConfig = {
-        domain: process.env.COGNITO_DOMAIN,
-        clientId: process.env.COGNITO_CLIENT_ID,
-        redirectUri: process.env.COGNITO_REDIRECT_URI,
-        userPoolId: process.env.COGNITO_USER_POOL_ID,
-        region: process.env.COGNITO_REGION || process.env.AWS_REGION
+        domain: process.env.AWS_COGNITO_DOMAIN,
+        clientId: process.env.AWS_COGNITO_CLIENT_ID,
+        redirectUri: process.env.AWS_COGNITO_REDIRECT_URI,
+        userPoolId: process.env.AWS_COGNITO_USER_POOL_ID,
+        region: process.env.AWS_REGION || 'us-east-1'
       };
+
+      console.log('🔍 Configuração Cognito solicitada:');
+      console.log('- User Pool ID:', cognitoConfig.userPoolId);
+      console.log('- Client ID:', cognitoConfig.clientId);
+      console.log('- Domain:', cognitoConfig.domain);
+      console.log('- Region:', cognitoConfig.region);
 
       // Verificar se todas as configs necessárias estão disponíveis
       const missingConfigs = Object.entries(cognitoConfig)
@@ -410,6 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .map(([key]) => key);
 
       if (missingConfigs.length > 0) {
+        console.error('❌ Configuração Cognito incompleta:', missingConfigs);
         return res.status(500).json({
           error: "Configuração Cognito incompleta",
           missing: missingConfigs
@@ -433,6 +440,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         error: "Erro interno do servidor",
         message: "Não foi possível obter configuração do Cognito"
+      });
+    }
+  });
+
+  // API para obter client secret (para SECRET_HASH)
+  app.get("/api/auth/client-secret", (req: Request, res: Response) => {
+    try {
+      const clientSecret = process.env.AWS_COGNITO_CLIENT_SECRET;
+      
+      if (!clientSecret) {
+        return res.status(500).json({
+          error: "Client secret não configurado"
+        });
+      }
+
+      res.json({
+        success: true,
+        clientSecret: clientSecret
+      });
+    } catch (error) {
+      console.error("Erro ao obter client secret:", error);
+      res.status(500).json({
+        error: "Erro interno do servidor",
+        message: "Não foi possível obter client secret"
       });
     }
   });

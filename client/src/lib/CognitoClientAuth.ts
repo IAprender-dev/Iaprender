@@ -10,6 +10,7 @@ import {
   CognitoUserAttribute,
   CognitoUserSession
 } from 'amazon-cognito-identity-js';
+import CryptoJS from 'crypto-js';
 
 // Configuração do User Pool (será obtida das variáveis de ambiente)
 const poolData = {
@@ -32,6 +33,7 @@ export interface CognitoAuthResult {
 export class CognitoClientAuth {
   private static instance: CognitoClientAuth;
   private initialized = false;
+  private clientSecret: string = '';
 
   private constructor() {}
 
@@ -40,6 +42,15 @@ export class CognitoClientAuth {
       CognitoClientAuth.instance = new CognitoClientAuth();
     }
     return CognitoClientAuth.instance;
+  }
+
+  /**
+   * Calcula o SECRET_HASH necessário para autenticação
+   */
+  private calculateSecretHash(username: string, clientId: string, clientSecret: string): string {
+    const message = username + clientId;
+    const hash = CryptoJS.HmacSHA256(message, clientSecret);
+    return CryptoJS.enc.Base64.stringify(hash);
   }
 
   /**
@@ -63,6 +74,16 @@ export class CognitoClientAuth {
 
       if (!userPoolId || !clientId) {
         throw new Error('Configuração do Cognito incompleta');
+      }
+
+      // Obter client secret do servidor
+      try {
+        const secretResponse = await fetch('/api/auth/client-secret');
+        const secretData = await secretResponse.json();
+        this.clientSecret = secretData.clientSecret;
+      } catch (error) {
+        console.warn('⚠️ Não foi possível obter client secret, tentando autenticação sem SECRET_HASH');
+        this.clientSecret = '';
       }
 
       // Configurar o User Pool
@@ -89,11 +110,28 @@ export class CognitoClientAuth {
 
       console.log('🔐 User Pool configurado:', poolData.UserPoolId);
       console.log('🔐 Client ID:', poolData.ClientId);
+      
+      // Verificar se o User Pool ID está correto
+      if (poolData.UserPoolId !== 'us-east-1_4jqF97H2X') {
+        console.warn('⚠️ User Pool ID pode estar incorreto');
+        console.warn('Esperado: us-east-1_4jqF97H2X');
+        console.warn('Recebido:', poolData.UserPoolId);
+      }
 
-      const authenticationDetails = new AuthenticationDetails({
+      // Configurar autenticação com SECRET_HASH se disponível
+      const authDetails: any = {
         Username: email,
         Password: password
-      });
+      };
+
+      // Se temos client secret, adicionar SECRET_HASH
+      if (this.clientSecret) {
+        const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
+        authDetails.SecretHash = secretHash;
+        console.log('🔐 Usando SECRET_HASH para autenticação');
+      }
+
+      const authenticationDetails = new AuthenticationDetails(authDetails);
 
       const cognitoUser = new CognitoUser({
         Username: email,
