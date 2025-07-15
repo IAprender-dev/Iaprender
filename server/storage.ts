@@ -58,8 +58,7 @@ export class DatabaseStorage implements IStorage {
     
     if (search) {
       whereClause = or(
-        like(users.firstName, `%${search}%`),
-        like(users.lastName, `%${search}%`),
+        like(users.nome, `%${search}%`),
         like(users.email, `%${search}%`)
       );
     }
@@ -73,7 +72,7 @@ export class DatabaseStorage implements IStorage {
       .where(whereClause)
       .limit(limit)
       .offset(offset)
-      .orderBy(desc(users.createdAt));
+      .orderBy(desc(users.criadoEm));
 
     const totalResult = await db.select({ count: sql<number>`count(*)` }).from(users).where(whereClause);
     const total = totalResult[0]?.count || 0;
@@ -84,14 +83,18 @@ export class DatabaseStorage implements IStorage {
   async getUserStats(): Promise<any> {
     const statsResult = await db.select({
       total: sql<number>`count(*)`,
-      ativos: sql<number>`count(*) filter (where status = 'active')`,
-      inativos: sql<number>`count(*) filter (where status = 'inactive')`,
-      suspensos: sql<number>`count(*) filter (where status = 'suspended')`,
-      admins: sql<number>`count(*) filter (where role = 'admin')`,
-      gestores: sql<number>`count(*) filter (where role = 'municipal_manager')`
+      ativos: sql<number>`count(*) filter (where status = 'ativo')`,
+      inativos: sql<number>`count(*) filter (where status = 'inativo')`,
+      suspensos: sql<number>`count(*) filter (where status = 'suspenso')`,
+      bloqueados: sql<number>`count(*) filter (where status = 'bloqueado')`,
+      admins: sql<number>`count(*) filter (where tipo_usuario = 'admin')`,
+      gestores: sql<number>`count(*) filter (where tipo_usuario = 'gestor')`,
+      diretores: sql<number>`count(*) filter (where tipo_usuario = 'diretor')`,
+      professores: sql<number>`count(*) filter (where tipo_usuario = 'professor')`,
+      alunos: sql<number>`count(*) filter (where tipo_usuario = 'aluno')`
     }).from(users);
 
-    return statsResult[0] || { total: 0, ativos: 0, inativos: 0, suspensos: 0, admins: 0, gestores: 0 };
+    return statsResult[0] || { total: 0, ativos: 0, inativos: 0, suspensos: 0, bloqueados: 0, admins: 0, gestores: 0, diretores: 0, professores: 0, alunos: 0 };
   }
 
   async updateUser(id: number, updateData: Partial<User>): Promise<User | undefined> {

@@ -1255,9 +1255,10 @@ function UsuariosTab({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="active">Ativos</SelectItem>
-                <SelectItem value="inactive">Inativos</SelectItem>
-                <SelectItem value="suspended">Suspensos</SelectItem>
+                <SelectItem value="ativo">Ativos</SelectItem>
+                <SelectItem value="inativo">Inativos</SelectItem>
+                <SelectItem value="suspenso">Suspensos</SelectItem>
+                <SelectItem value="bloqueado">Bloqueados</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1283,21 +1284,25 @@ function UsuariosTab({
                     <TableRow key={usuario.id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-medium text-blue-600">{usuario.firstName} {usuario.lastName}</div>
+                          <div className="font-medium text-blue-600">{usuario.nome}</div>
                           <div className="text-sm text-gray-500">{usuario.email}</div>
-                          <div className="text-xs text-gray-400">{usuario.username}</div>
+                          <div className="text-xs text-gray-400">{usuario.cognitoUsername || usuario.email}</div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">
-                          {usuario.role}
+                          {usuario.tipoUsuario === 'admin' ? 'Administrador' :
+                           usuario.tipoUsuario === 'gestor' ? 'Gestor Municipal' :
+                           usuario.tipoUsuario === 'diretor' ? 'Diretor' :
+                           usuario.tipoUsuario === 'professor' ? 'Professor' :
+                           usuario.tipoUsuario === 'aluno' ? 'Aluno' : usuario.tipoUsuario}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={usuario.status === 'active' ? "default" : "secondary"}>
-                          {usuario.status === 'active' ? 'Ativo' : 
-                           usuario.status === 'inactive' ? 'Inativo' : 
-                           usuario.status === 'suspended' ? 'Suspenso' : 'Bloqueado'}
+                        <Badge variant={usuario.status === 'ativo' ? "default" : "secondary"}>
+                          {usuario.status === 'ativo' ? 'Ativo' : 
+                           usuario.status === 'inativo' ? 'Inativo' : 
+                           usuario.status === 'suspenso' ? 'Suspenso' : 'Bloqueado'}
                         </Badge>
                       </TableCell>
                       <TableCell>
