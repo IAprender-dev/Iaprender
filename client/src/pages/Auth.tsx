@@ -27,8 +27,40 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Só redireciona se o usuário acabou de fazer login (via query param)
+    // Processar token OAuth do Cognito se presente
     const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const success = params.get("success");
+    const error = params.get("error");
+    
+    if (token && success === "true") {
+      // Salvar token no localStorage
+      localStorage.setItem("authToken", token);
+      
+      // Limpar URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Mostrar toast de sucesso
+      toast({
+        title: "Login realizado com sucesso!",
+        description: "Você foi autenticado via AWS Cognito.",
+        variant: "default",
+      });
+      
+      // Recarregar página para que o AuthContext reconheça o novo token
+      window.location.reload();
+    } else if (error) {
+      toast({
+        title: "Erro na autenticação",
+        description: "Falha ao autenticar via AWS Cognito. Tente novamente.",
+        variant: "destructive",
+      });
+      
+      // Limpar URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Só redireciona se o usuário acabou de fazer login (via query param)
     const justLoggedIn = params.get("login") === "success";
     
     if (user && justLoggedIn) {
@@ -46,7 +78,7 @@ export default function Auth() {
         navigate("/");
       }
     }
-  }, [user, navigate]);
+  }, [user, navigate, toast]);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -58,6 +90,11 @@ export default function Auth() {
 
   const onLogin = (data: LoginFormValues) => {
     loginMutation.mutate(data);
+  };
+
+  const onCognitoLogin = () => {
+    // Redirecionar para o OAuth do Cognito
+    window.location.href = "/api/auth/oauth/login";
   };
 
   return (
@@ -253,6 +290,26 @@ export default function Auth() {
                           </div>
                         </Button>
                       </form>
+                      
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-slate-300"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="bg-white px-2 text-slate-600">ou</span>
+                        </div>
+                      </div>
+                      
+                      <Button 
+                        onClick={onCognitoLogin}
+                        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-2xl h-14 text-white font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02]"
+                        type="button"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <span>Entrar com AWS Cognito</span>
+                          <Brain className="w-5 h-5" />
+                        </div>
+                      </Button>
                     </CardContent>
                   </Card>
                 </div>

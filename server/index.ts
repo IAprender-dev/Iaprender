@@ -6,6 +6,7 @@ import { setupViteCustom, serveStatic, log } from "./vite-custom";
 import { initializeDatabase } from "./db";
 import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
 import secureAuthRouter from "./routes/secure-auth";
+import cognitoOAuthRouter from "./routes/cognito-oauth";
 // WebSocket import removed - using direct OpenAI Realtime API connection
 
 const app = express();
@@ -59,6 +60,14 @@ app.use((req, res, next) => {
   // Add secure authentication routes BEFORE registerRoutes to avoid middleware interference
   app.use('/api/auth', secureAuthRouter);
   console.log('🔒 Rotas de autenticação segura registradas');
+  
+  // Add OAuth routes for Cognito
+  app.use('/api/auth', cognitoOAuthRouter);
+  console.log('🔒 Rotas OAuth do Cognito registradas');
+  
+  // Add callback route at root level
+  app.use('/auth', cognitoOAuthRouter);
+  console.log('🔒 Rotas de callback OAuth registradas');
   
   const server = await registerRoutes(app);
   

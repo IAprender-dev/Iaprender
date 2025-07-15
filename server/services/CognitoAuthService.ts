@@ -1,4 +1,4 @@
-import { CognitoIdentityProviderClient, InitiateAuthCommand, GetUserCommand, AdminGetUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProviderClient, InitiateAuthCommand, AdminInitiateAuthCommand, GetUserCommand, AdminGetUserCommand } from '@aws-sdk/client-cognito-identity-provider';
 import { SecretsManager } from '../config/secrets.js';
 import jwt from 'jsonwebtoken';
 import { createHmac } from 'crypto';
@@ -60,17 +60,57 @@ export class CognitoAuthService {
 
       const secretHash = this.calculateSecretHash(username);
 
-      const command = new InitiateAuthCommand({
-        AuthFlow: 'USER_PASSWORD_AUTH',
-        ClientId: this.clientId,
-        AuthParameters: {
-          USERNAME: username,
-          PASSWORD: password,
-          SECRET_HASH: secretHash,
-        },
-      });
+      // Tentar diferentes fluxos de autenticação disponíveis
+      const authFlows = ['USER_PASSWORD_AUTH', 'ADMIN_USER_PASSWORD_AUTH', 'ADMIN_NO_SRP_AUTH'];
+      
+      let response;
+      let lastError;
 
-      const response = await this.client.send(command);
+      for (const authFlow of authFlows) {
+        try {
+          console.log(`🔐 Tentando fluxo de autenticação: ${authFlow}`);
+          
+          if (authFlow === 'ADMIN_USER_PASSWORD_AUTH') {
+            // Usar AdminInitiateAuthCommand para fluxos admin
+            const command = new AdminInitiateAuthCommand({
+              AuthFlow: authFlow,
+              UserPoolId: this.userPoolId,
+              ClientId: this.clientId,
+              AuthParameters: {
+                USERNAME: username,
+                PASSWORD: password,
+                SECRET_HASH: secretHash,
+              },
+            });
+
+            response = await this.client.send(command);
+          } else {
+            // Usar InitiateAuthCommand para fluxos padrão
+            const command = new InitiateAuthCommand({
+              AuthFlow: authFlow,
+              ClientId: this.clientId,
+              AuthParameters: {
+                USERNAME: username,
+                PASSWORD: password,
+                SECRET_HASH: secretHash,
+              },
+            });
+
+            response = await this.client.send(command);
+          }
+          
+          console.log(`✅ Fluxo ${authFlow} bem-sucedido`);
+          break;
+        } catch (error: any) {
+          console.log(`❌ Fluxo ${authFlow} falhou:`, error.message);
+          lastError = error;
+          continue;
+        }
+      }
+
+      if (!response) {
+        throw lastError || new Error('Todos os fluxos de autenticação falharam');
+      }
 
       if (!response.AuthenticationResult?.AccessToken) {
         return {
