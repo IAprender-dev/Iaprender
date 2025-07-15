@@ -113,21 +113,17 @@ interface ContratoFormData {
 
 // Interface para dados do formulário de usuário
 interface UsuarioFormData {
+  nome: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
+  tipoUsuario: string;
   status: string;
-  companyId?: number;
-  contractId?: number;
-  phone?: string;
-  address?: string;
-  dateOfBirth?: string;
-  isMinor: boolean;
-  parentName?: string;
-  parentEmail?: string;
-  parentPhone?: string;
-  emergencyContact?: string;
+  empresaId?: number;
+  contratoId?: number;
+  telefone?: string;
+  endereco?: string;
+  dataNascimento?: string;
+  documento?: string;
+  observacoes?: string;
 }
 
 // Componente de Stats Cards
@@ -605,21 +601,17 @@ function EmpresasTab({
   const openEditUser = (usuario: User) => {
     setSelectedItem(usuario);
     setFormData({
-      email: usuario.email,
-      firstName: usuario.firstName || "",
-      lastName: usuario.lastName || "",
-      role: usuario.role || "",
-      status: usuario.status || "active",
-      companyId: usuario.companyId || undefined,
-      contractId: usuario.contractId || undefined,
-      phone: usuario.phone || "",
-      address: usuario.address || "",
-      dateOfBirth: usuario.dateOfBirth || "",
-      isMinor: usuario.isMinor || false,
-      parentName: usuario.parentName || "",
-      parentEmail: usuario.parentEmail || "",
-      parentPhone: usuario.parentPhone || "",
-      emergencyContact: usuario.emergencyContact || ""
+      nome: usuario.nome || "",
+      email: usuario.email || "",
+      tipoUsuario: usuario.tipoUsuario || "",
+      status: usuario.status || "ativo",
+      empresaId: usuario.empresaId || undefined,
+      contratoId: usuario.contratoId || undefined,
+      telefone: usuario.telefone || "",
+      endereco: usuario.endereco || "",
+      dataNascimento: usuario.dataNascimento || "",
+      documento: usuario.documento || "",
+      observacoes: usuario.observacoes || ""
     });
     setIsEditOpen(true);
   };
@@ -1126,21 +1118,17 @@ function UsuariosTab({
   setIsViewOpen
 }: any) {
   const [formData, setFormData] = useState<UsuarioFormData>({
+    nome: "",
     email: "",
-    firstName: "",
-    lastName: "",
-    role: "",
-    status: "active",
-    companyId: undefined,
-    contractId: undefined,
-    phone: "",
-    address: "",
-    dateOfBirth: "",
-    isMinor: false,
-    parentName: "",
-    parentEmail: "",
-    parentPhone: "",
-    emergencyContact: ""
+    tipoUsuario: "",
+    status: "ativo",
+    empresaId: undefined,
+    contratoId: undefined,
+    telefone: "",
+    endereco: "",
+    dataNascimento: "",
+    documento: "",
+    observacoes: ""
   });
 
   const { toast } = useToast();
@@ -1206,6 +1194,125 @@ function UsuariosTab({
 
       if (!response.ok) throw new Error('Erro ao buscar empresas');
       return response.json();
+    }
+  });
+
+  // Mutation para criar usuário
+  const createUserMutation = useMutation({
+    mutationFn: async (data: UsuarioFormData) => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token não encontrado');
+
+      const response = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) throw new Error('Erro ao criar usuário');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/stats'] });
+      setIsCreateOpen(false);
+      setFormData({
+        nome: "",
+        email: "",
+        tipoUsuario: "",
+        status: "ativo",
+        empresaId: undefined,
+        contratoId: undefined,
+        telefone: "",
+        endereco: "",
+        dataNascimento: "",
+        documento: "",
+        observacoes: ""
+      });
+      toast({
+        title: "Sucesso",
+        description: "Usuário criado com sucesso!"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Mutation para editar usuário
+  const editUserMutation = useMutation({
+    mutationFn: async (data: UsuarioFormData & { id: number }) => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token não encontrado');
+
+      const response = await fetch(`/api/admin/users/${data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) throw new Error('Erro ao atualizar usuário');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/stats'] });
+      setIsEditOpen(false);
+      toast({
+        title: "Sucesso",
+        description: "Usuário atualizado com sucesso!"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Mutation para excluir usuário
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token não encontrado');
+
+      const response = await fetch(`/api/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) throw new Error('Erro ao excluir usuário');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users/stats'] });
+      toast({
+        title: "Sucesso",
+        description: "Usuário excluído com sucesso!"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   });
 
@@ -1286,7 +1393,6 @@ function UsuariosTab({
                         <div className="space-y-1">
                           <div className="font-medium text-blue-600">{usuario.nome}</div>
                           <div className="text-sm text-gray-500">{usuario.email}</div>
-                          <div className="text-xs text-gray-400">{usuario.cognitoUsername || usuario.email}</div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -1362,14 +1468,14 @@ function UsuariosTab({
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Detalhes do Usuário</DialogTitle>
+            <DialogTitle>Ver dados do usuário</DialogTitle>
           </DialogHeader>
           {selectedItem && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Nome</Label>
-                  <p className="text-sm">{selectedItem.firstName} {selectedItem.lastName}</p>
+                  <p className="text-sm">{selectedItem.nome}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-500">Email</Label>
@@ -1378,19 +1484,299 @@ function UsuariosTab({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Tipo</Label>
-                  <Badge variant="outline">{selectedItem.role}</Badge>
+                  <Label className="text-sm font-medium text-gray-500">Nível de Acesso</Label>
+                  <Badge variant="outline">
+                    {selectedItem.tipoUsuario === 'admin' ? 'Administrador' :
+                     selectedItem.tipoUsuario === 'gestor' ? 'Gestor Municipal' :
+                     selectedItem.tipoUsuario === 'diretor' ? 'Diretor' :
+                     selectedItem.tipoUsuario === 'professor' ? 'Professor' :
+                     selectedItem.tipoUsuario === 'aluno' ? 'Aluno' : selectedItem.tipoUsuario}
+                  </Badge>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-gray-500">Status</Label>
-                  <Badge variant={selectedItem.status === 'active' ? "default" : "secondary"}>
-                    {selectedItem.status === 'active' ? 'Ativo' : 
-                     selectedItem.status === 'inactive' ? 'Inativo' : 
-                     selectedItem.status === 'suspended' ? 'Suspenso' : 'Bloqueado'}
+                  <Label className="text-sm font-medium text-gray-500">Situação</Label>
+                  <Badge variant={selectedItem.status === 'ativo' ? "default" : "secondary"}>
+                    {selectedItem.status === 'ativo' ? 'Ativo' : 
+                     selectedItem.status === 'inativo' ? 'Inativo' : 
+                     selectedItem.status === 'suspenso' ? 'Suspenso' : 'Bloqueado'}
                   </Badge>
                 </div>
               </div>
+              {(selectedItem.telefone || selectedItem.documento) && (
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedItem.telefone && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Telefone</Label>
+                      <p className="text-sm">{selectedItem.telefone}</p>
+                    </div>
+                  )}
+                  {selectedItem.documento && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Documento</Label>
+                      <p className="text-sm">{selectedItem.documento}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              {selectedItem.endereco && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Endereço</Label>
+                  <p className="text-sm">{selectedItem.endereco}</p>
+                </div>
+              )}
+              {selectedItem.observacoes && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Observações</Label>
+                  <p className="text-sm">{selectedItem.observacoes}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Criado em</Label>
+                  <p className="text-sm">{selectedItem.criadoEm ? new Date(selectedItem.criadoEm).toLocaleDateString() : '-'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Atualizado em</Label>
+                  <p className="text-sm">{selectedItem.atualizadoEm ? new Date(selectedItem.atualizadoEm).toLocaleDateString() : '-'}</p>
+                </div>
+              </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Novo Usuário */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Novo Usuário</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            createUserMutation.mutate(formData);
+          }} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="nome">Nome *</Label>
+                <Input
+                  id="nome"
+                  value={formData.nome}
+                  onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                  placeholder="Nome completo"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  placeholder="email@exemplo.com"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="tipoUsuario">Nível de Acesso *</Label>
+                <Select value={formData.tipoUsuario} onValueChange={(value) => setFormData({...formData, tipoUsuario: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o nível" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                    <SelectItem value="gestor">Gestor Municipal</SelectItem>
+                    <SelectItem value="diretor">Diretor</SelectItem>
+                    <SelectItem value="professor">Professor</SelectItem>
+                    <SelectItem value="aluno">Aluno</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="status">Situação</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                    <SelectItem value="suspenso">Suspenso</SelectItem>
+                    <SelectItem value="bloqueado">Bloqueado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="telefone">Telefone</Label>
+                <Input
+                  id="telefone"
+                  value={formData.telefone}
+                  onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+              <div>
+                <Label htmlFor="documento">Documento</Label>
+                <Input
+                  id="documento"
+                  value={formData.documento}
+                  onChange={(e) => setFormData({...formData, documento: e.target.value})}
+                  placeholder="CPF ou RG"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="endereco">Endereço</Label>
+              <Input
+                id="endereco"
+                value={formData.endereco}
+                onChange={(e) => setFormData({...formData, endereco: e.target.value})}
+                placeholder="Endereço completo"
+              />
+            </div>
+            <div>
+              <Label htmlFor="observacoes">Observações</Label>
+              <Textarea
+                id="observacoes"
+                value={formData.observacoes}
+                onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
+                placeholder="Observações adicionais"
+                className="h-20"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                <Save className="h-4 w-4 mr-2" />
+                Salvar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Alterar Usuário */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Alterar dados do usuário</DialogTitle>
+          </DialogHeader>
+          {selectedItem && (
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (selectedItem) {
+                editUserMutation.mutate({ ...formData, id: selectedItem.id });
+              }
+            }} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-nome">Nome *</Label>
+                  <Input
+                    id="edit-nome"
+                    value={formData.nome}
+                    onChange={(e) => setFormData({...formData, nome: e.target.value})}
+                    placeholder="Nome completo"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-email">Email *</Label>
+                  <Input
+                    id="edit-email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    placeholder="email@exemplo.com"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-tipoUsuario">Nível de Acesso *</Label>
+                  <Select value={formData.tipoUsuario} onValueChange={(value) => setFormData({...formData, tipoUsuario: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o nível" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Administrador</SelectItem>
+                      <SelectItem value="gestor">Gestor Municipal</SelectItem>
+                      <SelectItem value="diretor">Diretor</SelectItem>
+                      <SelectItem value="professor">Professor</SelectItem>
+                      <SelectItem value="aluno">Aluno</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-status">Situação</Label>
+                  <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ativo">Ativo</SelectItem>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="suspenso">Suspenso</SelectItem>
+                      <SelectItem value="bloqueado">Bloqueado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-telefone">Telefone</Label>
+                  <Input
+                    id="edit-telefone"
+                    value={formData.telefone}
+                    onChange={(e) => setFormData({...formData, telefone: e.target.value})}
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-documento">Documento</Label>
+                  <Input
+                    id="edit-documento"
+                    value={formData.documento}
+                    onChange={(e) => setFormData({...formData, documento: e.target.value})}
+                    placeholder="CPF ou RG"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-endereco">Endereço</Label>
+                <Input
+                  id="edit-endereco"
+                  value={formData.endereco}
+                  onChange={(e) => setFormData({...formData, endereco: e.target.value})}
+                  placeholder="Endereço completo"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-observacoes">Observações</Label>
+                <Textarea
+                  id="edit-observacoes"
+                  value={formData.observacoes}
+                  onChange={(e) => setFormData({...formData, observacoes: e.target.value})}
+                  placeholder="Observações adicionais"
+                  className="h-20"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvar Alterações
+                </Button>
+              </div>
+            </form>
           )}
         </DialogContent>
       </Dialog>
