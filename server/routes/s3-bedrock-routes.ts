@@ -232,6 +232,56 @@ router.get('/files', authenticate, async (req: AuthenticatedRequest, res: Respon
 });
 
 /**
+ * GET /api/s3-bedrock/bucket-folders
+ * Listar pastas do bucket S3
+ */
+router.get('/bucket-folders', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { prefix = '' } = req.query;
+    const userId = req.user!.id;
+
+    console.log(`📁 Listando pastas do bucket (usuário ${userId})`);
+
+    const s3BedrockService = await createS3BedrockService();
+    
+    const folders = await s3BedrockService.listBucketFolders(prefix as string);
+
+    res.json({
+      success: true,
+      message: `${folders.length} pastas encontradas`,
+      data: {
+        folders,
+        prefix: prefix || '',
+        total: folders.length
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao listar pastas:', error);
+    
+    // Se o bucket não existir, retornar lista vazia
+    if (error.message?.includes('NoSuchBucket') || error.message?.includes('does not exist')) {
+      console.log('⚠️ Bucket não existe, retornando lista vazia');
+      return res.json({
+        success: true,
+        message: 'Nenhuma pasta encontrada (bucket não configurado)',
+        data: {
+          folders: [],
+          prefix: '',
+          total: 0
+        }
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao listar pastas',
+      error: error.message
+    });
+  }
+});
+
+/**
  * DELETE /api/s3-bedrock/files/:fileKey
  * Deletar arquivo do S3
  */

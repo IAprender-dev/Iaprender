@@ -302,6 +302,44 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
   }
 
   /**
+   * Listar pastas do bucket S3
+   */
+  async listBucketFolders(prefix: string = ''): Promise<string[]> {
+    try {
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucketName,
+        Prefix: prefix,
+        Delimiter: '/',
+        MaxKeys: 1000
+      });
+
+      const response = await this.s3Client.send(command);
+      
+      const folders: string[] = [];
+      
+      // Adicionar pastas (CommonPrefixes)
+      if (response.CommonPrefixes) {
+        for (const commonPrefix of response.CommonPrefixes) {
+          if (commonPrefix.Prefix) {
+            folders.push(commonPrefix.Prefix);
+          }
+        }
+      }
+      
+      console.log(`📁 Encontradas ${folders.length} pastas no bucket ${this.bucketName}`);
+      return folders.sort();
+
+    } catch (error) {
+      console.error('❌ Erro ao listar pastas:', error);
+      if (error.name === 'NoSuchBucket') {
+        console.log(`⚠️ Bucket ${this.bucketName} não existe.`);
+        return [];
+      }
+      throw new Error(`Falha na listagem de pastas: ${error.message}`);
+    }
+  }
+
+  /**
    * Deletar arquivo do S3
    */
   async deleteFile(fileKey: string): Promise<boolean> {
