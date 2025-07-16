@@ -64,6 +64,8 @@ export class CognitoClientAuth {
       const response = await fetch('/api/auth/cognito-config');
       const config = await response.json();
 
+      console.log('🔍 Configuração obtida do servidor:', config);
+
       if (!config.success) {
         throw new Error('Não foi possível obter configuração do Cognito');
       }
@@ -71,6 +73,9 @@ export class CognitoClientAuth {
       // Extrair User Pool ID e Client ID da configuração
       const userPoolId = config.userPoolId;
       const clientId = config.clientId;
+      
+      console.log('🔍 User Pool ID extraído:', userPoolId);
+      console.log('🔍 Client ID extraído:', clientId);
 
       if (!userPoolId || !clientId) {
         throw new Error('Configuração do Cognito incompleta');
@@ -90,10 +95,12 @@ export class CognitoClientAuth {
       poolData.UserPoolId = userPoolId;
       poolData.ClientId = clientId;
 
+      console.log('🔍 Configurando UserPool com:', poolData);
       userPool = new CognitoUserPool(poolData);
       this.initialized = true;
 
       console.log('✅ Cliente Cognito inicializado com sucesso');
+      console.log('✅ UserPool criado:', userPool.getUserPoolId());
     } catch (error) {
       console.error('❌ Erro ao inicializar cliente Cognito:', error);
       throw error;
@@ -178,6 +185,11 @@ export class CognitoClientAuth {
             console.error('❌ Mensagem do erro:', err.message);
             console.error('❌ Stack trace:', err.stack);
             console.error('❌ Objeto completo do erro:', JSON.stringify(err, null, 2));
+            
+            // Debug adicional para CLIENT_SECRET
+            console.error('❌ Pool Configuration:', poolData);
+            console.error('❌ Client Secret Available:', !!this.clientSecret);
+            console.error('❌ User Pool:', userPool ? userPool.getUserPoolId() : 'undefined');
             
             let errorMessage = 'Erro na autenticação';
             
