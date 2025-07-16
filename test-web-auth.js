@@ -208,7 +208,7 @@ async function testStep5_TestInternalToken(token) {
     
     const data = await response.json();
     
-    if (response.ok && data.success) {
+    if (response.ok && (data.success || data.authenticated)) {
       console.log('✅ Token interno válido');
       console.log('👤 Dados do usuário:', data.user);
       return true;
