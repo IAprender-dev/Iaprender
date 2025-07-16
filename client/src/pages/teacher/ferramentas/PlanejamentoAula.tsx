@@ -184,6 +184,9 @@ export default function PlanejamentoAula() {
     };
 
     fetchAIConfig();
+    
+    // Carregar histórico automaticamente quando a página carregar
+    carregarHistoricoS3();
   }, []);
 
   // Função para carregar histórico de planos de aula do S3
@@ -503,6 +506,8 @@ export default function PlanejamentoAula() {
       // Aguardar um breve momento para o estado ser atualizado e então fazer download automático
       setTimeout(() => {
         exportarPDFAutomatico(planoFormatado);
+        // Recarregar histórico após geração do plano
+        carregarHistoricoS3();
       }, 500);
     } catch (error: any) {
       console.error('Erro na geração do plano:', error);
@@ -1169,10 +1174,13 @@ export default function PlanejamentoAula() {
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
-                                    <BookOpen className="h-4 w-4 text-green-600" />
+                                    <BookOpen className="h-4 w-4 text-blue-600" />
                                     <h4 className="font-medium text-slate-800 line-clamp-1">
-                                      {plano.metadata.subject} - {plano.metadata.grade}
+                                      {plano.metadata.topic || `${plano.metadata.subject} - ${plano.metadata.grade}`}
                                     </h4>
+                                    <Badge variant="secondary" className="text-xs">
+                                      {plano.metadata.subject}
+                                    </Badge>
                                   </div>
                                   <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
                                     <div className="flex items-center gap-1">
