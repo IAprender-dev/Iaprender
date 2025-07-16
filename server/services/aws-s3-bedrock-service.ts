@@ -471,7 +471,7 @@ export async function createS3BedrockService(): Promise<AWSS3BedrockService> {
   const bucketName = process.env.AWS_S3_BUCKET || 'iaprender-files-2025';
   
   const config: S3BedrockConfig = {
-    bucketName,
+    bucketName: process.env.S3_BUCKET_NAME || bucketName,
     region: (awsCredentials.region || 'us-east-1').trim(),
     accessKeyId: (awsCredentials.accessKeyId || '').trim(),
     secretAccessKey: (awsCredentials.secretAccessKey || '').trim()
