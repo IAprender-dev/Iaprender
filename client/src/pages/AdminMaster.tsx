@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, Users, Building, Settings, Activity, BarChart3, LogOut } from "lucide-react";
+import { Shield, Users, Building, Settings, Activity, BarChart3, LogOut, Bot, Brain } from "lucide-react";
+import { Link } from "wouter";
 import iaprenderLogo from "@assets/iaprender-logo.png";
 
 export default function AdminMaster() {
@@ -133,7 +134,25 @@ export default function AdminMaster() {
         </Card>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <Link href="/central-ia">
+            <Button className="h-24 w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-lg">
+              <div className="flex flex-col items-center space-y-2">
+                <Bot className="h-8 w-8" />
+                <span>Central IA</span>
+              </div>
+            </Button>
+          </Link>
+
+          <Link href="/ai-preferences">
+            <Button className="h-24 w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold text-lg">
+              <div className="flex flex-col items-center space-y-2">
+                <Brain className="h-8 w-8" />
+                <span>Config IA</span>
+              </div>
+            </Button>
+          </Link>
+
           <Button className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-lg">
             <div className="flex flex-col items-center space-y-2">
               <Users className="h-8 w-8" />

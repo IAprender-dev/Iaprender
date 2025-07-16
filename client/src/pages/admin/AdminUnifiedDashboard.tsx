@@ -20,7 +20,9 @@ import {
   Plus,
   MapPin,
   Calendar,
-  DollarSign
+  DollarSign,
+  Bot,
+  Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -196,6 +198,18 @@ export default function AdminUnifiedDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/central-ia">
+                <Button variant="outline" size="sm" className="text-purple-600 hover:text-purple-700 border-purple-200 hover:border-purple-300">
+                  <Bot className="h-4 w-4 mr-2" />
+                  Central IA
+                </Button>
+              </Link>
+              <Link href="/ai-preferences">
+                <Button variant="outline" size="sm" className="text-indigo-600 hover:text-indigo-700 border-indigo-200 hover:border-indigo-300">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Config IA
+                </Button>
+              </Link>
               <Link href="/admin/credentials">
                 <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300">
                   <Shield className="h-4 w-4 mr-2" />
