@@ -119,6 +119,32 @@ export const professores = pgTable('professores', {
   status: varchar('status').default('ativo'),
 });
 
+// Tabela de Escolas (estrutura baseada no banco real)
+export const escolas = pgTable('escolas', {
+  id: serial('id').primaryKey(),
+  nome: varchar('nome').notNull(),
+  codigo_inep: varchar('codigo_inep', { length: 8 }).unique(),
+  cnpj: varchar('cnpj', { length: 18 }),
+  tipo_escola: varchar('tipo_escola'), // Municipal, Estadual, Federal, Privada
+  endereco: text('endereco'),
+  cidade: varchar('cidade'),
+  estado: varchar('estado', { length: 2 }),
+  cep: varchar('cep', { length: 10 }),
+  telefone: varchar('telefone', { length: 20 }),
+  email: varchar('email'),
+  diretor_responsavel: varchar('diretor_responsavel'),
+  contrato_id: integer('contrato_id'),
+  empresa_id: integer('empresa_id'),
+  capacidade_alunos: integer('capacidade_alunos'),
+  data_fundacao: date('data_fundacao'),
+  status: varchar('status').default('ativa'),
+  observacoes: text('observacoes'),
+  criado_por: integer('criado_por'),
+  atualizado_por: integer('atualizado_por'),
+  criado_em: timestamp('criado_em').defaultNow(),
+  atualizado_em: timestamp('atualizado_em').defaultNow(),
+});
+
 // Tabela de Alunos (estrutura baseada no banco real)
 export const alunos = pgTable('alunos', {
   id: serial('id').primaryKey(),
@@ -177,6 +203,21 @@ export const empresasRelations = relations(empresas, ({ many, one }) => ({
   
   // Uma empresa pode ter muitos usuários
   usuarios: many(usuarios, { relationName: 'empresa_usuarios' }),
+  
+  // Uma empresa pode ter muitas escolas
+  escolas: many(escolas, { relationName: 'empresa_escolas' }),
+  
+  // Uma empresa pode ter muitos gestores
+  gestores: many(gestores, { relationName: 'empresa_gestores' }),
+  
+  // Uma empresa pode ter muitos diretores
+  diretores: many(diretores, { relationName: 'empresa_diretores' }),
+  
+  // Uma empresa pode ter muitos professores
+  professores: many(professores, { relationName: 'empresa_professores' }),
+  
+  // Uma empresa pode ter muitos alunos
+  alunos: many(alunos, { relationName: 'empresa_alunos' }),
   
   // Relacionamentos de auditoria
   criador: one(usuarios, {
@@ -255,6 +296,128 @@ export const usuariosRelations = relations(usuarios, ({ one, many }) => ({
     fields: [usuarios.id],
     references: [aiPreferences.userId],
     relationName: 'usuario_ai_preferences'
+  }),
+}));
+
+// Relacionamentos da tabela escolas
+export const escolasRelations = relations(escolas, ({ one, many }) => ({
+  // Uma escola pertence a uma empresa
+  empresa: one(empresas, {
+    fields: [escolas.empresa_id],
+    references: [empresas.id],
+    relationName: 'empresa_escolas'
+  }),
+  
+  // Uma escola pertence a um contrato
+  contrato: one(contratos, {
+    fields: [escolas.contrato_id],
+    references: [contratos.id],
+    relationName: 'contrato_escolas'
+  }),
+  
+  // Uma escola pode ter muitos diretores
+  diretores: many(diretores, { relationName: 'escola_diretores' }),
+  
+  // Uma escola pode ter muitos professores
+  professores: many(professores, { relationName: 'escola_professores' }),
+  
+  // Uma escola pode ter muitos alunos
+  alunos: many(alunos, { relationName: 'escola_alunos' }),
+  
+  // Relacionamentos de auditoria
+  criador: one(usuarios, {
+    fields: [escolas.criado_por],
+    references: [usuarios.id],
+    relationName: 'escola_criador'
+  }),
+  atualizador: one(usuarios, {
+    fields: [escolas.atualizado_por],
+    references: [usuarios.id],
+    relationName: 'escola_atualizador'
+  }),
+}));
+
+// Relacionamentos das tabelas hierárquicas
+export const gestoresRelations = relations(gestores, ({ one }) => ({
+  usuario: one(usuarios, {
+    fields: [gestores.usr_id],
+    references: [usuarios.id],
+    relationName: 'usuario_gestor'
+  }),
+  empresa: one(empresas, {
+    fields: [gestores.empresa_id],
+    references: [empresas.id],
+    relationName: 'empresa_gestores'
+  }),
+}));
+
+export const diretoresRelations = relations(diretores, ({ one }) => ({
+  usuario: one(usuarios, {
+    fields: [diretores.usr_id],
+    references: [usuarios.id],
+    relationName: 'usuario_diretor'
+  }),
+  escola: one(escolas, {
+    fields: [diretores.escola_id],
+    references: [escolas.id],
+    relationName: 'escola_diretores'
+  }),
+  empresa: one(empresas, {
+    fields: [diretores.empresa_id],
+    references: [empresas.id],
+    relationName: 'empresa_diretores'
+  }),
+}));
+
+export const professoresRelations = relations(professores, ({ one }) => ({
+  usuario: one(usuarios, {
+    fields: [professores.usr_id],
+    references: [usuarios.id],
+    relationName: 'usuario_professor'
+  }),
+  escola: one(escolas, {
+    fields: [professores.escola_id],
+    references: [escolas.id],
+    relationName: 'escola_professores'
+  }),
+  empresa: one(empresas, {
+    fields: [professores.empresa_id],
+    references: [empresas.id],
+    relationName: 'empresa_professores'
+  }),
+}));
+
+export const alunosRelations = relations(alunos, ({ one }) => ({
+  usuario: one(usuarios, {
+    fields: [alunos.usr_id],
+    references: [usuarios.id],
+    relationName: 'usuario_aluno'
+  }),
+  escola: one(escolas, {
+    fields: [alunos.escola_id],
+    references: [escolas.id],
+    relationName: 'escola_alunos'
+  }),
+  empresa: one(empresas, {
+    fields: [alunos.empresa_id],
+    references: [empresas.id],
+    relationName: 'empresa_alunos'
+  }),
+}));
+
+export const aiPreferencesRelations = relations(aiPreferences, ({ one }) => ({
+  usuario: one(usuarios, {
+    fields: [aiPreferences.userId],
+    references: [usuarios.id],
+    relationName: 'usuario_ai_preferences'
+  }),
+}));
+
+export const aiResourceConfigsRelations = relations(aiResourceConfigs, ({ one }) => ({
+  configuradoPor: one(usuarios, {
+    fields: [aiResourceConfigs.configuredBy],
+    references: [usuarios.id],
+    relationName: 'usuario_ai_configs'
   }),
 }));
 

@@ -2,7 +2,7 @@ import { Pool } from '@neondatabase/serverless';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-serverless';
 import { drizzle as drizzleAWS } from 'drizzle-orm/aws-data-api/pg';
 import { RDSDataClient } from '@aws-sdk/client-rds-data';
-import * as schema from '../shared/schema';
+import * as schema from '../../shared/schema';
 import ws from "ws";
 
 // Configurar neon para usar WebSocket
