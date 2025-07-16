@@ -330,33 +330,23 @@ Retorne APENAS o plano de aula estruturado, sem comentários adicionais.
 
     console.log(`✅ Plano de aula gerado com sucesso via ${response.model}`);
 
-    // Tentar salvar no S3 para histórico (fallback gracioso)
-    let s3FileName = null;
-    let s3Status = 'skipped';
-    
-    try {
-      const s3Service = await import('../services/aws-s3-bedrock-service.js');
-      s3FileName = await s3Service.salvarPlanoAulaS3({
-        userId: userId,
-        subject,
-        grade,
-        topic,
-        duration: duration || '50 minutos',
-        school,
-        numberOfStudents,
-        lessonPlan: response.content,
-        model: response.model,
-        aiConfig: aiConfig?.modelName || 'Configuração padrão',
-        timestamp: response.timestamp
-      });
+    // Salvar no S3 para histórico - OBRIGATÓRIO
+    const s3Service = await import('../services/aws-s3-bedrock-service.js');
+    const s3FileName = await s3Service.salvarPlanoAulaS3({
+      userId: userId,
+      subject,
+      grade,
+      topic,
+      duration: duration || '50 minutos',
+      school,
+      numberOfStudents,
+      lessonPlan: response.content,
+      model: response.model,
+      aiConfig: aiConfig?.modelName || 'Configuração padrão',
+      timestamp: response.timestamp
+    });
 
-      console.log(`💾 Plano de aula salvo no S3: ${s3FileName}`);
-      s3Status = 'success';
-    } catch (s3Error) {
-      console.warn(`⚠️  Erro ao salvar no S3 (continuando sem histórico): ${s3Error.message}`);
-      s3Status = 'failed';
-      // Não propagar o erro - continuar com a resposta
-    }
+    console.log(`💾 Plano de aula salvo no S3: ${s3FileName}`);
 
     return res.status(200).json({
       success: true,
@@ -372,9 +362,7 @@ Retorne APENAS o plano de aula estruturado, sem comentários adicionais.
         ai_config_used: aiConfig?.modelName || 'Configuração padrão',
         usage: response.usage,
         generated_at: response.timestamp,
-        s3_file: s3FileName,
-        s3_status: s3Status,
-        s3_warning: s3Status === 'failed' ? 'Histórico temporariamente indisponível devido a configuração AWS' : null
+        s3_file: s3FileName
       }
     });
 

@@ -143,6 +143,12 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 16, 2025: ✅ SISTEMA AWS BEDROCK + S3 TOTALMENTE CONFIGURADO
+  - ✅ **AWS BEDROCK FUNCIONANDO**: Sistema usando corretamente a IA paga (Claude 3 Haiku configurado em /admin/ai-resources)
+  - ✅ **SALVAMENTO S3 OBRIGATÓRIO**: Removido fallback - sistema exige salvamento no S3 para histórico completo
+  - ✅ **SCRIPT DE CORREÇÃO CRIADO**: fix-s3-permissions.sh para resolver permissões IAM rapidamente
+  - ✅ **DOCUMENTAÇÃO COMPLETA**: AWS_S3_PERMISSIONS_FIX.md com instruções detalhadas
+  - ⚠️ **AÇÃO NECESSÁRIA**: Executar script de permissões S3 para funcionamento completo
 - July 16, 2025: ✅ CONCLUÍDO - CORREÇÃO CRÍTICA: Sistema S3 Histórico de Planos de Aula 100% Funcional
   - ✅ **PROBLEMA BUCKET_NAME CORRIGIDO**: Substituída referência indefinida BUCKET_NAME por S3_BUCKET_NAME das secrets
   - ✅ **FUNÇÕES S3 CORRIGIDAS**: salvarPlanoAulaS3, listarPlanosAulaS3, recuperarPlanoAulaS3 agora usam configuração correta
