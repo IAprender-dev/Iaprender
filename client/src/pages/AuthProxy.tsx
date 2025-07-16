@@ -13,8 +13,8 @@ export default function AuthProxy() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: "admin@gmail.com",
-    password: "NovaSenh123!"
+    username: "teste.login",
+    password: "TesteLogin123!"
   });
   const { toast } = useToast();
 
@@ -120,14 +120,17 @@ export default function AuthProxy() {
               </p>
             </div>
 
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h3 className="font-semibold text-blue-900 mb-2">Teste de Autenticação - USER_PASSWORD_AUTH Ativo</h3>
-              <p className="text-sm text-blue-800">
-                O usuário <strong>admin@gmail.com</strong> tem status FORCE_CHANGE_PASSWORD, 
-                portanto aceita a senha temporária <strong>NovaSenh123!</strong>.
-              </p>
-              <p className="text-sm text-green-800 mt-1">
-                Clique em "Entrar" para testar a autenticação com SECRET_HASH.
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h3 className="font-semibold text-green-900 mb-2">💡 Credenciais Funcionais - Prontas para Teste</h3>
+              <div className="space-y-2 text-sm text-green-800">
+                <div><strong>Username:</strong> teste.login</div>
+                <div><strong>Password:</strong> TesteLogin123!</div>
+                <div><strong>Email:</strong> teste.login@iaprender.com.br</div>
+                <div><strong>Status:</strong> CONFIRMED ✅</div>
+                <div><strong>Grupo:</strong> Admin</div>
+              </div>
+              <p className="text-sm text-green-700 mt-2">
+                Essas credenciais estão pré-carregadas nos campos abaixo. Clique em "Entrar" para autenticar.
               </p>
             </div>
 

@@ -182,21 +182,23 @@ export class CognitoClientAuth {
             let errorMessage = 'Erro na autenticação';
             
             if (err.code === 'NotAuthorizedException') {
-              errorMessage = 'Email ou senha incorretos';
+              errorMessage = 'Email ou senha incorretos. Verifique suas credenciais.\n\n💡 Para teste, use:\nUsername: teste.login\nPassword: TesteLogin123!\nEmail: teste.login@iaprender.com.br';
             } else if (err.code === 'UserNotFoundException') {
-              errorMessage = 'Usuário não encontrado';
+              errorMessage = 'Usuário não encontrado. Verifique o email digitado.\n\n💡 Credenciais de teste:\nUsername: teste.login\nEmail: teste.login@iaprender.com.br';
             } else if (err.code === 'UserNotConfirmedException') {
-              errorMessage = 'Usuário não confirmado';
+              errorMessage = 'Usuário não confirmado. Este usuário precisa ser ativado pelo administrador.';
             } else if (err.code === 'PasswordResetRequiredException') {
-              errorMessage = 'Redefinição de senha necessária';
+              errorMessage = 'Este usuário precisa redefinir sua senha. Status: FORCE_CHANGE_PASSWORD.\n\nEntre em contato com o administrador.';
             } else if (err.code === 'InvalidParameterException') {
-              errorMessage = 'Parâmetros inválidos';
+              errorMessage = 'Parâmetros inválidos. Verifique se o formato do email está correto.';
+            } else if (err.message && err.message.includes('FORCE_CHANGE_PASSWORD')) {
+              errorMessage = 'Este usuário precisa trocar a senha no primeiro login. Entre em contato com o administrador.\n\n💡 Use as credenciais de teste que já estão prontas: teste.login / TesteLogin123!';
             } else {
-              errorMessage = `Erro: ${err.message}`;
+              errorMessage = `Erro: ${err.message}\n\n💡 Tente com as credenciais funcionais:\nUsername: teste.login\nPassword: TesteLogin123!`;
             }
             
             // Adicionar código de erro para debugging
-            errorMessage += ` (Código: ${err.code})`;
+            errorMessage += `\n\n🔍 Código técnico: ${err.code}`;
 
             resolve({
               success: false,
