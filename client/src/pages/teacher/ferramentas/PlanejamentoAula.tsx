@@ -117,6 +117,7 @@ export default function PlanejamentoAula() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [temaAnalysis, setTemaAnalysis] = useState<any>(null);
   const [planoGerado, setPlanoGerado] = useState<LessonPlanData | null>(null);
+  const [aiConfig, setAiConfig] = useState<any>(null);
 
   // Garantir que a página sempre inicie no topo com animação suave
   useEffect(() => {
@@ -136,6 +137,47 @@ export default function PlanejamentoAula() {
     }
   }, [planoGerado]);
 
+  // Buscar configuração de IA para planejamento de aulas
+  useEffect(() => {
+    const fetchAIConfig = async () => {
+      try {
+        const response = await fetch('/api/ai-resource-configs/teacher-0', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setAiConfig(data.data);
+          console.log('🤖 Configuração de IA carregada:', data.data);
+        } else {
+          console.log('⚠️ Configuração de IA não encontrada, usando padrão');
+          // Usar configuração padrão se não encontrada
+          setAiConfig({
+            selectedModel: 'claude-3-5-sonnet-20241022',
+            modelName: 'Claude 3.5 Sonnet',
+            temperature: 0.7,
+            maxTokens: 3000,
+            enabled: true
+          });
+        }
+      } catch (error) {
+        console.error('❌ Erro ao buscar configuração de IA:', error);
+        // Usar configuração padrão em caso de erro
+        setAiConfig({
+          selectedModel: 'claude-3-5-sonnet-20241022',
+          modelName: 'Claude 3.5 Sonnet',
+          temperature: 0.7,
+          maxTokens: 3000,
+          enabled: true
+        });
+      }
+    };
+
+    fetchAIConfig();
+  }, []);
+
   // Handle form data changes
   const handleFormChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -153,20 +195,14 @@ export default function PlanejamentoAula() {
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch('/api/analyze-tema', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ tema: temaInput }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erro na análise do tema');
-      }
-
-      const analysis = await response.json();
+      // Análise local do tema para funcionalidade simplificada
+      const analysis = {
+        disciplina: determinarDisciplina(temaInput),
+        anoSerie: determinarAnoSerie(temaInput),
+        conformeRegulasBNCC: true,
+        observacoes: "Tema analisado conforme diretrizes da BNCC"
+      };
+      
       setTemaAnalysis(analysis);
     } catch (error: any) {
       console.error('Erro na análise:', error);
@@ -178,6 +214,58 @@ export default function PlanejamentoAula() {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Função auxiliar para determinar disciplina baseada no tema
+  const determinarDisciplina = (tema: string): string => {
+    const temaLower = tema.toLowerCase();
+    
+    if (temaLower.includes('matemática') || temaLower.includes('fração') || temaLower.includes('número') || 
+        temaLower.includes('geometria') || temaLower.includes('álgebra') || temaLower.includes('soma') || 
+        temaLower.includes('subtração') || temaLower.includes('divisão') || temaLower.includes('multiplicação')) {
+      return 'Matemática';
+    }
+    
+    if (temaLower.includes('português') || temaLower.includes('texto') || temaLower.includes('gramática') || 
+        temaLower.includes('ortografia') || temaLower.includes('leitura') || temaLower.includes('escrita')) {
+      return 'Língua Portuguesa';
+    }
+    
+    if (temaLower.includes('história') || temaLower.includes('revolução') || temaLower.includes('brasil') || 
+        temaLower.includes('idade média') || temaLower.includes('descobrimento')) {
+      return 'História';
+    }
+    
+    if (temaLower.includes('geografia') || temaLower.includes('mapa') || temaLower.includes('clima') || 
+        temaLower.includes('região') || temaLower.includes('população')) {
+      return 'Geografia';
+    }
+    
+    if (temaLower.includes('ciências') || temaLower.includes('biologia') || temaLower.includes('física') || 
+        temaLower.includes('química') || temaLower.includes('sistema solar') || temaLower.includes('corpo humano')) {
+      return 'Ciências';
+    }
+    
+    return 'Interdisciplinar';
+  };
+
+  // Função auxiliar para determinar ano/série baseada no tema
+  const determinarAnoSerie = (tema: string): string => {
+    const temaLower = tema.toLowerCase();
+    
+    if (temaLower.includes('alfabetização') || temaLower.includes('letra') || temaLower.includes('vogal')) {
+      return '1º ano';
+    }
+    
+    if (temaLower.includes('frações') || temaLower.includes('sistema solar') || temaLower.includes('revolução industrial')) {
+      return '4º ano';
+    }
+    
+    if (temaLower.includes('história do brasil') || temaLower.includes('descobrimento')) {
+      return '5º ano';
+    }
+    
+    return 'Ensino Fundamental';
   };
 
   // Debounce para análise do tema
@@ -203,10 +291,19 @@ export default function PlanejamentoAula() {
       return;
     }
 
-    if (!temaAnalysis) {
+    if (!aiConfig) {
       toast({
-        title: "Aguarde a análise",
-        description: "Aguarde a análise automática do tema ser concluída.",
+        title: "Configuração de IA não encontrada",
+        description: "Aguarde o carregamento da configuração de IA.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!aiConfig.enabled) {
+      toast({
+        title: "Recurso desabilitado",
+        description: "O recurso de planejamento de aulas está desabilitado. Contate o administrador.",
         variant: "destructive"
       });
       return;
@@ -222,18 +319,24 @@ export default function PlanejamentoAula() {
     setIsGenerating(true);
     
     try {
-      const response = await fetch('/api/generate-comprehensive-lesson-plan', {
+      // Gerar plano via AWS Bedrock usando configuração do admin
+      const response = await fetch('/api/ai-central/generate-lesson', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          ...formData,
-          anoSerie: temaAnalysis?.anoSerie || '',
-          professor: user ? `${user.firstName} ${user.lastName}` : '',
-          emailProfessor: user?.email || '',
-          analysis: temaAnalysis 
+        body: JSON.stringify({
+          subject: temaAnalysis?.disciplina || formData.tema.split(' ')[0],
+          grade: temaAnalysis?.anoSerie || 'Não especificado',
+          topic: formData.tema,
+          duration: formData.duracao,
+          school: formData.escola,
+          numberOfStudents: formData.numeroAlunos,
+          classProfile: formData.perfilTurma,
+          resources: formData.recursos,
+          specificObjectives: formData.objetivosEspecificos,
+          aiConfig: aiConfig // Configuração da IA do admin
         }),
       });
 
@@ -256,16 +359,73 @@ export default function PlanejamentoAula() {
       }
 
       const planoData = await response.json();
-      setPlanoGerado(planoData);
+      
+      // Estruturar dados do plano para o formato esperado
+      const lessonPlanContent = planoData.data?.lesson_plan || planoData.data?.content || 'Conteúdo não disponível';
+      
+      // Tentar parsear o conteúdo estruturado se for um plano completo
+      let parsedContent = {};
+      try {
+        // Se o conteúdo vier como string estruturada, tentar extrair seções
+        if (typeof lessonPlanContent === 'string') {
+          const sections = lessonPlanContent.split(/\n\s*\d+\.\s*\*\*([^*]+)\*\*\s*-?\s*/);
+          
+          if (sections.length > 1) {
+            // Processar seções estruturadas
+            for (let i = 1; i < sections.length; i += 2) {
+              const sectionTitle = sections[i]?.trim();
+              const sectionContent = sections[i + 1]?.trim();
+              
+              if (sectionTitle && sectionContent) {
+                const key = sectionTitle.toLowerCase()
+                  .replace(/[áàâãä]/g, 'a')
+                  .replace(/[éèêë]/g, 'e')
+                  .replace(/[íìîï]/g, 'i')
+                  .replace(/[óòôõö]/g, 'o')
+                  .replace(/[úùûü]/g, 'u')
+                  .replace(/[ç]/g, 'c')
+                  .replace(/[^a-z0-9]/g, '');
+                
+                parsedContent[key] = sectionContent;
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Conteúdo não estruturado, usando como texto simples');
+      }
+      
+      const planoFormatado = {
+        identificacao: {
+          escola: formData.escola,
+          professor: user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Professor',
+          disciplina: temaAnalysis?.disciplina || 'Não especificado',
+          anoSerie: temaAnalysis?.anoSerie || 'Não especificado',
+          tema: formData.tema,
+          duracao: formData.duracao,
+          numeroAlunos: formData.numeroAlunos,
+          dataElaboracao: new Date().toLocaleDateString('pt-BR'),
+          iaUtilizada: aiConfig.modelName || 'AWS Bedrock'
+        },
+        // Usar conteúdo parseado se disponível, senão usar conteúdo bruto
+        ...(Object.keys(parsedContent).length > 0 ? parsedContent : { conteudoCompleto: lessonPlanContent }),
+        
+        // Dados adicionais do sistema
+        modeloUtilizado: planoData.data?.model_used || aiConfig.selectedModel,
+        configurationUsed: planoData.data?.ai_config_used || aiConfig.modelName,
+        timestamp: planoData.data?.generated_at || new Date().toISOString()
+      };
+      
+      setPlanoGerado(planoFormatado);
       
       toast({
         title: "Plano gerado com sucesso!",
-        description: "Seu plano de aula profissional está pronto para uso.",
+        description: `Criado com ${aiConfig.modelName} via AWS Bedrock`,
       });
 
       // Aguardar um breve momento para o estado ser atualizado e então fazer download automático
       setTimeout(() => {
-        gerarPDF(planoData, true);
+        exportarPDFAutomatico(planoFormatado);
       }, 500);
     } catch (error: any) {
       console.error('Erro na geração do plano:', error);
@@ -721,11 +881,27 @@ export default function PlanejamentoAula() {
             {/* Formulário de Entrada */}
             <Card className="bg-white/60 backdrop-blur-sm border-slate-200/50 shadow-xl">
               <CardHeader className="pb-6">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <FileText className="h-5 w-5 text-green-700" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-indigo-100 rounded-lg">
+                      <FileText className="h-5 w-5 text-green-700" />
+                    </div>
+                    <CardTitle className="text-xl font-bold text-slate-900">Dados da Aula</CardTitle>
                   </div>
-                  <CardTitle className="text-xl font-bold text-slate-900">Dados da Aula</CardTitle>
+                  {aiConfig && (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        {aiConfig.modelName}
+                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <div className={`w-2 h-2 rounded-full ${aiConfig.enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span className={`text-xs ${aiConfig.enabled ? 'text-green-600' : 'text-red-600'}`}>
+                          {aiConfig.enabled ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">

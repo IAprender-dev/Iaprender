@@ -234,7 +234,18 @@ router.post("/generate-lesson", authenticate, async (req, res) => {
       });
     }
 
-    const { subject, grade, topic, duration } = req.body;
+    const { 
+      subject, 
+      grade, 
+      topic, 
+      duration, 
+      school,
+      numberOfStudents,
+      classProfile,
+      resources,
+      specificObjectives,
+      aiConfig
+    } = req.body;
 
     if (!subject || !grade || !topic) {
       return res.status(400).json({
@@ -244,47 +255,80 @@ router.post("/generate-lesson", authenticate, async (req, res) => {
     }
 
     console.log(`📚 Gerando plano de aula: ${subject} - ${grade} - ${topic}`);
+    console.log(`🤖 Usando configuração de IA: ${aiConfig?.modelName || 'Padrão'}`);
 
-    // Prompt especializado para plano de aula
+    // Prompt especializado para plano de aula com informações detalhadas
     const prompt = `
-Crie um plano de aula detalhado para:
+Você é um especialista em educação brasileira com amplo conhecimento da BNCC, diretrizes do MEC e metodologias pedagógicas contemporâneas. Sua função é criar planejamentos de aula completos, profissionais e alinhados às normativas educacionais brasileiras.
+
+**DADOS DA AULA:**
 - Disciplina: ${subject}
-- Série: ${grade}
-- Tópico: ${topic}
+- Série/Ano: ${grade}
+- Tópico/Tema: ${topic}
 - Duração: ${duration || '50 minutos'}
+- Escola: ${school || 'Não especificado'}
+- Número de Alunos: ${numberOfStudents || 'Não especificado'}
+- Perfil da Turma: ${classProfile || 'Não especificado'}
+- Recursos Disponíveis: ${resources || 'Recursos básicos de sala de aula'}
+- Objetivos Específicos: ${specificObjectives || 'Conforme BNCC'}
 
-O plano deve incluir:
-1. Objetivos de aprendizagem
-2. Conteúdo programático
-3. Metodologia
-4. Recursos necessários
-5. Avaliação
-6. Bibliografia
-7. Observações pedagógicas
+**INSTRUÇÕES IMPORTANTES:**
+1. Crie um plano de aula COMPLETO e PROFISSIONAL
+2. Inclua alinhamento específico com a BNCC
+3. Use metodologias ativas e contemporâneas
+4. Considere o perfil da turma informado
+5. Formate de maneira clara e organize bem as seções
+6. Use linguagem técnica pedagógica adequada
 
-Formate de maneira clara e organize bem as seções.
+**ESTRUTURA OBRIGATÓRIA:**
+1. **ALINHAMENTO BNCC** - Competências e habilidades específicas
+2. **TEMA DA AULA** - Contextualização e justificativa
+3. **OBJETIVOS DE APRENDIZAGEM** - Gerais e específicos
+4. **CONTEÚDO PROGRAMÁTICO** - Tópicos e subtópicos
+5. **METODOLOGIA** - Estratégias pedagógicas detalhadas
+6. **SEQUÊNCIA DIDÁTICA** - Passo a passo da aula com tempos
+7. **RECURSOS DIDÁTICOS** - Materiais e equipamentos necessários
+8. **AVALIAÇÃO** - Critérios e instrumentos de avaliação
+9. **REFERÊNCIAS** - Bibliografia e fontes consultadas
+
+Retorne APENAS o plano de aula estruturado, sem comentários adicionais.
 `;
 
-    // Buscar preferências do usuário
-    const preferences = await db
-      .select()
-      .from(aiPreferences)
-      .where(eq(aiPreferences.userId, userId))
-      .limit(1);
+    // Usar configuração de IA específica ou buscar preferências do usuário
+    let preferences;
+    if (aiConfig && aiConfig.enabled) {
+      preferences = {
+        defaultAI: aiConfig.selectedModel.includes('claude') ? 'claude' : 'other',
+        responseLanguage: 'pt-BR',
+        complexityLevel: 'intermediario',
+        temperature: aiConfig.temperature || 0.7,
+        maxTokens: aiConfig.maxTokens || 3000
+      };
+      console.log(`🎯 Usando configuração admin: ${aiConfig.modelName}`);
+    } else {
+      // Buscar preferências do usuário como fallback
+      const userPrefs = await db
+        .select()
+        .from(aiPreferences)
+        .where(eq(aiPreferences.userId, userId))
+        .limit(1);
 
-    const userPreferences = preferences.length > 0 ? preferences[0] : {
-      defaultAI: 'claude',
-      responseLanguage: 'pt-BR',
-      complexityLevel: 'intermediario'
-    };
+      preferences = userPrefs.length > 0 ? userPrefs[0] : {
+        defaultAI: 'claude',
+        responseLanguage: 'pt-BR',
+        complexityLevel: 'intermediario'
+      };
+      console.log(`👤 Usando preferências do usuário`);
+    }
 
-    // Gerar plano de aula
+    // Gerar plano de aula usando AWS Bedrock
     const response = await invokeModelWithPreferences(
       prompt,
-      userPreferences
+      preferences,
+      aiConfig?.selectedModel
     );
 
-    console.log(`✅ Plano de aula gerado com sucesso`);
+    console.log(`✅ Plano de aula gerado com sucesso via ${response.model}`);
 
     return res.status(200).json({
       success: true,
@@ -294,7 +338,10 @@ Formate de maneira clara e organize bem as seções.
         grade,
         topic,
         duration: duration || '50 minutos',
+        school,
+        numberOfStudents,
         model_used: response.model,
+        ai_config_used: aiConfig?.modelName || 'Configuração padrão',
         usage: response.usage,
         generated_at: response.timestamp
       }
