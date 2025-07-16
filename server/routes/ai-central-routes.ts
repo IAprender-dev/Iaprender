@@ -17,22 +17,31 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-// Middleware de autenticação JWT (reutilizado do routes.ts)
-const authenticate = (req: Request, res: Response, next: any) => {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ 
-      success: false, 
-      message: "Token não fornecido" 
-    });
-  }
+// Importar JWT
+import jwt from "jsonwebtoken";
 
-  const token = authHeader.substring(7);
-  
+// Middleware de autenticação JWT (alinhado com routes.ts)
+const authenticate = (req: Request, res: Response, next: any) => {
   try {
-    const JWT_SECRET = 'test_secret_key_iaprender_2025'; // Mesmo secret usado no sistema
-    const decoded = require('jsonwebtoken').verify(token, JWT_SECRET) as any;
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    
+    if (!token) {
+      console.log("❌ Token não fornecido no header");
+      return res.status(401).json({ 
+        success: false, 
+        message: "Token não fornecido" 
+      });
+    }
+    
+    const jwtSecret = process.env.JWT_SECRET || 'test_secret_key_iaprender_2025';
+    const decoded = jwt.verify(token, jwtSecret) as any;
+    
+    console.log("✅ Token decodificado com sucesso:", {
+      id: decoded.id,
+      email: decoded.email,
+      tipo_usuario: decoded.tipo_usuario
+    });
     
     (req as AuthenticatedRequest).user = {
       id: decoded.id,
@@ -45,6 +54,7 @@ const authenticate = (req: Request, res: Response, next: any) => {
     
     next();
   } catch (error) {
+    console.error("❌ Erro na autenticação JWT:", error);
     return res.status(401).json({ 
       success: false, 
       message: "Token inválido" 
