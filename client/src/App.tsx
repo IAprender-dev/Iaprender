@@ -100,6 +100,7 @@ import CalculatorDashboard from "@/pages/teacher/CalculatorDashboard";
 import AnalyticsDashboard from "@/pages/teacher/AnalyticsDashboard";
 import TokenDashboard from "@/pages/TokenDashboard";
 import OptimizationsPage from "@/pages/OptimizationsPage";
+import AIPreferences from "@/pages/user/AIPreferences";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -144,6 +145,9 @@ function Router() {
       <Route path="/central-ia/claude" component={ClaudePage} />
       <Route path="/central-ia/perplexity" component={PerplexityPage} />
       <Route path="/central-ia/image-gen" component={ImageGenPage} />
+      
+      {/* AI Preferences route */}
+      <Route path="/ai-preferences" component={AIPreferences} />
       
       {/* Teacher routes */}
       <Route path="/professor" component={TeacherDashboard} />
