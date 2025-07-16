@@ -57,7 +57,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet"],
       status: "active",
       usage: "Alto",
-      route: "/professor/ferramentas/planos-aula"
+      route: "/professor/ferramentas/planejamento-aula"
     },
     {
       title: "Gerador de Atividades",
@@ -67,7 +67,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet", "ChatGPT 4"],
       status: "active",
       usage: "Alto",
-      route: "/professor/ferramentas/atividades"
+      route: "/professor/ferramentas/gerador-atividades"
     },
     {
       title: "Cronograma Pedagógico",
@@ -77,7 +77,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3 Haiku"],
       status: "active",
       usage: "Médio",
-      route: "/professor/ferramentas/cronograma"
+      route: "/professor/ferramentas/modelos-planejamento"
     },
     {
       title: "Avaliações Adaptativas",
@@ -87,7 +87,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet"],
       status: "active",
       usage: "Médio",
-      route: "/professor/ferramentas/avaliacoes"
+      route: "/professor/quiz"
     },
     {
       title: "Análise de Redações",
@@ -97,7 +97,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet"],
       status: "active",
       usage: "Médio",
-      route: "/professor/ferramentas/analise-redacoes"
+      route: "/professor/redacoes"
     },
     {
       title: "Resumos BNCC",
@@ -141,7 +141,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet", "ChatGPT 4"],
       status: "active",
       usage: "Alto",
-      route: "/student/ai-tutor"
+      route: "/aluno/ai-tutor"
     },
     {
       title: "Planos de Estudo Personalizados",
@@ -151,7 +151,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet"],
       status: "active",
       usage: "Médio",
-      route: "/student/study-planning"
+      route: "/aluno/study-planning"
     },
     {
       title: "Mapas Mentais Inteligentes",
@@ -161,7 +161,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3 Haiku"],
       status: "active",
       usage: "Médio",
-      route: "/student/mind-map"
+      route: "/aluno/mind-map"
     },
     {
       title: "Quiz Adaptativos",
@@ -171,7 +171,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet"],
       status: "active",
       usage: "Alto",
-      route: "/student/quiz"
+      route: "/aluno/quiz"
     },
     {
       title: "Tradutor Educacional",
@@ -181,7 +181,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Claude 3.5 Sonnet", "ChatGPT 4"],
       status: "active",
       usage: "Baixo",
-      route: "/student/translator"
+      route: "/aluno/translator"
     },
     {
       title: "Explorador Wikipedia",
@@ -191,7 +191,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["Perplexity AI"],
       status: "active",
       usage: "Médio",
-      route: "/student/wikipedia"
+      route: "/aluno/wikipedia"
     },
     {
       title: "Tutor por Voz",
@@ -201,7 +201,7 @@ export default function AIResourcesDashboard() {
       aiModels: ["OpenAI Whisper", "Eleven Labs"],
       status: "beta",
       usage: "Baixo",
-      route: "/student/voice-tutor"
+      route: "/aluno/voice-tutor"
     }
   ];
 
