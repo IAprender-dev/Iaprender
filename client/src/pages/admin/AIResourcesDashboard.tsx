@@ -47,15 +47,29 @@ export default function AIResourcesDashboard() {
     }
   });
 
-  // Recursos para Professores
+  // Buscar configuração real da IA para Planejamento de Aulas
+  const { data: planningConfig } = useQuery({
+    queryKey: ['/api/ai-resource-configs/teacher-0'],
+    queryFn: async () => {
+      const response = await fetch('/api/ai-resource-configs/teacher-0', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch config');
+      return response.json();
+    }
+  });
+
+  // Recursos para Professores - usar configuração real da IA
   const teacherResources = [
     {
       title: "Planejamento de Aulas",
       description: "Criação automatizada de planos de aula alinhados à BNCC",
       icon: BookOpen,
       category: "Planejamento",
-      aiModels: ["Claude 3.5 Sonnet"],
-      status: "active",
+      aiModels: [planningConfig?.data?.modelName || "Claude 3.5 Sonnet"],
+      status: planningConfig?.data?.enabled ? "active" : "inactive",
       usage: "Alto",
       route: "/professor/ferramentas/planejamento-aula"
     },
