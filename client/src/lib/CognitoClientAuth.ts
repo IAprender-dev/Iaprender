@@ -112,180 +112,49 @@ export class CognitoClientAuth {
    */
   async authenticate(email: string, password: string): Promise<CognitoAuthResult> {
     try {
-      console.log('🔐 Iniciando autenticação para:', email);
-      await this.initialize();
-
-      console.log('🔐 User Pool configurado:', poolData.UserPoolId);
-      console.log('🔐 Client ID:', poolData.ClientId);
+      console.log('🔐 Iniciando autenticação via backend para:', email);
       
-      // Verificar se o User Pool ID está correto
-      if (poolData.UserPoolId !== 'us-east-1_4jqF97H2X') {
-        console.warn('⚠️ User Pool ID pode estar incorreto');
-        console.warn('Esperado: us-east-1_4jqF97H2X');
-        console.warn('Recebido:', poolData.UserPoolId);
+      // Usar autenticação via backend para contornar problema da biblioteca
+      console.log('🔐 Enviando credenciais para backend...');
+      
+      const response = await fetch('/api/auth/cognito-authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      });
+
+      const result = await response.json();
+      console.log('🔐 Resposta do backend:', result);
+
+      if (!result.success) {
+        console.error('❌ Falha na autenticação backend:', result.error);
+        return {
+          success: false,
+          error: result.error || 'Falha na autenticação'
+        };
       }
 
-      // Verificar se temos client secret
-      if (!this.clientSecret) {
-        throw new Error('Client secret é obrigatório para este Client App');
-      }
-
-      // Calcular SECRET_HASH
-      const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
-      console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
-
-      // Usar a configuração correta do SECRET_HASH para amazon-cognito-identity-js
-      // Alguns Client Apps no AWS Cognito requerem SECRET_HASH
-      const authDetails = {
-        Username: email,
-        Password: password
+      console.log('✅ Autenticação via backend bem-sucedida!');
+      
+      // Extrair tokens e informações do usuário
+      const { accessToken, idToken, refreshToken, user, redirectUrl } = result;
+      
+      return {
+        success: true,
+        accessToken,
+        idToken, 
+        refreshToken,
+        user,
+        redirectUrl
       };
 
-      const authenticationDetails = new AuthenticationDetails(authDetails);
 
-      const cognitoUser = new CognitoUser({
-        Username: email,
-        Pool: userPool,
-        Storage: window.sessionStorage
-      });
 
-      // Configurar SECRET_HASH usando o método correto da biblioteca
-      console.log('🔐 Configurando SECRET_HASH para Client App com Client Secret');
-
-      console.log('🔐 Tentando autenticar usuário...');
-
-      return new Promise((resolve) => {
-        const customCallback = {
-          onSuccess: async (session: CognitoUserSession) => {
-            console.log('✅ Autenticação bem-sucedida');
-
-            const accessToken = session.getAccessToken().getJwtToken();
-            const idToken = session.getIdToken().getJwtToken();
-            const refreshToken = session.getRefreshToken().getToken();
-
-            // Decodificar ID token para obter informações do usuário
-            const idTokenPayload = session.getIdToken().payload;
-            console.log('👤 Payload do usuário:', idTokenPayload);
-            
-            // Criar token JWT interno
-            const internalToken = await this.createInternalToken(idTokenPayload);
-
-            // Determinar redirecionamento baseado no tipo de usuário
-            const redirectUrl = this.determineRedirectUrl(idTokenPayload);
-
-            resolve({
-              success: true,
-              accessToken,
-              idToken,
-              refreshToken,
-              user: idTokenPayload,
-              redirectUrl: `${redirectUrl}?token=${encodeURIComponent(internalToken)}&auth=success`
-            });
-          },
-
-          onFailure: (err) => {
-            console.error('❌ Falha na autenticação:', err);
-            console.error('❌ Código do erro:', err.code);
-            console.error('❌ Mensagem do erro:', err.message);
-            console.error('❌ Stack trace:', err.stack);
-            console.error('❌ Objeto completo do erro:', JSON.stringify(err, null, 2));
-            
-            // Debug adicional para CLIENT_SECRET
-            console.error('❌ Pool Configuration:', poolData);
-            console.error('❌ Client Secret Available:', !!this.clientSecret);
-            console.error('❌ User Pool:', userPool ? userPool.getUserPoolId() : 'undefined');
-            
-            let errorMessage = 'Erro na autenticação';
-            
-            if (err.code === 'NotAuthorizedException') {
-              errorMessage = 'Email ou senha incorretos. Verifique suas credenciais.\n\n💡 Para teste, use:\nUsername: teste.login\nPassword: TesteLogin123!\nEmail: teste.login@iaprender.com.br';
-            } else if (err.code === 'UserNotFoundException') {
-              errorMessage = 'Usuário não encontrado. Verifique o email digitado.\n\n💡 Credenciais de teste:\nUsername: teste.login\nEmail: teste.login@iaprender.com.br';
-            } else if (err.code === 'UserNotConfirmedException') {
-              errorMessage = 'Usuário não confirmado. Este usuário precisa ser ativado pelo administrador.';
-            } else if (err.code === 'PasswordResetRequiredException') {
-              errorMessage = 'Este usuário precisa redefinir sua senha. Status: FORCE_CHANGE_PASSWORD.\n\nEntre em contato com o administrador.';
-            } else if (err.code === 'InvalidParameterException') {
-              errorMessage = 'Parâmetros inválidos. Verifique se o formato do email está correto.';
-            } else if (err.message && err.message.includes('FORCE_CHANGE_PASSWORD')) {
-              errorMessage = 'Este usuário precisa trocar a senha no primeiro login. Entre em contato com o administrador.\n\n💡 Use as credenciais de teste que já estão prontas: teste.login / TesteLogin123!';
-            } else {
-              errorMessage = `Erro: ${err.message}\n\n💡 Tente com as credenciais funcionais:\nUsername: teste.login\nPassword: TesteLogin123!`;
-            }
-            
-            // Adicionar código de erro para debugging
-            errorMessage += `\n\n🔍 Código técnico: ${err.code}`;
-
-            resolve({
-              success: false,
-              error: errorMessage,
-              errorCode: err.code
-            });
-          },
-
-          newPasswordRequired: (userAttributes, requiredAttributes) => {
-            console.log('🔄 Nova senha necessária - usuário precisa definir senha');
-            console.log('Atributos do usuário:', userAttributes);
-            console.log('Atributos obrigatórios:', requiredAttributes);
-            
-            // Implementar fluxo de nova senha
-            this.handleNewPasswordRequired(cognitoUser, userAttributes, requiredAttributes).then(result => {
-              resolve(result);
-            }).catch(error => {
-              console.error('❌ Erro ao definir nova senha:', error);
-              resolve({
-                success: false,
-                error: 'Erro ao processar nova senha'
-              });
-            });
-          }
-        };
-
-        // Configurar SECRET_HASH customizado no callback
-        const originalCallback = customCallback;
-        
-        // Override do método authenticateUser para incluir SECRET_HASH
-        const authenticateWithSecretHash = () => {
-          // Acessar o método interno e configurar SECRET_HASH
-          const originalSendMFACode = (cognitoUser as any).sendMFACode;
-          (cognitoUser as any).sendMFACode = function(verificationCode: string, callback: any, mfaType?: string) {
-            if (this.authenticationFlowType === 'USER_SRP_AUTH') {
-              // Para SRP auth, não precisamos de SECRET_HASH aqui
-              return originalSendMFACode.call(this, verificationCode, callback, mfaType);
-            }
-            return originalSendMFACode.call(this, verificationCode, callback, mfaType);
-          };
-
-          // Configurar o SECRET_HASH usando a abordagem correta
-          // Sobrescrever o método que envia a requisição de autenticação
-          const originalInitiateAuth = (cognitoUser as any).pool.client.initiateAuth;
-          (cognitoUser as any).pool.client.initiateAuth = function(params: any, callback: any) {
-            console.log('🔐 Interceptando initiateAuth para adicionar SECRET_HASH');
-            
-            // Adicionar SECRET_HASH aos parâmetros
-            if (params.AuthParameters && !params.AuthParameters.SECRET_HASH) {
-              params.AuthParameters.SECRET_HASH = secretHash;
-              console.log('🔐 SECRET_HASH adicionado aos AuthParameters');
-            }
-            
-            console.log('🔐 Parâmetros finais da autenticação:', {
-              ...params,
-              AuthParameters: {
-                ...params.AuthParameters,
-                PASSWORD: '***',
-                SECRET_HASH: params.AuthParameters?.SECRET_HASH?.substring(0, 10) + '...'
-              }
-            });
-            
-            // Chamar o método original com SECRET_HASH incluído
-            return originalInitiateAuth.call(this, params, callback);
-          };
-          
-          cognitoUser.authenticateUser(authenticationDetails, originalCallback);
-        };
-
-        authenticateWithSecretHash();
-      });
 
     } catch (error) {
       console.error('❌ Erro na autenticação:', error);

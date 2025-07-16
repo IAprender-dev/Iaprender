@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { Express } from 'express';
+import { CognitoIdentityProviderClient, InitiateAuthCommand } from '@aws-sdk/client-cognito-identity-provider';
+import crypto from 'crypto';
+import { SecretsManager } from '../config/secrets.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'test_secret_key_iaprender_2025';
 
@@ -35,6 +38,178 @@ const authenticate = (req: AuthenticatedRequest, res: Response, next: any) => {
 
 export function registerAuthRoutes(app: Express) {
   console.log('📝 Registrando rotas de autenticação...');
+
+  /**
+   * POST /api/auth/cognito-authenticate - Autenticação AWS Cognito via Backend
+   */
+  app.post('/api/auth/cognito-authenticate', async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email e senha são obrigatórios'
+        });
+      }
+
+      console.log('🔐 Iniciando autenticação AWS Cognito via backend para:', email);
+
+      // Obter credenciais AWS das secrets
+      const awsCredentials = SecretsManager.getAWSCredentials();
+      
+      // Extrair credenciais do Cognito das credenciais AWS
+      const clientSecret = awsCredentials.AWS_COGNITO_CLIENT_SECRET;
+      const clientId = awsCredentials.AWS_COGNITO_CLIENT_ID;
+      
+      if (!clientSecret || !clientId) {
+        throw new Error('Credenciais do AWS Cognito não encontradas nas secrets');
+      }
+
+      // Configurar cliente AWS Cognito
+      const cognitoClient = new CognitoIdentityProviderClient({
+        region: 'us-east-1',
+        credentials: {
+          accessKeyId: awsCredentials.AWS_ACCESS_KEY_ID!,
+          secretAccessKey: awsCredentials.AWS_SECRET_ACCESS_KEY!
+        }
+      });
+
+      // Calcular SECRET_HASH
+      const secretHash = crypto
+        .createHmac('SHA256', clientSecret)
+        .update(email + clientId)
+        .digest('base64');
+
+      console.log('🔐 SECRET_HASH calculado para backend');
+
+      // Fazer autenticação usando InitiateAuthCommand
+      const command = new InitiateAuthCommand({
+        AuthFlow: 'USER_PASSWORD_AUTH',
+        ClientId: clientId,
+        AuthParameters: {
+          USERNAME: email,
+          PASSWORD: password,
+          SECRET_HASH: secretHash
+        }
+      });
+
+      console.log('🔐 Enviando comando de autenticação...');
+      const response = await cognitoClient.send(command);
+
+      // Verificar se houve challenges (como NEW_PASSWORD_REQUIRED)
+      if (response.ChallengeName) {
+        console.log('🔄 Challenge detectado:', response.ChallengeName);
+        
+        if (response.ChallengeName === 'NEW_PASSWORD_REQUIRED') {
+          return res.status(400).json({
+            success: false,
+            error: 'Nova senha obrigatória. Entre em contato com o administrador.'
+          });
+        }
+
+        return res.status(400).json({
+          success: false,
+          error: `Challenge não suportado: ${response.ChallengeName}`
+        });
+      }
+
+      // Verificar se temos tokens de autenticação
+      if (!response.AuthenticationResult) {
+        throw new Error('Tokens de autenticação não retornados pelo AWS Cognito');
+      }
+
+      const { AccessToken, IdToken, RefreshToken } = response.AuthenticationResult;
+
+      console.log('✅ Autenticação AWS Cognito bem-sucedida!');
+
+      // Decodificar ID Token para extrair informações do usuário
+      const idTokenPayload = JSON.parse(Buffer.from(IdToken!.split('.')[1], 'base64').toString());
+      console.log('👤 Payload do usuário extraído do ID Token');
+
+      // Criar token JWT interno do sistema
+      const internalTokenPayload = {
+        cognitoSub: idTokenPayload.sub,
+        email: idTokenPayload.email,
+        nome: idTokenPayload.name || idTokenPayload.given_name || idTokenPayload.email?.split('@')[0],
+        grupos: idTokenPayload['cognito:groups'] || [],
+        empresa_id: idTokenPayload['custom:empresa_id'] ? parseInt(idTokenPayload['custom:empresa_id']) : 1,
+        enabled: true,
+        user_status: 'CONFIRMED'
+      };
+
+      const internalToken = jwt.sign(internalTokenPayload, JWT_SECRET, { expiresIn: '24h' });
+      console.log('🔐 Token JWT interno criado');
+
+      // Determinar tipo de usuário baseado nos grupos
+      const grupos = idTokenPayload['cognito:groups'] || [];
+      let userType = 'aluno'; // padrão
+      let redirectUrl = '/student/dashboard';
+
+      if (grupos.includes('Admin') || grupos.includes('AdminMaster') || grupos.includes('Administrador')) {
+        userType = 'admin';
+        redirectUrl = '/admin/user-management';
+      } else if (grupos.includes('Gestores') || grupos.includes('GestorMunicipal')) {
+        userType = 'gestor';
+        redirectUrl = '/gestor/dashboard';
+      } else if (grupos.includes('Diretores') || grupos.includes('Diretor')) {
+        userType = 'diretor';
+        redirectUrl = '/diretor/dashboard';
+      } else if (grupos.includes('Professores') || grupos.includes('Professor')) {
+        userType = 'professor';
+        redirectUrl = '/professor/dashboard';
+      }
+
+      console.log('🎯 Tipo de usuário determinado:', userType);
+      console.log('🎯 URL de redirecionamento:', redirectUrl);
+
+      return res.json({
+        success: true,
+        accessToken: AccessToken,
+        idToken: IdToken,
+        refreshToken: RefreshToken,
+        user: {
+          email: idTokenPayload.email,
+          name: idTokenPayload.name,
+          groups: grupos,
+          userType: userType
+        },
+        redirectUrl: `${redirectUrl}?token=${encodeURIComponent(internalToken)}&auth=success`
+      });
+
+    } catch (error) {
+      console.error('❌ Erro na autenticação AWS Cognito via backend:', error);
+      
+      // Tratar erros específicos do AWS Cognito
+      if (error instanceof Error) {
+        if (error.message.includes('NotAuthorizedException')) {
+          return res.status(401).json({
+            success: false,
+            error: 'Email ou senha incorretos'
+          });
+        }
+        
+        if (error.message.includes('UserNotFoundException')) {
+          return res.status(404).json({
+            success: false,
+            error: 'Usuário não encontrado'
+          });
+        }
+        
+        if (error.message.includes('UserNotConfirmedException')) {
+          return res.status(400).json({
+            success: false,
+            error: 'Usuário não confirmado. Entre em contato com o administrador.'
+          });
+        }
+      }
+
+      return res.status(500).json({
+        success: false,
+        error: 'Erro interno na autenticação'
+      });
+    }
+  });
 
   /**
    * GET /api/auth/test - Rota de teste simples (substitui temporariamente /me)
