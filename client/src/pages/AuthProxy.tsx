@@ -172,9 +172,6 @@ export default function AuthProxy() {
 
             <div className="mt-8 text-center space-y-2">
               <p className="text-xs text-gray-500">
-                Autenticação segura fornecida por AWS Cognito
-              </p>
-              <p className="text-xs text-gray-500">
                 Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade
               </p>
             </div>

@@ -143,6 +143,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 16, 2025: ✅ TELA DE LOGIN TOTALMENTE LIMPA E PROFISSIONAL
+  - ✅ **CREDENCIAIS REMOVIDAS**: Removidas todas as informações de credenciais de teste da tela de login
+  - ✅ **CARDS INFORMATIVOS REMOVIDOS**: Removidos cards com informações sobre USER_PASSWORD_AUTH e credenciais funcionais
+  - ✅ **CAMPOS VAZIOS**: Campos de login agora aparecem vazios (sem valores pré-preenchidos)
+  - ✅ **RODAPÉ LIMPO**: Removida referência "Autenticação segura fornecida por AWS Cognito"
+  - ✅ **INTERFACE PROFISSIONAL**: Tela de login agora mostra apenas logo, título, campos e botão
+  - ✅ **SEM INFORMAÇÕES TÉCNICAS**: Nenhuma informação de debug ou técnica visível ao usuário
 - July 16, 2025: ✅ SISTEMA AWS BEDROCK + S3 TOTALMENTE CONFIGURADO
   - ✅ **AWS BEDROCK FUNCIONANDO**: Sistema usando corretamente a IA paga (Claude 3 Haiku configurado em /admin/ai-resources)
   - ✅ **SALVAMENTO S3 OBRIGATÓRIO**: Removido fallback - sistema exige salvamento no S3 para histórico completo
