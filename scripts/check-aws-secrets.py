@@ -8,7 +8,7 @@ import uuid
 AWS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET = os.getenv("AWS_SECRET_ACCESS_KEY")
 REGIAO = os.getenv("AWS_REGION")
-BUCKET = os.getenv("BUCKET_NAME")
+BUCKET = os.getenv("S3_BUCKET_NAME")
 PASTA_OUTPUT = "bedrock/outputs"
 
 def check_aws_secrets():
@@ -18,7 +18,7 @@ def check_aws_secrets():
     print(f"AWS_ACCESS_KEY_ID: {'✅ Configurado' if AWS_KEY else '❌ Não encontrado'}")
     print(f"AWS_SECRET_ACCESS_KEY: {'✅ Configurado' if AWS_SECRET else '❌ Não encontrado'}")
     print(f"AWS_REGION: {REGIAO or '❌ Não configurado'}")
-    print(f"BUCKET_NAME: {BUCKET or '❌ Não configurado'}")
+    print(f"S3_BUCKET_NAME: {BUCKET or '❌ Não configurado'}")
     
     if AWS_KEY:
         print(f"Access Key ID: {AWS_KEY[:8]}***{AWS_KEY[-4:] if len(AWS_KEY) > 12 else '***'}")
