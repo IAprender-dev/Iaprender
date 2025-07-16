@@ -330,23 +330,33 @@ Retorne APENAS o plano de aula estruturado, sem comentários adicionais.
 
     console.log(`✅ Plano de aula gerado com sucesso via ${response.model}`);
 
-    // Salvar no S3 para histórico
-    const s3Service = await import('../services/aws-s3-bedrock-service.js');
-    const s3FileName = await s3Service.salvarPlanoAulaS3({
-      userId: userId,
-      subject,
-      grade,
-      topic,
-      duration: duration || '50 minutos',
-      school,
-      numberOfStudents,
-      lessonPlan: response.content,
-      model: response.model,
-      aiConfig: aiConfig?.modelName || 'Configuração padrão',
-      timestamp: response.timestamp
-    });
+    // Tentar salvar no S3 para histórico (fallback gracioso)
+    let s3FileName = null;
+    let s3Status = 'skipped';
+    
+    try {
+      const s3Service = await import('../services/aws-s3-bedrock-service.js');
+      s3FileName = await s3Service.salvarPlanoAulaS3({
+        userId: userId,
+        subject,
+        grade,
+        topic,
+        duration: duration || '50 minutos',
+        school,
+        numberOfStudents,
+        lessonPlan: response.content,
+        model: response.model,
+        aiConfig: aiConfig?.modelName || 'Configuração padrão',
+        timestamp: response.timestamp
+      });
 
-    console.log(`💾 Plano de aula salvo no S3: ${s3FileName}`);
+      console.log(`💾 Plano de aula salvo no S3: ${s3FileName}`);
+      s3Status = 'success';
+    } catch (s3Error) {
+      console.warn(`⚠️  Erro ao salvar no S3 (continuando sem histórico): ${s3Error.message}`);
+      s3Status = 'failed';
+      // Não propagar o erro - continuar com a resposta
+    }
 
     return res.status(200).json({
       success: true,
@@ -362,7 +372,9 @@ Retorne APENAS o plano de aula estruturado, sem comentários adicionais.
         ai_config_used: aiConfig?.modelName || 'Configuração padrão',
         usage: response.usage,
         generated_at: response.timestamp,
-        s3_file: s3FileName
+        s3_file: s3FileName,
+        s3_status: s3Status,
+        s3_warning: s3Status === 'failed' ? 'Histórico temporariamente indisponível devido a configuração AWS' : null
       }
     });
 
@@ -390,16 +402,27 @@ router.get("/lesson-plans", authenticate, async (req, res) => {
 
     console.log(`📋 Listando planos de aula do usuário: ${userId}`);
 
-    const s3Service = await import('../services/aws-s3-bedrock-service.js');
-    const planos = await s3Service.listarPlanosAulaS3(userId);
+    let planos = [];
+    let s3Status = 'available';
+    let s3Warning = null;
 
-    console.log(`✅ Encontrados ${planos.length} planos de aula`);
+    try {
+      const s3Service = await import('../services/aws-s3-bedrock-service.js');
+      planos = await s3Service.listarPlanosAulaS3(userId);
+      console.log(`✅ Encontrados ${planos.length} planos de aula`);
+    } catch (s3Error) {
+      console.warn(`⚠️  Erro ao listar planos do S3: ${s3Error.message}`);
+      s3Status = 'unavailable';
+      s3Warning = 'Histórico temporariamente indisponível devido a configuração AWS';
+    }
 
     return res.status(200).json({
       success: true,
       data: {
         lessonPlans: planos,
-        count: planos.length
+        count: planos.length,
+        s3_status: s3Status,
+        s3_warning: s3Warning
       }
     });
 
@@ -435,23 +458,35 @@ router.get("/lesson-plans/:fileName", authenticate, async (req, res) => {
 
     console.log(`📄 Recuperando plano de aula: ${fileName}`);
 
-    const s3Service = await import('../services/aws-s3-bedrock-service.js');
-    const plano = await s3Service.recuperarPlanoAulaS3(fileName);
+    try {
+      const s3Service = await import('../services/aws-s3-bedrock-service.js');
+      const plano = await s3Service.recuperarPlanoAulaS3(fileName);
 
-    // Verificar se o plano pertence ao usuário
-    if (plano.metadata.userId !== userId) {
-      return res.status(403).json({
+      // Verificar se o plano pertence ao usuário
+      if (plano.metadata.userId !== userId) {
+        return res.status(403).json({
+          success: false,
+          message: "Acesso negado - arquivo não pertence ao usuário"
+        });
+      }
+
+      console.log(`✅ Plano de aula recuperado com sucesso`);
+
+      return res.status(200).json({
+        success: true,
+        data: plano,
+        s3_status: 'available'
+      });
+    } catch (s3Error) {
+      console.warn(`⚠️  Erro ao recuperar plano do S3: ${s3Error.message}`);
+      
+      return res.status(404).json({
         success: false,
-        message: "Acesso negado - arquivo não pertence ao usuário"
+        message: "Plano de aula não encontrado",
+        error: "Histórico temporariamente indisponível devido a configuração AWS",
+        s3_status: 'unavailable'
       });
     }
-
-    console.log(`✅ Plano de aula recuperado com sucesso`);
-
-    return res.status(200).json({
-      success: true,
-      data: plano
-    });
 
   } catch (error) {
     console.error("❌ Erro ao recuperar plano de aula:", error);
