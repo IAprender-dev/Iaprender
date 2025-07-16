@@ -134,25 +134,23 @@ export class CognitoClientAuth {
       const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
       console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
 
-      // Configurar autenticação com SECRET_HASH
+      // Usar a configuração correta do SECRET_HASH para amazon-cognito-identity-js
+      // Alguns Client Apps no AWS Cognito requerem SECRET_HASH
       const authDetails = {
         Username: email,
-        Password: password,
-        SecretHash: secretHash  // Campo correto para amazon-cognito-identity-js
+        Password: password
       };
-
-      console.log('🔐 Configuração de autenticação:', {
-        Username: email,
-        Password: '***',
-        SecretHash: secretHash.substring(0, 10) + '...'
-      });
 
       const authenticationDetails = new AuthenticationDetails(authDetails);
 
       const cognitoUser = new CognitoUser({
         Username: email,
-        Pool: userPool
+        Pool: userPool,
+        Storage: window.sessionStorage
       });
+
+      // Configurar SECRET_HASH usando o método correto da biblioteca
+      console.log('🔐 Configurando SECRET_HASH para Client App com Client Secret');
 
       console.log('🔐 Tentando autenticar usuário...');
 
@@ -243,9 +241,50 @@ export class CognitoClientAuth {
           }
         };
 
-        // SECRET_HASH já está configurado no AuthenticationDetails acima
+        // Configurar SECRET_HASH customizado no callback
+        const originalCallback = customCallback;
+        
+        // Override do método authenticateUser para incluir SECRET_HASH
+        const authenticateWithSecretHash = () => {
+          // Acessar o método interno e configurar SECRET_HASH
+          const originalSendMFACode = (cognitoUser as any).sendMFACode;
+          (cognitoUser as any).sendMFACode = function(verificationCode: string, callback: any, mfaType?: string) {
+            if (this.authenticationFlowType === 'USER_SRP_AUTH') {
+              // Para SRP auth, não precisamos de SECRET_HASH aqui
+              return originalSendMFACode.call(this, verificationCode, callback, mfaType);
+            }
+            return originalSendMFACode.call(this, verificationCode, callback, mfaType);
+          };
 
-        cognitoUser.authenticateUser(authenticationDetails, customCallback);
+          // Configurar o SECRET_HASH usando a abordagem correta
+          // Sobrescrever o método que envia a requisição de autenticação
+          const originalInitiateAuth = (cognitoUser as any).pool.client.initiateAuth;
+          (cognitoUser as any).pool.client.initiateAuth = function(params: any, callback: any) {
+            console.log('🔐 Interceptando initiateAuth para adicionar SECRET_HASH');
+            
+            // Adicionar SECRET_HASH aos parâmetros
+            if (params.AuthParameters && !params.AuthParameters.SECRET_HASH) {
+              params.AuthParameters.SECRET_HASH = secretHash;
+              console.log('🔐 SECRET_HASH adicionado aos AuthParameters');
+            }
+            
+            console.log('🔐 Parâmetros finais da autenticação:', {
+              ...params,
+              AuthParameters: {
+                ...params.AuthParameters,
+                PASSWORD: '***',
+                SECRET_HASH: params.AuthParameters?.SECRET_HASH?.substring(0, 10) + '...'
+              }
+            });
+            
+            // Chamar o método original com SECRET_HASH incluído
+            return originalInitiateAuth.call(this, params, callback);
+          };
+          
+          cognitoUser.authenticateUser(authenticationDetails, originalCallback);
+        };
+
+        authenticateWithSecretHash();
       });
 
     } catch (error) {
