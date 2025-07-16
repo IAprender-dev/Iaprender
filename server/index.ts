@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupViteCustom, serveStatic, log } from "./vite-custom";
+import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
 import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
 import cognitoOAuthRouter from "./routes/cognito-oauth";
@@ -96,7 +96,7 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    await setupViteCustom(app, server);
+    await setupVite(app, server);
   } else {
     serveStatic(app);
   }

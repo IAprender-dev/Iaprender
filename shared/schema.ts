@@ -136,6 +136,20 @@ export const alunos = pgTable('alunos', {
   criado_em: timestamp('criado_em'),
 });
 
+// Tabela de Preferências de IA (nova)
+export const aiPreferences = pgTable('ai_preferences', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull(),
+  defaultAI: varchar('default_ai', { length: 50 }).default('chatgpt'),
+  autoStartSession: boolean('auto_start_session').default(false),
+  saveConversations: boolean('save_conversations').default(true),
+  responseLanguage: varchar('response_language', { length: 10 }).default('pt-BR'),
+  complexityLevel: varchar('complexity_level', { length: 20 }).default('intermediario'),
+  customPrompts: boolean('custom_prompts').default(false),
+  criadoEm: timestamp('criado_em').defaultNow(),
+  atualizadoEm: timestamp('atualizado_em').defaultNow(),
+});
+
 // Manter compatibilidade com sistema anterior
 export const users = usuarios;
 
@@ -218,6 +232,13 @@ export const usuariosRelations = relations(usuarios, ({ one, many }) => ({
   contratosAtualizados: many(contratos, { relationName: 'contrato_atualizador' }),
   usuariosCriados: many(usuarios, { relationName: 'usuario_criador' }),
   usuariosAtualizados: many(usuarios, { relationName: 'usuario_atualizador' }),
+  
+  // Preferências de IA
+  aiPreferences: one(aiPreferences, {
+    fields: [usuarios.id],
+    references: [aiPreferences.userId],
+    relationName: 'usuario_ai_preferences'
+  }),
 }));
 
 // Manter compatibilidade
@@ -242,6 +263,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
   atualizadoEm: true,
 });
 
+export const insertAIPreferencesSchema = createInsertSchema(aiPreferences).omit({
+  id: true,
+  criadoEm: true,
+  atualizadoEm: true,
+});
+
 // Tipos
 export type Empresa = typeof empresas.$inferSelect;
 export type InsertEmpresa = z.infer<typeof insertEmpresaSchema>;
@@ -251,3 +278,6 @@ export type InsertContrato = z.infer<typeof insertContratoSchema>;
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type AIPreferences = typeof aiPreferences.$inferSelect;
+export type InsertAIPreferences = z.infer<typeof insertAIPreferencesSchema>;
