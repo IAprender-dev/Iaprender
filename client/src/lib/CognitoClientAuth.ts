@@ -125,21 +125,27 @@ export class CognitoClientAuth {
         console.warn('Recebido:', poolData.UserPoolId);
       }
 
-      // Configurar autenticação com SECRET_HASH para USER_PASSWORD_AUTH
-      const authDetails: any = {
+      // Verificar se temos client secret
+      if (!this.clientSecret) {
+        throw new Error('Client secret é obrigatório para este Client App');
+      }
+
+      // Calcular SECRET_HASH
+      const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
+      console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
+
+      // Configurar autenticação com SECRET_HASH
+      const authDetails = {
         Username: email,
-        Password: password
+        Password: password,
+        SecretHash: secretHash  // Campo correto para amazon-cognito-identity-js
       };
 
-      // Adicionar SECRET_HASH obrigatório para Client Apps com Client Secret
-      if (this.clientSecret) {
-        const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
-        authDetails.SecretHash = secretHash;
-        console.log('🔐 USER_PASSWORD_AUTH flow habilitado - usando SECRET_HASH');
-        console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
-      } else {
-        console.log('⚠️ CLIENT_SECRET não disponível - isso pode causar falha na autenticação');
-      }
+      console.log('🔐 Configuração de autenticação:', {
+        Username: email,
+        Password: '***',
+        SecretHash: secretHash.substring(0, 10) + '...'
+      });
 
       const authenticationDetails = new AuthenticationDetails(authDetails);
 
@@ -237,14 +243,7 @@ export class CognitoClientAuth {
           }
         };
 
-        // Configurar SECRET_HASH no callback se necessário
-        if (this.clientSecret) {
-          const secretHash = this.calculateSecretHash(email, poolData.ClientId, this.clientSecret);
-          customCallback.customChallenge = (challengeParameters: any) => {
-            challengeParameters.SECRET_HASH = secretHash;
-            return challengeParameters;
-          };
-        }
+        // SECRET_HASH já está configurado no AuthenticationDetails acima
 
         cognitoUser.authenticateUser(authenticationDetails, customCallback);
       });
