@@ -2,12 +2,14 @@ import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
+import { DatabaseManager, dbManager, db as managedDb } from './config/database-manager';
 
 // Configure Neon for WebSocket support
 neonConfig.webSocketConstructor = ws;
 neonConfig.poolQueryViaFetch = true;
 neonConfig.fetchConnectionCache = true;
 
+// Legacy PostgreSQL connection (mantido para compatibilidade)
 if (!process.env.DATABASE_URL) {
   throw new Error(
     "DATABASE_URL must be set. Did you forget to provision a database?",
@@ -21,7 +23,10 @@ export const pool = new Pool({
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
 });
-export const db = drizzle({ client: pool, schema });
+
+// Usar DatabaseManager para escolher entre PostgreSQL e Aurora DSQL
+export const db = managedDb;
+export const dbClient = dbManager.getClient();
 
 // Configuração adicional para AWS RDS (quando migrar)
 export const createAWSConnection = () => {
@@ -33,43 +38,48 @@ export const createAWSConnection = () => {
   return drizzle({ client: awsPool, schema });
 };
 
-// Função de inicialização do banco
+// Função de inicialização do banco com suporte a Aurora DSQL
 export const initializeDatabase = async () => {
   try {
     console.log('🔄 Inicializando banco de dados...');
     
-    // Teste de conexão com retry logic
-    const maxRetries = 3;
-    let retries = 0;
+    // Usar DatabaseManager para conectar
+    const dbType = dbManager.getDatabaseType();
+    console.log(`📍 Tipo de banco: ${dbType.toUpperCase()}`);
     
-    while (retries < maxRetries) {
-      try {
-        const client = await pool.connect();
-        console.log('✅ Conexão com banco de dados estabelecida');
-        client.release();
-        return true;
-      } catch (error) {
-        retries++;
-        console.log(`⚠️ Tentativa ${retries}/${maxRetries} falhou, tentando novamente...`);
-        
-        if (retries === maxRetries) {
-          throw error;
-        }
-        
-        // Wait 2 seconds before retry
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
+    // Teste de conexão com o banco gerenciado
+    const connectionTest = await dbManager.testConnection();
+    
+    if (connectionTest) {
+      console.log(`✅ Conexão com ${dbType.toUpperCase()} estabelecida`);
+      return true;
+    } else {
+      throw new Error(`Falha na conexão com ${dbType}`);
     }
     
-    return false;
   } catch (error) {
     console.error('❌ Erro ao conectar com banco de dados:', error);
     
-    // Check if it's a WebSocket connection error
+    // Se Aurora DSQL falhar, tentar fallback para PostgreSQL
+    const currentType = dbManager.getDatabaseType();
+    if (currentType === 'aurora-dsql') {
+      console.log('⚠️ Tentando fallback para PostgreSQL...');
+      
+      try {
+        const fallbackSuccess = await dbManager.switchDatabase('postgresql');
+        if (fallbackSuccess) {
+          console.log('✅ Fallback para PostgreSQL bem-sucedido');
+          return true;
+        }
+      } catch (fallbackError) {
+        console.error('❌ Fallback para PostgreSQL também falhou:', fallbackError);
+      }
+    }
+    
+    // Check if it's a WebSocket connection error (legacy PostgreSQL)
     if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('WebSocket')) {
       console.error('💡 Dica: Erro de WebSocket detectado. Tentando reconexão...');
       
-      // Try to reconnect with a fresh pool
       try {
         const freshPool = new Pool({ 
           connectionString: process.env.DATABASE_URL,
