@@ -526,8 +526,12 @@ export async function salvarPlanoAulaS3(planoData: {
       }
     };
 
+    // Obter configuração do S3
+    const s3Service = await createS3BedrockService();
+    const bucketName = s3Service['bucketName'] || process.env.S3_BUCKET_NAME || 'iaprender-bucket';
+    
     const putCommand = new PutObjectCommand({
-      Bucket: BUCKET_NAME,
+      Bucket: bucketName,
       Key: fileName,
       Body: JSON.stringify(planData, null, 2),
       ContentType: 'application/json',
@@ -540,9 +544,9 @@ export async function salvarPlanoAulaS3(planoData: {
       }
     });
 
-    await s3Client.send(putCommand);
+    await s3Service['s3Client'].send(putCommand);
     
-    console.log(`💾 Plano de aula salvo no S3: s3://${BUCKET_NAME}/${fileName}`);
+    console.log(`💾 Plano de aula salvo no S3: s3://${bucketName}/${fileName}`);
     return fileName;
     
   } catch (error) {
@@ -554,15 +558,19 @@ export async function salvarPlanoAulaS3(planoData: {
 // Função para listar planos de aula salvos no S3
 export async function listarPlanosAulaS3(userId: number): Promise<any[]> {
   try {
+    // Obter configuração do S3
+    const s3Service = await createS3BedrockService();
+    const bucketName = s3Service['bucketName'] || process.env.S3_BUCKET_NAME || 'iaprender-bucket';
+    
     const prefix = `bedrock/lesson-plans/user-${userId}/`;
     
     const listCommand = new ListObjectsV2Command({
-      Bucket: BUCKET_NAME,
+      Bucket: bucketName,
       Prefix: prefix,
       MaxKeys: 100
     });
 
-    const response = await s3Client.send(listCommand);
+    const response = await s3Service['s3Client'].send(listCommand);
     
     if (!response.Contents || response.Contents.length === 0) {
       return [];
@@ -574,11 +582,11 @@ export async function listarPlanosAulaS3(userId: number): Promise<any[]> {
         
         try {
           const getCommand = new GetObjectCommand({
-            Bucket: BUCKET_NAME,
+            Bucket: bucketName,
             Key: object.Key
           });
           
-          const objectResponse = await s3Client.send(getCommand);
+          const objectResponse = await s3Service['s3Client'].send(getCommand);
           const content = await objectResponse.Body?.transformToString();
           
           if (content) {
@@ -588,7 +596,7 @@ export async function listarPlanosAulaS3(userId: number): Promise<any[]> {
               lastModified: object.LastModified,
               size: object.Size,
               metadata: planData.metadata,
-              s3Url: `s3://${BUCKET_NAME}/${object.Key}`
+              s3Url: `s3://${bucketName}/${object.Key}`
             };
           }
         } catch (error) {
@@ -609,12 +617,16 @@ export async function listarPlanosAulaS3(userId: number): Promise<any[]> {
 // Função para recuperar plano de aula específico do S3
 export async function recuperarPlanoAulaS3(fileName: string): Promise<any> {
   try {
+    // Obter configuração do S3
+    const s3Service = await createS3BedrockService();
+    const bucketName = s3Service['bucketName'] || process.env.S3_BUCKET_NAME || 'iaprender-bucket';
+    
     const getCommand = new GetObjectCommand({
-      Bucket: BUCKET_NAME,
+      Bucket: bucketName,
       Key: fileName
     });
 
-    const response = await s3Client.send(getCommand);
+    const response = await s3Service['s3Client'].send(getCommand);
     const content = await response.Body?.transformToString();
     
     if (!content) {

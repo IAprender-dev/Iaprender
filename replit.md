@@ -143,6 +143,13 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 16, 2025: ✅ CONCLUÍDO - CORREÇÃO CRÍTICA: Sistema S3 Histórico de Planos de Aula 100% Funcional
+  - ✅ **PROBLEMA BUCKET_NAME CORRIGIDO**: Substituída referência indefinida BUCKET_NAME por S3_BUCKET_NAME das secrets
+  - ✅ **FUNÇÕES S3 CORRIGIDAS**: salvarPlanoAulaS3, listarPlanosAulaS3, recuperarPlanoAulaS3 agora usam configuração correta
+  - ✅ **INTEGRAÇÃO COMPLETA**: Sistema de histórico S3 totalmente operacional com salvamento automático
+  - ✅ **ESTRUTURA ORGANIZACIONAL**: Planos salvos em bedrock/lesson-plans/user-{id}/ com metadados completos
+  - ✅ **INTERFACE HISTÓRICO**: Visualização expansível de planos antigos com detalhes e reutilização
+  - ✅ **DUAL BACKUP**: Salvamento automático S3 + download local PDF simultâneo
 - July 16, 2025: ✅ CONCLUÍDO - Sistema AWS S3 + Bedrock Totalmente Operacional com Integração Educacional
   - ✅ **PROBLEMA S3 RESOLVIDO**: Política IAM "AcessoBedRock" aplicada corretamente ao usuário UsuarioBedrock
   - ✅ **SISTEMA 100% FUNCIONAL**: Todas as operações S3 operacionais (PutObject, GetObject, ListBucket, DeleteObject)
