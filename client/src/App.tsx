@@ -38,6 +38,7 @@ import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
 import AdminUnifiedDashboard from "@/pages/admin/AdminUnifiedDashboard";
 import AdminCRUDDashboard from "@/pages/admin/AdminCRUDDashboard";
 import AIResourcesDashboard from "@/pages/admin/AIResourcesDashboard";
+import S3BedrockDashboard from "@/pages/admin/S3BedrockDashboard";
 import GestorCRUDDashboard from "@/pages/gestor/GestorCRUDDashboard";
 import DiretorCRUDDashboard from "@/pages/diretor/DiretorCRUDDashboard";
 import SystemCredentials from "@/pages/admin/SystemCredentials";
@@ -210,6 +211,7 @@ function Router() {
       <Route path="/admin/users" component={AdminUnifiedDashboard} />
       <Route path="/admin/crud" component={AdminCRUDDashboard} />
       <Route path="/admin/ai-resources" component={AIResourcesDashboard} />
+      <Route path="/admin/s3-bedrock" component={S3BedrockDashboard} />
       <Route path="/admin/credentials" component={SystemCredentials} />
       <Route path="/admin/create-user" component={CreateUser} />
 

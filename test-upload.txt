@@ -1,0 +1,13 @@
+Plano de Aula - Matemática 5º Ano
+
+Tema: Introdução às Frações
+
+Objetivo: Ensinar aos alunos os conceitos básicos de frações de forma visual e prática.
+
+Desenvolvimento:
+1. Apresentação conceitual das frações
+2. Atividades práticas com materiais visuais
+3. Exercícios de fixação
+4. Avaliação formativa
+
+Este é um arquivo de teste para demonstrar o sistema de upload e análise educacional com AWS S3 + Bedrock.

@@ -487,6 +487,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use("/api/translate", translateRoutes);
   app.use("/api/token", tokenRouter);
   app.use("/cognito-ui", cognitoUIRouter);
+  
+  // Importar e montar rotas S3+Bedrock
+  const s3BedrockRoutes = await import("./routes/s3-bedrock-routes.js");
+  app.use("/api/s3-bedrock", s3BedrockRoutes.default);
 
   // Basic auth routes - placeholders (will be implemented with new schema)
   app.post("/api/auth/login", async (req: Request, res: Response) => {
