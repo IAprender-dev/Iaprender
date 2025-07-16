@@ -488,3 +488,143 @@ export async function createS3BedrockService(): Promise<AWSS3BedrockService> {
 
   return new AWSS3BedrockService(config);
 }
+
+// Função para salvar plano de aula no S3
+export async function salvarPlanoAulaS3(planoData: {
+  userId: number;
+  subject: string;
+  grade: string;
+  topic: string;
+  duration: string;
+  school: string;
+  numberOfStudents: string;
+  lessonPlan: string;
+  model: string;
+  aiConfig: string;
+  timestamp: string;
+}): Promise<string> {
+  try {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `bedrock/lesson-plans/user-${planoData.userId}/plano-aula-${timestamp}.json`;
+    
+    const planData = {
+      metadata: {
+        userId: planoData.userId,
+        subject: planoData.subject,
+        grade: planoData.grade,
+        topic: planoData.topic,
+        duration: planoData.duration,
+        school: planoData.school,
+        numberOfStudents: planoData.numberOfStudents,
+        model: planoData.model,
+        aiConfig: planoData.aiConfig,
+        generatedAt: planoData.timestamp,
+        savedAt: new Date().toISOString()
+      },
+      content: {
+        lessonPlan: planoData.lessonPlan
+      }
+    };
+
+    const putCommand = new PutObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileName,
+      Body: JSON.stringify(planData, null, 2),
+      ContentType: 'application/json',
+      Metadata: {
+        'user-id': planoData.userId.toString(),
+        'subject': planoData.subject,
+        'grade': planoData.grade,
+        'model': planoData.model,
+        'generated-at': planoData.timestamp
+      }
+    });
+
+    await s3Client.send(putCommand);
+    
+    console.log(`💾 Plano de aula salvo no S3: s3://${BUCKET_NAME}/${fileName}`);
+    return fileName;
+    
+  } catch (error) {
+    console.error('❌ Erro ao salvar plano de aula no S3:', error);
+    throw error;
+  }
+}
+
+// Função para listar planos de aula salvos no S3
+export async function listarPlanosAulaS3(userId: number): Promise<any[]> {
+  try {
+    const prefix = `bedrock/lesson-plans/user-${userId}/`;
+    
+    const listCommand = new ListObjectsV2Command({
+      Bucket: BUCKET_NAME,
+      Prefix: prefix,
+      MaxKeys: 100
+    });
+
+    const response = await s3Client.send(listCommand);
+    
+    if (!response.Contents || response.Contents.length === 0) {
+      return [];
+    }
+
+    const planos = await Promise.all(
+      response.Contents.map(async (object) => {
+        if (!object.Key) return null;
+        
+        try {
+          const getCommand = new GetObjectCommand({
+            Bucket: BUCKET_NAME,
+            Key: object.Key
+          });
+          
+          const objectResponse = await s3Client.send(getCommand);
+          const content = await objectResponse.Body?.transformToString();
+          
+          if (content) {
+            const planData = JSON.parse(content);
+            return {
+              fileName: object.Key,
+              lastModified: object.LastModified,
+              size: object.Size,
+              metadata: planData.metadata,
+              s3Url: `s3://${BUCKET_NAME}/${object.Key}`
+            };
+          }
+        } catch (error) {
+          console.error(`❌ Erro ao ler arquivo ${object.Key}:`, error);
+          return null;
+        }
+      })
+    );
+
+    return planos.filter(plano => plano !== null);
+    
+  } catch (error) {
+    console.error('❌ Erro ao listar planos de aula do S3:', error);
+    throw error;
+  }
+}
+
+// Função para recuperar plano de aula específico do S3
+export async function recuperarPlanoAulaS3(fileName: string): Promise<any> {
+  try {
+    const getCommand = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fileName
+    });
+
+    const response = await s3Client.send(getCommand);
+    const content = await response.Body?.transformToString();
+    
+    if (!content) {
+      throw new Error('Arquivo não encontrado ou vazio');
+    }
+
+    return JSON.parse(content);
+    
+  } catch (error) {
+    console.error('❌ Erro ao recuperar plano de aula do S3:', error);
+    throw error;
+  }
+}

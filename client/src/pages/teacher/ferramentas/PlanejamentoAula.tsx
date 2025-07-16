@@ -24,7 +24,12 @@ import {
   Layers,
   Package,
   ClipboardCheck,
-  User
+  User,
+  History,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  School
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -118,6 +123,9 @@ export default function PlanejamentoAula() {
   const [temaAnalysis, setTemaAnalysis] = useState<any>(null);
   const [planoGerado, setPlanoGerado] = useState<LessonPlanData | null>(null);
   const [aiConfig, setAiConfig] = useState<any>(null);
+  const [historicoPlanos, setHistoricoPlanos] = useState<any[]>([]);
+  const [loadingHistorico, setLoadingHistorico] = useState(false);
+  const [showHistorico, setShowHistorico] = useState(false);
 
   // Garantir que a página sempre inicie no topo com animação suave
   useEffect(() => {
@@ -177,6 +185,75 @@ export default function PlanejamentoAula() {
 
     fetchAIConfig();
   }, []);
+
+  // Função para carregar histórico de planos de aula do S3
+  const carregarHistoricoS3 = async () => {
+    if (loadingHistorico) return;
+    
+    setLoadingHistorico(true);
+    try {
+      const response = await fetch('/api/ai-central/lesson-plans', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setHistoricoPlanos(data.data.lessonPlans || []);
+        console.log('📋 Histórico carregado:', data.data.lessonPlans?.length || 0, 'planos');
+      } else {
+        console.error('Erro ao carregar histórico:', response.status);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao carregar histórico:', error);
+    } finally {
+      setLoadingHistorico(false);
+    }
+  };
+
+  // Função para visualizar plano específico do S3
+  const visualizarPlanoS3 = async (fileName: string) => {
+    try {
+      const response = await fetch(`/api/ai-central/lesson-plans/${encodeURIComponent(fileName)}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const planoS3 = data.data;
+        
+        // Converter dados do S3 para formato do componente
+        const planoFormatado = {
+          identificacao: planoS3.metadata,
+          conteudoCompleto: planoS3.content.lessonPlan,
+          modeloUtilizado: planoS3.metadata.model,
+          timestamp: planoS3.metadata.savedAt
+        };
+        
+        setPlanoGerado(planoFormatado);
+        toast({
+          title: "Plano carregado!",
+          description: "Plano de aula carregado do histórico S3",
+        });
+      } else {
+        toast({
+          title: "Erro ao carregar plano",
+          description: "Não foi possível carregar o plano do S3",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('❌ Erro ao visualizar plano:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar plano do histórico",
+        variant: "destructive"
+      });
+    }
+  };
 
   // Handle form data changes
   const handleFormChange = (field: string, value: string) => {
@@ -1043,6 +1120,105 @@ export default function PlanejamentoAula() {
                     onChange={(e) => handleFormChange('objetivosEspecificos', e.target.value)}
                     className="min-h-[80px] resize-none border-2 border-green-200 focus:border-green-500 focus:ring-green-500/20 focus:ring-4 transition-all duration-300 bg-white text-green-900"
                   />
+                </div>
+
+                {/* Seção de Histórico de Planos de Aula */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <History className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-lg font-semibold text-slate-700">Histórico de Planos de Aula</h3>
+                      <Badge variant="outline" className="text-xs">
+                        {historicoPlanos.length} planos
+                      </Badge>
+                    </div>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowHistorico(!showHistorico);
+                        if (!showHistorico && historicoPlanos.length === 0) {
+                          carregarHistoricoS3();
+                        }
+                      }}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      {showHistorico ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      {showHistorico ? 'Recolher' : 'Expandir'}
+                    </Button>
+                  </div>
+                  
+                  {showHistorico && (
+                    <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 max-h-96 overflow-y-auto">
+                      {loadingHistorico ? (
+                        <div className="flex items-center justify-center py-8">
+                          <RefreshCw className="h-6 w-6 animate-spin text-blue-600" />
+                          <span className="ml-2 text-slate-600">Carregando histórico...</span>
+                        </div>
+                      ) : historicoPlanos.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500">
+                          <FileText className="h-12 w-12 mx-auto mb-3 text-slate-400" />
+                          <p className="text-sm">Nenhum plano de aula encontrado no histórico.</p>
+                          <p className="text-xs text-slate-400 mt-1">Gere seu primeiro plano para começar o histórico.</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {historicoPlanos.map((plano, index) => (
+                            <div key={index} className="bg-white border border-slate-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <BookOpen className="h-4 w-4 text-green-600" />
+                                    <h4 className="font-medium text-slate-800 line-clamp-1">
+                                      {plano.metadata.subject} - {plano.metadata.grade}
+                                    </h4>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                                    <div className="flex items-center gap-1">
+                                      <School className="h-3 w-3" />
+                                      {plano.metadata.school}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <User className="h-3 w-3" />
+                                      {plano.metadata.numberOfStudents} alunos
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {plano.metadata.duration}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Sparkles className="h-3 w-3" />
+                                      {plano.metadata.aiConfig}
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-slate-500 mt-2">
+                                    {new Date(plano.metadata.savedAt).toLocaleDateString('pt-BR', {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => visualizarPlanoS3(plano.fileName)}
+                                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  Ver
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Botão Gerar Plano */}

@@ -330,6 +330,24 @@ Retorne APENAS o plano de aula estruturado, sem comentários adicionais.
 
     console.log(`✅ Plano de aula gerado com sucesso via ${response.model}`);
 
+    // Salvar no S3 para histórico
+    const s3Service = await import('../services/aws-s3-bedrock-service.js');
+    const s3FileName = await s3Service.salvarPlanoAulaS3({
+      userId: userId,
+      subject,
+      grade,
+      topic,
+      duration: duration || '50 minutos',
+      school,
+      numberOfStudents,
+      lessonPlan: response.content,
+      model: response.model,
+      aiConfig: aiConfig?.modelName || 'Configuração padrão',
+      timestamp: response.timestamp
+    });
+
+    console.log(`💾 Plano de aula salvo no S3: ${s3FileName}`);
+
     return res.status(200).json({
       success: true,
       data: {
@@ -343,12 +361,100 @@ Retorne APENAS o plano de aula estruturado, sem comentários adicionais.
         model_used: response.model,
         ai_config_used: aiConfig?.modelName || 'Configuração padrão',
         usage: response.usage,
-        generated_at: response.timestamp
+        generated_at: response.timestamp,
+        s3_file: s3FileName
       }
     });
 
   } catch (error) {
     console.error("❌ Erro ao gerar plano de aula:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Erro interno do servidor",
+      error: error instanceof Error ? error.message : "Erro desconhecido"
+    });
+  }
+});
+
+// GET /api/ai-central/lesson-plans - Listar planos de aula salvos no S3
+router.get("/lesson-plans", authenticate, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Usuário não autenticado" 
+      });
+    }
+
+    console.log(`📋 Listando planos de aula do usuário: ${userId}`);
+
+    const s3Service = await import('../services/aws-s3-bedrock-service.js');
+    const planos = await s3Service.listarPlanosAulaS3(userId);
+
+    console.log(`✅ Encontrados ${planos.length} planos de aula`);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        lessonPlans: planos,
+        count: planos.length
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Erro ao listar planos de aula:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Erro interno do servidor",
+      error: error instanceof Error ? error.message : "Erro desconhecido"
+    });
+  }
+});
+
+// GET /api/ai-central/lesson-plans/:fileName - Recuperar plano de aula específico do S3
+router.get("/lesson-plans/:fileName", authenticate, async (req, res) => {
+  try {
+    const userId = (req as AuthenticatedRequest).user?.id;
+    const { fileName } = req.params;
+    
+    if (!userId) {
+      return res.status(401).json({ 
+        success: false, 
+        message: "Usuário não autenticado" 
+      });
+    }
+
+    if (!fileName) {
+      return res.status(400).json({
+        success: false,
+        message: "Nome do arquivo é obrigatório"
+      });
+    }
+
+    console.log(`📄 Recuperando plano de aula: ${fileName}`);
+
+    const s3Service = await import('../services/aws-s3-bedrock-service.js');
+    const plano = await s3Service.recuperarPlanoAulaS3(fileName);
+
+    // Verificar se o plano pertence ao usuário
+    if (plano.metadata.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Acesso negado - arquivo não pertence ao usuário"
+      });
+    }
+
+    console.log(`✅ Plano de aula recuperado com sucesso`);
+
+    return res.status(200).json({
+      success: true,
+      data: plano
+    });
+
+  } catch (error) {
+    console.error("❌ Erro ao recuperar plano de aula:", error);
     return res.status(500).json({
       success: false,
       message: "Erro interno do servidor",
