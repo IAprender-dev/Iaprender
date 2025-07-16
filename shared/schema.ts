@@ -8,6 +8,7 @@ export const userRoleEnum = pgEnum('user_role', ['admin', 'municipal_manager', '
 export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'suspended', 'blocked']);
 export const contractStatusEnum = pgEnum('contract_status', ['active', 'pending', 'expired', 'cancelled']);
 export const cognitoGroupEnum = pgEnum('cognito_group', ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos']);
+export const resourceTypeEnum = pgEnum('resource_type', ['teacher', 'student']);
 
 // Tabela de Empresas (estrutura baseada no banco real)
 export const empresas = pgTable('empresas', {
@@ -150,6 +151,22 @@ export const aiPreferences = pgTable('ai_preferences', {
   atualizadoEm: timestamp('atualizado_em').defaultNow(),
 });
 
+// Tabela de Configurações de Recursos de IA (nova)
+export const aiResourceConfigs = pgTable('ai_resource_configs', {
+  id: serial('id').primaryKey(),
+  resourceId: varchar('resource_id', { length: 100 }).notNull().unique(), // teacher-0, student-0, etc.
+  resourceName: varchar('resource_name', { length: 200 }).notNull(),
+  resourceType: resourceTypeEnum('resource_type').notNull(),
+  selectedModel: varchar('selected_model', { length: 200 }).notNull(), // AWS Bedrock model ID
+  modelName: varchar('model_name', { length: 200 }), // Nome amigável do modelo
+  temperature: doublePrecision('temperature').default(0.7),
+  maxTokens: integer('max_tokens').default(1000),
+  enabled: boolean('enabled').default(true),
+  configuredBy: integer('configured_by'), // ID do admin que configurou
+  criadoEm: timestamp('criado_em').defaultNow(),
+  atualizadoEm: timestamp('atualizado_em').defaultNow(),
+});
+
 // Manter compatibilidade com sistema anterior
 export const users = usuarios;
 
@@ -269,6 +286,12 @@ export const insertAIPreferencesSchema = createInsertSchema(aiPreferences).omit(
   atualizadoEm: true,
 });
 
+export const insertAIResourceConfigSchema = createInsertSchema(aiResourceConfigs).omit({
+  id: true,
+  criadoEm: true,
+  atualizadoEm: true,
+});
+
 // Tipos
 export type Empresa = typeof empresas.$inferSelect;
 export type InsertEmpresa = z.infer<typeof insertEmpresaSchema>;
@@ -281,3 +304,6 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 
 export type AIPreferences = typeof aiPreferences.$inferSelect;
 export type InsertAIPreferences = z.infer<typeof insertAIPreferencesSchema>;
+
+export type AIResourceConfig = typeof aiResourceConfigs.$inferSelect;
+export type InsertAIResourceConfig = z.infer<typeof insertAIResourceConfigSchema>;

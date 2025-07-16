@@ -1,37 +1,52 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
-import { ResourceConfigModal } from "@/components/ResourceConfigModal";
 import {
-  Activity,
-  Settings,
-  RefreshCw,
+  Bot,
+  Brain,
+  GraduationCap,
   BookOpen,
+  Users,
+  PenTool,
+  Calculator,
+  Search,
+  Image,
+  Lightbulb,
+  Target,
   Calendar,
   FileText,
-  Target,
-  Image,
-  Brain,
-  Bot,
+  MessageCircle,
+  Languages,
+  Newspaper,
   Map,
   Trophy,
-  Languages,
-  Search,
-  MessageCircle,
-  Cpu,
-  Database,
-  Zap
+  Settings,
+  ArrowLeft,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  RefreshCw,
+  X,
+  Save
 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { ResourceConfigModal } from "@/components/ResourceConfigModal";
+// Logo será renderizado com fallback SVG inline
 
 export default function AIResourcesDashboard() {
   const { toast } = useToast();
   const [refreshing, setRefreshing] = useState(false);
+
 
   // Buscar modelos disponíveis do Bedrock
   const { data: bedrockModels, isLoading: loadingModels, refetch: refetchModels } = useQuery({
@@ -50,54 +65,54 @@ export default function AIResourcesDashboard() {
   // Recursos para Professores
   const teacherResources = [
     {
-      title: "Planejamento de Aulas",
-      description: "Criação automatizada de planos de aula alinhados à BNCC",
-      icon: BookOpen,
+      title: "Planos de Aula Inteligentes",
+      description: "Geração automática de planos de aula alinhados à BNCC",
+      icon: Calendar,
       category: "Planejamento",
-      aiModels: ["Claude 3.5 Sonnet"],
+      aiModels: ["Claude 3.5 Sonnet", "Claude 3 Haiku"],
       status: "active",
       usage: "Alto",
-      route: "/professor/ferramentas/planos-aula"
+      route: "/professor/ferramentas/planejamento-aula"
     },
     {
       title: "Gerador de Atividades",
-      description: "Criação de exercícios e atividades personalizadas",
+      description: "Criação de exercícios personalizados por disciplina e série",
+      icon: PenTool,
+      category: "Atividades",
+      aiModels: ["Claude 3.5 Sonnet", "Titan Text"],
+      status: "active",
+      usage: "Médio",
+      route: "/professor/ferramentas/gerador-atividades"
+    },
+    {
+      title: "Análise de Documentos",
+      description: "Extração de insights educacionais de PDFs e textos",
+      icon: Search,
+      category: "Análise",
+      aiModels: ["Claude 3.5 Sonnet"],
+      status: "active",
+      usage: "Médio",
+      route: "/professor/ferramentas/analisar-documentos"
+    },
+    {
+      title: "Correção de Redações",
+      description: "Avaliação automática com feedback detalhado",
       icon: FileText,
-      category: "Conteúdo",
-      aiModels: ["Claude 3.5 Sonnet", "ChatGPT 4"],
+      category: "Avaliação",
+      aiModels: ["Claude 3.5 Sonnet"],
       status: "active",
       usage: "Alto",
-      route: "/professor/ferramentas/atividades"
+      route: "/professor/redacoes"
     },
     {
-      title: "Cronograma Pedagógico",
-      description: "Organização temporal de conteúdos e avaliações",
-      icon: Calendar,
-      category: "Planejamento",
-      aiModels: ["Claude 3 Haiku"],
+      title: "Materiais Didáticos",
+      description: "Criação de apostilas e materiais de apoio",
+      icon: BookOpen,
+      category: "Conteúdo",
+      aiModels: ["Claude 3.5 Sonnet", "Titan Text"],
       status: "active",
       usage: "Médio",
-      route: "/professor/ferramentas/cronograma"
-    },
-    {
-      title: "Avaliações Adaptativas",
-      description: "Criação de provas e exercícios adaptativos",
-      icon: Target,
-      category: "Avaliação",
-      aiModels: ["Claude 3.5 Sonnet"],
-      status: "active",
-      usage: "Médio",
-      route: "/professor/ferramentas/avaliacoes"
-    },
-    {
-      title: "Análise de Redações",
-      description: "Correção automatizada e feedback detalhado",
-      icon: FileText,
-      category: "Avaliação",
-      aiModels: ["Claude 3.5 Sonnet"],
-      status: "active",
-      usage: "Médio",
-      route: "/professor/ferramentas/analise-redacoes"
+      route: "/professor/ferramentas/materiais-didaticos"
     },
     {
       title: "Resumos BNCC",
@@ -242,53 +257,128 @@ export default function AIResourcesDashboard() {
     }
   };
 
+
+
+  const getDefaultModel = (aiModels: string[]) => {
+    // Mapear modelos legados para IDs do Bedrock
+    const modelMap: Record<string, string> = {
+      "Claude 3.5 Sonnet": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "Claude 3 Haiku": "anthropic.claude-3-haiku-20240307-v1:0",
+      "Titan Text": "amazon.titan-text-express-v1",
+      "ChatGPT 4": "anthropic.claude-3-5-sonnet-20241022-v2:0", // Fallback para Claude
+      "DALL-E 3": "amazon.titan-image-generator-v1",
+      "Stable Diffusion": "stability.stable-diffusion-xl-v1",
+      "Perplexity": "anthropic.claude-3-haiku-20240307-v1:0" // Fallback para Claude Haiku
+    };
+    
+    return modelMap[aiModels[0]] || "anthropic.claude-3-5-sonnet-20241022-v2:0";
+  };
+
+  // Lista de modelos AWS Bedrock disponíveis
+  const availableModels = [
+    {
+      id: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+      name: "Claude 3.5 Sonnet v2",
+      provider: "Anthropic",
+      description: "Modelo mais avançado para raciocínio complexo",
+      bestFor: ["planos-aula", "correcao-redacoes", "tutoria-avancada"]
+    },
+    {
+      id: "anthropic.claude-3-haiku-20240307-v1:0",
+      name: "Claude 3 Haiku",
+      provider: "Anthropic", 
+      description: "Modelo rápido para tarefas simples",
+      bestFor: ["resumos", "traducao", "chat-rapido"]
+    },
+    {
+      id: "amazon.titan-text-express-v1",
+      name: "Amazon Titan Text Express",
+      provider: "Amazon",
+      description: "Modelo eficiente para geração de texto",
+      bestFor: ["materiais-didaticos", "atividades"]
+    },
+    {
+      id: "amazon.titan-image-generator-v1",
+      name: "Amazon Titan Image Generator",
+      provider: "Amazon",
+      description: "Geração de imagens educacionais",
+      bestFor: ["imagens-educacionais", "ilustracoes"]
+    },
+    {
+      id: "ai21.j2-ultra-v1",
+      name: "AI21 Jurassic-2 Ultra",
+      provider: "AI21 Labs",
+      description: "Modelo especializado em texto",
+      bestFor: ["analise-textos", "resumos-longos"]
+    }
+  ];
+
   return (
     <>
       <Helmet>
-        <title>Dashboard de Recursos de IA - IAprender</title>
-        <meta name="description" content="Gestão e configuração de recursos de inteligência artificial para educação" />
+        <title>Recursos de IA | IAprender Admin</title>
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Dashboard de Recursos de IA
-            </h1>
-            <p className="text-gray-600">
-              Gerencie e configure os modelos de IA disponíveis para professores e alunos
-            </p>
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <div className="h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">IA</span>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <h1 className="text-2xl font-bold text-gray-900">Recursos de IA</h1>
+                  <p className="text-sm text-gray-600">Painel de controle das funcionalidades de Inteligência Artificial</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <Button
+                  onClick={refreshData}
+                  disabled={refreshing}
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300"
+                >
+                  {refreshing ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                  )}
+                  Atualizar
+                </Button>
+                <Link href="/admin/crud">
+                  <Button variant="outline" size="sm" className="text-gray-600 hover:text-gray-700">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Voltar
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
-          <Button
-            onClick={refreshData}
-            disabled={refreshing}
-            variant="outline"
-            className="mt-4 sm:mt-0"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="mb-8">
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Tabs defaultValue="overview" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview" className="flex items-center space-x-2">
-                <Activity className="h-4 w-4" />
+              <TabsTrigger value="overview" className="flex items-center">
+                <Bot className="h-4 w-4 mr-2" />
                 Visão Geral
               </TabsTrigger>
-              <TabsTrigger value="bedrock" className="flex items-center space-x-2">
-                <Cpu className="h-4 w-4" />
+              <TabsTrigger value="bedrock" className="flex items-center">
+                <Brain className="h-4 w-4 mr-2" />
                 AWS Bedrock
               </TabsTrigger>
-              <TabsTrigger value="teachers" className="flex items-center space-x-2">
-                <BookOpen className="h-4 w-4" />
+              <TabsTrigger value="teachers" className="flex items-center">
+                <GraduationCap className="h-4 w-4 mr-2" />
                 Professores
               </TabsTrigger>
-              <TabsTrigger value="students" className="flex items-center space-x-2">
-                <Bot className="h-4 w-4" />
+              <TabsTrigger value="students" className="flex items-center">
+                <Users className="h-4 w-4 mr-2" />
                 Alunos
               </TabsTrigger>
             </TabsList>
@@ -340,60 +430,85 @@ export default function AIResourcesDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Status da Integração */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Status da Integração AWS Bedrock</CardTitle>
+                  <CardDescription>Conectividade e disponibilidade dos modelos de IA</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingModels ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Verificando conexão...</span>
+                    </div>
+                  ) : bedrockModels?.success ? (
+                    <div className="flex items-center space-x-2 text-green-600">
+                      <CheckCircle className="h-5 w-5" />
+                      <span>Conectado - {bedrockModels.data.total_models} modelos disponíveis</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2 text-red-600">
+                      <AlertCircle className="h-5 w-5" />
+                      <span>Erro de conexão - Verificar credenciais AWS</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
-            {/* AWS Bedrock Tab */}
+            {/* Bedrock Tab */}
             <TabsContent value="bedrock" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center">
-                      <Database className="h-5 w-5 mr-2" />
-                      Status do Bedrock
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {loadingModels ? (
-                      <div className="flex items-center space-x-2">
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        <span>Verificando...</span>
-                      </div>
-                    ) : bedrockModels?.success ? (
-                      <Badge className="bg-green-100 text-green-800">Conectado</Badge>
-                    ) : (
-                      <Badge className="bg-red-100 text-red-800">Desconectado</Badge>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center">
-                      <Cpu className="h-5 w-5 mr-2" />
-                      Modelos Disponíveis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-blue-600">
-                      {bedrockModels?.data?.models?.length || 0}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Modelos AWS Bedrock Disponíveis</CardTitle>
+                  <CardDescription>Lista completa de modelos de IA integrados</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingModels ? (
+                    <div className="flex items-center justify-center p-8">
+                      <Loader2 className="h-8 w-8 animate-spin" />
+                      <span className="ml-2">Carregando modelos...</span>
                     </div>
-                    <p className="text-sm text-gray-600">Prontos para uso</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center">
-                      <Zap className="h-5 w-5 mr-2" />
-                      Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Badge className="bg-blue-100 text-blue-800">Ótima</Badge>
-                    <p className="text-sm text-gray-600 mt-1">Tempo de resposta baixo</p>
-                  </CardContent>
-                </Card>
-              </div>
+                  ) : bedrockModels?.success ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {bedrockModels.data.bedrock_models?.map((model: any, index: number) => (
+                        <Card key={index} className="border border-gray-200">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-base">{model.modelName}</CardTitle>
+                            <CardDescription>{model.providerName}</CardDescription>
+                          </CardHeader>
+                          <CardContent className="space-y-2">
+                            <div className="flex flex-wrap gap-1">
+                              <Badge variant="outline" className="text-xs">
+                                {model.modelId}
+                              </Badge>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              <div>Input: {model.inputModalities?.join(', ') || 'TEXT'}</div>
+                              <div>Output: {model.outputModalities?.join(', ') || 'TEXT'}</div>
+                            </div>
+                            {model.responseStreamingSupported && (
+                              <Badge variant="secondary" className="text-xs">
+                                Streaming
+                              </Badge>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center p-8">
+                      <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">Não foi possível carregar os modelos do Bedrock</p>
+                      <Button onClick={refreshData} className="mt-4">
+                        Tentar Novamente
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Teachers Tab */}
@@ -541,7 +656,10 @@ export default function AIResourcesDashboard() {
             </TabsContent>
           </Tabs>
         </div>
+
+
       </div>
     </>
   );
 }
+
