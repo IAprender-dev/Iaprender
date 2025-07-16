@@ -13,8 +13,8 @@ export default function AuthProxy() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: "teste.login",
-    password: "TesteLogin123!"
+    username: "",
+    password: ""
   });
   const { toast } = useToast();
 
@@ -110,29 +110,7 @@ export default function AuthProxy() {
               <p className="text-gray-600">Sistema Educacional Inteligente</p>
             </div>
 
-            {/* Status de configuração */}
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-700 font-medium">
-                ✅ USER_PASSWORD_AUTH habilitado no AWS Cognito
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                Autenticação por email/senha funcional
-              </p>
-            </div>
 
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="font-semibold text-green-900 mb-2">💡 Credenciais Funcionais - Prontas para Teste</h3>
-              <div className="space-y-2 text-sm text-green-800">
-                <div><strong>Username:</strong> teste.login</div>
-                <div><strong>Password:</strong> TesteLogin123!</div>
-                <div><strong>Email:</strong> teste.login@iaprender.com.br</div>
-                <div><strong>Status:</strong> CONFIRMED ✅</div>
-                <div><strong>Grupo:</strong> Admin</div>
-              </div>
-              <p className="text-sm text-green-700 mt-2">
-                Essas credenciais estão pré-carregadas nos campos abaixo. Clique em "Entrar" para autenticar.
-              </p>
-            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -198,9 +176,6 @@ export default function AuthProxy() {
               </p>
               <p className="text-xs text-gray-500">
                 Ao entrar, você concorda com nossos Termos de Uso e Política de Privacidade
-              </p>
-              <p className="text-xs text-gray-400 mt-2">
-                💡 Para ver logs detalhados, abra o Console do navegador (F12)
               </p>
             </div>
           </CardContent>
