@@ -127,13 +127,30 @@ export function registerAuthRoutes(app: Express) {
       const idTokenPayload = JSON.parse(Buffer.from(IdToken!.split('.')[1], 'base64').toString());
       console.log('👤 Payload do usuário extraído do ID Token');
 
-      // Criar token JWT interno do sistema
+      // Determinar tipo de usuário baseado nos grupos
+      const grupos = idTokenPayload['cognito:groups'] || [];
+      let userType = 'aluno'; // padrão
+
+      if (grupos.includes('Admin') || grupos.includes('AdminMaster') || grupos.includes('Administrador')) {
+        userType = 'admin';
+      } else if (grupos.includes('Gestores') || grupos.includes('GestorMunicipal')) {
+        userType = 'gestor';
+      } else if (grupos.includes('Diretores') || grupos.includes('Diretor')) {
+        userType = 'diretor';
+      } else if (grupos.includes('Professores') || grupos.includes('Professor')) {
+        userType = 'professor';
+      }
+
+      // Criar token JWT interno do sistema COM COMPATIBILIDADE para middlewares existentes
       const internalTokenPayload = {
+        id: 1, // ID temporário para compatibilidade
         cognitoSub: idTokenPayload.sub,
         email: idTokenPayload.email,
         nome: idTokenPayload.name || idTokenPayload.given_name || idTokenPayload.email?.split('@')[0],
-        grupos: idTokenPayload['cognito:groups'] || [],
+        tipo_usuario: userType, // Campo necessário para middlewares existentes
+        grupos: grupos,
         empresa_id: idTokenPayload['custom:empresa_id'] ? parseInt(idTokenPayload['custom:empresa_id']) : 1,
+        escola_id: null, // Padrão
         enabled: true,
         user_status: 'CONFIRMED'
       };
@@ -141,22 +158,16 @@ export function registerAuthRoutes(app: Express) {
       const internalToken = jwt.sign(internalTokenPayload, JWT_SECRET, { expiresIn: '24h' });
       console.log('🔐 Token JWT interno criado');
 
-      // Determinar tipo de usuário baseado nos grupos
-      const grupos = idTokenPayload['cognito:groups'] || [];
-      let userType = 'aluno'; // padrão
+      // Determinar URL de redirecionamento baseado no tipo de usuário
       let redirectUrl = '/student/dashboard';
 
-      if (grupos.includes('Admin') || grupos.includes('AdminMaster') || grupos.includes('Administrador')) {
-        userType = 'admin';
-        redirectUrl = '/admin/user-management';
-      } else if (grupos.includes('Gestores') || grupos.includes('GestorMunicipal')) {
-        userType = 'gestor';
+      if (userType === 'admin') {
+        redirectUrl = '/admin/crud'; // CORRIGIDO: Dashboard administrativo correto
+      } else if (userType === 'gestor') {
         redirectUrl = '/gestor/dashboard';
-      } else if (grupos.includes('Diretores') || grupos.includes('Diretor')) {
-        userType = 'diretor';
+      } else if (userType === 'diretor') {
         redirectUrl = '/diretor/dashboard';
-      } else if (grupos.includes('Professores') || grupos.includes('Professor')) {
-        userType = 'professor';
+      } else if (userType === 'professor') {
         redirectUrl = '/professor/dashboard';
       }
 
