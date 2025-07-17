@@ -134,7 +134,7 @@ export default function AdminMaster() {
         </Card>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           <Link href="/central-ia">
             <Button className="h-24 w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-semibold text-lg">
               <div className="flex flex-col items-center space-y-2">
@@ -149,6 +149,15 @@ export default function AdminMaster() {
               <div className="flex flex-col items-center space-y-2">
                 <Brain className="h-8 w-8" />
                 <span>Config IA</span>
+              </div>
+            </Button>
+          </Link>
+
+          <Link href="/hybrid-lambda-demo">
+            <Button className="h-24 w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold text-lg">
+              <div className="flex flex-col items-center space-y-2">
+                <Brain className="h-8 w-8" />
+                <span>Sistema Híbrido</span>
               </div>
             </Button>
           </Link>

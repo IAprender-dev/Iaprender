@@ -22,7 +22,8 @@ import {
   Calendar,
   DollarSign,
   Bot,
-  Settings
+  Settings,
+  Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -208,6 +209,12 @@ export default function AdminUnifiedDashboard() {
                 <Button variant="outline" size="sm" className="text-indigo-600 hover:text-indigo-700 border-indigo-200 hover:border-indigo-300">
                   <Settings className="h-4 w-4 mr-2" />
                   Config IA
+                </Button>
+              </Link>
+              <Link href="/hybrid-lambda-demo">
+                <Button variant="outline" size="sm" className="text-cyan-600 hover:text-cyan-700 border-cyan-200 hover:border-cyan-300">
+                  <Brain className="h-4 w-4 mr-2" />
+                  Sistema Híbrido
                 </Button>
               </Link>
               <Link href="/admin/credentials">

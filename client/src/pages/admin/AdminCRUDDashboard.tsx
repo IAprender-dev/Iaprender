@@ -32,7 +32,8 @@ import {
   CreditCard,
   Archive,
   LogOut,
-  Bot
+  Bot,
+  Brain
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -241,6 +242,12 @@ export default function AdminCRUDDashboard() {
                 <Button variant="outline" size="sm" className="text-purple-600 hover:text-purple-700 border-purple-200 hover:border-purple-300">
                   <Bot className="h-4 w-4 mr-2" />
                   Recursos IA
+                </Button>
+              </Link>
+              <Link href="/hybrid-lambda-demo">
+                <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300">
+                  <Brain className="h-4 w-4 mr-2" />
+                  Sistema Híbrido
                 </Button>
               </Link>
               <LogoutButton 
