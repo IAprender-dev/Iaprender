@@ -1,8 +1,10 @@
-# Sistema Lambda IA - AWS Bedrock + S3 + DynamoDB + Aurora
+# Sistema Bedrock IA - AWS Bedrock + S3 + DynamoDB + Aurora
 
 ## Visão Geral
 
-O Sistema Lambda IA é uma solução completa para geração de documentos educacionais usando inteligência artificial via AWS Bedrock, com armazenamento integrado em S3, metadados em DynamoDB e registros relacionais em Aurora PostgreSQL.
+O Sistema Bedrock IA é uma solução completa para geração de documentos educacionais usando inteligência artificial via AWS Bedrock, com armazenamento integrado em S3, metadados em DynamoDB e registros relacionais em Aurora PostgreSQL.
+
+**NOTA**: Este sistema roda no servidor Express e chama AWS Bedrock diretamente. Não utiliza funções AWS Lambda.
 
 ## Arquitetura do Sistema
 
