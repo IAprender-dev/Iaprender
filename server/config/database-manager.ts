@@ -1,9 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config(); // Carregar variáveis de ambiente primeiro
-import { Pool } from '@neondatabase/serverless';
+import { Pool as NeonPool } from '@neondatabase/serverless';
+import { Pool as PostgreSQLPool } from 'pg';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-serverless';
-import { drizzle as drizzleAWS } from 'drizzle-orm/aws-data-api/pg';
-import { RDSDataClient } from '@aws-sdk/client-rds-data';
+import { drizzle as drizzlePostgreSQL } from 'drizzle-orm/node-postgres';
 import * as schema from '../../shared/schema';
 import ws from "ws";
 
@@ -45,7 +45,7 @@ export class DatabaseManager {
       throw new Error("DATABASE_URL must be set for PostgreSQL connection");
     }
 
-    this.client = new Pool({ connectionString: process.env.DATABASE_URL });
+    this.client = new NeonPool({ connectionString: process.env.DATABASE_URL });
     this.db = drizzleNeon({ client: this.client, schema });
     console.log('✅ PostgreSQL connection initialized');
   }
@@ -63,30 +63,38 @@ export class DatabaseManager {
     }
 
     try {
-      // Configurar cliente RDS Data API
-      const rdsClient = new RDSDataClient({
-        region: process.env.AWS_REGION || 'us-east-1',
-        credentials: {
-          accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-        }
-      });
-
-      // Aurora DSQL usa formato simplificado - endpoint direto como resourceArn
-      console.log(`🔧 Configurando Aurora DSQL com endpoint: ${endpoint}`);
-      console.log(`🔧 AWS Account ID: ${process.env.AWS_ACCOUNT_ID}`);
+      // 🚨 CORREÇÃO CRÍTICA: Aurora DSQL usa PostgreSQL connection string nativa!
+      // NÃO usar RDS Data API - usar Pool PostgreSQL direto
       
-      this.client = rdsClient;
-      this.db = drizzleAWS(rdsClient, {
-        schema,
-        resourceArn: endpoint,  // Usar endpoint diretamente
-        secretArn: token,       // Usar token diretamente 
-        database: 'postgres'    // Database padrão
+      console.log(`🔧 Configurando Aurora DSQL como PostgreSQL nativo`);
+      console.log(`📍 Endpoint: ${endpoint}`);
+      console.log(`🔌 Porta: ${port}`);
+      
+      // Construir connection string PostgreSQL para Aurora DSQL
+      // Formato: postgresql://username:password@host:port/database
+      // IMPORTANTE: URL encode o token para evitar caracteres especiais
+      const encodedToken = encodeURIComponent(token);
+      const connectionString = `postgresql://postgres:${encodedToken}@${endpoint}:${port}/postgres`;
+      
+      console.log(`🔗 Connection string: postgresql://postgres:***@${endpoint}:${port}/postgres`);
+      
+      // Usar Pool PostgreSQL nativo (compatível com Aurora DSQL)
+      this.client = new PostgreSQLPool({ 
+        connectionString: connectionString,
+        ssl: {
+          rejectUnauthorized: false // Aurora DSQL requer SSL
+        },
+        max: 10,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 10000,
       });
+      
+      // Usar Drizzle PostgreSQL driver nativo (NÃO Neon, NÃO AWS Data API)
+      this.db = drizzlePostgreSQL(this.client, { schema });
 
-      console.log('✅ Aurora DSQL connection initialized');
-      console.log(`📍 Resource ARN: ${endpoint}`);
-      console.log(`🔐 Secret ARN: ${token.substring(0, 30)}...`);
+      console.log('✅ Aurora DSQL connection initialized (PostgreSQL mode)');
+      console.log(`📍 Host: ${endpoint}:${port}`);
+      console.log(`🔐 Database: postgres`);
     } catch (error) {
       console.error('❌ Failed to initialize Aurora DSQL, falling back to PostgreSQL:', error);
       this.currentDbType = 'postgresql';
@@ -120,6 +128,17 @@ export class DatabaseManager {
       return true;
     } catch (error) {
       console.error(`❌ ${this.currentDbType.toUpperCase()} connection test failed:`, error);
+      
+      // Se for Aurora DSQL e erro de token, mostrar instruções
+      if (this.currentDbType === 'aurora-dsql' && error.message.includes('access denied')) {
+        console.log('💡 AURORA DSQL: Token provavelmente expirado');
+        console.log('📋 Para renovar token:');
+        console.log('   aws dsql generate-db-connect-admin-auth-token \\');
+        console.log('     --cluster-identifier qeabuhp64eamddmw3vqdq52ph4 \\');
+        console.log('     --region us-east-1 --expires-in 3600');
+        console.log('📝 Consulte aurora-token-helper.md para instruções completas');
+      }
+      
       return false;
     }
   }
