@@ -44,16 +44,18 @@ const s3 = new S3Client(awsConfig);
 const dynamodb = new DynamoDBClient(awsConfig);
 const cognito = new CognitoIdentityProviderClient(awsConfig);
 
-// 🗄️ Configuração PostgreSQL (Aurora)
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  },
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000
+// 🌐 Conexão com Aurora PostgreSQL
+const db = new Pool({
+  host: process.env.PG_HOST,
+  user: process.env.PG_USER,
+  password: process.env.PG_PASS,
+  database: process.env.PG_DB,
+  port: 5432,
+  ssl: { rejectUnauthorized: false }
 });
+
+// Alias para compatibilidade
+const pool = db;
 
 // 🏗️ Configurações do sistema
 const CONFIG = {
