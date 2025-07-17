@@ -52,7 +52,6 @@ export class DatabaseManager {
 
   private initializeAuroraDSQL() {
     const endpoint = process.env.ENDPOINT_AURORA;
-    const port = process.env.PORTA_AURORA || '5432';
     const token = process.env.TOKEN_AURORA;
 
     if (!endpoint || !token) {
@@ -63,39 +62,25 @@ export class DatabaseManager {
     }
 
     try {
-      // 🚨 CORREÇÃO CRÍTICA: Aurora DSQL usa PostgreSQL connection string nativa!
-      // NÃO usar RDS Data API - usar Pool PostgreSQL direto
+      console.log(`🔧 Aurora DSQL - Conexão direta simplificada`);
+      console.log(`📍 ${endpoint}`);
       
-      console.log(`🔧 Configurando Aurora DSQL como PostgreSQL nativo`);
-      console.log(`📍 Endpoint: ${endpoint}`);
-      console.log(`🔌 Porta: ${port}`);
-      
-      // Construir connection string PostgreSQL para Aurora DSQL
-      // Formato: postgresql://username:password@host:port/database
-      // IMPORTANTE: Aurora DSQL usa usuário "admin", não "postgres"
-      // URL encode o token para evitar caracteres especiais
-      const encodedToken = encodeURIComponent(token);
-      const connectionString = `postgresql://admin:${encodedToken}@${endpoint}:${port}/postgres`;
-      
-      console.log(`🔗 Connection string: postgresql://admin:***@${endpoint}:${port}/postgres`);
-      
-      // Usar Pool PostgreSQL nativo (compatível com Aurora DSQL)
+      // Conexão direta simplificada - Aurora DSQL usa usuário admin
       this.client = new PostgreSQLPool({ 
-        connectionString: connectionString,
-        ssl: {
-          rejectUnauthorized: false // Aurora DSQL requer SSL
-        },
-        max: 10,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
+        host: endpoint,
+        port: 5432,
+        database: 'postgres',
+        user: 'admin',
+        password: token,
+        ssl: { rejectUnauthorized: false },
+        connectionTimeoutMillis: 15000,
+        max: 5
       });
       
-      // Usar Drizzle PostgreSQL driver nativo (NÃO Neon, NÃO AWS Data API)
+      // Usar Drizzle PostgreSQL driver nativo
       this.db = drizzlePostgreSQL(this.client, { schema });
 
-      console.log('✅ Aurora DSQL connection initialized (PostgreSQL mode)');
-      console.log(`📍 Host: ${endpoint}:${port}`);
-      console.log(`🔐 Database: postgres`);
+      console.log('✅ Aurora DSQL inicializado');
     } catch (error) {
       console.error('❌ Failed to initialize Aurora DSQL, falling back to PostgreSQL:', error);
       this.currentDbType = 'postgresql';
@@ -130,15 +115,9 @@ export class DatabaseManager {
     } catch (error) {
       console.error(`❌ ${this.currentDbType.toUpperCase()} connection test failed:`, error);
       
-      // Se for Aurora DSQL e erro de token, mostrar instruções
+      // Se for Aurora DSQL e erro de token, mostrar instruções simples
       if (this.currentDbType === 'aurora-dsql' && error.message.includes('access denied')) {
-        console.log('💡 AURORA DSQL: Token provavelmente expirado ou usuário incorreto');
-        console.log('📋 Para renovar token:');
-        console.log('   aws dsql generate-db-connect-admin-auth-token \\');
-        console.log('     --cluster-identifier qeabuhp64eamddmw3vqdq52ph4 \\');
-        console.log('     --region us-east-1 --expires-in 3600');
-        console.log('💡 Nota: Aurora DSQL usa usuário "admin", não "postgres"');
-        console.log('📝 Consulte aurora-token-helper.md para instruções completas');
+        console.log('💡 Token Aurora DSQL expirado - renovar nas secrets');
       }
       
       return false;
