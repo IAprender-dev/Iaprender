@@ -85,6 +85,11 @@ app.use((req, res, next) => {
   app.use('/api/lambda-ia', lambdaIARouter.default);
   console.log('🤖 Rotas Lambda IA registradas');
   
+  // Registrar rotas Sistema Híbrido
+  const hybridLambdaRouter = await import('./routes/hybrid-lambda.js');
+  app.use('/api/hybrid-lambda', hybridLambdaRouter.default);
+  console.log('🔄 Rotas Sistema Híbrido registradas');
+  
   const server = await registerRoutes(app);
   
   // Add custom Cognito UI routes
