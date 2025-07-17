@@ -75,6 +75,11 @@ app.use((req, res, next) => {
   app.use('/api/connectivity', connectivityRouter);
   console.log('🔌 Rotas de teste de conectividade registradas');
   
+  // Registrar rotas Lambda IA
+  const lambdaIARouter = await import('./routes/lambda-ia.js');
+  app.use('/api/lambda-ia', lambdaIARouter.default);
+  console.log('🤖 Rotas Lambda IA registradas');
+  
   const server = await registerRoutes(app);
   
   // Add custom Cognito UI routes

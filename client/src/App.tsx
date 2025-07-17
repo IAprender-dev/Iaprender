@@ -104,6 +104,7 @@ import TokenDashboard from "@/pages/TokenDashboard";
 import OptimizationsPage from "@/pages/OptimizationsPage";
 import AIPreferences from "@/pages/user/AIPreferences";
 import DocumentsPage from "@/pages/DocumentsPage";
+import LambdaIADemo from "@/components/LambdaIADemo";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -251,7 +252,8 @@ function Router() {
       <Route path="/aluno/tutor-ia" component={AITutorChat} />
       <Route path="/aluno/tutor-voz" component={VoiceTutorTeacher} />
       
-
+      {/* Lambda IA Demo */}
+      <Route path="/lambda-ia-demo" component={LambdaIADemo} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />
