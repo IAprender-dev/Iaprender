@@ -282,7 +282,78 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// 🤖 Gerar documento IA
+// 🧠 Geração de documento por IA e upload em S3
+app.post('/api/documento/gerar', autenticar, async (req, res) => {
+  const { prompt, tipo_arquivo, modelo_ia = 'anthropic.claude-v2' } = req.body;
+  const { empresa_id, sub: usuario_id, tipo_usuario, email } = req.usuario;
+
+  const uuid = uuidv4();
+  const s3Key = `empresa-${empresa_id}/${tipo_usuario}-${usuario_id}/${uuid}.json`;
+
+  try {
+    // 📡 Gera conteúdo com IA
+    const iaResponse = await bedrock.send(new InvokeModelCommand({
+      modelId: modelo_ia,
+      contentType: 'application/json',
+      accept: 'application/json',
+      body: JSON.stringify({ prompt, max_tokens: 1000 })
+    }));
+
+    const conteudo = JSON.parse(Buffer.from(iaResponse.body).toString('utf8'));
+
+    // ☁️ Armazena no S3
+    await s3.putObject({
+      Bucket: BUCKET_NAME,
+      Key: s3Key,
+      Body: JSON.stringify(conteudo),
+      ContentType: 'application/json'
+    }).promise();
+
+    // 🗄️ Salva metadados no DynamoDB
+    await ddb.put({
+      TableName: CONFIG.DYNAMO_TABLE,
+      Item: {
+        uuid,
+        empresa_id,
+        usuario_id,
+        tipo_usuario,
+        email,
+        tipo_arquivo,
+        s3_key: s3Key,
+        data_criacao: new Date().toISOString(),
+        modelo_ia,
+        status: 'ativo'
+      }
+    }).promise();
+
+    // 📊 Salva registro no PostgreSQL
+    await db.query(`
+      INSERT INTO documentos_ia (uuid, empresa_id, usuario_id, tipo_usuario, 
+                                 tipo_arquivo, s3_key, modelo_ia, data_criacao)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `, [uuid, empresa_id, usuario_id, tipo_usuario, tipo_arquivo, s3Key, modelo_ia, new Date()]);
+
+    res.json({
+      sucesso: true,
+      data: {
+        uuid,
+        s3_key: s3Key,
+        conteudo,
+        tipo_arquivo,
+        modelo_ia
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro na geração:', error);
+    res.status(500).json({
+      sucesso: false,
+      erro: error.message
+    });
+  }
+});
+
+// 🤖 Gerar documento IA (rota de compatibilidade)
 app.post('/api/gerar-documento', authenticateToken, async (req, res) => {
   try {
     const { prompt, tipo_arquivo, modelo } = req.body;
