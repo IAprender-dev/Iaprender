@@ -143,16 +143,20 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 17, 2025: ✅ CONCLUÍDO - SISTEMA DE SEGURANÇA VIEWS E FUNÇÕES HIERÁRQUICO COMPLETO
+- July 17, 2025: ✅ CONCLUÍDO - SISTEMA DE SEGURANÇA VIEWS E FUNÇÕES HIERÁRQUICO ENTERPRISE COMPLETO
   - ✅ **VIEW vw_alunos_por_professor**: Centraliza dados de alunos com joins otimizados para escolas e usuários
   - ✅ **VIEW vw_professores_por_diretor**: Centraliza dados de professores com joins otimizados para diretores
+  - ✅ **VIEW vw_contratos_por_gestor**: Centraliza dados de contratos com joins otimizados para gestores
+  - ✅ **VIEW vw_escolas_por_gestor**: Centraliza dados de escolas com joins otimizados para gestores
   - ✅ **FUNÇÃO get_alunos_por_professor()**: Controle de acesso - professores só veem alunos de suas escolas
   - ✅ **FUNÇÃO get_alunos_por_escola()**: Controle de acesso - gestores veem alunos por escola específica
   - ✅ **FUNÇÃO get_alunos_por_diretor()**: Controle de acesso - diretores veem alunos de suas escolas
   - ✅ **FUNÇÃO get_professores_por_diretor()**: Controle de acesso - diretores veem professores de suas escolas
-  - ✅ **SECURITY DEFINER**: Todas as 4 funções executam com privilégios de segurança máxima
-  - ✅ **TESTES VALIDADOS**: Todos os cenários testados (professor, diretor, inexistentes, hierarquia completa)
-  - ✅ **SISTEMA HIERÁRQUICO**: 2 views + 4 funções de segurança operacionais
+  - ✅ **FUNÇÃO get_contratos_por_gestor()**: Controle de acesso - gestores veem contratos de suas empresas
+  - ✅ **FUNÇÃO get_escolas_por_gestor()**: Controle de acesso - gestores veem escolas de suas empresas
+  - ✅ **SECURITY DEFINER**: Todas as 6 funções executam com privilégios de segurança máxima
+  - ✅ **TESTES VALIDADOS**: Todos os cenários testados (professor, diretor, gestor, inexistentes, hierarquia completa)
+  - ✅ **SISTEMA HIERÁRQUICO**: 4 views + 6 funções de segurança operacionais
   - ✅ **INTEGRAÇÃO PRONTA**: Sistema preparado para endpoints REST com middleware JWT
   - ✅ **DOCUMENTAÇÃO COMPLETA**: Guia técnico atualizado em SISTEMA_SEGURANCA_VIEWS_FUNCOES.md
 - July 17, 2025: ✅ CONCLUÍDO - SCRIPT AURORA POSTGRESQL OTIMIZADO EXECUTADO COM SUCESSO

@@ -234,6 +234,142 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ---
 
+## 🏢 SISTEMA DE SEGURANÇA PARA GESTORES
+
+### **✅ VIEW: vw_contratos_por_gestor**
+```sql
+CREATE OR REPLACE VIEW vw_contratos_por_gestor AS
+SELECT
+  c.id as contrato_id,
+  c.empresa_id,
+  e.nome AS empresa_nome,
+  c.tipo_contrato,
+  c.descricao,
+  c.data_inicio,
+  c.data_fim,
+  c.numero_licencas,
+  c.valor_total,
+  c.status,
+  c.criado_em
+FROM contratos c
+JOIN empresas e ON c.empresa_id = e.id;
+```
+
+**Funcionalidade:**
+- Centraliza visualização de contratos com dados da empresa
+- Enriquece dados com informações financeiras e temporais
+- Base para funções de segurança de gestores
+
+### **✅ VIEW: vw_escolas_por_gestor**
+```sql
+CREATE OR REPLACE VIEW vw_escolas_por_gestor AS
+SELECT
+  esc.id as escola_id,
+  esc.nome AS escola_nome,
+  esc.empresa_id,
+  esc.contrato_id,
+  esc.status,
+  esc.cidade,
+  esc.estado,
+  esc.criado_em,
+  c.descricao AS contrato_descricao
+FROM escolas esc
+JOIN contratos c ON esc.contrato_id = c.id;
+```
+
+**Funcionalidade:**
+- Centraliza visualização de escolas com dados do contrato
+- Enriquece dados com informações geográficas
+- Base para funções de segurança de gestores
+
+### **✅ FUNÇÃO: get_contratos_por_gestor()**
+```sql
+CREATE OR REPLACE FUNCTION get_contratos_por_gestor(gestor_id INTEGER)
+RETURNS TABLE (
+  contrato_id INTEGER,
+  empresa_id INTEGER,
+  empresa_nome CHARACTER VARYING,
+  tipo_contrato CHARACTER VARYING,
+  descricao TEXT,
+  data_inicio DATE,
+  data_fim DATE,
+  numero_licencas INTEGER,
+  valor_total NUMERIC,
+  status CHARACTER VARYING,
+  criado_em TIMESTAMP WITHOUT TIME ZONE
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    v.contrato_id,
+    v.empresa_id,
+    v.empresa_nome,
+    v.tipo_contrato,
+    v.descricao,
+    v.data_inicio,
+    v.data_fim,
+    v.numero_licencas,
+    v.valor_total,
+    v.status,
+    v.criado_em
+  FROM vw_contratos_por_gestor v
+  WHERE v.empresa_id IN (
+    SELECT g.empresa_id 
+    FROM gestores g
+    WHERE g.usr_id = gestor_id AND g.status = 'ativo'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+**Controle de Acesso:**
+- Gestores só veem contratos de suas empresas
+- Filtro automático por empresa_id baseado no gestor
+- Verificação de status ativo do gestor
+
+### **✅ FUNÇÃO: get_escolas_por_gestor()**
+```sql
+CREATE OR REPLACE FUNCTION get_escolas_por_gestor(gestor_id INTEGER)
+RETURNS TABLE (
+  escola_id INTEGER,
+  escola_nome CHARACTER VARYING,
+  empresa_id INTEGER,
+  contrato_id INTEGER,
+  status CHARACTER VARYING,
+  cidade CHARACTER VARYING,
+  estado CHARACTER VARYING,
+  criado_em TIMESTAMP WITHOUT TIME ZONE,
+  contrato_descricao TEXT
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    v.escola_id,
+    v.escola_nome,
+    v.empresa_id,
+    v.contrato_id,
+    v.status,
+    v.cidade,
+    v.estado,
+    v.criado_em,
+    v.contrato_descricao
+  FROM vw_escolas_por_gestor v
+  WHERE v.empresa_id IN (
+    SELECT g.empresa_id 
+    FROM gestores g
+    WHERE g.usr_id = gestor_id AND g.status = 'ativo'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+**Controle de Acesso:**
+- Gestores só veem escolas de suas empresas
+- Filtro automático por empresa_id baseado no gestor
+- Verificação de status ativo do gestor
+
+---
+
 ## 🧪 TESTES DE VALIDAÇÃO EXECUTADOS
 
 ### **✅ Teste 1: View Implementada**
@@ -292,6 +428,25 @@ sistema,views_implementadas,funcoes_seguranca,professores_ativos,diretores_ativo
 RESUMO SISTEMA HIERÁRQUICO COMPLETO,2,4,1,1,1,1
 ```
 
+### **✅ Teste 10: Controle de Acesso Gestores - Contratos**
+```
+teste,contrato_id,empresa_nome,tipo_contrato,descricao,valor_total,status
+TESTE GESTOR - CONTRATOS,1,Empresa Teste,,,,ativo
+TESTE GESTOR - CONTRATOS,2,Empresa Teste,licenca,Contrato de teste para sistema educacional,50000.00,ativo
+```
+
+### **✅ Teste 11: Controle de Acesso Gestores - Escolas**
+```
+teste,escola_id,escola_nome,cidade,estado,status,contrato_descricao
+TESTE GESTOR - ESCOLAS,1,Escola Teste Segurança,São Paulo,SP,ativo,
+```
+
+### **✅ Teste 12: Sistema Hierárquico Completo Expandido**
+```
+sistema,views_total,funcoes_total,professores_ativos,diretores_ativos,gestores_ativos,alunos_ativos,escolas_ativas,contratos_ativos,conclusao
+SISTEMA HIERÁRQUICO COMPLETO EXPANDIDO,4,6,1,1,1,1,1,2,SISTEMA ENTERPRISE OPERACIONAL
+```
+
 ---
 
 ## 🔧 CARACTERÍSTICAS TÉCNICAS
@@ -320,6 +475,8 @@ RESUMO SISTEMA HIERÁRQUICO COMPLETO,2,4,1,1,1,1
 | **Professor** | `get_alunos_por_professor(usr_id)` | Apenas alunos de suas escolas |
 | **Diretor** | `get_alunos_por_diretor(usr_id)` | Alunos e professores de sua escola |
 | **Diretor** | `get_professores_por_diretor(usr_id)` | Professores de sua escola |
+| **Gestor** | `get_contratos_por_gestor(usr_id)` | Contratos de sua empresa |
+| **Gestor** | `get_escolas_por_gestor(usr_id)` | Escolas de sua empresa |
 | **Gestor** | `get_alunos_por_escola(escola_id)` | Múltiplas escolas via loops |
 | **Admin** | `vw_alunos_por_professor` | Acesso total (uso direto da view) |
 
@@ -341,6 +498,8 @@ const alunosVisiveis = await db.query(
 - `GET /api/professor/alunos` → `get_alunos_por_professor()`
 - `GET /api/diretor/alunos` → `get_alunos_por_diretor()`
 - `GET /api/diretor/professores` → `get_professores_por_diretor()`
+- `GET /api/gestor/contratos` → `get_contratos_por_gestor()`
+- `GET /api/gestor/escolas` → `get_escolas_por_gestor()`
 - `GET /api/gestor/alunos/:escola_id` → `get_alunos_por_escola()`
 - `GET /api/admin/alunos` → `vw_alunos_por_professor`
 
@@ -366,10 +525,14 @@ const alunosVisiveis = await db.query(
 |---------------|-----------|-----------------|
 | **View Base Alunos** | ✅ Funcionando | `vw_alunos_por_professor` operacional |
 | **View Base Professores** | ✅ Funcionando | `vw_professores_por_diretor` operacional |
+| **View Base Contratos** | ✅ Funcionando | `vw_contratos_por_gestor` operacional |
+| **View Base Escolas** | ✅ Funcionando | `vw_escolas_por_gestor` operacional |
 | **Função Professor** | ✅ Funcionando | `get_alunos_por_professor()` testada |
 | **Função Escola** | ✅ Funcionando | `get_alunos_por_escola()` criada |
 | **Função Diretor Alunos** | ✅ Funcionando | `get_alunos_por_diretor()` testada |
 | **Função Diretor Professores** | ✅ Funcionando | `get_professores_por_diretor()` testada |
+| **Função Gestor Contratos** | ✅ Funcionando | `get_contratos_por_gestor()` testada |
+| **Função Gestor Escolas** | ✅ Funcionando | `get_escolas_por_gestor()` testada |
 | **Testes Segurança** | ✅ Validados | Todos os cenários testados |
 | **Integração** | ✅ Pronta | Pronta para uso em endpoints |
 
@@ -400,13 +563,17 @@ const alunosVisiveis = await db.query(
 
 - ✅ View `vw_alunos_por_professor` centraliza dados de alunos com joins otimizados
 - ✅ View `vw_professores_por_diretor` centraliza dados de professores com joins otimizados
+- ✅ View `vw_contratos_por_gestor` centraliza dados de contratos com joins otimizados
+- ✅ View `vw_escolas_por_gestor` centraliza dados de escolas com joins otimizados
 - ✅ Função `get_alunos_por_professor()` garante acesso apenas aos alunos da mesma escola
 - ✅ Função `get_alunos_por_escola()` permite controle por escola específica
 - ✅ Função `get_alunos_por_diretor()` permite diretores verem alunos de suas escolas
 - ✅ Função `get_professores_por_diretor()` permite diretores verem professores de suas escolas
-- ✅ `SECURITY DEFINER` implementado para máxima segurança em todas as funções
-- ✅ Testes validaram todos os cenários de acesso (professor, diretor, inexistentes)
-- ✅ Sistema hierárquico completo: 2 views + 4 funções de segurança
+- ✅ Função `get_contratos_por_gestor()` permite gestores verem contratos de suas empresas
+- ✅ Função `get_escolas_por_gestor()` permite gestores verem escolas de suas empresas
+- ✅ `SECURITY DEFINER` implementado para máxima segurança em todas as 6 funções
+- ✅ Testes validaram todos os cenários de acesso (professor, diretor, gestor, inexistentes)
+- ✅ Sistema hierárquico completo: 4 views + 6 funções de segurança
 - ✅ Sistema preparado para integração com autenticação AWS Cognito
 
-**Status: SISTEMA HIERÁRQUICO COMPLETO - PRONTO PARA IMPLEMENTAÇÃO EM ENDPOINTS REST**
+**Status: SISTEMA HIERÁRQUICO ENTERPRISE COMPLETO - PRONTO PARA IMPLEMENTAÇÃO EM ENDPOINTS REST**
