@@ -1,0 +1,157 @@
+-- ✅ Script Aurora PostgreSQL 100% otimizado e escalável
+-- Para plataforma educacional com Cognito, IA, S3 e DynamoDB
+-- Desenvolvido para suportar alta escalabilidade e integridade relacional
+
+-- 🚨 Etapa 1: ENUMs Centralizados
+CREATE TYPE papel_usuario AS ENUM ('admin', 'gestor', 'diretor', 'professor', 'aluno');
+CREATE TYPE status_registro AS ENUM ('ativo', 'inativo', 'suspenso');
+CREATE TYPE tipo_contrato AS ENUM ('licenca', 'parceria');
+
+-- 🔹 Empresas
+CREATE TABLE empresas (
+  emp_id TEXT PRIMARY KEY,
+  nome TEXT NOT NULL,
+  cnpj TEXT UNIQUE,
+  telefone TEXT,
+  email_contato TEXT,
+  endereco TEXT,
+  cidade TEXT,
+  estado TEXT,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  criado_por TEXT
+);
+
+-- 🔹 Usuários (espelho do Cognito)
+CREATE TABLE usuarios (
+  usr_id TEXT PRIMARY KEY, -- Cognito Sub (UUID)
+  email TEXT UNIQUE NOT NULL,
+  nome TEXT NOT NULL,
+  papel papel_usuario NOT NULL,
+  empresa_id TEXT NOT NULL REFERENCES empresas(emp_id),
+  telefone TEXT,
+  documento_identidade TEXT,
+  data_nascimento DATE,
+  genero TEXT,
+  endereco TEXT,
+  cidade TEXT,
+  estado TEXT,
+  foto_perfil TEXT,
+  status status_registro DEFAULT 'ativo',
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  criado_por TEXT
+);
+
+-- 🔹 Gestores
+CREATE TABLE gestores (
+  usr_id TEXT PRIMARY KEY REFERENCES usuarios(usr_id) ON DELETE CASCADE,
+  cargo TEXT,
+  data_admissao DATE,
+  criado_por TEXT
+);
+
+-- 🔹 Contratos
+CREATE TABLE contratos (
+  contrato_id TEXT PRIMARY KEY,
+  empresa_id TEXT NOT NULL REFERENCES empresas(emp_id),
+  tipo tipo_contrato DEFAULT 'licenca',
+  descricao TEXT,
+  data_inicio DATE NOT NULL,
+  data_fim DATE NOT NULL,
+  numero_licencas INTEGER,
+  valor_total NUMERIC(12, 2),
+  documento_pdf TEXT,
+  status status_registro DEFAULT 'ativo',
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  criado_por TEXT
+);
+
+-- 🔹 Escolas
+CREATE TABLE escolas (
+  escola_id TEXT PRIMARY KEY,
+  contrato_id TEXT NOT NULL REFERENCES contratos(contrato_id),
+  empresa_id TEXT NOT NULL REFERENCES empresas(emp_id),
+  nome TEXT NOT NULL,
+  codigo_inep TEXT UNIQUE,
+  tipo_escola TEXT,
+  telefone TEXT,
+  email TEXT,
+  endereco TEXT,
+  cidade TEXT,
+  estado TEXT,
+  status status_registro DEFAULT 'ativo',
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  criado_por TEXT
+);
+
+-- 🔹 Diretores
+CREATE TABLE diretores (
+  usr_id TEXT PRIMARY KEY REFERENCES usuarios(usr_id) ON DELETE CASCADE,
+  escola_id TEXT NOT NULL REFERENCES escolas(escola_id),
+  cargo TEXT,
+  data_inicio DATE,
+  status status_registro DEFAULT 'ativo',
+  criado_por TEXT
+);
+
+-- 🔹 Professores
+CREATE TABLE professores (
+  usr_id TEXT PRIMARY KEY REFERENCES usuarios(usr_id) ON DELETE CASCADE,
+  escola_id TEXT NOT NULL REFERENCES escolas(escola_id),
+  disciplinas TEXT,
+  formacao TEXT,
+  data_admissao DATE,
+  status status_registro DEFAULT 'ativo',
+  criado_por TEXT
+);
+
+-- 🔹 Alunos
+CREATE TABLE alunos (
+  usr_id TEXT PRIMARY KEY REFERENCES usuarios(usr_id) ON DELETE CASCADE,
+  escola_id TEXT NOT NULL REFERENCES escolas(escola_id),
+  matricula TEXT UNIQUE NOT NULL,
+  turma TEXT,
+  serie TEXT,
+  turno TEXT,
+  nome_responsavel TEXT,
+  contato_responsavel TEXT,
+  data_matricula DATE,
+  status status_registro DEFAULT 'ativo',
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  criado_por TEXT
+);
+
+-- 🔹 Arquivos (relacionados a S3)
+CREATE TABLE arquivos (
+  uuid UUID PRIMARY KEY,
+  empresa_id TEXT NOT NULL REFERENCES empresas(emp_id),
+  contrato_id TEXT NOT NULL REFERENCES contratos(contrato_id),
+  escola_id TEXT,
+  usuario_id TEXT NOT NULL REFERENCES usuarios(usr_id),
+  tipo_usuario papel_usuario NOT NULL,
+  s3_key TEXT NOT NULL,
+  criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  criado_por TEXT
+);
+
+-- 🔹 Índices extras para performance
+CREATE INDEX idx_usuarios_empresa ON usuarios(empresa_id);
+CREATE INDEX idx_arquivos_usuario ON arquivos(usuario_id);
+CREATE INDEX idx_arquivos_empresa ON arquivos(empresa_id);
+CREATE INDEX idx_alunos_escola ON alunos(escola_id);
+CREATE INDEX idx_professores_escola ON professores(escola_id);
+
+-- 🔹 Trigger Function para updated_at
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.atualizado_em = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 🔹 Triggers para atualizar campo atualizado_em
+CREATE TRIGGER trg_update_usuarios
+BEFORE UPDATE ON usuarios
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
