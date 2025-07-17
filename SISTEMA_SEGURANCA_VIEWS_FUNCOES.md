@@ -122,6 +122,118 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ---
 
+## 🏫 SISTEMA DE SEGURANÇA PARA DIRETORES
+
+### **✅ VIEW: vw_professores_por_diretor**
+```sql
+CREATE OR REPLACE VIEW vw_professores_por_diretor AS
+SELECT
+  p.usr_id AS professor_id,
+  u.nome AS nome_professor,
+  p.escola_id,
+  e.nome AS escola_nome,
+  e.empresa_id,
+  p.disciplinas,
+  p.formacao,
+  p.data_admissao,
+  p.status
+FROM professores p
+JOIN usuarios u ON u.id = p.usr_id
+JOIN escolas e ON p.escola_id = e.id
+WHERE p.status = 'ativo';
+```
+
+**Funcionalidade:**
+- Centraliza visualização de professores ativos
+- Enriquece dados com informações da escola e usuário
+- Base para funções de segurança de diretores
+
+### **✅ FUNÇÃO: get_alunos_por_diretor()**
+```sql
+CREATE OR REPLACE FUNCTION get_alunos_por_diretor(diretor_id INTEGER)
+RETURNS TABLE (
+  aluno_id INTEGER,
+  matricula CHARACTER VARYING,
+  turma CHARACTER VARYING,
+  serie CHARACTER VARYING,
+  turno CHARACTER VARYING,
+  nome_responsavel CHARACTER VARYING,
+  contato_responsavel CHARACTER VARYING,
+  escola_id INTEGER,
+  escola_nome CHARACTER VARYING,
+  nome_aluno CHARACTER VARYING
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    v.aluno_id,
+    v.matricula,
+    v.turma,
+    v.serie,
+    v.turno,
+    v.nome_responsavel,
+    v.contato_responsavel,
+    v.escola_id,
+    v.escola_nome,
+    v.nome_aluno
+  FROM vw_alunos_por_professor v
+  WHERE v.escola_id IN (
+    SELECT d.escola_id 
+    FROM diretores d
+    WHERE d.usr_id = diretor_id AND d.status = 'ativo'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+**Controle de Acesso:**
+- Diretores só veem alunos de suas escolas
+- Filtro automático por escola_id baseado no diretor
+- Verificação de status ativo do diretor
+
+### **✅ FUNÇÃO: get_professores_por_diretor()**
+```sql
+CREATE OR REPLACE FUNCTION get_professores_por_diretor(diretor_id INTEGER)
+RETURNS TABLE (
+  professor_id INTEGER,
+  nome_professor CHARACTER VARYING,
+  escola_id INTEGER,
+  escola_nome CHARACTER VARYING,
+  empresa_id INTEGER,
+  disciplinas TEXT,
+  formacao TEXT,
+  data_admissao DATE,
+  status CHARACTER VARYING
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    v.professor_id,
+    v.nome_professor,
+    v.escola_id,
+    v.escola_nome,
+    v.empresa_id,
+    v.disciplinas,
+    v.formacao,
+    v.data_admissao,
+    v.status
+  FROM vw_professores_por_diretor v
+  WHERE v.escola_id IN (
+    SELECT d.escola_id 
+    FROM diretores d
+    WHERE d.usr_id = diretor_id AND d.status = 'ativo'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+```
+
+**Controle de Acesso:**
+- Diretores só veem professores de suas escolas
+- Filtro automático por escola_id baseado no diretor
+- Verificação de status ativo do diretor
+
+---
+
 ## 🧪 TESTES DE VALIDAÇÃO EXECUTADOS
 
 ### **✅ Teste 1: View Implementada**
@@ -155,6 +267,31 @@ resultado,views_implementadas,funcoes_seguras,alunos_visiveis,professores_ativos
 SISTEMA DE SEGURANÇA OPERACIONAL,1,2,1,1,1
 ```
 
+### **✅ Teste 6: Controle de Acesso Diretores - Alunos**
+```
+teste,aluno_id,nome_aluno,turma,serie,escola_nome
+TESTE DIRETOR - ALUNOS,1,Usuário Teste,5A,5º Ano,Escola Teste Segurança
+```
+
+### **✅ Teste 7: Controle de Acesso Diretores - Professores**
+```
+teste,professor_id,nome_professor,escola_nome,disciplinas,formacao
+TESTE DIRETOR - PROFESSORES,1,Usuário Teste,Escola Teste Segurança,Matemática,Licenciatura em Matemática
+```
+
+### **✅ Teste 8: Segurança - Diretor Inexistente**
+```
+teste,registros_retornados
+TESTE DIRETOR INEXISTENTE - ALUNOS,0
+TESTE DIRETOR INEXISTENTE - PROFESSORES,0
+```
+
+### **✅ Teste 9: Sistema Hierárquico Completo**
+```
+sistema,views_implementadas,funcoes_seguranca,professores_ativos,diretores_ativos,alunos_ativos,escolas_ativas
+RESUMO SISTEMA HIERÁRQUICO COMPLETO,2,4,1,1,1,1
+```
+
 ---
 
 ## 🔧 CARACTERÍSTICAS TÉCNICAS
@@ -181,7 +318,8 @@ SISTEMA DE SEGURANÇA OPERACIONAL,1,2,1,1,1
 | **Papel** | **Função Recomendada** | **Escopo de Acesso** |
 |-----------|----------------------|---------------------|
 | **Professor** | `get_alunos_por_professor(usr_id)` | Apenas alunos de suas escolas |
-| **Diretor** | `get_alunos_por_escola(escola_id)` | Todos os alunos de sua escola |
+| **Diretor** | `get_alunos_por_diretor(usr_id)` | Alunos e professores de sua escola |
+| **Diretor** | `get_professores_por_diretor(usr_id)` | Professores de sua escola |
 | **Gestor** | `get_alunos_por_escola(escola_id)` | Múltiplas escolas via loops |
 | **Admin** | `vw_alunos_por_professor` | Acesso total (uso direto da view) |
 
@@ -201,7 +339,8 @@ const alunosVisiveis = await db.query(
 
 ### **Endpoints Sugeridos:**
 - `GET /api/professor/alunos` → `get_alunos_por_professor()`
-- `GET /api/diretor/alunos/:escola_id` → `get_alunos_por_escola()`
+- `GET /api/diretor/alunos` → `get_alunos_por_diretor()`
+- `GET /api/diretor/professores` → `get_professores_por_diretor()`
 - `GET /api/gestor/alunos/:escola_id` → `get_alunos_por_escola()`
 - `GET /api/admin/alunos` → `vw_alunos_por_professor`
 
@@ -225,9 +364,12 @@ const alunosVisiveis = await db.query(
 
 | **Componente** | **Status** | **Observações** |
 |---------------|-----------|-----------------|
-| **View Base** | ✅ Funcionando | `vw_alunos_por_professor` operacional |
+| **View Base Alunos** | ✅ Funcionando | `vw_alunos_por_professor` operacional |
+| **View Base Professores** | ✅ Funcionando | `vw_professores_por_diretor` operacional |
 | **Função Professor** | ✅ Funcionando | `get_alunos_por_professor()` testada |
 | **Função Escola** | ✅ Funcionando | `get_alunos_por_escola()` criada |
+| **Função Diretor Alunos** | ✅ Funcionando | `get_alunos_por_diretor()` testada |
+| **Função Diretor Professores** | ✅ Funcionando | `get_professores_por_diretor()` testada |
 | **Testes Segurança** | ✅ Validados | Todos os cenários testados |
 | **Integração** | ✅ Pronta | Pronta para uso em endpoints |
 
@@ -256,11 +398,15 @@ const alunosVisiveis = await db.query(
 
 **SISTEMA DE SEGURANÇA BASEADO EM VIEWS E FUNÇÕES 100% OPERACIONAL**
 
-- ✅ View `vw_alunos_por_professor` centraliza dados com joins otimizados
+- ✅ View `vw_alunos_por_professor` centraliza dados de alunos com joins otimizados
+- ✅ View `vw_professores_por_diretor` centraliza dados de professores com joins otimizados
 - ✅ Função `get_alunos_por_professor()` garante acesso apenas aos alunos da mesma escola
 - ✅ Função `get_alunos_por_escola()` permite controle por escola específica
-- ✅ `SECURITY DEFINER` implementado para máxima segurança
-- ✅ Testes validaram todos os cenários de acesso
+- ✅ Função `get_alunos_por_diretor()` permite diretores verem alunos de suas escolas
+- ✅ Função `get_professores_por_diretor()` permite diretores verem professores de suas escolas
+- ✅ `SECURITY DEFINER` implementado para máxima segurança em todas as funções
+- ✅ Testes validaram todos os cenários de acesso (professor, diretor, inexistentes)
+- ✅ Sistema hierárquico completo: 2 views + 4 funções de segurança
 - ✅ Sistema preparado para integração com autenticação AWS Cognito
 
-**Status: PRONTO PARA IMPLEMENTAÇÃO EM ENDPOINTS REST**
+**Status: SISTEMA HIERÁRQUICO COMPLETO - PRONTO PARA IMPLEMENTAÇÃO EM ENDPOINTS REST**
