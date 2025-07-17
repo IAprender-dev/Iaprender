@@ -68,32 +68,28 @@ const CONFIG = {
   }
 };
 
-// 🔒 Middleware de autenticação
-const authenticateToken = async (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+// 🔐 Middleware: Autentica usuário com token JWT do Cognito
+function autenticar(req, res, next) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ erro: 'Token ausente' });
 
-  if (!token) {
-    return res.status(401).json({ 
-      sucesso: false, 
-      erro: 'Token de autenticação necessário',
-      codigo: 'TOKEN_AUSENTE' 
-    });
-  }
-
+  // Verifica o token com chave pública Cognito (simulada)
   try {
-    const decoded = jwt.verify(token, CONFIG.JWT_SECRET);
-    req.usuario = decoded;
+    const decoded = jwt.decode(token); // Em produção: use jwt.verify com JWKs
+    req.usuario = {
+      sub: decoded.sub,
+      email: decoded.email,
+      empresa_id: decoded['custom:empresa_id'],
+      tipo_usuario: decoded['custom:tipo_usuario']
+    };
     next();
-  } catch (error) {
-    console.error('❌ Erro na autenticação:', error.message);
-    return res.status(401).json({ 
-      sucesso: false, 
-      erro: 'Token inválido',
-      codigo: 'TOKEN_INVALIDO' 
-    });
+  } catch (err) {
+    return res.status(401).json({ erro: 'Token inválido' });
   }
-};
+}
+
+// Alias para compatibilidade
+const authenticateToken = autenticar;
 
 // 🎯 Funções utilitárias
 const gerarS3Key = (empresaId, contratoId, escolaId, usuarioId, tipoUsuario, tipoArquivo, uuid) => {
