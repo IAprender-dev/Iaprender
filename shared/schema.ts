@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, pgEnum, date, doublePrecision, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, pgEnum, date, doublePrecision, varchar, uuid, bigint, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -9,6 +9,7 @@ export const userStatusEnum = pgEnum('user_status', ['active', 'inactive', 'susp
 export const contractStatusEnum = pgEnum('contract_status', ['active', 'pending', 'expired', 'cancelled']);
 export const cognitoGroupEnum = pgEnum('cognito_group', ['Admin', 'Gestores', 'Diretores', 'Professores', 'Alunos']);
 export const resourceTypeEnum = pgEnum('resource_type', ['teacher', 'student']);
+export const papelUsuarioEnum = pgEnum('papel_usuario', ['admin', 'gestor', 'diretor', 'professor', 'aluno']);
 
 // Tabela de Empresas (estrutura baseada no banco real)
 export const empresas = pgTable('empresas', {
@@ -163,6 +164,27 @@ export const alunos = pgTable('alunos', {
   criado_em: timestamp('criado_em'),
 });
 
+// Tabela de Arquivos S3 (nova)
+export const arquivos = pgTable('arquivos', {
+  uuid: uuid('uuid').primaryKey().defaultRandom(),
+  empresaId: integer('empresa_id').notNull(),
+  contratoId: integer('contrato_id'),
+  escolaId: integer('escola_id'),
+  usuarioId: integer('usuario_id').notNull(),
+  tipoUsuario: papelUsuarioEnum('tipo_usuario').notNull(),
+  s3Key: text('s3_key').notNull(),
+  descricao: text('descricao'),
+  tipoArquivo: text('tipo_arquivo'),
+  tamanhoBytes: bigint('tamanho_bytes', { mode: 'number' }),
+  mimeType: text('mime_type'),
+  metadata: jsonb('metadata'),
+  status: varchar('status').default('ativo'),
+  criadoEm: timestamp('criado_em').defaultNow(),
+  criadoPor: integer('criado_por'),
+  atualizadoEm: timestamp('atualizado_em').defaultNow(),
+  atualizadoPor: integer('atualizado_por'),
+});
+
 // Tabela de Preferências de IA (nova)
 export const aiPreferences = pgTable('ai_preferences', {
   id: serial('id').primaryKey(),
@@ -218,6 +240,9 @@ export const empresasRelations = relations(empresas, ({ many, one }) => ({
   
   // Uma empresa pode ter muitos alunos
   alunos: many(alunos, { relationName: 'empresa_alunos' }),
+  
+  // Uma empresa pode ter muitos arquivos
+  arquivos: many(arquivos, { relationName: 'empresa_arquivos' }),
   
   // Relacionamentos de auditoria
   criador: one(usuarios, {
@@ -297,6 +322,12 @@ export const usuariosRelations = relations(usuarios, ({ one, many }) => ({
     references: [aiPreferences.userId],
     relationName: 'usuario_ai_preferences'
   }),
+  
+  // Arquivos criados pelo usuário
+  arquivosCriados: many(arquivos, { relationName: 'usuario_arquivos_criados' }),
+  
+  // Arquivos atualizados pelo usuário
+  arquivosAtualizados: many(arquivos, { relationName: 'usuario_arquivos_atualizados' }),
 }));
 
 // Relacionamentos da tabela escolas
@@ -323,6 +354,9 @@ export const escolasRelations = relations(escolas, ({ one, many }) => ({
   
   // Uma escola pode ter muitos alunos
   alunos: many(alunos, { relationName: 'escola_alunos' }),
+  
+  // Uma escola pode ter muitos arquivos
+  arquivos: many(arquivos, { relationName: 'escola_arquivos' }),
   
   // Relacionamentos de auditoria
   criador: one(usuarios, {
@@ -421,6 +455,49 @@ export const aiResourceConfigsRelations = relations(aiResourceConfigs, ({ one })
   }),
 }));
 
+// Relacionamentos da tabela arquivos
+export const arquivosRelations = relations(arquivos, ({ one }) => ({
+  // Um arquivo pertence a uma empresa
+  empresa: one(empresas, {
+    fields: [arquivos.empresaId],
+    references: [empresas.id],
+    relationName: 'empresa_arquivos'
+  }),
+  
+  // Um arquivo pode pertencer a um contrato
+  contrato: one(contratos, {
+    fields: [arquivos.contratoId],
+    references: [contratos.id],
+    relationName: 'contrato_arquivos'
+  }),
+  
+  // Um arquivo pode pertencer a uma escola
+  escola: one(escolas, {
+    fields: [arquivos.escolaId],
+    references: [escolas.id],
+    relationName: 'escola_arquivos'
+  }),
+  
+  // Um arquivo pertence a um usuário
+  usuario: one(usuarios, {
+    fields: [arquivos.usuarioId],
+    references: [usuarios.id],
+    relationName: 'usuario_arquivos'
+  }),
+  
+  // Relacionamentos de auditoria
+  criador: one(usuarios, {
+    fields: [arquivos.criadoPor],
+    references: [usuarios.id],
+    relationName: 'usuario_arquivos_criados'
+  }),
+  atualizador: one(usuarios, {
+    fields: [arquivos.atualizadoPor],
+    references: [usuarios.id],
+    relationName: 'usuario_arquivos_atualizados'
+  }),
+}));
+
 // Manter compatibilidade
 export const usersRelations = usuariosRelations;
 
@@ -455,6 +532,12 @@ export const insertAIResourceConfigSchema = createInsertSchema(aiResourceConfigs
   atualizadoEm: true,
 });
 
+export const insertArquivoSchema = createInsertSchema(arquivos).omit({
+  uuid: true,
+  criadoEm: true,
+  atualizadoEm: true,
+});
+
 // Tipos
 export type Empresa = typeof empresas.$inferSelect;
 export type InsertEmpresa = z.infer<typeof insertEmpresaSchema>;
@@ -470,3 +553,6 @@ export type InsertAIPreferences = z.infer<typeof insertAIPreferencesSchema>;
 
 export type AIResourceConfig = typeof aiResourceConfigs.$inferSelect;
 export type InsertAIResourceConfig = z.infer<typeof insertAIResourceConfigSchema>;
+
+export type Arquivo = typeof arquivos.$inferSelect;
+export type InsertArquivo = z.infer<typeof insertArquivoSchema>;

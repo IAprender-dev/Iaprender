@@ -45,6 +45,7 @@ import { registerSchoolRoutes } from "./routes/school-routes";
 import { registerAdminCognitoRoutes } from "./routes/admin-cognito-routes";
 import { registerAdminEndpoints } from "./routes/admin-endpoints";
 import { registerAdminCRUDEndpoints } from "./routes/admin-crud";
+import s3DocumentRoutes from "./routes/s3-documents";
 // Import removido para implementação dinâmica
 
 // Define login schema
@@ -1078,6 +1079,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registrar rotas de autenticação unificadas
   const { registerAuthRoutes } = await import('./routes/auth-routes.js');
   registerAuthRoutes(app);
+
+  // Registrar rotas de arquivos S3
+  app.use('/api/s3-documents', s3DocumentRoutes);
 
   // Rotas da API hierárquica removidas temporariamente (dependência do CognitoSyncService removida)
 

@@ -103,6 +103,7 @@ import AnalyticsDashboard from "@/pages/teacher/AnalyticsDashboard";
 import TokenDashboard from "@/pages/TokenDashboard";
 import OptimizationsPage from "@/pages/OptimizationsPage";
 import AIPreferences from "@/pages/user/AIPreferences";
+import DocumentsPage from "@/pages/DocumentsPage";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -181,6 +182,9 @@ function Router() {
       
       {/* Optimizations Dashboard */}
       <Route path="/otimizacoes" component={OptimizationsPage} />
+      
+      {/* Documents Management */}
+      <Route path="/documentos" component={DocumentsPage} />
       
       {/* AWS Cognito Dashboards */}
       <Route path="/admin/master" component={AdminMaster} />
