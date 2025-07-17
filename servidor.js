@@ -309,19 +309,19 @@ app.post('/api/documento/gerar', autenticar, async (req, res) => {
       ContentType: 'application/json'
     }).promise();
 
-    // 🗄️ Salva metadados no DynamoDB
+    // 🧾 Registra no DynamoDB
     await ddb.put({
-      TableName: CONFIG.DYNAMO_TABLE,
+      TableName: 'arquivos_metadados',
       Item: {
         uuid,
         empresa_id,
         usuario_id,
         tipo_usuario,
-        email,
         tipo_arquivo,
+        email_usuario: email,
+        modelo_ia,
         s3_key: s3Key,
         data_criacao: new Date().toISOString(),
-        modelo_ia,
         status: 'ativo'
       }
     }).promise();
@@ -333,23 +333,9 @@ app.post('/api/documento/gerar', autenticar, async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `, [uuid, empresa_id, usuario_id, tipo_usuario, tipo_arquivo, s3Key, modelo_ia, new Date()]);
 
-    res.json({
-      sucesso: true,
-      data: {
-        uuid,
-        s3_key: s3Key,
-        conteudo,
-        tipo_arquivo,
-        modelo_ia
-      }
-    });
-
-  } catch (error) {
-    console.error('❌ Erro na geração:', error);
-    res.status(500).json({
-      sucesso: false,
-      erro: error.message
-    });
+    res.json({ sucesso: true, uuid, s3_key: s3Key });
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
   }
 });
 
