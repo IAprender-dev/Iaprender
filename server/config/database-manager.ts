@@ -72,24 +72,21 @@ export class DatabaseManager {
         }
       });
 
-      // Montar ARNs para Aurora DSQL - formato correto para DSQL
-      const clusterArn = endpoint.includes('arn:') ? endpoint : 
-        `arn:aws:dsql:${process.env.AWS_REGION || 'us-east-1'}:${process.env.AWS_ACCOUNT_ID || '762723916379'}:cluster/${endpoint}`;
+      // Aurora DSQL usa formato simplificado - endpoint direto como resourceArn
+      console.log(`🔧 Configurando Aurora DSQL com endpoint: ${endpoint}`);
+      console.log(`🔧 AWS Account ID: ${process.env.AWS_ACCOUNT_ID}`);
       
-      const secretArn = token.includes('arn:') ? token :
-        `arn:aws:secretsmanager:${process.env.AWS_REGION || 'us-east-1'}:${process.env.AWS_ACCOUNT_ID || '762723916379'}:secret:${token}`;
-
       this.client = rdsClient;
       this.db = drizzleAWS(rdsClient, {
         schema,
-        resourceArn: clusterArn,
-        secretArn: secretArn,
-        database: 'iaprender_db'
+        resourceArn: endpoint,  // Usar endpoint diretamente
+        secretArn: token,       // Usar token diretamente 
+        database: 'postgres'    // Database padrão
       });
 
       console.log('✅ Aurora DSQL connection initialized');
-      console.log(`📍 Cluster ARN: ${clusterArn}`);
-      console.log(`🔐 Secret ARN: ${secretArn}`);
+      console.log(`📍 Resource ARN: ${endpoint}`);
+      console.log(`🔐 Secret ARN: ${token.substring(0, 30)}...`);
     } catch (error) {
       console.error('❌ Failed to initialize Aurora DSQL, falling back to PostgreSQL:', error);
       this.currentDbType = 'postgresql';
