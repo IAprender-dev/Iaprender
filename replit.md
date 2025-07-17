@@ -143,6 +143,19 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 17, 2025: ✅ CONCLUÍDO - SISTEMA DE SEGURANÇA DE AUTENTICAÇÃO MELHORADO COM MENSAGENS EM PORTUGUÊS
+  - ✅ **MIDDLEWARE UNIFICADO**: AuthMiddlewareUnified com mensagens em português brasileiro
+  - ✅ **RATE LIMITING INTELIGENTE**: 3 tipos de limitadores (login, API, admin) com bloqueio automático
+  - ✅ **SISTEMA DE SCORING DE RISCO**: Cálculo automático baseado em tentativas, IP, user-agent
+  - ✅ **LOGGING DE SEGURANÇA**: 11 eventos de segurança monitorados com detalhes completos
+  - ✅ **CONTROLE HIERÁRQUICO**: 5 níveis de acesso (admin > gestor > diretor > professor > aluno)
+  - ✅ **PROTEÇÃO FORÇA BRUTA**: Bloqueio automático após 5 tentativas em 15 minutos
+  - ✅ **CÓDIGOS DE ERRO ESPECÍFICOS**: 12 códigos de erro em português para diagnóstico
+  - ✅ **COGNITO JWT MELHORADO**: Verificação robusta com respostas estruturadas
+  - ✅ **ROTAS S3 ATUALIZADAS**: Migração para middleware unificado com segurança aprimorada
+  - ✅ **DOCUMENTAÇÃO COMPLETA**: SEGURANCA_AUTENTICACAO_MELHORADA.md com guia técnico
+  - ✅ **LIMPEZA AUTOMÁTICA**: Dados de segurança limpos a cada hora para performance
+  - ✅ **MENSAGENS PADRONIZADAS**: Todas as respostas em português brasileiro consistente
 - July 17, 2025: ✅ CONCLUÍDO - SISTEMA COMPLETO DE DOCUMENTOS S3 COM CONTROLE HIERÁRQUICO IMPLEMENTADO
   - ✅ **BACKEND REST API S3**: Endpoints completos `/api/s3-documents` com autenticação Cognito
   - ✅ **UPLOAD INDIVIDUAL E LOTE**: Suporte a arquivo único e upload de até 10 arquivos simultaneamente

@@ -49,12 +49,15 @@ export class CognitoJWTVerifier {
     });
   }
 
-  async verifyToken(token: string): Promise<CognitoJWTPayload> {
+  async verifyToken(token: string): Promise<{ success: boolean; user?: any; error?: string }> {
     try {
       // Decodificar header para obter kid
       const decodedHeader = jwt.decode(token, { complete: true });
       if (!decodedHeader || !decodedHeader.header.kid) {
-        throw new Error('Token inválido - header ausente');
+        return {
+          success: false,
+          error: 'Token inválido - header ausente'
+        };
       }
 
       // Obter chave de assinatura
@@ -69,14 +72,40 @@ export class CognitoJWTVerifier {
 
       // Validar que é um access token ou id token
       if (payload.token_use !== 'access' && payload.token_use !== 'id') {
-        throw new Error('Tipo de token inválido');
+        return {
+          success: false,
+          error: 'Tipo de token inválido'
+        };
       }
 
-      return payload;
-    } catch (error) {
+      return {
+        success: true,
+        user: payload
+      };
+    } catch (error: any) {
       console.error('❌ Erro ao verificar token JWT:', error);
-      throw new Error('Token JWT inválido');
+      return {
+        success: false,
+        error: `Falha na verificação do token: ${error.message}`
+      };
     }
+  }
+
+  /**
+   * Extrai informações do usuário do payload do token
+   */
+  extractUserInfo(payload: CognitoJWTPayload): any {
+    return {
+      id: payload.sub,
+      email: payload.email,
+      nome: payload.email.split('@')[0], // Fallback para nome
+      username: payload['cognito:username'],
+      role: payload['custom:tipo_usuario'] || 'aluno',
+      tipo_usuario: payload['custom:tipo_usuario'] || 'aluno',
+      empresa_id: payload['custom:empresa_id'] ? parseInt(payload['custom:empresa_id']) : null,
+      status: 'ativo',
+      groups: payload['cognito:groups'] || [],
+    };
   }
 
   async extractUserData(token: string): Promise<{
@@ -87,7 +116,13 @@ export class CognitoJWTVerifier {
     empresaId?: string;
     tipoUsuario?: string;
   }> {
-    const payload = await this.verifyToken(token);
+    const result = await this.verifyToken(token);
+    
+    if (!result.success || !result.user) {
+      throw new Error(result.error || 'Erro na verificação do token');
+    }
+    
+    const payload = result.user;
     
     return {
       sub: payload.sub,

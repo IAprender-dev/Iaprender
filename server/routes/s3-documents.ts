@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import S3DocumentService from '../services/S3DocumentService';
-import { CognitoAuthMiddleware, AuthenticatedRequest } from '../middleware/cognitoAuthMiddleware';
+import { authMiddleware, RequisicaoAutenticada } from '../middleware/authMiddlewareUnified.js';
 import { z } from 'zod';
 import { createInsertSchema } from 'drizzle-zod';
 import { arquivos } from '../../shared/schema';
@@ -9,7 +9,6 @@ import { arquivos } from '../../shared/schema';
 const router = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 const s3DocumentService = new S3DocumentService();
-const authMiddleware = new CognitoAuthMiddleware();
 
 // Schema para validação de upload
 const uploadSchema = z.object({
@@ -18,32 +17,40 @@ const uploadSchema = z.object({
 });
 
 // Middleware para autenticação em todas as rotas
-router.use(authMiddleware.authenticate);
+router.use(authMiddleware.autenticar);
 
 /**
  * POST /api/s3-documents/upload - Upload de documento
  */
-router.post('/upload', upload.single('file'), async (req: AuthenticatedRequest, res: Response) => {
+router.post('/upload', upload.single('file'), async (req: RequisicaoAutenticada, res: Response) => {
   try {
-    const { user } = req;
+    const { usuario } = req;
     
     if (!req.file) {
-      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      return res.status(400).json({ 
+        sucesso: false, 
+        erro: 'Nenhum arquivo enviado',
+        codigo: 'ARQUIVO_AUSENTE'
+      });
     }
 
     const { descricao, metadata } = uploadSchema.parse(req.body);
     
     // Verificar se o usuário tem permissão para upload
-    if (!user || !user.id) {
-      return res.status(401).json({ error: 'Usuário não autenticado' });
+    if (!usuario || !usuario.id) {
+      return res.status(401).json({ 
+        sucesso: false, 
+        erro: 'Usuário não autenticado',
+        codigo: 'NAO_AUTENTICADO'
+      });
     }
 
     const documentUpload = {
-      empresaId: user.empresa_id || 1,
+      empresaId: usuario.empresa_id || 1,
       contratoId: null,
       escolaId: null,
-      usuarioId: parseInt(user.id),
-      tipoUsuario: user.tipo_usuario || user.role,
+      usuarioId: parseInt(usuario.id),
+      tipoUsuario: usuario.tipo_usuario || usuario.role,
       fileName: req.file.originalname,
       fileContent: req.file.buffer,
       mimeType: req.file.mimetype,
@@ -54,15 +61,19 @@ router.post('/upload', upload.single('file'), async (req: AuthenticatedRequest, 
     const uuid = await s3DocumentService.uploadDocument(documentUpload);
     
     res.json({ 
-      success: true, 
+      sucesso: true, 
       uuid,
-      message: 'Documento enviado com sucesso',
-      fileName: req.file.originalname,
-      size: req.file.size,
+      mensagem: 'Documento enviado com sucesso',
+      nomeArquivo: req.file.originalname,
+      tamanho: req.file.size,
     });
   } catch (error) {
-    console.error('Erro no upload:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('❌ Erro no upload:', error);
+    res.status(500).json({ 
+      sucesso: false, 
+      erro: 'Erro interno do servidor',
+      codigo: 'ERRO_INTERNO'
+    });
   }
 });
 
