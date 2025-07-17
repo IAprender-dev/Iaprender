@@ -27,7 +27,7 @@ import TeacherProfile from "@/pages/teacher/TeacherProfile";
 import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
 import TeacherNotificationCenter from "@/pages/teacher/NotificationCenter";
-import AdminMasterDashboard from "@/pages/admin/AdminMasterDashboard";
+import AdminMaster from "@/pages/AdminMaster";
 import AdvancedAdminDashboard from "@/pages/admin/AdvancedAdminDashboard";
 import AIManagementDashboard from "@/pages/admin/AIManagementDashboard";
 import AWSCostManagement from "@/pages/admin/AWSCostManagement";
@@ -77,7 +77,6 @@ import StudentMindMap from "@/pages/student/StudentMindMap";
 import NotFound from "@/pages/not-found";
 
 // AWS Cognito Dashboards
-import AdminMaster from "@/pages/AdminMaster";
 import GestorDashboardNew from "@/pages/GestorDashboard";
 import AdminFormRoutes from "@/pages/AdminFormRoutes";
 import GestorFormRoutes from "@/pages/GestorFormRoutes";
@@ -105,7 +104,6 @@ import OptimizationsPage from "@/pages/OptimizationsPage";
 import AIPreferences from "@/pages/user/AIPreferences";
 import DocumentsPage from "@/pages/DocumentsPage";
 import LambdaIADemo from "@/components/LambdaIADemo";
-import HybridLambdaDemo from "@/components/HybridLambdaDemo";
 import AWSIntegrationDemo from "@/components/AWSIntegrationDemo";
 
 // Protected route component
@@ -203,7 +201,7 @@ function Router() {
       <Route path="/test-logout" component={TestLogout} />
 
       {/* Admin Master Dashboard */}
-      <Route path="/admin/master-old" component={AdminMasterDashboard} />
+      <Route path="/admin/master-old" component={AdminMaster} />
       <Route path="/admin/advanced" component={AdvancedAdminDashboard} />
       <Route path="/admin/executive" component={ExecutiveDashboard} />
       <Route path="/admin/tools" component={AdvancedToolsDashboard} />
@@ -256,7 +254,6 @@ function Router() {
       
       {/* Lambda IA Demo */}
       <Route path="/lambda-ia-demo" component={LambdaIADemo} />
-      <Route path="/hybrid-lambda-demo" component={HybridLambdaDemo} />
       
       {/* AWS Integration Demo */}
       <Route path="/aws-integration-demo" component={AWSIntegrationDemo} />

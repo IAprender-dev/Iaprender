@@ -1,15 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Shield, Users, Building, Settings, Activity, BarChart3, LogOut, Bot, Brain } from "lucide-react";
+import {
+  Shield,
+  Users,
+  Building,
+  Settings,
+  Activity,
+  BarChart3,
+  LogOut,
+  Bot,
+  Brain,
+} from "lucide-react";
 import { Link } from "wouter";
 import iaprenderLogo from "@assets/iaprender-logo.png";
 
 export default function AdminMaster() {
   const handleLogout = () => {
     // Limpar dados de autenticação e redirecionar
-    localStorage.removeItem('auth_token');
-    window.location.href = '/auth';
+    localStorage.removeItem("auth_token");
+    window.location.href = "/auth";
   };
 
   return (
@@ -20,20 +30,22 @@ export default function AdminMaster() {
           <div className="flex items-center justify-between">
             {/* Logo e Marca IAprender */}
             <div className="flex items-center space-x-4">
-              <img 
-                src={iaprenderLogo} 
-                alt="IAprender Logo" 
+              <img
+                src={iaprenderLogo}
+                alt="IAprender Logo"
                 className="h-12 w-12 object-contain"
               />
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">IAprender</h1>
-                <p className="text-sm text-slate-600">Plataforma Educacional IA</p>
+                <p className="text-sm text-slate-600">
+                  Plataforma Educacional IA
+                </p>
               </div>
             </div>
 
             {/* Botão de Logout */}
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={handleLogout}
               className="flex items-center gap-2 text-slate-600 hover:text-red-600 hover:border-red-300"
             >
@@ -53,9 +65,14 @@ export default function AdminMaster() {
               <Shield className="h-10 w-10 text-blue-600" />
               Dashboard Administrativo
             </h2>
-            <p className="text-slate-600 mt-2">Controle total do sistema IAprender</p>
+            <p className="text-slate-600 mt-2">
+              Controle total do sistema IAprender
+            </p>
           </div>
-          <Badge variant="secondary" className="bg-green-100 text-green-700 px-4 py-2">
+          <Badge
+            variant="secondary"
+            className="bg-green-100 text-green-700 px-4 py-2"
+          >
             <Activity className="h-4 w-4 mr-2" />
             Sistema Ativo
           </Badge>
@@ -124,9 +141,12 @@ export default function AdminMaster() {
                 <Shield className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-green-800">Login AWS Cognito realizado com sucesso!</h3>
+                <h3 className="text-lg font-semibold text-green-800">
+                  Login AWS Cognito realizado com sucesso!
+                </h3>
                 <p className="text-green-600">
-                  Você foi autenticado como <strong>Administrador</strong> e redirecionado automaticamente para este dashboard.
+                  Você foi autenticado como <strong>Administrador</strong> e
+                  redirecionado automaticamente para este dashboard.
                 </p>
               </div>
             </div>
@@ -153,14 +173,7 @@ export default function AdminMaster() {
             </Button>
           </Link>
 
-          <Link href="/hybrid-lambda-demo">
-            <Button className="h-24 w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-semibold text-lg">
-              <div className="flex flex-col items-center space-y-2">
-                <Brain className="h-8 w-8" />
-                <span>Sistema Híbrido</span>
-              </div>
-            </Button>
-          </Link>
+
 
           <Button className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-lg">
             <div className="flex flex-col items-center space-y-2">

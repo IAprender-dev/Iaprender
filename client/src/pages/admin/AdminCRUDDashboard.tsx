@@ -244,12 +244,6 @@ export default function AdminCRUDDashboard() {
                   Recursos IA
                 </Button>
               </Link>
-              <Link href="/hybrid-lambda-demo">
-                <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300">
-                  <Brain className="h-4 w-4 mr-2" />
-                  Sistema Híbrido
-                </Button>
-              </Link>
               <LogoutButton 
                 variant="outline" 
                 size="sm"
