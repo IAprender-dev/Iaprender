@@ -105,6 +105,7 @@ import OptimizationsPage from "@/pages/OptimizationsPage";
 import AIPreferences from "@/pages/user/AIPreferences";
 import DocumentsPage from "@/pages/DocumentsPage";
 import LambdaIADemo from "@/components/LambdaIADemo";
+import AWSIntegrationDemo from "@/components/AWSIntegrationDemo";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -254,6 +255,9 @@ function Router() {
       
       {/* Lambda IA Demo */}
       <Route path="/lambda-ia-demo" component={LambdaIADemo} />
+      
+      {/* AWS Integration Demo */}
+      <Route path="/aws-integration-demo" component={AWSIntegrationDemo} />
       
       {/* Fallback to 404 */}
       <Route component={NotFound} />

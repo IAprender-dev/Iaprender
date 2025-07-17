@@ -9,6 +9,7 @@ import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
 import cognitoOAuthRouter from "./routes/cognito-oauth";
 import cognitoAdminRouter from "./routes/cognito-admin";
 import authProxyRouter from "./routes/auth-proxy";
+import awsIntegrationRouter from "./routes/aws-integration";
 import { SecretsManager } from "./config/secrets.js";
 // WebSocket import removed - using direct OpenAI Realtime API connection
 
@@ -74,6 +75,10 @@ app.use((req, res, next) => {
   // Registrar rotas de conectividade primeiro
   app.use('/api/connectivity', connectivityRouter);
   console.log('🔌 Rotas de teste de conectividade registradas');
+
+  // 🌐 Rotas AWS integradas
+  app.use('/api', awsIntegrationRouter);
+  console.log('🌐 Rotas AWS integradas registradas');
   
   // Registrar rotas Lambda IA
   const lambdaIARouter = await import('./routes/lambda-ia.js');
