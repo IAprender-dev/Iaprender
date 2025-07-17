@@ -339,6 +339,36 @@ app.post('/api/documento/gerar', autenticar, async (req, res) => {
   }
 });
 
+// 📘 Consulta usuário no PostgreSQL
+app.get('/api/usuario/perfil', autenticar, async (req, res) => {
+  try {
+    const { sub } = req.usuario;
+    const { rows } = await db.query('SELECT * FROM usuarios WHERE cognito_sub = $1', [sub]);
+    res.json(rows[0] || {});
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
+// 🔍 Consulta arquivos do usuário
+app.get('/api/usuario/documentos', autenticar, async (req, res) => {
+  try {
+    const { empresa_id, usuario_id } = req.usuario;
+    const result = await ddb.query({
+      TableName: 'arquivos_metadados',
+      IndexName: 'usuario_index', // (crie esse GSI)
+      KeyConditionExpression: 'usuario_id = :u and empresa_id = :e',
+      ExpressionAttributeValues: {
+        ':u': usuario_id,
+        ':e': empresa_id
+      }
+    }).promise();
+    res.json(result.Items);
+  } catch (err) {
+    res.status(500).json({ erro: err.message });
+  }
+});
+
 // 🤖 Gerar documento IA (rota de compatibilidade)
 app.post('/api/gerar-documento', authenticateToken, async (req, res) => {
   try {
