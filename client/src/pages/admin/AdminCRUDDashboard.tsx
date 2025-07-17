@@ -238,6 +238,12 @@ export default function AdminCRUDDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Link href="/admin/users">
+                <Button variant="outline" size="sm" className="text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300">
+                  <Users className="h-4 w-4 mr-2" />
+                  Dashboard Unificado
+                </Button>
+              </Link>
               <Link href="/admin/ai-resources">
                 <Button variant="outline" size="sm" className="text-purple-600 hover:text-purple-700 border-purple-200 hover:border-purple-300">
                   <Bot className="h-4 w-4 mr-2" />
