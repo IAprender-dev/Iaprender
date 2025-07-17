@@ -36,7 +36,7 @@ import ContractManagement from "@/pages/admin/ContractManagement";
 import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
 
 
-import AdminCRUDDashboard from "@/pages/admin/AdminCRUDDashboard";
+import AdminCRUDDashboardSimple from "@/pages/admin/AdminCRUDDashboardSimple";
 import AIResourcesDashboard from "@/pages/admin/AIResourcesDashboard";
 import S3BedrockDashboard from "@/pages/admin/S3BedrockDashboard";
 import GestorCRUDDashboard from "@/pages/gestor/GestorCRUDDashboard";
@@ -211,7 +211,7 @@ function Router() {
       <Route path="/admin/companies-contracts" component={CompanyContractManagement} />
 
 
-      <Route path="/admin/crud" component={AdminCRUDDashboard} />
+      <Route path="/admin/crud" component={AdminCRUDDashboardSimple} />
       <Route path="/admin/ai-resources" component={AIResourcesDashboard} />
       <Route path="/admin/s3-bedrock" component={S3BedrockDashboard} />
       <Route path="/admin/credentials" component={SystemCredentials} />
