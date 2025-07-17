@@ -193,6 +193,84 @@ export default function AdminCRUDDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Dados mock baseados nos dados reais do banco
+  const empresas = [
+    {
+      id: 1,
+      nome: "Empresa Teste",
+      razao_social: "Empresa Teste Ltda",
+      cnpj: "12.345.678/0001-90",
+      email_contato: "teste@empresa.com",
+      telefone: "",
+      endereco: "",
+      cidade: "",
+      estado: "",
+      status: "ativo"
+    },
+    {
+      id: 2,
+      nome: "SME São Paulo",
+      razao_social: "Prefeitura Municipal de São Paulo",
+      cnpj: "60.511.888/0001-51",
+      email_contato: "sme@prefeitura.sp.gov.br",
+      telefone: "(11) 3397-8000",
+      endereco: "",
+      cidade: "São Paulo",
+      estado: "SP",
+      status: "ativo"
+    },
+    {
+      id: 3,
+      nome: "SME Rio de Janeiro",
+      razao_social: "Secretaria Municipal de Educação do Rio de Janeiro",
+      cnpj: "42.498.733/0001-48",
+      email_contato: "contato@rioeduca.net",
+      telefone: "(21) 2976-2000",
+      endereco: "",
+      cidade: "Rio de Janeiro",
+      estado: "RJ",
+      status: "ativo"
+    }
+  ];
+
+  const usuarios = [
+    {
+      id: 1,
+      nome: "Usuário Teste",
+      email: "test@usuario.com",
+      tipoUsuario: "admin",
+      status: "ativo",
+      empresa_id: 1,
+      telefone: "",
+      documento: ""
+    }
+  ];
+
+  const contratos = [
+    {
+      id: 1,
+      numero: "TESTE-001",
+      nome: "Contrato Teste",
+      empresa_id: 1,
+      data_inicio: "2025-07-17",
+      data_fim: "2026-07-17",
+      valor_total: 0,
+      moeda: "BRL",
+      status: "ativo"
+    },
+    {
+      id: 2,
+      numero: "CONT-2025-001",
+      nome: "Contrato Teste Gestor",
+      empresa_id: 1,
+      data_inicio: "2025-01-01",
+      data_fim: "2025-12-31",
+      valor_total: 50000.00,
+      moeda: "BRL",
+      status: "ativo"
+    }
+  ];
+
   // Token authentication handler
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -691,15 +769,15 @@ function EmpresasTab({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {empresas.map((empresa: Empresa) => (
+                  {empresas.map((empresa: any) => (
                     <TableRow key={empresa.id}>
                       <TableCell>
                         <div className="space-y-2">
                           <div className="font-bold text-blue-600 text-lg leading-tight">
-                            {empresa.razaoSocial || empresa.nome}
+                            {empresa.razao_social || empresa.nome}
                           </div>
                           <div className="text-sm text-gray-600">
-                            {empresa.razaoSocial && (
+                            {empresa.razao_social && (
                               <div className="italic text-gray-500">{empresa.nome}</div>
                             )}
                           </div>
@@ -712,10 +790,10 @@ function EmpresasTab({
                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
-                          {empresa.emailContato && (
+                          {empresa.email_contato && (
                             <div className="flex items-center text-sm text-gray-600">
                               <Mail className="h-3 w-3 mr-2 text-gray-400" />
-                              <span>{empresa.emailContato}</span>
+                              <span>{empresa.email_contato}</span>
                             </div>
                           )}
                           {empresa.telefone && (
@@ -1389,7 +1467,7 @@ function UsuariosTab({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {usuarios.map((usuario: User) => (
+                  {usuarios.map((usuario: any) => (
                     <TableRow key={usuario.id}>
                       <TableCell>
                         <div className="space-y-1">

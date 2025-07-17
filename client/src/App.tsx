@@ -27,7 +27,7 @@ import TeacherProfile from "@/pages/teacher/TeacherProfile";
 import TeacherCourses from "@/pages/teacher/TeacherCourses";
 import TeacherPlanning from "@/pages/teacher/TeacherPlanning";
 import TeacherNotificationCenter from "@/pages/teacher/NotificationCenter";
-import AdminMaster from "@/pages/AdminMaster";
+
 import AdvancedAdminDashboard from "@/pages/admin/AdvancedAdminDashboard";
 import AIManagementDashboard from "@/pages/admin/AIManagementDashboard";
 import AWSCostManagement from "@/pages/admin/AWSCostManagement";
@@ -186,7 +186,6 @@ function Router() {
       <Route path="/documentos" component={DocumentsPage} />
       
       {/* AWS Cognito Dashboards */}
-      <Route path="/admin/master" component={AdminMaster} />
 
       <Route path="/gestor/dashboard" component={GestorFormRoutes} />
       <Route path="/gestor/crud" component={GestorCRUDDashboard} />
@@ -199,7 +198,7 @@ function Router() {
       <Route path="/test-logout" component={TestLogout} />
 
       {/* Admin Master Dashboard */}
-      <Route path="/admin/master-old" component={AdminMaster} />
+
       <Route path="/admin/advanced" component={AdvancedAdminDashboard} />
       <Route path="/admin/executive" component={ExecutiveDashboard} />
       <Route path="/admin/tools" component={AdvancedToolsDashboard} />
