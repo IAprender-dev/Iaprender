@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config(); // Carregar variáveis de ambiente primeiro
 import { Pool } from '@neondatabase/serverless';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-serverless';
 import { drizzle as drizzleAWS } from 'drizzle-orm/aws-data-api/pg';
@@ -70,9 +72,9 @@ export class DatabaseManager {
         }
       });
 
-      // Montar ARNs para Aurora DSQL
+      // Montar ARNs para Aurora DSQL - formato correto para DSQL
       const clusterArn = endpoint.includes('arn:') ? endpoint : 
-        `arn:aws:rds:${process.env.AWS_REGION || 'us-east-1'}:${process.env.AWS_ACCOUNT_ID || '762723916379'}:cluster:${endpoint}`;
+        `arn:aws:dsql:${process.env.AWS_REGION || 'us-east-1'}:${process.env.AWS_ACCOUNT_ID || '762723916379'}:cluster/${endpoint}`;
       
       const secretArn = token.includes('arn:') ? token :
         `arn:aws:secretsmanager:${process.env.AWS_REGION || 'us-east-1'}:${process.env.AWS_ACCOUNT_ID || '762723916379'}:secret:${token}`;
