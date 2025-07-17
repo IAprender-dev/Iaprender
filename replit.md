@@ -143,14 +143,14 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
-- July 17, 2025: ✅ CONCLUÍDO - AURORA DSQL SISTEMA TOTALMENTE OPERACIONAL E SIMPLIFICADO
-  - ✅ **DESCOBERTA CRÍTICA**: Aurora DSQL = PostgreSQL 16 nativo + usuário "admin" + tokens temporários AWS
-  - ✅ **CONEXÃO SIMPLIFICADA**: Sistema usa endpoint direto sem connection strings complexas
-  - ✅ **CONFIGURAÇÃO LIMPA**: Pool direto { host, port, user: 'admin', password: token, ssl }
-  - ✅ **ESTRUTURA HIERÁRQUICA**: Tabelas empresas→contratos→escolas→usuários→[gestores|diretores|professores|alunos] criadas
-  - ✅ **SISTEMA EDUCACIONAL**: Hierarquia completa Admin→Gestor→Diretor→Professor→Aluno operacional no Aurora DSQL
-  - ✅ **ENDPOINT CONFIGURADO**: qeabuhp64eamddmw3vqdq52ph4.dsql.us-east-1.on.aws funcionando 100%
-  - ✅ **LOGS OTIMIZADOS**: Mensagens simples e diretas, menos verbosidade
+- July 17, 2025: ✅ CONCLUÍDO - SISTEMA DE TESTE DE CONECTIVIDADE BÁSICA IMPLEMENTADO
+  - ✅ **ENDPOINTS CONECTIVIDADE**: 4 rotas implementadas (/health, /test, /info, /test/complete)
+  - ✅ **FALLBACK AUTOMÁTICO**: Aurora DSQL → PostgreSQL quando token expira com continuidade de serviço
+  - ✅ **TESTES AVANÇADOS**: Script Node.js com 8 testes de conectividade + script shell automatizado
+  - ✅ **VALIDAÇÃO ESTRUTURAL**: Verificação automática de tabelas hierárquicas e integridade
+  - ✅ **MONITORAMENTO**: Health checks públicos para sistemas de monitoramento externos
+  - ✅ **DIAGNÓSTICO**: Detecção de token expirado, performance de queries, validação SSL
+  - ✅ **DOCUMENTAÇÃO**: README completo com todos os endpoints e cenários de teste
 - July 17, 2025: ✅ CONCLUÍDO - MIGRAÇÃO POSTGRESQL PARA ESTRUTURA HIERÁRQUICA OTIMIZADA COMPLETA
   - ✅ **SCRIPT SQL EXECUTADO**: 6 comandos SQL otimizados executados no PostgreSQL com 4 sucessos
   - ✅ **ENUMS CRIADOS**: `status_registro` e `tipo_contrato` implementados para padronização

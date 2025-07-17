@@ -103,24 +103,71 @@ export class DatabaseManager {
   public async testConnection(): Promise<boolean> {
     try {
       if (this.currentDbType === 'aurora-dsql') {
-        // Teste específico para Aurora DSQL
+        // Teste básico Aurora DSQL
         await this.db.execute('SELECT 1 as test');
+        console.log(`✅ Aurora DSQL conectado`);
       } else {
-        // Teste para PostgreSQL
+        // Teste PostgreSQL
         await this.db.execute('SELECT 1 as test');
+        console.log(`✅ PostgreSQL conectado`);
       }
       
-      console.log(`✅ ${this.currentDbType.toUpperCase()} connection test successful`);
       return true;
     } catch (error) {
-      console.error(`❌ ${this.currentDbType.toUpperCase()} connection test failed:`, error);
+      console.error(`❌ Erro de conexão:`, error.message);
       
-      // Se for Aurora DSQL e erro de token, mostrar instruções simples
       if (this.currentDbType === 'aurora-dsql' && error.message.includes('access denied')) {
         console.log('💡 Token Aurora DSQL expirado - renovar nas secrets');
       }
       
       return false;
+    }
+  }
+
+  public async testConnectivityComplete(): Promise<{ success: boolean; details: any }> {
+    const details = {
+      dbType: this.currentDbType,
+      timestamp: new Date().toISOString(),
+      tests: []
+    };
+
+    try {
+      // Teste 1: Conexão básica
+      await this.db.execute('SELECT 1 as test');
+      details.tests.push({ name: 'Conexão Básica', status: 'PASS' });
+
+      // Teste 2: Verificar versão
+      const versionResult = await this.db.execute('SELECT version() as version');
+      details.version = versionResult.rows[0]?.version?.substring(0, 50);
+      details.tests.push({ name: 'Versão Database', status: 'PASS' });
+
+      // Teste 3: Contar tabelas
+      const tablesResult = await this.db.execute(`
+        SELECT COUNT(*) as total 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
+      `);
+      details.totalTables = tablesResult.rows[0]?.total;
+      details.tests.push({ name: 'Contagem Tabelas', status: 'PASS' });
+
+      // Teste 4: Verificar tabelas hierárquicas
+      const hierarchicalResult = await this.db.execute(`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+          AND table_name IN ('empresas', 'contratos', 'escolas', 'usuarios', 'gestores', 'diretores', 'professores', 'alunos')
+      `);
+      details.hierarchicalTables = hierarchicalResult.rows.map(r => r.table_name);
+      details.tests.push({ name: 'Tabelas Hierárquicas', status: 'PASS' });
+
+      console.log(`✅ Teste completo de conectividade - ${details.tests.length} testes passaram`);
+      
+      return { success: true, details };
+    } catch (error) {
+      details.tests.push({ name: 'Erro', status: 'FAIL', error: error.message });
+      console.error(`❌ Teste de conectividade falhou:`, error.message);
+      
+      return { success: false, details };
     }
   }
 

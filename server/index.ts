@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { connectivityRouter } from "./routes/connectivity.js";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./db";
 import cognitoCustomUIRouter from "./routes/cognito-custom-ui";
@@ -69,6 +70,10 @@ app.use((req, res, next) => {
   console.log('🔒 Rotas de proxy de autenticação registradas');
   
   console.log('🔒 Outras rotas OAuth mantidas desabilitadas por segurança - apenas autenticação client-side ativa');
+  
+  // Registrar rotas de conectividade primeiro
+  app.use('/api/connectivity', connectivityRouter);
+  console.log('🔌 Rotas de teste de conectividade registradas');
   
   const server = await registerRoutes(app);
   
