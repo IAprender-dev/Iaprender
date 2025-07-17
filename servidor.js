@@ -38,9 +38,18 @@ const awsConfig = {
   }
 };
 
-// 📊 Clientes AWS
-const bedrock = new BedrockRuntimeClient(awsConfig);
-const s3 = new S3Client(awsConfig);
+// 🔄 Conexão com DynamoDB
+const ddb = new AWS.DynamoDB.DocumentClient({ region: 'us-east-1' });
+
+// 🗂️ Conexão com S3
+const s3 = new AWS.S3();
+const BUCKET_NAME = process.env.S3_BUCKET_NAME || 'meu-bucket';
+
+// 🤖 Cliente Bedrock (IA)
+const bedrock = new BedrockRuntimeClient({ region: 'us-east-1' });
+
+// 📊 Clientes AWS adicionais
+const s3Client = new S3Client(awsConfig);
 const dynamodb = new DynamoDBClient(awsConfig);
 const cognito = new CognitoIdentityProviderClient(awsConfig);
 
@@ -59,7 +68,7 @@ const pool = db;
 
 // 🏗️ Configurações do sistema
 const CONFIG = {
-  S3_BUCKET: process.env.S3_BUCKET_NAME || 'iaprender-bucket',
+  S3_BUCKET: BUCKET_NAME,
   DYNAMO_TABLE: process.env.DYNAMO_TABLE_NAME || 'arquivos_metadados',
   COGNITO_USER_POOL_ID: process.env.AWS_COGNITO_USER_POOL_ID,
   JWT_SECRET: process.env.JWT_SECRET || 'iaprender-secret-key',
