@@ -1,133 +1,199 @@
-const { RDSDataClient, ExecuteStatementCommand } = require('@aws-sdk/client-rds-data');
+const { Pool } = require('pg');
 require('dotenv').config();
 
-async function testAuroraDSQLFormats() {
-  console.log('🔍 TESTANDO FORMATOS AURORA DSQL');
-  console.log('=====================================');
+async function testDifferentFormats() {
+  console.log('🧪 TESTANDO DIFERENTES FORMATOS AURORA DSQL');
+  console.log('===========================================');
   
   const endpoint = process.env.ENDPOINT_AURORA;
   const token = process.env.TOKEN_AURORA;
-  const accountId = process.env.AWS_ACCOUNT_ID;
-  const region = process.env.AWS_REGION || 'us-east-1';
+  const port = '5432';
   
   console.log(`📍 Endpoint: ${endpoint}`);
-  console.log(`🔑 Token: ${token?.substring(0, 30)}...`);
-  console.log(`🆔 Account ID: ${accountId}`);
-  console.log(`🌍 Region: ${region}`);
+  console.log(`🔌 Porta: ${port}`);
+  console.log(`🔑 Token: ${token?.substring(0, 50)}...`);
+  console.log(`📏 Tamanho token: ${token?.length} chars`);
   
-  const rdsClient = new RDSDataClient({
-    region: region,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    }
-  });
-
-  // Formato 1: Endpoint direto
-  console.log('\n🧪 TESTE 1: Endpoint direto como resourceArn');
-  await testFormat(rdsClient, endpoint, token, 'postgres');
-  
-  // Formato 2: ARN DSQL com cluster/
-  console.log('\n🧪 TESTE 2: ARN DSQL com cluster/');
-  const dsqlArn = `arn:aws:dsql:${region}:${accountId}:cluster/${endpoint}`;
-  await testFormat(rdsClient, dsqlArn, token, 'postgres');
-  
-  // Formato 3: ARN RDS com cluster:
-  console.log('\n🧪 TESTE 3: ARN RDS com cluster:');
-  const rdsArn = `arn:aws:rds:${region}:${accountId}:cluster:${endpoint}`;
-  await testFormat(rdsClient, rdsArn, token, 'postgres');
-  
-  // Formato 4: Apenas identificador do cluster
-  console.log('\n🧪 TESTE 4: Identificador do cluster apenas');
-  const clusterId = endpoint.split('.')[0]; // qeabuhp64eamddmw3vqdq52ph4
-  await testFormat(rdsClient, clusterId, token, 'postgres');
-  
-  // Formato 5: ARN DSQL com identificador simples
-  console.log('\n🧪 TESTE 5: ARN DSQL com identificador simples');
-  const dsqlArnSimple = `arn:aws:dsql:${region}:${accountId}:cluster/${clusterId}`;
-  await testFormat(rdsClient, dsqlArnSimple, token, 'postgres');
-  
-  // Formato 6: Sem database especificado
-  console.log('\n🧪 TESTE 6: Endpoint direto sem database');
-  await testFormat(rdsClient, endpoint, token, undefined);
-}
-
-async function testFormat(client, resourceArn, secretArn, database) {
+  // TESTE 1: Usuário admin em vez de postgres
+  console.log('\n🧪 TESTE 1: Usuário admin');
   try {
-    console.log(`   🔧 ResourceArn: ${resourceArn}`);
-    console.log(`   🔧 Database: ${database || 'undefined'}`);
+    const pool = new Pool({
+      host: endpoint,
+      port: parseInt(port),
+      database: 'postgres',
+      user: 'admin',
+      password: token,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 15000,
+    });
     
-    const params = {
-      resourceArn: resourceArn,
-      secretArn: secretArn,
-      sql: 'SELECT 1 as test',
-    };
-    
-    if (database) {
-      params.database = database;
-    }
-    
-    const command = new ExecuteStatementCommand(params);
-    const result = await client.send(command);
-    
-    console.log(`   ✅ SUCESSO! Resultado: ${JSON.stringify(result.records)}`);
-    console.log(`   🎯 FORMATO FUNCIONOU: ${resourceArn}`);
-    return true;
-    
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test, version() as version');
+    console.log(`✅ SUCESSO com usuário admin!`);
+    console.log(`📊 Resultado: ${JSON.stringify(result.rows[0])}`);
+    client.release();
+    await pool.end();
+    return 'admin';
   } catch (error) {
-    console.log(`   ❌ FALHOU: ${error.message}`);
-    if (error.$metadata) {
-      console.log(`   📊 Status: ${error.$metadata.httpStatusCode}`);
-    }
-    return false;
+    console.log(`❌ Falhou com admin: ${error.message.substring(0, 100)}`);
   }
+  
+  // TESTE 2: Sem usuário (deixar vazio)
+  console.log('\n🧪 TESTE 2: Sem usuário específico');
+  try {
+    const pool = new Pool({
+      host: endpoint,
+      port: parseInt(port),
+      database: 'postgres',
+      password: token,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 15000,
+    });
+    
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test');
+    console.log(`✅ SUCESSO sem usuário específico!`);
+    client.release();
+    await pool.end();
+    return 'none';
+  } catch (error) {
+    console.log(`❌ Falhou sem usuário: ${error.message.substring(0, 100)}`);
+  }
+  
+  // TESTE 3: Token como usuário (não como password)
+  console.log('\n🧪 TESTE 3: Token como usuário');
+  try {
+    const pool = new Pool({
+      host: endpoint,
+      port: parseInt(port),
+      database: 'postgres',
+      user: token,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 15000,
+    });
+    
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test');
+    console.log(`✅ SUCESSO com token como usuário!`);
+    client.release();
+    await pool.end();
+    return 'token-as-user';
+  } catch (error) {
+    console.log(`❌ Falhou token como usuário: ${error.message.substring(0, 100)}`);
+  }
+  
+  // TESTE 4: Usuário root
+  console.log('\n🧪 TESTE 4: Usuário root');
+  try {
+    const pool = new Pool({
+      host: endpoint,
+      port: parseInt(port),
+      database: 'postgres',
+      user: 'root',
+      password: token,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 15000,
+    });
+    
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test');
+    console.log(`✅ SUCESSO com usuário root!`);
+    client.release();
+    await pool.end();
+    return 'root';
+  } catch (error) {
+    console.log(`❌ Falhou com root: ${error.message.substring(0, 100)}`);
+  }
+  
+  // TESTE 5: Porta diferente (5433)
+  console.log('\n🧪 TESTE 5: Porta 5433');
+  try {
+    const pool = new Pool({
+      host: endpoint,
+      port: 5433,
+      database: 'postgres',
+      user: 'postgres',
+      password: token,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 15000,
+    });
+    
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test');
+    console.log(`✅ SUCESSO com porta 5433!`);
+    client.release();
+    await pool.end();
+    return 'port-5433';
+  } catch (error) {
+    console.log(`❌ Falhou porta 5433: ${error.message.substring(0, 100)}`);
+  }
+  
+  // TESTE 6: Database diferente
+  console.log('\n🧪 TESTE 6: Database dsql');
+  try {
+    const pool = new Pool({
+      host: endpoint,
+      port: parseInt(port),
+      database: 'dsql',
+      user: 'postgres',
+      password: token,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 15000,
+    });
+    
+    const client = await pool.connect();
+    const result = await client.query('SELECT 1 as test');
+    console.log(`✅ SUCESSO com database dsql!`);
+    client.release();
+    await pool.end();
+    return 'db-dsql';
+  } catch (error) {
+    console.log(`❌ Falhou database dsql: ${error.message.substring(0, 100)}`);
+  }
+  
+  console.log('\n❌ TODOS OS FORMATOS FALHARAM!');
+  return null;
 }
 
-// Teste adicional: verificar se é Aurora Serverless v2
-async function testAuroraServerlessV2() {
-  console.log('\n🔍 TESTE ADICIONAL: Aurora Serverless v2');
-  console.log('=========================================');
+async function analyzeToken() {
+  console.log('\n🔍 ANALISANDO ESTRUTURA DO TOKEN');
+  console.log('================================');
   
-  try {
-    const rdsClient = new RDSDataClient({
-      region: process.env.AWS_REGION || 'us-east-1',
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      }
-    });
+  const token = process.env.TOKEN_AURORA;
+  
+  if (token.startsWith('http')) {
+    console.log('📋 Token é uma URL completa');
+    const url = new URL(token);
+    console.log(`🌐 Host: ${url.hostname}`);
+    console.log(`🔌 Porta: ${url.port || '5432'}`);
+    console.log(`📍 Path: ${url.pathname}`);
+    console.log(`🔑 Query params: ${url.search.length} chars`);
     
-    // Para Aurora Serverless v2, pode precisar do ARN completo do cluster
-    const fullClusterArn = `arn:aws:rds:${process.env.AWS_REGION || 'us-east-1'}:${process.env.AWS_ACCOUNT_ID}:cluster:${process.env.ENDPOINT_AURORA}`;
-    
-    const command = new ExecuteStatementCommand({
-      resourceArn: fullClusterArn,
-      secretArn: process.env.TOKEN_AURORA,
-      sql: 'SELECT version() as db_version',
-      database: 'postgres'
-    });
-    
-    const result = await rdsClient.send(command);
-    console.log(`✅ Aurora Serverless v2 conectado!`);
-    console.log(`📊 Versão: ${JSON.stringify(result.records)}`);
-    
-  } catch (error) {
-    console.log(`❌ Aurora Serverless v2 falhou: ${error.message}`);
+    // Extrair parâmetros importantes
+    const params = new URLSearchParams(url.search);
+    console.log(`📋 Ação: ${params.get('Action')}`);
+    console.log(`🔐 Algoritmo: ${params.get('X-Amz-Algorithm')}`);
+    console.log(`📅 Data: ${params.get('X-Amz-Date')}`);
+    console.log(`⏰ Expira: ${params.get('X-Amz-Expires')} segundos`);
+  } else {
+    console.log('📋 Token não é URL - formato desconhecido');
   }
 }
 
 async function main() {
-  await testAuroraDSQLFormats();
-  await testAuroraServerlessV2();
+  await analyzeToken();
+  const workingFormat = await testDifferentFormats();
   
-  console.log('\n📋 RESUMO DOS TESTES');
-  console.log('====================');
-  console.log('Se algum teste passou, use esse formato no DatabaseManager!');
-  console.log('Se todos falharam, pode ser:');
-  console.log('1. 🔑 Credenciais AWS incorretas');
-  console.log('2. 🚫 Permissions IAM insuficientes');
-  console.log('3. 🌍 Aurora DSQL não disponível na região');
-  console.log('4. 📍 Endpoint incorreto ou cluster não existe');
+  if (workingFormat) {
+    console.log(`\n🎯 FORMATO FUNCIONAL ENCONTRADO: ${workingFormat}`);
+    console.log('📋 Atualize o DatabaseManager para usar este formato');
+  } else {
+    console.log('\n💡 POSSÍVEIS CAUSAS:');
+    console.log('1. Aurora DSQL não aceita conexões externas');
+    console.log('2. Token precisa ser usado via API específica');
+    console.log('3. Configuração AWS específica necessária');
+    console.log('4. Aurora DSQL ainda em preview limitado');
+  }
 }
 
 main().catch(console.error);

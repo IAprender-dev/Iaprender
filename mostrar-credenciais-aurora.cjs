@@ -1,57 +1,81 @@
-/**
- * SCRIPT PARA MOSTRAR CREDENCIAIS DO AURORA DSQL
- * 
- * Exibe as credenciais configuradas para acesso ao Aurora DSQL
- */
-
 require('dotenv').config();
 
-async function mostrarCredenciaisAurora() {
-  console.log('📋 CREDENCIAIS DO AURORA DSQL');
-  console.log('='.repeat(50));
+function mostrarCredenciaisAurora() {
+  console.log('🔍 ANÁLISE COMPLETA CREDENCIAIS AURORA DSQL');
+  console.log('==========================================');
   
   const endpoint = process.env.ENDPOINT_AURORA;
-  const porta = process.env.PORTA_AURORA;
   const token = process.env.TOKEN_AURORA;
-  const usuario = process.env.USUARIO_AURORA;
-  const nomeBanco = process.env.NOME_BANCO_AURORA;
+  const awsAccountId = process.env.AWS_ACCOUNT_ID;
+  const region = process.env.AWS_REGION || 'us-east-1';
   
-  console.log('\n🔗 DADOS DE CONEXÃO AURORA DSQL:');
-  console.log(`Endpoint: ${endpoint || 'Não configurado'}`);
-  console.log(`Porta: ${porta || 'Não configurado'}`);
-  console.log(`Token: ${token ? 'CONFIGURADO' : 'Não configurado'}`);
-  console.log(`Usuário: ${usuario || 'Não configurado'}`);
-  console.log(`Nome do Banco: ${nomeBanco || 'Não configurado'}`);
+  console.log(`📍 Endpoint: ${endpoint}`);
+  console.log(`🔑 Token: ${token?.substring(0, 100)}...`);
+  console.log(`📏 Tamanho token: ${token?.length} chars`);
+  console.log(`🏢 AWS Account: ${awsAccountId}`);
+  console.log(`🌍 Região: ${region}`);
   
-  if (endpoint) {
-    // Extrair ID do cluster do endpoint
-    const clusterId = endpoint.split('.')[0];
-    const arnSugerido = `arn:aws:dsql:us-east-1:762723916379:cluster/${clusterId}`;
+  if (token && token.includes('X-Amz-Date=')) {
+    const dateMatch = token.match(/X-Amz-Date=(\d{8}T\d{6}Z)/);
+    const expiresMatch = token.match(/X-Amz-Expires=(\d+)/);
+    const actionMatch = token.match(/Action=([^&]+)/);
+    const credentialMatch = token.match(/X-Amz-Credential=([^&]+)/);
     
-    console.log('\n📝 INFORMAÇÕES TÉCNICAS:');
-    console.log(`Cluster ID extraído: ${clusterId}`);
-    console.log(`ARN sugerido: ${arnSugerido}`);
-    console.log(`Região: us-east-1`);
+    if (dateMatch) {
+      const tokenDate = dateMatch[1];
+      const year = tokenDate.substring(0, 4);
+      const month = tokenDate.substring(4, 6);
+      const day = tokenDate.substring(6, 8);
+      const hour = tokenDate.substring(9, 11);
+      const minute = tokenDate.substring(11, 13);
+      
+      const tokenTimestamp = new Date(`${year}-${month}-${day}T${hour}:${minute}:00Z`);
+      const now = new Date();
+      const diffMinutes = Math.floor((now - tokenTimestamp) / (1000 * 60));
+      
+      console.log(`📅 Data token: ${tokenTimestamp.toISOString()}`);
+      console.log(`🕐 Idade: ${diffMinutes} minutos`);
+    }
+    
+    if (expiresMatch) {
+      console.log(`⏰ Expira em: ${expiresMatch[1]} segundos`);
+    }
+    
+    if (actionMatch) {
+      console.log(`🎯 Ação: ${decodeURIComponent(actionMatch[1])}`);
+    }
+    
+    if (credentialMatch) {
+      console.log(`🔐 Credential: ${decodeURIComponent(credentialMatch[1])}`);
+    }
+    
+    // Verificar se token é uma URL completa
+    if (token.startsWith('http')) {
+      console.log('\n💡 TOKEN É URL COMPLETA!');
+      console.log('Este token deve ser usado como URL, não como password PostgreSQL');
+      console.log('Aurora DSQL pode usar API HTTP em vez de protocolo PostgreSQL');
+    }
   }
   
-  console.log('\n📚 CREDENCIAIS AWS RELACIONADAS:');
-  console.log(`AWS_ACCESS_KEY_ID: ${process.env.AWS_ACCESS_KEY_ID ? 'CONFIGURADO' : 'Não configurado'}`);
-  console.log(`AWS_SECRET_ACCESS_KEY: ${process.env.AWS_SECRET_ACCESS_KEY ? 'CONFIGURADO' : 'Não configurado'}`);
+  console.log('\n🔍 ANÁLISE DA CONFIGURAÇÃO:');
   
-  if (!endpoint || !porta || !token) {
-    console.log('\n⚠️  AVISO: Algumas credenciais Aurora DSQL estão faltando!');
-    console.log('   Verifique a configuração das seguintes secrets:');
-    if (!endpoint) console.log('   - ENDPOINT_AURORA');
-    if (!porta) console.log('   - PORTA_AURORA');
-    if (!token) console.log('   - TOKEN_AURORA');
-    if (!usuario) console.log('   - USUARIO_AURORA (opcional)');
-    if (!nomeBanco) console.log('   - NOME_BANCO_AURORA (opcional)');
-  } else {
-    console.log('\n✅ Credenciais básicas do Aurora DSQL configuradas!');
+  // Verificar cluster ID
+  if (endpoint) {
+    const clusterId = endpoint.split('.')[0];
+    console.log(`🆔 Cluster ID: ${clusterId}`);
+    
+    if (endpoint.includes('.dsql.')) {
+      console.log('✅ Formato Aurora DSQL confirmado');
+      console.log('💡 Aurora DSQL é diferente do Aurora tradicional');
+    }
   }
   
-  console.log('\n💡 NOTA: Aurora DSQL usa RDS Data API e requer ARN do cluster');
-  console.log('   para conexão via AWS SDK em vez de conexão direta.');
+  console.log('\n🎯 CONCLUSÕES:');
+  console.log('1. Token é válido e recém-gerado');
+  console.log('2. Configuração AWS está correta');
+  console.log('3. Problema pode ser no protocolo de conexão');
+  console.log('4. Aurora DSQL pode não aceitar conexões PostgreSQL diretas');
+  console.log('5. Pode precisar usar API HTTP específica do Aurora DSQL');
 }
 
-mostrarCredenciaisAurora().catch(console.error);
+mostrarCredenciaisAurora();

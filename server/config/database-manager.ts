@@ -72,11 +72,12 @@ export class DatabaseManager {
       
       // Construir connection string PostgreSQL para Aurora DSQL
       // Formato: postgresql://username:password@host:port/database
-      // IMPORTANTE: URL encode o token para evitar caracteres especiais
+      // IMPORTANTE: Aurora DSQL usa usuário "admin", não "postgres"
+      // URL encode o token para evitar caracteres especiais
       const encodedToken = encodeURIComponent(token);
-      const connectionString = `postgresql://postgres:${encodedToken}@${endpoint}:${port}/postgres`;
+      const connectionString = `postgresql://admin:${encodedToken}@${endpoint}:${port}/postgres`;
       
-      console.log(`🔗 Connection string: postgresql://postgres:***@${endpoint}:${port}/postgres`);
+      console.log(`🔗 Connection string: postgresql://admin:***@${endpoint}:${port}/postgres`);
       
       // Usar Pool PostgreSQL nativo (compatível com Aurora DSQL)
       this.client = new PostgreSQLPool({ 
@@ -131,11 +132,12 @@ export class DatabaseManager {
       
       // Se for Aurora DSQL e erro de token, mostrar instruções
       if (this.currentDbType === 'aurora-dsql' && error.message.includes('access denied')) {
-        console.log('💡 AURORA DSQL: Token provavelmente expirado');
+        console.log('💡 AURORA DSQL: Token provavelmente expirado ou usuário incorreto');
         console.log('📋 Para renovar token:');
         console.log('   aws dsql generate-db-connect-admin-auth-token \\');
         console.log('     --cluster-identifier qeabuhp64eamddmw3vqdq52ph4 \\');
         console.log('     --region us-east-1 --expires-in 3600');
+        console.log('💡 Nota: Aurora DSQL usa usuário "admin", não "postgres"');
         console.log('📝 Consulte aurora-token-helper.md para instruções completas');
       }
       
