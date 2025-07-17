@@ -143,6 +143,17 @@ IAverse is a comprehensive educational platform that integrates artificial intel
 - Intervenções pedagógicas automáticas
 
 ## Recent Changes
+- July 17, 2025: ✅ CONCLUÍDO - FORMULÁRIOS AI-PREFERENCES E ADMIN/USERS REMOVIDOS CONFORME SOLICITADO
+  - ✅ **ARQUIVO AIPreferences.tsx REMOVIDO**: Componente de preferências de IA deletado completamente
+  - ✅ **ARQUIVO AdminUnifiedDashboard.tsx REMOVIDO**: Dashboard unificado admin removido da rota /admin/users
+  - ✅ **ROTAS AI-PREFERENCES REMOVIDAS**: server/routes/ai-preferences-routes.ts deletado
+  - ✅ **IMPORTAÇÕES LIMPAS**: Removidas todas as importações e referências dos arquivos deletados
+  - ✅ **ROTA /ai-preferences REMOVIDA**: Rota removida do App.tsx
+  - ✅ **ROTA /admin/users REMOVIDA**: Rota removida do App.tsx
+  - ✅ **BOTÃO CONFIG IA REMOVIDO**: Link removido do AdminMaster.tsx
+  - ✅ **BOTÃO DASHBOARD UNIFICADO REMOVIDO**: Link removido do AdminCRUDDashboard.tsx
+  - ✅ **SERVIDOR FUNCIONAL**: Sistema continua operando corretamente após remoções
+  - ✅ **SISTEMA HÍBRIDO MANTIDO**: Sistema Lambda/Express permanece acessível via endpoints REST
 - July 17, 2025: ✅ CONCLUÍDO - SISTEMA HÍBRIDO LAMBDA + EXPRESS SIMPLIFICADO
   - ✅ **ARQUITETURA HÍBRIDA**: Sistema tenta Lambda primeiro, fallback automático para Express
   - ✅ **HYBRIDLAMBDASERVICE**: Classe principal para orquestração Lambda → Express

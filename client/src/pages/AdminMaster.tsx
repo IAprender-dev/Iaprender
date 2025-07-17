@@ -164,14 +164,7 @@ export default function AdminMaster() {
             </Button>
           </Link>
 
-          <Link href="/ai-preferences">
-            <Button className="h-24 w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold text-lg">
-              <div className="flex flex-col items-center space-y-2">
-                <Brain className="h-8 w-8" />
-                <span>Config IA</span>
-              </div>
-            </Button>
-          </Link>
+
 
 
 

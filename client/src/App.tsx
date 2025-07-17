@@ -35,7 +35,7 @@ import LiteLLMManagement from "@/pages/admin/LiteLLMManagement";
 import ContractManagement from "@/pages/admin/ContractManagement";
 import CompanyContractManagement from "@/pages/admin/CompanyContractManagement";
 
-import AdminUnifiedDashboard from "@/pages/admin/AdminUnifiedDashboard";
+
 import AdminCRUDDashboard from "@/pages/admin/AdminCRUDDashboard";
 import AIResourcesDashboard from "@/pages/admin/AIResourcesDashboard";
 import S3BedrockDashboard from "@/pages/admin/S3BedrockDashboard";
@@ -101,7 +101,7 @@ import CalculatorDashboard from "@/pages/teacher/CalculatorDashboard";
 import AnalyticsDashboard from "@/pages/teacher/AnalyticsDashboard";
 import TokenDashboard from "@/pages/TokenDashboard";
 import OptimizationsPage from "@/pages/OptimizationsPage";
-import AIPreferences from "@/pages/user/AIPreferences";
+
 import DocumentsPage from "@/pages/DocumentsPage";
 import LambdaIADemo from "@/components/LambdaIADemo";
 import AWSIntegrationDemo from "@/components/AWSIntegrationDemo";
@@ -149,9 +149,7 @@ function Router() {
       <Route path="/central-ia/claude" component={ClaudePage} />
       <Route path="/central-ia/perplexity" component={PerplexityPage} />
       <Route path="/central-ia/image-gen" component={ImageGenPage} />
-      
-      {/* AI Preferences route */}
-      <Route path="/ai-preferences" component={AIPreferences} />
+
       
       {/* Teacher routes */}
       <Route path="/professor" component={TeacherDashboard} />
@@ -189,7 +187,7 @@ function Router() {
       
       {/* AWS Cognito Dashboards */}
       <Route path="/admin/master" component={AdminMaster} />
-      <Route path="/admin/user-management" component={AdminUnifiedDashboard} />
+
       <Route path="/gestor/dashboard" component={GestorFormRoutes} />
       <Route path="/gestor/crud" component={GestorCRUDDashboard} />
       <Route path="/diretor/dashboard" component={SchoolDashboard} />
@@ -213,7 +211,7 @@ function Router() {
       <Route path="/admin/contracts" component={ContractManagement} />
       <Route path="/admin/companies-contracts" component={CompanyContractManagement} />
 
-      <Route path="/admin/users" component={AdminUnifiedDashboard} />
+
       <Route path="/admin/crud" component={AdminCRUDDashboard} />
       <Route path="/admin/ai-resources" component={AIResourcesDashboard} />
       <Route path="/admin/s3-bedrock" component={S3BedrockDashboard} />

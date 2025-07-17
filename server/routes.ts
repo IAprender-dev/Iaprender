@@ -20,7 +20,7 @@ import aiRouter from "./routes/ai-routes";
 import translateRoutes from "./routes/translate-routes";
 import tokenRouter from "./routes/token-routes";
 import cognitoUIRouter from "./routes/cognito-custom-ui";
-import aiPreferencesRouter from "./routes/ai-preferences-routes";
+
 import aiCentralRouter from "./routes/ai-central-routes";
 import aiResourceConfigRouter from "./routes/ai-resource-config-routes";
 import * as OpenAIService from "./utils/ai-services/openai";
@@ -482,7 +482,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Mount other routers
   app.use("/api/ai", aiRouter);
-  app.use("/api/user", aiPreferencesRouter);
+
   app.use("/api/ai-central", aiCentralRouter);
   app.use("/api/ai-resource-configs", aiResourceConfigRouter);
   app.use("/api/translate", translateRoutes);
