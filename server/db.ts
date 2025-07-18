@@ -63,21 +63,10 @@ export const initializeDatabase = async () => {
   } catch (error) {
     console.error('❌ Erro ao conectar com banco de dados:', error);
     
-    // Se Aurora DSQL falhar, tentar fallback para PostgreSQL
-    const currentType = dbManager.getDatabaseType();
-    if (currentType === 'aurora-dsql') {
-      console.log('⚠️ Tentando fallback para PostgreSQL...');
-      
-      try {
-        const fallbackSuccess = await dbManager.switchDatabase('postgresql');
-        if (fallbackSuccess) {
-          console.log('✅ Fallback para PostgreSQL bem-sucedido');
-          return true;
-        }
-      } catch (fallbackError) {
-        console.error('❌ Fallback para PostgreSQL também falhou:', fallbackError);
-      }
-    }
+    // MODO EXCLUSIVO: Não permitir fallbacks para outros bancos
+    console.error('❌ SISTEMA CONFIGURADO APENAS PARA AURORA SERVERLESS');
+    console.error('💡 Verificar credenciais nas secrets e conectividade de rede');
+    throw error;
     
     // Check if it's a WebSocket connection error (legacy PostgreSQL)
     if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('WebSocket')) {

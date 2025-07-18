@@ -20,13 +20,12 @@ export class DatabaseManager {
   private client: any;
 
   private constructor() {
-    // Determinar qual banco usar baseado nas variáveis de ambiente (prioridade: Aurora Serverless > Aurora DSQL > PostgreSQL)
+    // FORÇAR Aurora Serverless como único banco (sem fallbacks)
     if (process.env.USE_AURORA_SERVERLESS === 'true') {
       this.currentDbType = 'aurora-serverless';
-    } else if (process.env.USE_AURORA_DSQL === 'true') {
-      this.currentDbType = 'aurora-dsql';
+      console.log('🎯 MODO EXCLUSIVO: Aurora Serverless v2 (Neon Database DESATIVADO)');
     } else {
-      this.currentDbType = 'postgresql';
+      throw new Error('❌ ERRO: Aurora Serverless não configurado. Defina USE_AURORA_SERVERLESS=true nas secrets.');
     }
     this.initializeDatabase();
   }
@@ -66,10 +65,7 @@ export class DatabaseManager {
     const port = parseInt(process.env.AURORA_SERVERLESS_PORT || '5432');
 
     if (!host || !password) {
-      console.error('❌ Aurora Serverless credentials not found, falling back to Aurora DSQL');
-      this.currentDbType = 'aurora-dsql';
-      this.initializeAuroraDSQL();
-      return;
+      throw new Error('❌ ERRO CRÍTICO: Credenciais Aurora Serverless obrigatórias. Verificar AURORA_SERVERLESS_HOST e AURORA_SERVERLESS_PASSWORD nas secrets.');
     }
 
     try {
@@ -90,17 +86,20 @@ export class DatabaseManager {
           rejectUnauthorized: false,
           require: true 
         } : false,
-        // Configurações enterprise para 60k-150k usuários
-        max: 50,                    // Máximo de conexões no pool
-        min: 5,                     // Mínimo de conexões mantidas
-        idleTimeoutMillis: 30000,   // 30s timeout para conexões idle
-        connectionTimeoutMillis: 5000, // 5s timeout para novas conexões
-        acquireTimeoutMillis: 60000,   // 60s timeout para aquisição
-        createTimeoutMillis: 10000,    // 10s timeout para criação
-        destroyTimeoutMillis: 5000,    // 5s timeout para destruição
-        reapIntervalMillis: 1000,      // 1s intervalo de limpeza
-        createRetryIntervalMillis: 200, // 200ms retry interval
-        propagateCreateError: true
+        // Configurações enterprise otimizadas para Aurora Serverless v2
+        max: 30,                       // Reduzido para evitar timeout
+        min: 2,                        // Mínimo reduzido
+        idleTimeoutMillis: 60000,      // 60s timeout para conexões idle
+        connectionTimeoutMillis: 20000, // 20s timeout aumentado
+        acquireTimeoutMillis: 30000,   // 30s timeout para aquisição
+        createTimeoutMillis: 20000,    // 20s timeout para criação
+        destroyTimeoutMillis: 10000,   // 10s timeout para destruição
+        reapIntervalMillis: 5000,      // 5s intervalo de limpeza
+        createRetryIntervalMillis: 1000, // 1s retry interval
+        propagateCreateError: true,
+        // Configurações específicas Aurora Serverless
+        keepAlive: true,
+        keepAliveInitialDelayMillis: 10000
       });
       
       // Usar Drizzle PostgreSQL driver nativo (mesmo driver do Aurora DSQL)
@@ -109,9 +108,8 @@ export class DatabaseManager {
       console.log('✅ Aurora Serverless v2 inicializado para escala enterprise');
       console.log(`📊 Pool configurado: max ${this.client.options.max} conexões`);
     } catch (error) {
-      console.error('❌ Failed to initialize Aurora Serverless, falling back to Aurora DSQL:', error);
-      this.currentDbType = 'aurora-dsql';
-      this.initializeAuroraDSQL();
+      console.error('❌ ERRO CRÍTICO ao conectar Aurora Serverless:', error);
+      throw new Error(`Falha na conexão exclusiva com Aurora Serverless: ${error}`);
     }
   }
 
