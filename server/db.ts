@@ -1,94 +1,47 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+// NEON DATABASE COMPLETAMENTE REMOVIDO DO SISTEMA
 import * as schema from "@shared/schema";
 import { DatabaseManager, dbManager, db as managedDb } from './config/database-manager';
 
-// Configure Neon for WebSocket support
-neonConfig.webSocketConstructor = ws;
-neonConfig.poolQueryViaFetch = true;
-neonConfig.fetchConnectionCache = true;
+// NEON DATABASE REMOVIDO: Não há mais suporte a DATABASE_URL
+// Sistema funciona exclusivamente com Aurora Serverless ou Aurora DSQL
 
-// Legacy PostgreSQL connection (mantido para compatibilidade)
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
+// Export temporário do pool para compatibilidade com arquivos legacy
+export const pool = dbManager.getClient();
 
-// Configure pool with better connection handling
-export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
-
-// Usar DatabaseManager para escolher entre Aurora Serverless, Aurora DSQL e PostgreSQL
+// Usar DatabaseManager para escolher entre Aurora Serverless e Aurora DSQL APENAS
 export const db = managedDb;
 export const dbClient = dbManager.getClient();
 
 // Log do tipo de banco em uso
-console.log(`📊 Database ativo: ${dbManager.getDatabaseType().toUpperCase()}`);
+console.log(`📊 Database ativo: ${dbManager.getDatabaseType().toUpperCase()} (NEON DESATIVADO)`);
 
-// Configuração adicional para AWS RDS (quando migrar)
-export const createAWSConnection = () => {
-  const awsConnectionString = process.env.AWS_DATABASE_URL || process.env.DATABASE_URL;
-  const awsPool = new Pool({ 
-    connectionString: awsConnectionString,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-  });
-  return drizzle({ client: awsPool, schema });
-};
+// FUNÇÃO REMOVIDA: createAWSConnection()
+// NEON DATABASE foi completamente removido do sistema
 
-// Função de inicialização do banco com suporte a Aurora DSQL
+// Função de inicialização do banco Aurora exclusivamente
 export const initializeDatabase = async () => {
   try {
-    console.log('🔄 Inicializando banco de dados...');
+    console.log('🔄 Inicializando banco de dados Aurora...');
     
-    // Usar DatabaseManager para conectar
+    // Usar DatabaseManager para conectar apenas Aurora
     const dbType = dbManager.getDatabaseType();
-    console.log(`📍 Tipo de banco: ${dbType.toUpperCase()}`);
+    console.log(`📍 Tipo de banco: ${dbType.toUpperCase()} (NEON COMPLETAMENTE REMOVIDO)`);
     
     // Teste de conexão com o banco gerenciado
     const connectionTest = await dbManager.testConnection();
     
     if (connectionTest) {
       console.log(`✅ Conexão com ${dbType.toUpperCase()} estabelecida`);
+      console.log('💾 Database initialized successfully (NEON DESATIVADO)');
       return true;
     } else {
-      throw new Error(`Falha na conexão com ${dbType}`);
+      throw new Error(`FALHA CRÍTICA: Conexão com ${dbType} falhada. NEON foi removido - sem fallbacks.`);
     }
     
   } catch (error) {
-    console.error('❌ Erro ao conectar com banco de dados:', error);
-    
-    // MODO EXCLUSIVO: Não permitir fallbacks para outros bancos
-    console.error('❌ SISTEMA CONFIGURADO APENAS PARA AURORA SERVERLESS');
-    console.error('💡 Verificar credenciais nas secrets e conectividade de rede');
-    throw error;
-    
-    // Check if it's a WebSocket connection error (legacy PostgreSQL)
-    if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' && error.message.includes('WebSocket')) {
-      console.error('💡 Dica: Erro de WebSocket detectado. Tentando reconexão...');
-      
-      try {
-        const freshPool = new Pool({ 
-          connectionString: process.env.DATABASE_URL,
-          max: 5,
-          idleTimeoutMillis: 10000,
-          connectionTimeoutMillis: 10000,
-        });
-        
-        const client = await freshPool.connect();
-        console.log('✅ Reconexão bem-sucedida com pool alternativo');
-        client.release();
-        return true;
-      } catch (reconnectError) {
-        console.error('❌ Falha na reconexão:', reconnectError);
-      }
-    }
-    
+    console.error('❌ ERRO CRÍTICO ao conectar com banco Aurora:', error);
+    console.error('❌ SISTEMA SEM NEON: Apenas Aurora Serverless/DSQL suportados');
+    console.error('💡 Verificar credenciais Aurora nas secrets');
     throw error;
   }
 };

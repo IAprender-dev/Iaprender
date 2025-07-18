@@ -1,5 +1,5 @@
 import express from 'express';
-import { pool } from '../db';
+import { dbClient } from '../db';
 
 const router = express.Router();
 
@@ -47,7 +47,7 @@ router.get('/dashboard/stats', authenticate, requireGestorOrAdmin, async (req: a
         (SELECT COUNT(*) FROM alunos WHERE ($1::integer IS NULL OR empresa_id = $1)) as alunos
     `;
     
-    const result = await pool.query(statsQuery, [empresaId]);
+    const result = await dbClient.query(statsQuery, [empresaId]);
     const stats = result.rows[0];
     
     // Converter strings para números
@@ -141,8 +141,8 @@ router.get('/escolas', authenticate, requireGestorOrAdmin, async (req: any, res:
     const countParams = queryParams.slice(0, -2); // Remove limit e offset
     
     const [escolasResult, countResult] = await Promise.all([
-      pool.query(escolasQuery, queryParams),
-      pool.query(countQuery, countParams)
+      dbClient.query(escolasQuery, queryParams),
+      dbClient.query(countQuery, countParams)
     ]);
     
     const escolas = escolasResult.rows;
@@ -189,7 +189,7 @@ router.get('/escolas/stats', authenticate, requireGestorOrAdmin, async (req: any
       WHERE ($1::integer IS NULL OR empresa_id = $1)
     `;
     
-    const result = await pool.query(statsQuery, [empresaId]);
+    const result = await dbClient.query(statsQuery, [empresaId]);
     const stats = result.rows[0];
     
     // Converter para números
@@ -300,8 +300,8 @@ router.get('/usuarios', authenticate, requireGestorOrAdmin, async (req: any, res
     const countParams = queryParams.slice(0, -2); // Remove limit e offset
     
     const [usuariosResult, countResult] = await Promise.all([
-      pool.query(usuariosQuery, queryParams),
-      pool.query(countQuery, countParams)
+      dbClient.query(usuariosQuery, queryParams),
+      dbClient.query(countQuery, countParams)
     ]);
     
     const usuarios = usuariosResult.rows.map(user => ({
@@ -361,7 +361,7 @@ router.get('/usuarios/stats', authenticate, requireGestorOrAdmin, async (req: an
       WHERE ($1::integer IS NULL OR empresa_id = $1)
     `;
     
-    const result = await pool.query(statsQuery, [empresaId]);
+    const result = await dbClient.query(statsQuery, [empresaId]);
     const stats = result.rows[0];
     
     // Converter para números

@@ -1,17 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config(); // Carregar variáveis de ambiente primeiro
-import { Pool as NeonPool } from '@neondatabase/serverless';
 import { Pool as PostgreSQLPool } from 'pg';
-import { drizzle as drizzleNeon } from 'drizzle-orm/neon-serverless';
 import { drizzle as drizzlePostgreSQL } from 'drizzle-orm/node-postgres';
 import * as schema from '../../shared/schema';
-import ws from "ws";
 
-// Configurar neon para usar WebSocket
-import { neonConfig } from '@neondatabase/serverless';
-neonConfig.webSocketConstructor = ws;
-
-export type DatabaseType = 'postgresql' | 'aurora-dsql' | 'aurora-serverless';
+export type DatabaseType = 'aurora-dsql' | 'aurora-serverless';
 
 export class DatabaseManager {
   private static instance: DatabaseManager;
@@ -20,12 +13,15 @@ export class DatabaseManager {
   private client: any;
 
   private constructor() {
-    // FORÇAR Aurora Serverless como único banco (sem fallbacks)
+    // MODO EXCLUSIVO: Aurora Serverless ou Aurora DSQL (NEON REMOVIDO COMPLETAMENTE)
     if (process.env.USE_AURORA_SERVERLESS === 'true') {
       this.currentDbType = 'aurora-serverless';
-      console.log('🎯 MODO EXCLUSIVO: Aurora Serverless v2 (Neon Database DESATIVADO)');
+      console.log('🎯 MODO EXCLUSIVO: Aurora Serverless v2 (NEON DATABASE COMPLETAMENTE DESATIVADO)');
+    } else if (process.env.ENDPOINT_AURORA && process.env.TOKEN_AURORA) {
+      this.currentDbType = 'aurora-dsql';
+      console.log('🎯 MODO EXCLUSIVO: Aurora DSQL (NEON DATABASE COMPLETAMENTE DESATIVADO)');
     } else {
-      throw new Error('❌ ERRO: Aurora Serverless não configurado. Defina USE_AURORA_SERVERLESS=true nas secrets.');
+      throw new Error('❌ ERRO CRÍTICO: Nenhum banco Aurora configurado. Configure Aurora Serverless (USE_AURORA_SERVERLESS=true) ou Aurora DSQL (ENDPOINT_AURORA + TOKEN_AURORA).');
     }
     this.initializeDatabase();
   }
@@ -43,19 +39,12 @@ export class DatabaseManager {
     } else if (this.currentDbType === 'aurora-dsql') {
       this.initializeAuroraDSQL();
     } else {
-      this.initializePostgreSQL();
+      throw new Error('❌ ERRO: Tipo de banco inválido. NEON foi completamente removido do sistema.');
     }
   }
 
-  private initializePostgreSQL() {
-    if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL must be set for PostgreSQL connection");
-    }
-
-    this.client = new NeonPool({ connectionString: process.env.DATABASE_URL });
-    this.db = drizzleNeon({ client: this.client, schema });
-    console.log('✅ PostgreSQL connection initialized');
-  }
+  // MÉTODO REMOVIDO: initializePostgreSQL() 
+  // NEON DATABASE FOI COMPLETAMENTE DESATIVADO DO SISTEMA
 
   private initializeAuroraServerless() {
     const host = process.env.AURORA_SERVERLESS_HOST;
@@ -118,10 +107,7 @@ export class DatabaseManager {
     const token = process.env.TOKEN_AURORA;
 
     if (!endpoint || !token) {
-      console.error('❌ Aurora DSQL credentials not found, falling back to PostgreSQL');
-      this.currentDbType = 'postgresql';
-      this.initializePostgreSQL();
-      return;
+      throw new Error('❌ ERRO CRÍTICO: Credenciais Aurora DSQL obrigatórias. NEON foi removido - sem fallbacks disponíveis.');
     }
 
     try {
@@ -145,9 +131,8 @@ export class DatabaseManager {
 
       console.log('✅ Aurora DSQL inicializado');
     } catch (error) {
-      console.error('❌ Failed to initialize Aurora DSQL, falling back to PostgreSQL:', error);
-      this.currentDbType = 'postgresql';
-      this.initializePostgreSQL();
+      console.error('❌ ERRO CRÍTICO na inicialização Aurora DSQL:', error);
+      throw new Error(`FALHA CRÍTICA: Aurora DSQL não conectou. NEON foi removido - sistema não pode continuar. ${error}`);
     }
   }
 
@@ -185,9 +170,7 @@ export class DatabaseManager {
         await this.db.execute('SELECT 1 as test');
         console.log(`✅ Aurora DSQL conectado`);
       } else {
-        // Teste PostgreSQL
-        await this.db.execute('SELECT 1 as test');
-        console.log(`✅ PostgreSQL conectado`);
+        throw new Error('❌ Tipo de banco desconhecido. NEON foi removido do sistema.');
       }
       
       return true;

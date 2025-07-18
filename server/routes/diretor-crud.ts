@@ -1,6 +1,6 @@
 import express from 'express';
 import { Request, Response } from 'express';
-import { pool } from '../db';
+import { dbClient } from '../db';
 
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.get('/dashboard/stats', authenticateDirector, async (req: Request, res: R
     }
 
     // Buscar estatísticas da escola do diretor
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     try {
       const statsQueries = await Promise.all([
         // Total de alunos na escola
@@ -115,7 +115,7 @@ router.get('/escola/:id', authenticateDirector, async (req: Request, res: Respon
       });
     }
 
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     let escolaQuery;
     try {
       escolaQuery = await client.query(`
@@ -187,7 +187,7 @@ router.get('/alunos', authenticateDirector, async (req: Request, res: Response) 
 
     // Buscar alunos
     const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     let alunosQuery, totalQuery, statsQuery;
     try {
       alunosQuery = await client.query(`
@@ -277,7 +277,7 @@ router.post('/alunos', authenticateDirector, async (req: Request, res: Response)
     }
 
     // Verificar se matrícula já existe na escola
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     let matriculaExistente, novoAlunoQuery;
     try {
       matriculaExistente = await client.query(
@@ -356,7 +356,7 @@ router.get('/professores', authenticateDirector, async (req: Request, res: Respo
 
     // Buscar professores
     const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     let professoresQuery, totalQuery, statsQuery;
     try {
       professoresQuery = await client.query(`
@@ -450,7 +450,7 @@ router.post('/professores', authenticateDirector, async (req: Request, res: Resp
     }
 
     // Verificar se email já existe
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     let emailExistente, novoUsuarioQuery, novoProfessorQuery;
     try {
       emailExistente = await client.query(
@@ -524,7 +524,7 @@ router.put('/alunos/:id', authenticateDirector, async (req: Request, res: Respon
     }
 
     // Verificar se o aluno pertence à escola do diretor
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     let alunoExistente, alunoAtualizadoQuery;
     try {
       alunoExistente = await client.query(
@@ -599,7 +599,7 @@ router.delete('/alunos/:id', authenticateDirector, async (req: Request, res: Res
     }
 
     // Verificar se o aluno pertence à escola do diretor
-    const client = await pool.connect();
+    const client = await dbClient.connect();
     try {
       const alunoExistente = await client.query(
         'SELECT * FROM alunos WHERE id = $1 AND escola_id = $2',
