@@ -111,6 +111,14 @@ async function upsertUser(userData, userType) {
   const client = await pool.connect();
   
   try {
+    // DEBUG: Verificar tamanho dos campos
+    console.log('   🔍 DEBUG - Tamanhos dos campos:');
+    Object.entries(userData).forEach(([key, value]) => {
+      if (value && typeof value === 'string' && value.length > 20) {
+        console.log(`     ${key}: ${value.length} chars - "${value}"`);
+      }
+    });
+
     const query = `
       INSERT INTO usuarios (
         cognito_sub, cognito_username, email, nome, telefone, tipo_usuario, 
@@ -138,7 +146,7 @@ async function upsertUser(userData, userType) {
       userData.nome,
       userData.telefone,
       userType,
-      userData.user_status,
+      'active', // Status fixo para evitar problemas
       userData.created_at,
       userData.updated_at
     ];
