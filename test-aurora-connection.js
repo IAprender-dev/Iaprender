@@ -3,7 +3,7 @@
  * Verifica se as credenciais estão corretas e o banco está acessível
  */
 
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
 async function testAuroraConnection() {
   console.log('🔍 TESTE DIRETO: Conectividade Aurora Serverless');
