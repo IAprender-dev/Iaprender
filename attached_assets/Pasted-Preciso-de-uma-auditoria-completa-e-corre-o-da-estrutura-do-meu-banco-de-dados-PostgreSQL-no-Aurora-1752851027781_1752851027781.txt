@@ -1,0 +1,82 @@
+Preciso de uma auditoria completa e correção da estrutura do meu banco de dados PostgreSQL no Aurora Serverless V2. Analise toda a estrutura atual e identifique TODAS as inconsistências, problemas de design e oportunidades de otimização.
+Contexto:
+
+Sistema educacional multi-tenant com hierarquia: Empresa → Escola → Usuários (Gestores, Diretores, Professores, Alunos)
+Banco de dados PostgreSQL rodando no AWS Aurora Serverless V2
+Já identifiquei algumas correções (arquivo aurora-correcoes.sql anexado), mas preciso de uma revisão COMPLETA
+
+Por favor, analise e corrija:
+
+Consistência de nomenclatura:
+
+Padronização de nomes de campos (ex: usr_id vs user_id)
+Convenções de nomenclatura para tabelas, colunas, índices e constraints
+Uso consistente de snake_case
+
+
+Campos de auditoria:
+
+Verificar se TODAS as tabelas têm: criado_em, atualizado_em, criado_por, atualizado_por
+Adicionar onde estiver faltando
+Criar triggers para atualização automática
+
+
+Integridade referencial:
+
+Verificar TODAS as foreign keys necessárias
+Adicionar constraints ON DELETE e ON UPDATE apropriados
+Validar relacionamentos entre tabelas
+
+
+Índices:
+
+Identificar campos que precisam de índices simples
+Criar índices compostos para queries frequentes
+Remover índices redundantes ou não utilizados
+Adicionar índices para campos de busca e filtro comuns
+
+
+Tipos de dados:
+
+Verificar se os tipos estão corretos e otimizados
+Padronizar uso de UUID vs SERIAL/BIGSERIAL
+Verificar campos que deveriam ser NOT NULL
+
+
+Constraints e validações:
+
+Adicionar CHECK constraints onde apropriado
+Validações de formato (email, telefone, etc)
+Constraints de unicidade necessários
+
+
+Performance e otimização:
+
+Sugerir particionamento se aplicável
+Otimizações específicas para Aurora
+Configurações de FILLFACTOR se necessário
+
+
+Documentação:
+
+Adicionar COMMENT em todas as tabelas e colunas importantes
+Documentar relacionamentos complexos
+
+
+
+Entregáveis necessários:
+
+Script SQL completo com TODAS as correções organizadas por categoria
+Lista de problemas encontrados com explicação de cada um
+Ordem de execução segura para aplicar as mudanças sem quebrar o sistema
+Rollback script para reverter as mudanças se necessário
+Recomendações adicionais para melhorias futuras
+
+IMPORTANTE:
+
+O sistema está em produção, então as alterações devem ser seguras
+Manter compatibilidade com a aplicação existente
+Considerar as correções já identificadas no arquivo anexado, mas fazer uma análise independente e completa
+Incluir validações para garantir que os scripts não falhem
+
+Por favor, seja extremamente detalhado e não deixe passar nenhuma inconsistência ou oportunidade de melhoria. O objetivo é ter um banco de dados robusto, consistente e otimizado.

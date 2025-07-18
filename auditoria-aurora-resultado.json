@@ -1,0 +1,394 @@
+{
+  "dataAuditoria": "2025-07-18T15:12:33.712Z",
+  "banco": "Aurora Serverless V2 - BDIAPRENDER",
+  "totalTabelas": 10,
+  "resultados": {
+    "estruturaGeral": [],
+    "inconsistenciasNomenclatura": [],
+    "camposAuditoriaMissing": [],
+    "foreignKeysMissing": [
+      {
+        "tabela": "diretores",
+        "coluna": "empresa_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "professores",
+        "coluna": "empresa_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "empresa_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "ai_resource_configs",
+        "coluna": "resource_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "empresa_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "escola_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "usuario_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "gestor_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "diretor_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "professor_id",
+        "problema": "Campo _id sem foreign key"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "aluno_id",
+        "problema": "Campo _id sem foreign key"
+      }
+    ],
+    "indicesMissing": [],
+    "indicesRedundantes": [],
+    "tiposDadosProblematicos": [
+      {
+        "tabela": "usuarios",
+        "coluna": "cognito_username",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "email",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "tipo_usuario",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "telefone",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "documento_identidade",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "genero",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "cidade",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "estado",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "status",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "escolas",
+        "coluna": "nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "escolas",
+        "coluna": "tipo_escola",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "escolas",
+        "coluna": "cidade",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "escolas",
+        "coluna": "email",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "escolas",
+        "coluna": "diretor_responsavel",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "escolas",
+        "coluna": "status",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "gestores",
+        "coluna": "nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "gestores",
+        "coluna": "cargo",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "gestores",
+        "coluna": "status",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "diretores",
+        "coluna": "nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "diretores",
+        "coluna": "cargo",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "diretores",
+        "coluna": "status",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "professores",
+        "coluna": "nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "professores",
+        "coluna": "status",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "matricula",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "turma",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "serie",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "turno",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "nome_responsavel",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "contato_responsavel",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "alunos",
+        "coluna": "status",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "empresas",
+        "coluna": "nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "empresas",
+        "coluna": "email_contato",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "empresas",
+        "coluna": "cidade",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "contratos",
+        "coluna": "status",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "contratos",
+        "coluna": "email_responsavel",
+        "tipoAtual": "text",
+        "problema": "Campo email deveria ser VARCHAR"
+      },
+      {
+        "tabela": "ai_preferences",
+        "coluna": "default_ai",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "ai_preferences",
+        "coluna": "response_language",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "ai_preferences",
+        "coluna": "complexity_level",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "ai_resource_configs",
+        "coluna": "resource_name",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "ai_resource_configs",
+        "coluna": "resource_type",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "ai_resource_configs",
+        "coluna": "selected_model",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "ai_resource_configs",
+        "coluna": "model_name",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "empresa_nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "escola_nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "usuario_nome",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      },
+      {
+        "tabela": "vw_hierarquia_completa",
+        "coluna": "tipo_usuario",
+        "tipoAtual": "character varying",
+        "problema": "VARCHAR sem tamanho definido"
+      }
+    ],
+    "constraintsMissing": [
+      {
+        "tabela": "empresas",
+        "coluna": "email_contato",
+        "tipo": "CHECK",
+        "sugestao": "Adicionar validação de formato de email"
+      },
+      {
+        "tabela": "contratos",
+        "coluna": "email_responsavel",
+        "tipo": "CHECK",
+        "sugestao": "Adicionar validação de formato de email"
+      },
+      {
+        "tabela": "usuarios",
+        "coluna": "email",
+        "tipo": "CHECK",
+        "sugestao": "Adicionar validação de formato de email"
+      },
+      {
+        "tabela": "escolas",
+        "coluna": "email",
+        "tipo": "CHECK",
+        "sugestao": "Adicionar validação de formato de email"
+      }
+    ],
+    "performanceIssues": [],
+    "documentacaoMissing": []
+  },
+  "estatisticas": {
+    "inconsistenciasNomenclatura": 0,
+    "camposAuditoriaMissing": 0,
+    "foreignKeysMissing": 11,
+    "tiposDadosProblematicos": 48,
+    "constraintsMissing": 4
+  }
+}
