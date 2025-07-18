@@ -18,7 +18,9 @@ export default function AdminCRUDDashboardSimple() {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [cognitoUsers, setCognitoUsers] = useState<any[]>([]);
+  const [externalUsers, setExternalUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [externalLoading, setExternalLoading] = useState(false);
 
   // Dados reais do banco
   const empresas = [
@@ -59,6 +61,47 @@ export default function AdminCRUDDashboardSimple() {
       status: "ativo"
     }
   ];
+
+  // Função para buscar usuários da API externa
+  const fetchExternalUsers = async () => {
+    setExternalLoading(true);
+    try {
+      console.log('🔄 Buscando usuários da API externa...');
+      const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Token de autenticação não encontrado');
+      }
+      
+      const response = await fetch('/api/external/usuarios', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Resposta da API externa:', data);
+      
+      if (data.success && Array.isArray(data.data)) {
+        setExternalUsers(data.data);
+        console.log(`✅ ${data.data.length} usuários carregados da API externa`);
+      } else {
+        console.warn('⚠️ Formato de resposta inesperado:', data);
+        setExternalUsers([]);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao buscar usuários da API externa:', error);
+      setExternalUsers([]);
+    } finally {
+      setExternalLoading(false);
+    }
+  };
 
   // Função para buscar usuários do Cognito
   const fetchCognitoUsers = async () => {
@@ -149,9 +192,10 @@ export default function AdminCRUDDashboardSimple() {
     }
   };
 
-  // Carregar usuários do Cognito quando o componente monta
+  // Carregar usuários quando o componente monta
   useEffect(() => {
     fetchCognitoUsers();
+    fetchExternalUsers();
   }, []);
 
   const contratos = [
@@ -321,7 +365,7 @@ export default function AdminCRUDDashboardSimple() {
         {/* Tabs com design aprimorado */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex items-center justify-center">
-            <TabsList className="grid w-full max-w-md grid-cols-3 bg-white shadow-lg border-0 p-1 rounded-xl">
+            <TabsList className="grid w-full max-w-4xl grid-cols-4 bg-white shadow-lg border-0 p-1 rounded-xl">
               <TabsTrigger 
                 value="empresas" 
                 className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
@@ -350,6 +394,16 @@ export default function AdminCRUDDashboardSimple() {
                 <span className="hidden sm:inline">Contratos</span>
                 <Badge variant="secondary" className="ml-1 bg-purple-100 text-purple-800 data-[state=active]:bg-purple-500 data-[state=active]:text-white">
                   {contratos.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="api-externa" 
+                className="flex items-center gap-2 data-[state=active]:bg-orange-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">API Externa</span>
+                <Badge variant="secondary" className="ml-1 bg-orange-100 text-orange-800 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
+                  {externalUsers.length}
                 </Badge>
               </TabsTrigger>
             </TabsList>
@@ -780,6 +834,185 @@ export default function AdminCRUDDashboardSimple() {
                     Atualizar
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Nova Aba API Externa */}
+          <TabsContent value="api-externa">
+            <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-lg py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Settings className="h-5 w-5" />
+                      Usuários da API Externa
+                    </CardTitle>
+                    <p className="text-orange-100 text-sm mt-1">
+                      Integração com https://ghj67gg706.execute-api.us-east-1.amazonaws.com/prod
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      onClick={fetchExternalUsers}
+                      disabled={externalLoading}
+                      className="bg-white text-orange-600 hover:bg-orange-50 shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${externalLoading ? 'animate-spin' : ''}`} />
+                      {externalLoading ? 'Carregando...' : 'Atualizar'}
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                {externalLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="flex flex-col items-center gap-4">
+                      <RefreshCw className="h-8 w-8 animate-spin text-orange-600" />
+                      <p className="text-gray-600">Buscando usuários da API externa...</p>
+                    </div>
+                  </div>
+                ) : externalUsers.length === 0 ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="flex flex-col items-center gap-4 text-center">
+                      <Settings className="h-12 w-12 text-gray-400" />
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-700">Nenhum usuário encontrado</h3>
+                        <p className="text-gray-500 mt-1">
+                          Verifique a conexão com a API externa ou tente atualizar
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={fetchExternalUsers}
+                        variant="outline"
+                        className="mt-2"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Tentar novamente
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                      <div className="flex-1">
+                        <Input
+                          placeholder="🔍 Buscar usuários da API externa..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="w-full border-2 border-gray-200 focus:border-orange-500 rounded-lg h-12 px-4 shadow-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-gray-50 border-0">
+                            <TableHead className="w-[250px] font-semibold text-gray-700 py-4">Usuário</TableHead>
+                            <TableHead className="font-semibold text-gray-700">Informações</TableHead>
+                            <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                            <TableHead className="w-[120px] font-semibold text-gray-700 text-center">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {externalUsers
+                            .filter(user => 
+                              !searchTerm || 
+                              user.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              user.id?.toString().includes(searchTerm)
+                            )
+                            .map((user) => (
+                            <TableRow key={user.id} className="hover:bg-gray-50 border-gray-100 transition-colors duration-150">
+                              <TableCell className="py-4">
+                                <div className="flex flex-col space-y-1">
+                                  <div className="font-semibold text-blue-700 text-base">
+                                    {user.nome || user.name || 'Nome não informado'}
+                                  </div>
+                                  <div className="text-sm text-gray-600 flex items-center gap-1">
+                                    <Mail className="h-3 w-3" />
+                                    {user.email || 'Email não informado'}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    ID: {user.id}
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-4">
+                                <div className="space-y-1">
+                                  {user.tipo_usuario && (
+                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                      {user.tipo_usuario}
+                                    </Badge>
+                                  )}
+                                  {user.empresa_id && (
+                                    <div className="text-sm text-gray-600">
+                                      Empresa: {user.empresa_id}
+                                    </div>
+                                  )}
+                                  {user.telefone && (
+                                    <div className="text-sm text-gray-600 flex items-center gap-1">
+                                      <Phone className="h-3 w-3" />
+                                      {user.telefone}
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-4">
+                                <Badge 
+                                  variant="outline"
+                                  className={`${user.status === 'ativo' || user.status === 'active' || user.enabled
+                                    ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200' 
+                                    : 'bg-gray-100 text-gray-800 border-gray-200'
+                                  } px-3 py-1 rounded-full font-medium shadow-sm`}
+                                >
+                                  {user.status === 'ativo' || user.status === 'active' || user.enabled ? "✅ Ativo" : "⏸️ Inativo"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="py-4">
+                                <div className="flex items-center space-x-2">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedItem(user);
+                                      setIsViewOpen(true);
+                                    }}
+                                    className="h-9 w-9 p-0 hover:bg-orange-100 hover:text-orange-600 rounded-full transition-all duration-200"
+                                    title="Visualizar usuário da API externa"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <div className="flex justify-between items-center mt-6 p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-4">
+                        <div className="text-sm font-medium text-gray-700">
+                          Total: <span className="text-orange-600 font-bold">{externalUsers.length}</span> usuários da API externa
+                        </div>
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                          {externalUsers.filter(u => u.status === 'ativo' || u.status === 'active' || u.enabled).length} ativos
+                        </Badge>
+                      </div>
+                      <Button 
+                        onClick={fetchExternalUsers}
+                        variant="outline" 
+                        size="sm" 
+                        className="border-gray-300 hover:bg-gray-100"
+                        disabled={externalLoading}
+                      >
+                        <RefreshCw className={`h-4 w-4 mr-2 ${externalLoading ? 'animate-spin' : ''}`} />
+                        Atualizar
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
