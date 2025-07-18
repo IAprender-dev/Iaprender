@@ -24,9 +24,12 @@ export const pool = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
-// Usar DatabaseManager para escolher entre PostgreSQL e Aurora DSQL
+// Usar DatabaseManager para escolher entre Aurora Serverless, Aurora DSQL e PostgreSQL
 export const db = managedDb;
 export const dbClient = dbManager.getClient();
+
+// Log do tipo de banco em uso
+console.log(`📊 Database ativo: ${dbManager.getDatabaseType().toUpperCase()}`);
 
 // Configuração adicional para AWS RDS (quando migrar)
 export const createAWSConnection = () => {

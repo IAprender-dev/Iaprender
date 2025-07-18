@@ -11,7 +11,7 @@ import ws from "ws";
 import { neonConfig } from '@neondatabase/serverless';
 neonConfig.webSocketConstructor = ws;
 
-export type DatabaseType = 'postgresql' | 'aurora-dsql';
+export type DatabaseType = 'postgresql' | 'aurora-dsql' | 'aurora-serverless';
 
 export class DatabaseManager {
   private static instance: DatabaseManager;
@@ -20,8 +20,14 @@ export class DatabaseManager {
   private client: any;
 
   private constructor() {
-    // Determinar qual banco usar baseado nas variáveis de ambiente
-    this.currentDbType = process.env.USE_AURORA_DSQL === 'true' ? 'aurora-dsql' : 'postgresql';
+    // Determinar qual banco usar baseado nas variáveis de ambiente (prioridade: Aurora Serverless > Aurora DSQL > PostgreSQL)
+    if (process.env.USE_AURORA_SERVERLESS === 'true') {
+      this.currentDbType = 'aurora-serverless';
+    } else if (process.env.USE_AURORA_DSQL === 'true') {
+      this.currentDbType = 'aurora-dsql';
+    } else {
+      this.currentDbType = 'postgresql';
+    }
     this.initializeDatabase();
   }
 
@@ -33,7 +39,9 @@ export class DatabaseManager {
   }
 
   private initializeDatabase() {
-    if (this.currentDbType === 'aurora-dsql') {
+    if (this.currentDbType === 'aurora-serverless') {
+      this.initializeAuroraServerless();
+    } else if (this.currentDbType === 'aurora-dsql') {
       this.initializeAuroraDSQL();
     } else {
       this.initializePostgreSQL();
@@ -48,6 +56,60 @@ export class DatabaseManager {
     this.client = new NeonPool({ connectionString: process.env.DATABASE_URL });
     this.db = drizzleNeon({ client: this.client, schema });
     console.log('✅ PostgreSQL connection initialized');
+  }
+
+  private initializeAuroraServerless() {
+    const host = process.env.AURORA_SERVERLESS_HOST;
+    const password = process.env.AURORA_SERVERLESS_PASSWORD;
+    const database = process.env.AURORA_SERVERLESS_DB || 'iaprender_production';
+    const username = process.env.AURORA_SERVERLESS_USER || 'admin';
+    const port = parseInt(process.env.AURORA_SERVERLESS_PORT || '5432');
+
+    if (!host || !password) {
+      console.error('❌ Aurora Serverless credentials not found, falling back to Aurora DSQL');
+      this.currentDbType = 'aurora-dsql';
+      this.initializeAuroraDSQL();
+      return;
+    }
+
+    try {
+      console.log(`🚀 Aurora Serverless v2 - Configuração Enterprise (60k-150k usuários)`);
+      console.log(`📍 ${host}:${port}/${database}`);
+      
+      // Connection pool otimizado para alta escala
+      this.client = new PostgreSQLPool({ 
+        host: host,
+        port: port,
+        database: database,
+        user: username,
+        password: password,
+        ssl: { 
+          rejectUnauthorized: false,
+          require: true 
+        },
+        // Configurações enterprise para 60k-150k usuários
+        max: 50,                    // Máximo de conexões no pool
+        min: 5,                     // Mínimo de conexões mantidas
+        idleTimeoutMillis: 30000,   // 30s timeout para conexões idle
+        connectionTimeoutMillis: 5000, // 5s timeout para novas conexões
+        acquireTimeoutMillis: 60000,   // 60s timeout para aquisição
+        createTimeoutMillis: 10000,    // 10s timeout para criação
+        destroyTimeoutMillis: 5000,    // 5s timeout para destruição
+        reapIntervalMillis: 1000,      // 1s intervalo de limpeza
+        createRetryIntervalMillis: 200, // 200ms retry interval
+        propagateCreateError: true
+      });
+      
+      // Usar Drizzle PostgreSQL driver nativo (mesmo driver do Aurora DSQL)
+      this.db = drizzlePostgreSQL(this.client, { schema });
+
+      console.log('✅ Aurora Serverless v2 inicializado para escala enterprise');
+      console.log(`📊 Pool configurado: max ${this.client.options.max} conexões`);
+    } catch (error) {
+      console.error('❌ Failed to initialize Aurora Serverless, falling back to Aurora DSQL:', error);
+      this.currentDbType = 'aurora-dsql';
+      this.initializeAuroraDSQL();
+    }
   }
 
   private initializeAuroraDSQL() {
@@ -102,7 +164,22 @@ export class DatabaseManager {
 
   public async testConnection(): Promise<boolean> {
     try {
-      if (this.currentDbType === 'aurora-dsql') {
+      if (this.currentDbType === 'aurora-serverless') {
+        // Teste Aurora Serverless v2
+        const result = await this.db.execute('SELECT 1 as test, current_database() as db, version() as version');
+        console.log(`✅ Aurora Serverless v2 conectado - DB: ${result.rows?.[0]?.db}`);
+        
+        // Teste de performance - queries paralelas
+        const startTime = Date.now();
+        const promises = [];
+        for (let i = 0; i < 5; i++) {
+          promises.push(this.db.execute('SELECT pg_sleep(0.01), $1 as test_id', [i]));
+        }
+        await Promise.all(promises);
+        const endTime = Date.now();
+        console.log(`📊 Performance: ${endTime - startTime}ms para 5 queries paralelas`);
+        
+      } else if (this.currentDbType === 'aurora-dsql') {
         // Teste básico Aurora DSQL
         await this.db.execute('SELECT 1 as test');
         console.log(`✅ Aurora DSQL conectado`);
@@ -118,6 +195,8 @@ export class DatabaseManager {
       
       if (this.currentDbType === 'aurora-dsql' && error.message.includes('access denied')) {
         console.log('💡 Token Aurora DSQL expirado - renovar nas secrets');
+      } else if (this.currentDbType === 'aurora-serverless' && error.message.includes('authentication failed')) {
+        console.log('💡 Credenciais Aurora Serverless incorretas - verificar secrets');
       }
       
       return false;

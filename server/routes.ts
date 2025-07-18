@@ -46,6 +46,7 @@ import { registerAdminCognitoRoutes } from "./routes/admin-cognito-routes";
 import { registerAdminEndpoints } from "./routes/admin-endpoints";
 import { registerAdminCRUDEndpoints } from "./routes/admin-crud";
 import s3DocumentRoutes from "./routes/s3-documents";
+import auroraServerlessRoutes from "./routes/aurora-serverless-routes";
 // Import removido para implementação dinâmica
 
 // Define login schema
@@ -1082,6 +1083,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Registrar rotas de arquivos S3
   app.use('/api/s3-documents', s3DocumentRoutes);
+
+  // Registrar rotas Aurora Serverless v2
+  app.use('/api/aurora-serverless', auroraServerlessRoutes);
 
   // Rotas da API hierárquica removidas temporariamente (dependência do CognitoSyncService removida)
 
