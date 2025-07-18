@@ -105,6 +105,7 @@ import OptimizationsPage from "@/pages/OptimizationsPage";
 import DocumentsPage from "@/pages/DocumentsPage";
 import LambdaIADemo from "@/components/LambdaIADemo";
 import AWSIntegrationDemo from "@/components/AWSIntegrationDemo";
+import DatabaseTables from "@/pages/admin/DatabaseTables";
 
 // Protected route component
 const ProtectedRoute = ({ component: Component, roles = [], ...rest }: { 
@@ -216,6 +217,7 @@ function Router() {
       <Route path="/admin/s3-bedrock" component={S3BedrockDashboard} />
       <Route path="/admin/credentials" component={SystemCredentials} />
       <Route path="/admin/create-user" component={CreateUser} />
+      <Route path="/admin/database-tables" component={DatabaseTables} />
 
       <Route path="/admin/cognito-users" component={CognitoUserManagement} />
       

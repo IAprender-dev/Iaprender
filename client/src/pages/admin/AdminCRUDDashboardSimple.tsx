@@ -267,6 +267,14 @@ export default function AdminCRUDDashboardSimple() {
               </Button>
               <Button 
                 variant="outline" 
+                onClick={() => window.location.href = '/admin/database-tables'}
+                className="border-purple-500 text-purple-600 hover:bg-purple-50"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Tabelas do Banco
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={handleLogout}
                 className="border-red-500 text-red-600 hover:bg-red-50"
               >

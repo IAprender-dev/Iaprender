@@ -90,6 +90,11 @@ app.use((req, res, next) => {
   app.use('/api/hybrid-lambda', hybridLambdaRouter.default);
   console.log('🔄 Rotas Sistema Híbrido registradas');
   
+  // Registrar rota de listagem de tabelas
+  const listTablesRouter = await import('./routes/list-tables.js');
+  app.use(listTablesRouter.default);
+  console.log('📊 Rota de listagem de tabelas registrada');
+  
   const server = await registerRoutes(app);
   
   // Add custom Cognito UI routes
