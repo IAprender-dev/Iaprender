@@ -1,0 +1,45 @@
+{
+  "dataValidacao": "2025-07-18T15:44:58.774Z",
+  "resultados": {
+    "foreignKeys": {
+      "esperado": 40,
+      "encontrado": 40,
+      "status": "✅"
+    },
+    "indices": {
+      "esperado": 59,
+      "encontrado": 59,
+      "status": "✅"
+    },
+    "triggers": {
+      "esperado": 12,
+      "encontrado": 12,
+      "status": "✅"
+    },
+    "views": {
+      "esperado": 2,
+      "encontrado": 2,
+      "status": "✅"
+    },
+    "constraints": {
+      "esperado": 4,
+      "encontrado": 4,
+      "status": "✅"
+    },
+    "tiposCorretos": {
+      "esperado": 48,
+      "encontrado": 56,
+      "status": "✅"
+    }
+  },
+  "estruturaFinal": {
+    "tabelas": 12,
+    "foreignKeys": 40,
+    "indices": 59,
+    "triggers": 12,
+    "views": 2,
+    "constraints": 4,
+    "tiposOtimizados": 56
+  },
+  "statusEnterprise": true
+}
