@@ -61,7 +61,7 @@ export class DatabaseManager {
     const host = process.env.AURORA_SERVERLESS_HOST;
     const password = process.env.AURORA_SERVERLESS_PASSWORD;
     const database = process.env.AURORA_SERVERLESS_DB || 'iaprender_production';
-    const username = (process.env.AURORA_SERVERLESS_USER || 'admin').trim();
+    const username = (process.env.AURORA_SERVERLESS_USER || 'Admn').trim();
     const port = parseInt(process.env.AURORA_SERVERLESS_PORT || '5432');
 
     if (!host || !password) {
@@ -82,10 +82,10 @@ export class DatabaseManager {
         database: database,
         user: username,
         password: password,
-        ssl: process.env.NODE_ENV === 'production' ? { 
+        ssl: { 
           rejectUnauthorized: false,
           require: true 
-        } : false,
+        },
         // Configurações enterprise otimizadas para Aurora Serverless v2
         max: 30,                       // Reduzido para evitar timeout
         min: 2,                        // Mínimo reduzido
