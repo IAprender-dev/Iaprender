@@ -62,7 +62,7 @@ export class DatabaseManager {
     const host = process.env.AURORA_SERVERLESS_HOST;
     const password = process.env.AURORA_SERVERLESS_PASSWORD;
     const database = process.env.AURORA_SERVERLESS_DB || 'iaprender_production';
-    const username = process.env.AURORA_SERVERLESS_USER || 'admin';
+    const username = (process.env.AURORA_SERVERLESS_USER || 'admin').trim();
     const port = parseInt(process.env.AURORA_SERVERLESS_PORT || '5432');
 
     if (!host || !password) {
@@ -73,20 +73,23 @@ export class DatabaseManager {
     }
 
     try {
+      // Limpar espaços e caracteres inválidos do host
+      const cleanHost = host.trim().replace(/\s+/g, '');
+      
       console.log(`🚀 Aurora Serverless v2 - Configuração Enterprise (60k-150k usuários)`);
-      console.log(`📍 ${host}:${port}/${database}`);
+      console.log(`📍 ${cleanHost}:${port}/${database} (usuário: ${username})`);
       
       // Connection pool otimizado para alta escala
       this.client = new PostgreSQLPool({ 
-        host: host,
+        host: cleanHost,
         port: port,
         database: database,
         user: username,
         password: password,
-        ssl: { 
+        ssl: process.env.NODE_ENV === 'production' ? { 
           rejectUnauthorized: false,
           require: true 
-        },
+        } : false,
         // Configurações enterprise para 60k-150k usuários
         max: 50,                    // Máximo de conexões no pool
         min: 5,                     // Mínimo de conexões mantidas
