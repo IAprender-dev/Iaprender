@@ -60,7 +60,7 @@ export class DatabaseManager {
   private initializeAuroraServerless() {
     const host = process.env.AURORA_SERVERLESS_HOST;
     const password = process.env.AURORA_SERVERLESS_PASSWORD;
-    const database = process.env.AURORA_SERVERLESS_DB || 'iaprender_production';
+    const database = process.env.AURORA_SERVERLESS_DB || 'BDIAPRENDER';
     const username = (process.env.AURORA_SERVERLESS_USER || 'Admn').trim();
     const port = parseInt(process.env.AURORA_SERVERLESS_PORT || '5432');
 

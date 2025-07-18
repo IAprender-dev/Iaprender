@@ -11,7 +11,7 @@ async function testAdmnUser() {
   
   const host = process.env.AURORA_SERVERLESS_HOST?.trim();
   const password = process.env.AURORA_SERVERLESS_PASSWORD;
-  const database = process.env.AURORA_SERVERLESS_DB || 'bdiaprender';
+  const database = process.env.AURORA_SERVERLESS_DB || 'BDIAPRENDER';
   const username = 'Admn'; // ESPECÍFICO conforme solicitado
   const port = parseInt(process.env.AURORA_SERVERLESS_PORT || '5432');
   
