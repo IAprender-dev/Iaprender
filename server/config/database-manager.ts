@@ -174,7 +174,7 @@ export class DatabaseManager {
         const startTime = Date.now();
         const promises = [];
         for (let i = 0; i < 5; i++) {
-          promises.push(this.db.execute('SELECT pg_sleep(0.01), $1 as test_id', [i]));
+          promises.push(this.db.execute(`SELECT pg_sleep(0.01), ${i} as test_id`));
         }
         await Promise.all(promises);
         const endTime = Date.now();
