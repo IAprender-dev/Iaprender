@@ -27,27 +27,30 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Processar token OAuth do Cognito se presente
+    // Processar tokens OAuth do Cognito se presentes
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
-    const success = params.get("success");
+    const cognitoToken = params.get("cognito_token");
+    const authSuccess = params.get("auth");
     const error = params.get("error");
     
-    if (token && success === "true") {
-      // Salvar token no localStorage
-      localStorage.setItem("authToken", token);
+    if (token && cognitoToken && authSuccess === "success") {
+      // Salvar ambos os tokens no localStorage
+      localStorage.setItem("token", token); // Token JWT interno
+      localStorage.setItem("cognito_token", cognitoToken); // Token Cognito para API externa
+      localStorage.setItem("access_token", cognitoToken); // Compatibilidade
       
-      // Limpar URL
+      // Limpar URL dos parâmetros sensíveis
       window.history.replaceState({}, document.title, window.location.pathname);
       
       // Mostrar toast de sucesso
       toast({
         title: "Login realizado com sucesso!",
-        description: "Você foi autenticado via AWS Cognito.",
+        description: "Você foi autenticado via AWS Cognito e conectado à API externa.",
         variant: "default",
       });
       
-      // Recarregar página para que o AuthContext reconheça o novo token
+      // Recarregar página para que o AuthContext reconheça os novos tokens
       window.location.reload();
     } else if (error) {
       toast({

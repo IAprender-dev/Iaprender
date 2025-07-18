@@ -267,6 +267,14 @@ export default function AdminCRUDDashboardSimple() {
               </Button>
               <Button 
                 variant="outline" 
+                onClick={() => window.location.href = '/admin/external-users'}
+                className="border-green-500 text-green-600 hover:bg-green-50"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                API Externa
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={() => window.location.href = '/admin/database-tables'}
                 className="border-purple-500 text-purple-600 hover:bg-purple-50"
               >

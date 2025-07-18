@@ -179,13 +179,14 @@ export function registerAuthRoutes(app: Express) {
         accessToken: AccessToken,
         idToken: IdToken,
         refreshToken: RefreshToken,
+        cognitoToken: AccessToken, // Token para usar na API externa
         user: {
           email: idTokenPayload.email,
           name: idTokenPayload.name,
           groups: grupos,
           userType: userType
         },
-        redirectUrl: `${redirectUrl}?token=${encodeURIComponent(internalToken)}&auth=success`
+        redirectUrl: `${redirectUrl}?token=${encodeURIComponent(internalToken)}&cognito_token=${encodeURIComponent(AccessToken!)}&auth=success`
       });
 
     } catch (error) {

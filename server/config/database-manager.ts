@@ -4,7 +4,7 @@ import { Pool as PostgreSQLPool } from 'pg';
 import { drizzle as drizzlePostgreSQL } from 'drizzle-orm/node-postgres';
 import * as schema from '../../shared/schema';
 
-export type DatabaseType = 'aurora-dsql' | 'aurora-serverless';
+export type DatabaseType = 'aurora-dsql' | 'aurora-serverless' | 'postgresql';
 
 export class DatabaseManager {
   private static instance: DatabaseManager;
@@ -13,15 +13,18 @@ export class DatabaseManager {
   private client: any;
 
   private constructor() {
-    // MODO EXCLUSIVO: Aurora Serverless ou Aurora DSQL (NEON REMOVIDO COMPLETAMENTE)
+    // PRIORIDADE: Aurora Serverless > Aurora DSQL > PostgreSQL local (desenvolvimento)
     if (process.env.USE_AURORA_SERVERLESS === 'true') {
       this.currentDbType = 'aurora-serverless';
-      console.log('🎯 MODO EXCLUSIVO: Aurora Serverless v2 (NEON DATABASE COMPLETAMENTE DESATIVADO)');
+      console.log('🎯 AURORA SERVERLESS: Usando Aurora Serverless v2');
     } else if (process.env.ENDPOINT_AURORA && process.env.TOKEN_AURORA) {
       this.currentDbType = 'aurora-dsql';
-      console.log('🎯 MODO EXCLUSIVO: Aurora DSQL (NEON DATABASE COMPLETAMENTE DESATIVADO)');
+      console.log('🎯 AURORA DSQL: Usando Aurora DSQL');
+    } else if (process.env.DATABASE_URL) {
+      this.currentDbType = 'postgresql';
+      console.log('🎯 POSTGRESQL: Usando PostgreSQL local para desenvolvimento');
     } else {
-      throw new Error('❌ ERRO CRÍTICO: Nenhum banco Aurora configurado. Configure Aurora Serverless (USE_AURORA_SERVERLESS=true) ou Aurora DSQL (ENDPOINT_AURORA + TOKEN_AURORA).');
+      throw new Error('❌ ERRO CRÍTICO: Nenhum banco configurado. Configure DATABASE_URL, Aurora Serverless ou Aurora DSQL.');
     }
     this.initializeDatabase();
   }
@@ -38,13 +41,33 @@ export class DatabaseManager {
       this.initializeAuroraServerless();
     } else if (this.currentDbType === 'aurora-dsql') {
       this.initializeAuroraDSQL();
+    } else if (this.currentDbType === 'postgresql') {
+      this.initializePostgreSQL();
     } else {
-      throw new Error('❌ ERRO: Tipo de banco inválido. NEON foi completamente removido do sistema.');
+      throw new Error('❌ ERRO: Tipo de banco inválido.');
     }
   }
 
-  // MÉTODO REMOVIDO: initializePostgreSQL() 
-  // NEON DATABASE FOI COMPLETAMENTE DESATIVADO DO SISTEMA
+  private initializePostgreSQL() {
+    if (!process.env.DATABASE_URL) {
+      throw new Error('❌ ERRO: DATABASE_URL é obrigatória para PostgreSQL.');
+    }
+
+    try {
+      this.client = new PostgreSQLPool({
+        connectionString: process.env.DATABASE_URL,
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+      });
+
+      this.db = drizzlePostgreSQL(this.client, { schema });
+      console.log('✅ PostgreSQL local conectado com sucesso');
+    } catch (error) {
+      console.error('❌ Erro ao conectar PostgreSQL:', error);
+      throw error;
+    }
+  }
 
   private initializeAuroraServerless() {
     const host = process.env.AURORA_SERVERLESS_HOST;
