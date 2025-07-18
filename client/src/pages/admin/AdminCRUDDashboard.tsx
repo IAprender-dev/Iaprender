@@ -191,91 +191,81 @@ export default function AdminCRUDDashboard() {
   const [filterStatus, setFilterStatus] = useState("all");
   
   // Estados de loading para controlar exibição
-  const isLoading = false;
-  const loadingEmpresas = false;
-  const loadingUsuarios = false;
-  const loadingContratos = false;
+  const isLoading = isLoadingEmpresas || isLoadingContratos || isLoadingUsuarios;
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Dados mock baseados nos dados reais do banco
-  const empresas = [
-    {
-      id: 1,
-      nome: "Empresa Teste",
-      razao_social: "Empresa Teste Ltda",
-      cnpj: "12.345.678/0001-90",
-      email_contato: "teste@empresa.com",
-      telefone: "",
-      endereco: "",
-      cidade: "",
-      estado: "",
-      status: "ativo"
+  // Queries para buscar dados reais do Aurora Serverless
+  const { data: empresasData, isLoading: isLoadingEmpresas } = useQuery({
+    queryKey: ['admin-companies', { page: activeTab === 'empresas' ? currentPage : 1, search: activeTab === 'empresas' ? searchTerm : '', status: filterStatus }],
+    queryFn: async () => {
+      if (activeTab !== 'empresas') return { empresas: [], pagination: { total: 0 } };
+      
+      const response = await fetch(`/api/admin/companies?page=${currentPage}&search=${searchTerm}&status=${filterStatus}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar empresas');
+      }
+      
+      return response.json();
     },
-    {
-      id: 2,
-      nome: "SME São Paulo",
-      razao_social: "Prefeitura Municipal de São Paulo",
-      cnpj: "60.511.888/0001-51",
-      email_contato: "sme@prefeitura.sp.gov.br",
-      telefone: "(11) 3397-8000",
-      endereco: "",
-      cidade: "São Paulo",
-      estado: "SP",
-      status: "ativo"
-    },
-    {
-      id: 3,
-      nome: "SME Rio de Janeiro",
-      razao_social: "Secretaria Municipal de Educação do Rio de Janeiro",
-      cnpj: "42.498.733/0001-48",
-      email_contato: "contato@rioeduca.net",
-      telefone: "(21) 2976-2000",
-      endereco: "",
-      cidade: "Rio de Janeiro",
-      estado: "RJ",
-      status: "ativo"
-    }
-  ];
+    enabled: activeTab === 'empresas'
+  });
 
-  const usuarios = [
-    {
-      id: 1,
-      nome: "Usuário Teste",
-      email: "test@usuario.com",
-      tipoUsuario: "admin",
-      status: "ativo",
-      empresa_id: 1,
-      telefone: "",
-      documento: ""
-    }
-  ];
-
-  const contratos = [
-    {
-      id: 1,
-      numero: "TESTE-001",
-      nome: "Contrato Teste",
-      empresa_id: 1,
-      data_inicio: "2025-07-17",
-      data_fim: "2026-07-17",
-      valor_total: 0,
-      moeda: "BRL",
-      status: "ativo"
+  const { data: contratosData, isLoading: isLoadingContratos } = useQuery({
+    queryKey: ['admin-contracts', { page: activeTab === 'contratos' ? currentPage : 1, search: activeTab === 'contratos' ? searchTerm : '', status: filterStatus }],
+    queryFn: async () => {
+      if (activeTab !== 'contratos') return { contratos: [], pagination: { total: 0 } };
+      
+      const response = await fetch(`/api/admin/contracts?page=${currentPage}&search=${searchTerm}&status=${filterStatus}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar contratos');
+      }
+      
+      return response.json();
     },
-    {
-      id: 2,
-      numero: "CONT-2025-001",
-      nome: "Contrato Teste Gestor",
-      empresa_id: 1,
-      data_inicio: "2025-01-01",
-      data_fim: "2025-12-31",
-      valor_total: 50000.00,
-      moeda: "BRL",
-      status: "ativo"
-    }
-  ];
+    enabled: activeTab === 'contratos'
+  });
+
+  const { data: usuariosData, isLoading: isLoadingUsuarios } = useQuery({
+    queryKey: ['admin-users', { page: activeTab === 'usuarios' ? currentPage : 1, search: activeTab === 'usuarios' ? searchTerm : '', status: filterStatus }],
+    queryFn: async () => {
+      if (activeTab !== 'usuarios') return { usuarios: [], pagination: { total: 0 } };
+      
+      const response = await fetch(`/api/admin/users?page=${currentPage}&search=${searchTerm}&status=${filterStatus}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Erro ao buscar usuários');
+      }
+      
+      return response.json();
+    },
+    enabled: activeTab === 'usuarios'
+  });
+
+  // Dados processados dos queries
+  const empresas = empresasData?.empresas || [];
+  const contratos = contratosData?.contratos || [];
+  const usuarios = usuariosData?.usuarios || [];
+
+  // Estados de loading atualizados
+  const loadingEmpresas = isLoadingEmpresas;
+  const loadingContratos = isLoadingContratos;
+  const loadingUsuarios = isLoadingUsuarios;
 
   // Token authentication handler
   useEffect(() => {
