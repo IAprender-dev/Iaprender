@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: iaprender_postgres
+    environment:
+      POSTGRES_DB: iaprender
+      POSTGRES_USER: iaprender_user
+      POSTGRES_PASSWORD: iaprender_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - iaprender_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iaprender_user -d iaprender"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: iaprender_redis
+    command: redis-server --appendonly yes --requirepass iaprender_redis_pass
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - iaprender_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: iaprender_api
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://iaprender_user:iaprender_pass@postgres:5432/iaprender
+      REDIS_URL: redis://:iaprender_redis_pass@redis:6379
+      JWT_SECRET: dev_jwt_secret_key
+      PORT: 3000
+    volumes:
+      - ./server:/app/server
+      - ./shared:/app/shared
+      - ./package.json:/app/package.json
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - iaprender_network
+    command: npm run dev
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: iaprender_frontend
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_NODE_ENV: development
+    volumes:
+      - ./client:/app/client
+      - /app/client/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - iaprender_network
+    command: npm run dev
+    restart: unless-stopped
+
+  # Adminer (Database Admin)
+  adminer:
+    image: adminer:latest
+    container_name: iaprender_adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - iaprender_network
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+  # Redis Commander (Redis Admin)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: iaprender_redis_commander
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:iaprender_redis_pass
+    ports:
+      - "8081:8081"
+    networks:
+      - iaprender_network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  iaprender_network:
+    driver: bridge
