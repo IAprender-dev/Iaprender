@@ -1,19 +1,22 @@
-# 🎓 IAprender - Sistema de Gestão Educacional com IA
+# 🎓 IAprender - Plataforma Educacional com IA
 
-Sistema abrangente de gestão educacional que integra inteligência artificial para transformar processos administrativos e experiências de aprendizado em instituições educacionais brasileiras.
+> Sistema completo de gestão educacional integrado com inteligência artificial, desenvolvido com arquitetura AWS nativa e tecnologias modernas.
 
 ![IAprender Logo](./assets/iaprender-logo.png)
 
-## 📋 Visão Geral
+## 🚀 **Visão Geral**
 
-O IAprender é uma plataforma completa que oferece:
+O IAprender é uma plataforma educacional de excelência que revoluciona o ensino através da integração de IA, oferecendo ferramentas avançadas para gestores, diretores, professores e alunos.
 
-- **Gestão Hierárquica**: Admin → Gestor → Diretor → Professor → Aluno
-- **Autenticação AWS Cognito**: Sistema robusto de autenticação e autorização
-- **Validação Brasileira**: CPF, CNPJ, telefones com DDDs ANATEL
-- **IA Integrada**: OpenAI, Anthropic Claude, Perplexity AI
-- **Controle de Acesso**: Filtros automáticos por empresa e escola
-- **API RESTful**: Endpoints seguros com rate limiting
+### **🏆 Características Principais**
+
+- **🤖 IA Multi-Modelo**: Claude 3.5 Sonnet, GPT-4, Perplexity Pro
+- **📊 Analytics Avançados**: Dashboards em tempo real com métricas CloudWatch
+- **📚 Gestão Educacional**: Hierarquia completa com permissões
+- **📄 Processamento de Documentos**: Upload, análise e geração automática
+- **🔐 Segurança Empresarial**: AWS Cognito com MFA, permissões hierárquicas
+- **⚡ Performance**: Cache Redis, Circuit Breaker, Retry Strategy
+- **📈 Observabilidade**: Logs estruturados, métricas, alertas
 
 ## 🚀 Instalação
 
