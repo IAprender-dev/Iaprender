@@ -122,8 +122,20 @@ export class SecretsManager {
    * Recupera segredos para autenticação JWT
    */
   static getJWTSecrets(): JWTSecrets {
+    const jwtSecret = process.env.JWT_SECRET;
+    
+    // Em produção, JWT_SECRET é obrigatório
+    if (process.env.NODE_ENV === 'production' && !jwtSecret) {
+      throw new Error('JWT_SECRET deve ser configurado em produção');
+    }
+    
+    // Em desenvolvimento, usar um secret temporário se não configurado
+    const defaultSecret = process.env.NODE_ENV === 'development' 
+      ? 'dev_secret_only_for_development_never_use_in_production'
+      : '';
+    
     return {
-      jwt_secret: process.env.JWT_SECRET || 'test_secret_key_iaprender_2025',
+      jwt_secret: jwtSecret || defaultSecret,
       jwt_algorithm: process.env.JWT_ALGORITHM || 'HS256',
       jwt_expiration: process.env.JWT_EXPIRATION || '24h'
     };
@@ -162,10 +174,11 @@ export class SecretsManager {
   static validateAWSCredentials(): ValidationResult {
     const awsCreds = this.getAWSCredentials();
     const requiredKeys: (keyof AWSCredentials)[] = [
-      'cognito_user_pool_id',
-      'cognito_client_id',
-      'cognito_domain',
-      'cognito_redirect_uri'
+      'AWS_COGNITO_USER_POOL_ID',
+      'AWS_COGNITO_CLIENT_ID',
+      'AWS_COGNITO_CLIENT_SECRET',
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY'
     ];
 
     const missing = requiredKeys.filter(key => !awsCreds[key]);

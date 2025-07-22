@@ -58,11 +58,25 @@ export function registerAuthRoutes(app: Express) {
       // Obter credenciais AWS das secrets
       const awsCredentials = SecretsManager.getAWSCredentials();
       
+      // Log para debug
+      console.log('🔍 Verificando credenciais AWS:');
+      console.log('- AWS_COGNITO_USER_POOL_ID:', awsCredentials.AWS_COGNITO_USER_POOL_ID ? 'SET' : 'NOT SET');
+      console.log('- AWS_COGNITO_CLIENT_ID:', awsCredentials.AWS_COGNITO_CLIENT_ID ? 'SET' : 'NOT SET');
+      console.log('- AWS_COGNITO_CLIENT_SECRET:', awsCredentials.AWS_COGNITO_CLIENT_SECRET ? 'SET (length: ' + awsCredentials.AWS_COGNITO_CLIENT_SECRET.length + ')' : 'NOT SET');
+      console.log('- AWS_ACCESS_KEY_ID:', awsCredentials.AWS_ACCESS_KEY_ID ? 'SET' : 'NOT SET');
+      console.log('- AWS_SECRET_ACCESS_KEY:', awsCredentials.AWS_SECRET_ACCESS_KEY ? 'SET' : 'NOT SET');
+      
       // Extrair credenciais do Cognito das credenciais AWS
       const clientSecret = awsCredentials.AWS_COGNITO_CLIENT_SECRET;
       const clientId = awsCredentials.AWS_COGNITO_CLIENT_ID;
+      const userPoolId = awsCredentials.AWS_COGNITO_USER_POOL_ID;
       
-      if (!clientSecret || !clientId) {
+      if (!clientSecret || !clientId || !userPoolId) {
+        console.error('❌ Credenciais faltantes:', {
+          clientId: !clientId,
+          clientSecret: !clientSecret,
+          userPoolId: !userPoolId
+        });
         throw new Error('Credenciais do AWS Cognito não encontradas nas secrets');
       }
 
@@ -76,12 +90,17 @@ export function registerAuthRoutes(app: Express) {
       });
 
       // Calcular SECRET_HASH
+      console.log('🔐 Calculando SECRET_HASH com:');
+      console.log('- Email:', email);
+      console.log('- ClientId:', clientId);
+      console.log('- ClientSecret length:', clientSecret.length);
+      
       const secretHash = crypto
         .createHmac('SHA256', clientSecret)
         .update(email + clientId)
         .digest('base64');
 
-      console.log('🔐 SECRET_HASH calculado para backend');
+      console.log('🔐 SECRET_HASH calculado:', secretHash.substring(0, 10) + '...');
 
       // Fazer autenticação usando InitiateAuthCommand
       const command = new InitiateAuthCommand({
@@ -131,7 +150,7 @@ export function registerAuthRoutes(app: Express) {
       const grupos = idTokenPayload['cognito:groups'] || [];
       let userType = 'aluno'; // padrão
 
-      if (grupos.includes('Admin') || grupos.includes('AdminMaster') || grupos.includes('Administrador')) {
+      if (grupos.includes('Admin') || grupos.includes('AdminMaster') || grupos.includes('Administrador') || grupos.includes('administradores')) {
         userType = 'admin';
       } else if (grupos.includes('Gestores') || grupos.includes('GestorMunicipal')) {
         userType = 'gestor';
@@ -176,49 +195,84 @@ export function registerAuthRoutes(app: Express) {
 
       return res.json({
         success: true,
+        token: internalToken, // Token JWT interno para o frontend
         accessToken: AccessToken,
         idToken: IdToken,
         refreshToken: RefreshToken,
         cognitoToken: AccessToken, // Token para usar na API externa
         user: {
+          id: 1, // ID temporário para compatibilidade
           email: idTokenPayload.email,
-          name: idTokenPayload.name,
-          groups: grupos,
-          userType: userType
+          username: idTokenPayload.email,
+          nome: idTokenPayload.name || idTokenPayload.given_name || idTokenPayload.email?.split('@')[0],
+          firstName: idTokenPayload.given_name,
+          lastName: idTokenPayload.family_name,
+          role: userType === 'admin' ? 'admin' : userType === 'gestor' ? 'municipal_manager' : userType === 'diretor' ? 'school_director' : userType === 'professor' ? 'teacher' : 'student',
+          status: 'active',
+          createdAt: new Date().toISOString()
         },
         redirectUrl: `${redirectUrl}?token=${encodeURIComponent(internalToken)}&cognito_token=${encodeURIComponent(AccessToken!)}&auth=success`
       });
 
-    } catch (error) {
-      console.error('❌ Erro na autenticação AWS Cognito via backend:', error);
+    } catch (error: any) {
+      console.error('❌ Erro detalhado na autenticação AWS Cognito:', {
+        message: error.message,
+        name: error.name,
+        code: error.$metadata?.httpStatusCode,
+        stack: error.stack
+      });
+      
+      // Log adicional para debug
+      if (error.name) {
+        console.error('🔍 Nome do erro:', error.name);
+      }
+      if (error.$fault) {
+        console.error('🔍 Tipo de falha:', error.$fault);
+      }
+      if (error.$metadata) {
+        console.error('🔍 Metadata:', error.$metadata);
+      }
       
       // Tratar erros específicos do AWS Cognito
-      if (error instanceof Error) {
-        if (error.message.includes('NotAuthorizedException')) {
-          return res.status(401).json({
-            success: false,
-            error: 'Email ou senha incorretos'
-          });
-        }
-        
-        if (error.message.includes('UserNotFoundException')) {
-          return res.status(404).json({
-            success: false,
-            error: 'Usuário não encontrado'
-          });
-        }
-        
-        if (error.message.includes('UserNotConfirmedException')) {
-          return res.status(400).json({
-            success: false,
-            error: 'Usuário não confirmado. Entre em contato com o administrador.'
-          });
-        }
+      if (error.name === 'NotAuthorizedException') {
+        return res.status(401).json({
+          success: false,
+          error: 'Email ou senha incorretos'
+        });
+      }
+      
+      if (error.name === 'UserNotFoundException') {
+        return res.status(404).json({
+          success: false,
+          error: 'Usuário não encontrado'
+        });
+      }
+      
+      if (error.name === 'UserNotConfirmedException') {
+        return res.status(400).json({
+          success: false,
+          error: 'Usuário não confirmado. Entre em contato com o administrador.'
+        });
+      }
+      
+      if (error.name === 'InvalidParameterException') {
+        return res.status(400).json({
+          success: false,
+          error: 'Parâmetros inválidos. Verifique o email e senha.'
+        });
+      }
+      
+      if (error.name === 'ResourceNotFoundException') {
+        return res.status(500).json({
+          success: false,
+          error: 'Recurso AWS não encontrado. Verifique a configuração.'
+        });
       }
 
       return res.status(500).json({
         success: false,
-        error: 'Erro interno na autenticação'
+        error: 'Erro interno na autenticação',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   });

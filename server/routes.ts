@@ -1090,6 +1090,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Registrar rotas da API externa
   registerExternalApiRoutes(app);
+  
+  // Registrar rotas Multi-Model Bedrock
+  const { registerBedrockMultiModelRoutes } = await import('./routes/bedrock-multi-model.js');
+  registerBedrockMultiModelRoutes(app);
 
   // Rotas da API hierárquica removidas temporariamente (dependência do CognitoSyncService removida)
 

@@ -13,7 +13,9 @@ import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
 import { usuarios as users } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
-import CognitoSyncService from '../services/CognitoSyncService';
+import { CognitoJWTVerifier } from '../services/CognitoJWTVerifier';
+import jwt from 'jsonwebtoken';
+import { SecretsManager } from '../config/secrets';
 
 // Extender interface Request para incluir dados do usuário
 declare global {
@@ -43,7 +45,8 @@ export interface AuthenticatedUser {
  * Equivalente à classe AuthMiddleware Python
  */
 export class AuthMiddleware {
-  private cognitoSync: CognitoSyncService;
+  private cognitoVerifier: CognitoJWTVerifier;
+  private jwtSecret: string;
 
   /**
    * CONSTRUTOR
@@ -54,10 +57,19 @@ export class AuthMiddleware {
    *     self.cognito_sync = CognitoSyncService()
    */
   constructor() {
-    // Inicializar CognitoSyncService (DatabaseManager é abstrato via Drizzle)
-    this.cognitoSync = new CognitoSyncService();
+    // Inicializar verificador JWT seguro
+    this.cognitoVerifier = new CognitoJWTVerifier();
     
-    console.log('🔐 AuthMiddleware inicializado com CognitoSyncService');
+    // Obter JWT secret das variáveis de ambiente
+    const jwtConfig = SecretsManager.getJWTSecrets();
+    this.jwtSecret = jwtConfig.jwt_secret;
+    
+    // Validar que JWT_SECRET não está usando valor padrão em produção
+    if (process.env.NODE_ENV === 'production' && this.jwtSecret === 'test_secret_key_iaprender_2025') {
+      throw new Error('JWT_SECRET não pode usar valor padrão em produção');
+    }
+    
+    console.log('🔐 AuthMiddleware inicializado com verificação JWT segura');
   }
 
   /**
@@ -114,8 +126,8 @@ export class AuthMiddleware {
           return res.status(401).json({ error: 'Token não fornecido' });
         }
         
-        // Decodificar token
-        const userData = this._decodeToken(token);
+        // Decodificar e verificar token
+        const userData = await this._decodeToken(token);
         if (!userData || (!userData.sub && !userData.id)) {
           console.log('❌ Token inválido');
           return res.status(401).json({ error: 'Token inválido' });
@@ -200,28 +212,34 @@ export class AuthMiddleware {
   }
 
   /**
-   * DECODIFICA TOKEN JWT
-   * Equivalente ao _decode_token() Python:
-   * 
-   * def _decode_token(self, token):
-   *     # Aqui você implementaria a validação real do token Cognito
-   *     # Por enquanto, retornamos dados mock
-   *     return jwt.decode(token, options={"verify_signature": False})
+   * DECODIFICA E VERIFICA TOKEN JWT
+   * Implementação segura com verificação de assinatura
    */
-  private _decodeToken(token: string): any {
+  private async _decodeToken(token: string): Promise<any> {
     try {
-      // Implementação simplificada - decodifica sem verificar assinatura
-      // Em produção, você implementaria validação real do token Cognito
-      const base64Payload = token.split('.')[1];
-      const payload = Buffer.from(base64Payload, 'base64').toString('utf8');
-      const decoded = JSON.parse(payload);
+      // Primeiro, tentar verificar como token Cognito
+      const cognitoResult = await this.cognitoVerifier.verifyToken(token);
       
-      console.log(`🔓 Token decodificado para usuário: ${decoded.sub || 'sub não encontrado'}`);
-      return decoded;
+      if (cognitoResult.success && cognitoResult.user) {
+        console.log(`🔓 Token Cognito verificado para usuário: ${cognitoResult.user.sub}`);
+        return cognitoResult.user;
+      }
+      
+      // Se não for token Cognito, tentar verificar como JWT interno
+      try {
+        const decoded = jwt.verify(token, this.jwtSecret) as any;
+        console.log(`🔓 Token JWT interno verificado para usuário: ${decoded.id || decoded.sub}`);
+        return decoded;
+      } catch (jwtError) {
+        console.error('❌ Falha na verificação JWT interno:', jwtError);
+      }
+      
+      // Se ambas verificações falharem
+      throw new Error('Token inválido - falha na verificação de assinatura');
       
     } catch (error) {
-      console.error('❌ Erro ao decodificar token:', error);
-      throw new Error('Token inválido ou malformado');
+      console.error('❌ Erro ao verificar token:', error);
+      throw new Error('Token inválido ou expirado');
     }
   }
 

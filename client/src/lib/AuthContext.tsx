@@ -16,6 +16,8 @@ function mapCognitoGroupsToRole(groups: string[]): "admin" | "teacher" | "studen
   const groupMap: { [key: string]: "admin" | "teacher" | "student" | "municipal_manager" | "school_director" } = {
     'Admin': 'admin',
     'AdminMaster': 'admin',
+    'administradores': 'admin',
+    'Administrador': 'admin',
     'Gestores': 'municipal_manager',
     'GestorMunicipal': 'municipal_manager',
     'Diretores': 'school_director',
@@ -133,13 +135,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Mutation para login seguro
   const loginMutation = useMutation<User, Error, LoginData>({
     mutationFn: async (credentials) => {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/cognito-authenticate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: credentials.email,
+          email: credentials.email,
           password: credentials.password,
         }),
       });

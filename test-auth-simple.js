@@ -30,12 +30,20 @@ function calculateSecretHash(username, clientId, clientSecret) {
 }
 
 async function testSimpleAuth() {
-  // Teste com usuário CONFIRMED que deveria ter senha conhecida
+  // Carrega credenciais de teste do arquivo .env
+  const testEmail = process.env.TEST_USER_EMAIL;
+  const testPassword = process.env.TEST_USER_PASSWORD;
+
+  if (!testEmail || !testPassword) {
+    console.error('❌ Erro: Configure TEST_USER_EMAIL e TEST_USER_PASSWORD no arquivo .env');
+    console.log('📝 Exemplo:');
+    console.log('TEST_USER_EMAIL=test@example.com');
+    console.log('TEST_USER_PASSWORD=YourSecurePassword123!');
+    process.exit(1);
+  }
+
   const testUsers = [
-    { email: 'admin.cognito@iaprender.com.br', password: 'AdminMaster123!' },
-    { email: 'cassianoway@gmail.com', password: 'Cassiano123!' },
-    { email: 'esdrasnerideoliveira@gmail.com', password: 'Esdras123!' },
-    { email: 'admin@gmail.com', password: 'TempPass123!' }
+    { email: testEmail, password: testPassword }
   ];
 
   for (const user of testUsers) {

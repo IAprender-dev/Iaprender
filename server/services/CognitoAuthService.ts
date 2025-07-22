@@ -230,7 +230,11 @@ export class CognitoAuthService {
    * Gera token JWT interno da aplicação
    */
   private generateInternalToken(userData: any): string {
-    const jwtSecret = process.env.JWT_SECRET || 'test_secret_key_iaprender_2025';
+    const jwtSecret = process.env.JWT_SECRET;
+    
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET não configurado nas variáveis de ambiente');
+    }
     
     const payload = {
       id: userData.username,
@@ -252,7 +256,12 @@ export class CognitoAuthService {
    */
   static validateInternalToken(token: string): any {
     try {
-      const jwtSecret = process.env.JWT_SECRET || 'test_secret_key_iaprender_2025';
+      const jwtSecret = process.env.JWT_SECRET;
+      
+      if (!jwtSecret) {
+        throw new Error('JWT_SECRET não configurado nas variáveis de ambiente');
+      }
+      
       return jwt.verify(token, jwtSecret);
     } catch (error) {
       return null;
